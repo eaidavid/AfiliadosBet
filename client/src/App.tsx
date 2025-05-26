@@ -9,6 +9,7 @@ import Login from "@/pages/login";
 import UserDashboard from "@/pages/user-dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
 import NotFound from "@/pages/not-found";
+import AdminPanelToggle from "@/components/admin-panel-toggle";
 
 function Router() {
   const { isAuthenticated, isLoading, isAdmin } = useAuth();
@@ -22,22 +23,25 @@ function Router() {
   }
 
   return (
-    <Switch>
-      {!isAuthenticated ? (
-        <>
-          <Route path="/" component={Register} />
-          <Route path="/login" component={Login} />
-          <Route path="/register" component={Register} />
-        </>
-      ) : (
-        <>
-          <Route path="/" component={UserDashboard} />
-          <Route path="/dashboard" component={UserDashboard} />
-          <Route path="/admin" component={AdminDashboard} />
-        </>
-      )}
-      <Route component={NotFound} />
-    </Switch>
+    <>
+      <Switch>
+        {!isAuthenticated ? (
+          <>
+            <Route path="/" component={Register} />
+            <Route path="/login" component={Login} />
+            <Route path="/register" component={Register} />
+          </>
+        ) : (
+          <>
+            <Route path="/" component={UserDashboard} />
+            <Route path="/dashboard" component={UserDashboard} />
+            <Route path="/admin" component={AdminDashboard} />
+          </>
+        )}
+        <Route component={NotFound} />
+      </Switch>
+      {isAuthenticated && <AdminPanelToggle />}
+    </>
   );
 }
 

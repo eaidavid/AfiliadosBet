@@ -26,8 +26,13 @@ export default function Login() {
 
   const onSubmit = (data: LoginData) => {
     login.mutate(data, {
-      onSuccess: () => {
-        setLocation("/");
+      onSuccess: (response) => {
+        // Redireciona baseado no tipo de usuário
+        if (response.user.role === "admin") {
+          setLocation("/admin");
+        } else {
+          setLocation("/");
+        }
       }
     });
   };
