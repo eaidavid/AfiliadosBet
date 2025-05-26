@@ -134,7 +134,7 @@ export default function ReportsManagement({ onPageChange }: ReportsManagementPro
                   <div>
                     <p className="text-slate-400 text-sm font-medium">Receita Total</p>
                     <p className="text-2xl font-bold text-emerald-400">
-                      R$ {generalStats?.totalRevenue?.toFixed(2) || '0.00'}
+                      R$ {(Number(generalStats?.totalRevenue) || 0).toFixed(2)}
                     </p>
                     <p className="text-green-400 text-xs">+22% vs mês anterior</p>
                   </div>
@@ -175,11 +175,11 @@ export default function ReportsManagement({ onPageChange }: ReportsManagementPro
                       <TableCell className="text-white">{house.activeAffiliates}</TableCell>
                       <TableCell className="text-white">{house.totalClicks}</TableCell>
                       <TableCell className="text-emerald-400 font-medium">
-                        R$ {house.revenue?.toFixed(2)}
+                        R$ {(Number(house.revenue) || 0).toFixed(2)}
                       </TableCell>
                       <TableCell>
                         <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                          {house.conversionRate?.toFixed(1)}%
+                          {(Number(house.conversionRate) || 0).toFixed(1)}%
                         </Badge>
                       </TableCell>
                     </TableRow>
@@ -221,7 +221,7 @@ export default function ReportsManagement({ onPageChange }: ReportsManagementPro
                       <TableCell className="text-white">{affiliate.totalClicks}</TableCell>
                       <TableCell className="text-white">{affiliate.totalRegistrations}</TableCell>
                       <TableCell className="text-emerald-400 font-medium">
-                        R$ {affiliate.totalCommission?.toFixed(2)}
+                        R$ {(Number(affiliate.totalCommission) || 0).toFixed(2)}
                       </TableCell>
                     </TableRow>
                   )) || []}
