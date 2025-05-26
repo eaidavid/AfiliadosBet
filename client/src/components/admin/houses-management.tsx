@@ -16,6 +16,15 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertBettingHouseSchema, type InsertBettingHouse } from "@shared/schema";
 
+function generatePostbackPreview(houseName: string, primaryParam: string) {
+  const houseNameLower = houseName.toLowerCase().replace(/\s+/g, '');
+  return {
+    registration: `/api/postback/registration?house=${houseNameLower}&${primaryParam}={${primaryParam}}&customer_id={customer_id}`,
+    deposit: `/api/postback/deposit?house=${houseNameLower}&${primaryParam}={${primaryParam}}&amount={amount}&customer_id={customer_id}`,
+    profit: `/api/postback/profit?house=${houseNameLower}&${primaryParam}={${primaryParam}}&amount={amount}&customer_id={customer_id}`
+  };
+}
+
 export default function AdminHousesManagement() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingHouse, setEditingHouse] = useState<any>(null);
@@ -35,12 +44,12 @@ export default function AdminHousesManagement() {
       description: "",
       logoUrl: "",
       baseUrl: "",
-      primaryParam: "",
+      primaryParam: "subid",
       additionalParams: null,
-      commissionType: "revshare",
-      commissionValue: "",
-      minDeposit: "",
-      paymentMethods: "",
+      commissionType: "RevShare",
+      commissionValue: "30",
+      minDeposit: "100",
+      paymentMethods: "Pix",
       isActive: true,
     },
   });
@@ -314,17 +323,29 @@ export default function AdminHousesManagement() {
                 />
               </div>
 
-              {/* Postback Preview */}
+              {/* Preview das Rotas de Postback */}
               {form.watch("name") && form.watch("primaryParam") && (
                 <div className="bg-slate-700/30 rounded-xl p-4">
                   <h4 className="text-lg font-semibold text-white mb-3">Preview das Rotas de Postback</h4>
                   <div className="space-y-2 text-sm">
-                    {Object.entries(generatePostbackPreview(form.watch("name"), form.watch("primaryParam"))).map(([event, url]) => (
-                      <div key={event}>
-                        <span className="text-slate-400 capitalize">{event}:</span>
-                        <span className="text-emerald-400 font-mono ml-2 break-all">{url}</span>
-                      </div>
-                    ))}
+                    <div>
+                      <span className="text-emerald-400 font-semibold">Registration:</span>
+                      <span className="text-slate-300 font-mono ml-2 break-all text-xs">
+                        /api/postback/registration?house={form.watch("name").toLowerCase()}&subid={`{subid}`}&customer_id={`{customer_id}`}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-emerald-400 font-semibold">Deposit:</span>
+                      <span className="text-slate-300 font-mono ml-2 break-all text-xs">
+                        /api/postback/deposit?house={form.watch("name").toLowerCase()}&subid={`{subid}`}&amount={`{amount}`}&customer_id={`{customer_id}`}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-emerald-400 font-semibold">Profit:</span>
+                      <span className="text-slate-300 font-mono ml-2 break-all text-xs">
+                        /api/postback/profit?house={form.watch("name").toLowerCase()}&subid={`{subid}`}&amount={`{amount}`}&customer_id={`{customer_id}`}
+                      </span>
+                    </div>
                   </div>
                 </div>
               )}

@@ -566,10 +566,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const house = await storage.createBettingHouse(result.data);
+      
+      // Gerar links de afiliados para todos os usuários existentes
+      const users = await storage.getAllAffiliates();
+      for (const user of users) {
+        if (user.role !== 'admin') {
+          await storage.createAffiliateLink({
+            userId: user.id,
+            houseId: house.id,
+            generatedUrl: house.baseUrl.replace('{subid}', user.username),
+            isActive: true
+          });
+        }
+      }
+      
       res.json(house);
     } catch (error) {
       console.error("Create betting house error:", error);
       res.status(500).json({ message: "Failed to create betting house" });
+    }
+  });
+
+  // Rota para admin visualizar todos os links
+  app.get("/api/admin/affiliate-links", requireAdmin, async (req, res) => {
+    try {
+      const links = await db.select({
+        id: affiliateLinks.id,
+        userId: affiliateLinks.userId,
+        houseId: affiliateLinks.houseId,
+        generatedUrl: affiliateLinks.generatedUrl,
+        isActive: affiliateLinks.isActive,
+        createdAt: affiliateLinks.createdAt,
+        userName: schema.users.username,
+        houseName: schema.bettingHouses.name
+      })
+      .from(affiliateLinks)
+      .leftJoin(schema.users, eq(affiliateLinks.userId, schema.users.id))
+      .leftJoin(schema.bettingHouses, eq(affiliateLinks.houseId, schema.bettingHouses.id))
+      .orderBy(sql`${affiliateLinks.createdAt} DESC`);
+      
+      res.json(links);
+    } catch (error) {
+      console.error("Get admin affiliate links error:", error);
+      res.status(500).json({ message: "Failed to get affiliate links" });
+    }
+  });
+
+  // Rota para admin visualizar postback URLs de uma casa específica
+  app.get("/api/admin/betting-houses/:id/postbacks", requireAdmin, async (req, res) => {
+    try {
+      const houseId = parseInt(req.params.id);
+      const house = await storage.getBettingHouseById(houseId);
+      
+      if (!house) {
+        return res.status(404).json({ message: "Casa de apostas não encontrada" });
+      }
+
+      const postbackUrls = {
+        registration: `/api/postback/registration?house=${house.name.toLowerCase()}&subid={subid}&customer_id={customer_id}`,
+        deposit: `/api/postback/deposit?house=${house.name.toLowerCase()}&subid={subid}&amount={amount}&customer_id={customer_id}`,
+        profit: `/api/postback/profit?house=${house.name.toLowerCase()}&subid={subid}&amount={amount}&customer_id={customer_id}`
+      };
+
+      res.json({
+        house: house.name,
+        postbackUrls
+      });
+    } catch (error) {
+      console.error("Get postback URLs error:", error);
+      res.status(500).json({ message: "Failed to get postback URLs" });
     }
   });
 
