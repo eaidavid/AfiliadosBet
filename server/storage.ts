@@ -440,15 +440,25 @@ export class DatabaseStorage implements IStorage {
 
   async getAllAffiliates(): Promise<Array<User & { affiliateHouses?: number }>> {
     // Buscar todos os usuários que não são admin
-    const affiliatesWithStats = await db
-      .select({
-        ...users,
-        affiliateHouses: sql<number>`COALESCE(COUNT(${affiliateLinks.id}), 0)`,
-      })
+    const result = await db
+      .select()
       .from(users)
-      .leftJoin(affiliateLinks, eq(users.id, affiliateLinks.userId))
-      .where(or(eq(users.role, 'affiliate'), isNull(users.role)))
-      .groupBy(users.id);
+      .where(sql`${users.role} != 'admin' OR ${users.role} IS NULL`);
+
+    // Para cada usuário, contar suas casas afiliadas
+    const affiliatesWithStats = await Promise.all(
+      result.map(async (user) => {
+        const links = await db
+          .select()
+          .from(affiliateLinks)
+          .where(eq(affiliateLinks.userId, user.id));
+        
+        return {
+          ...user,
+          affiliateHouses: links.length,
+        };
+      })
+    );
 
     return affiliatesWithStats;
   }
