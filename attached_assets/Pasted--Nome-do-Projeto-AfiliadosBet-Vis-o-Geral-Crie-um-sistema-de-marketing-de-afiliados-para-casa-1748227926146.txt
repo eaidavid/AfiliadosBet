@@ -1,0 +1,164 @@
+📌 Nome do Projeto: AfiliadosBet
+💡 Visão Geral:
+Crie um sistema de marketing de afiliados para casas de apostas com painel admin e painel usuário, estrutura de cadastro completa, painel moderno, visual elegante e tudo 100% funcional. O objetivo é que os afiliados se cadastrem, escolham casas para se afiliar, recebam links promocionais personalizados com seus identificadores e acompanhem o desempenho via relatórios e estatísticas. O sistema precisa também receber e registrar postbacks automaticamente, conforme os parâmetros configurados para cada casa de aposta.
+
+🧱 Tecnologias recomendadas:
+Frontend: React + TailwindCSS (estilo moderno e responsivo)
+
+Backend: Node.js + Express (apenas onde for necessário integrar entre telas ou banco de dados)
+
+Banco de dados: MongoDB ou PostgreSQL
+
+Design: Interface moderna com painéis inspirados em Stripe, Notion, Discord ou Framer
+
+🔐 Página de Cadastro:
+Campos obrigatórios para criação da conta de afiliado:
+
+usuário: mínimo 7 caracteres (números e letras apenas) → será o subid
+
+nome completo
+
+cpf
+
+data de nascimento
+
+email
+
+senha + confirmação (mínimo 8 dígitos, números e letras)
+
+Após o cadastro, o usuário acessa seu perfil para completar dados:
+
+Dados de contato
+
+Localização (cidade, estado, país)
+
+Validação de dados em tempo real e com design elegante.
+
+🖥️ Painel Admin
+Menu lateral com as seguintes seções:
+
+less
+Copiar
+Editar
+Painel Admin
+├── 📊 Dashboard
+│   ├── Visão Geral
+│   └── Estatísticas por Casa
+│
+├── 👥 Afiliados
+│   ├── Lista de Afiliados
+│   ├── Afiliações por Casa
+│   └── Status de Atividade
+│
+├── 📈 Relatórios
+│   ├── Cliques e conversões
+│   ├── Registros e depósitos
+│   └── Comissão gerada
+│
+├── 🏦 Casas de Apostas
+│   ├── Adicionar / Editar Casas
+│   ├── Formulário de cadastro:
+│   │   ├── Dados: nome, descrição, logo, informações adicionais (pix, depósito mínimo, etc)
+│   │   ├── Link promocional base (ex: https://brazzino.com/?subid=VALUE)
+│   │   ├── Parâmetro primário obrigatório (ex: subid, affid...)
+│   │   ├── Parâmetros adicionais opcionais
+│   │   ├── Comissão (RevShare - percentual | CPA - valor fixo R$)
+│   │   └── Preview automático das rotas de postback (para cada evento: registro, depósito, lucro, pagamento)
+│   └── Parâmetros e Postbacks configuráveis
+│
+├── ⚙️ Configurações
+│   ├── Comissão padrão global
+│   ├── Postbacks globais
+│   └── Segurança e Integrações
+🧑‍💻 Painel do Usuário
+Menu lateral com as seguintes seções:
+
+bash
+Copiar
+Editar
+Painel do Usuário
+├── 🏠 Início
+│   └── Boas-vindas, resumo geral e metas
+│
+├── 📊 Dashboard
+│   └── Desempenho: cliques, registros, depósitos, comissões
+│
+├── 🏦 Casas de Apostas
+│   └── Lista de casas disponíveis
+│       - Botão "Afiliar-se"
+│       - Ao clicar, o sistema gera link promocional automaticamente:
+│         (link base + parâmetro primário + identificador/subid do usuário)
+│       - Depois de afiliado, exibir:
+│         ✅ “Afiliado” + botão "Ver Link"
+│
+├── 🔗 Meus Links
+│   └── Lista de links afiliados ativos
+│       - Copiar link
+│       - Visualizar estatísticas por link
+│       - Botão para desafiliar
+│
+├── 💰 Pagamentos
+│   ├── Configurar forma de recebimento (PIX, banco, etc.)
+│   └── Histórico de recebimentos
+│
+├── 📈 Relatórios
+│   └── Filtro por casa e período
+│       - Eventos: cliques, registros, depósitos, comissões
+│
+├── 💬 Suporte / Fale Conosco
+│   └── Abrir chamado, acompanhar respostas
+│
+├── 👤 Meu Perfil
+│   └── Gerenciar dados, trocar senha, atualizar localização
+│
+├── 🚪 Sair
+🔝 Topbar (Barra Superior – ambos os painéis)
+bash
+Copiar
+Editar
+┌──────────────────────────────────────────────────────────────┐
+│ 🔍 Buscar     🔔 Notificações   🎨 Tema (dark/light)   👤 Perfil ▼ │
+└──────────────────────────────────────────────────────────────┘
+Funcionalidades:
+
+Notificações de postback, aprovações, etc.
+
+Trocar entre tema escuro/claro
+
+Dropdown do perfil: Ver Perfil, Configurações, Sair
+
+🔁 Funcionalidades Dinâmicas e Integração
+Afiliação dinâmica por casa: o sistema pega o link configurado no admin e insere automaticamente o subid do afiliado.
+
+Roteamento automático de postbacks: cada casa tem sua rota personalizada para o evento (registro, depósito, lucro).
+
+Rastreamento dos dados dos postbacks no banco: salvar e vincular ao afiliado que gerou o lead.
+
+Relatórios cruzados entre admin e afiliados: garantir que o painel admin e o do usuário estejam sincronizados com as mesmas casas e dados.
+
+✨ Estilo Visual
+Tema escuro elegante com cores de destaque (verde esmeralda, azul royal)
+
+Tipografia moderna (Inter, Poppins, Satoshi)
+
+Animações suaves, sombra nos cards, bordas rounded-2xl
+
+Feedback visual nos botões (hover, active, loading)
+
+Layout responsivo (desktop + mobile)
+
+✅ Entrega esperada:
+Sistema funcional, sem bugs
+
+Design moderno, bonito e coerente
+
+Painéis admin e usuário com menus completos e ligados corretamente
+
+Roteamento de postbacks funcionando
+
+Afiliações e links funcionando por lógica dinâmica com subid
+
+Registro e login com as validações descritas
+
+Pronto para testes reais de fluxo
+
