@@ -24,6 +24,8 @@ export default function AdminHousesManagement() {
 
   const { data: houses, isLoading } = useQuery({
     queryKey: ["/api/admin/betting-houses"],
+    staleTime: 0, // Forçar atualização dos dados
+    cacheTime: 0, // Não usar cache
   });
 
   const form = useForm<InsertBettingHouse>({
