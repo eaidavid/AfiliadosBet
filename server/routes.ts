@@ -440,13 +440,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isActive: true,
       });
       
+      // Garantir que retorna JSON válido
+      res.setHeader('Content-Type', 'application/json');
       res.status(201).json({ 
+        success: true,
         message: "Afiliado com sucesso", 
         link: affiliateLink 
       });
     } catch (error) {
       console.error("Affiliate error:", error);
-      res.status(500).json({ message: "Falha ao criar link de afiliado" });
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500).json({ 
+        success: false,
+        message: "Falha ao criar link de afiliado" 
+      });
     }
   });
 
