@@ -1,6 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { db } from "./db";
+import { affiliateLinks } from "@shared/schema";
+import { eq, sql } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -476,17 +479,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         houses.map(async (house) => {
           const conversions = await storage.getConversionsByHouseId(house.id);
           
-          // Buscar TODOS os links afiliados no sistema e filtrar por casa
-          const allUsers = await storage.getAllAffiliates();
-          let affiliateCount = 0;
+          // Contar afiliados usando consulta SQL direta para esta casa
+          const affiliateCountResult = await db
+            .select({ count: sql<number>`COUNT(DISTINCT user_id)` })
+            .from(affiliateLinks)
+            .where(eq(affiliateLinks.houseId, house.id));
           
-          for (const user of allUsers) {
-            const userLinks = await storage.getAffiliateLinksByUserId(user.id);
-            const hasLinkToThisHouse = userLinks.some(link => link.houseId === house.id);
-            if (hasLinkToThisHouse) {
-              affiliateCount++;
-            }
-          }
+          const affiliateCount = affiliateCountResult[0]?.count || 0;
           
           return {
             ...house,
