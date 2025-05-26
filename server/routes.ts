@@ -542,6 +542,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Postback routes completas para capturar todos os eventos das casas de apostas
+  
+  // 1. Postback para cliques (quando alguém clica no link do afiliado)
+  app.get("/api/postback/click", async (req, res) => {
+    try {
+      const { house, subid, customer_id, ...otherParams } = req.query;
+      
+      const user = await storage.getUserByUsername(subid as string);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const bettingHouses = await storage.getAllBettingHouses();
+      const targetHouse = bettingHouses.find(h => h.name.toLowerCase().replace(/\s+/g, '') === house);
+      if (!targetHouse) {
+        return res.status(404).json({ message: "Betting house not found" });
+      }
+      
+      // Registrar clique como conversão
+      await storage.createConversion({
+        userId: user.id,
+        houseId: targetHouse.id,
+        affiliateLinkId: null,
+        type: "click",
+        amount: "0",
+        commission: "0",
+        customerId: customer_id as string || null,
+        conversionData: otherParams,
+      });
+      
+      res.json({ message: "Click tracked successfully" });
+    } catch (error) {
+      console.error("Postback click error:", error);
+      res.status(500).json({ message: "Failed to track click" });
+    }
+  });
+
   // Postback routes for betting houses
   app.get("/api/postback/registration", async (req, res) => {
     try {

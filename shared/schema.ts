@@ -77,10 +77,11 @@ export const conversions = pgTable("conversions", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
   houseId: integer("house_id").notNull().references(() => bettingHouses.id),
-  linkId: integer("link_id").references(() => affiliateLinks.id),
-  type: text("type").notNull(), // 'registration', 'deposit', 'profit'
-  amount: decimal("amount", { precision: 10, scale: 2 }),
-  commission: decimal("commission", { precision: 10, scale: 2 }),
+  affiliateLinkId: integer("affiliate_link_id").references(() => affiliateLinks.id),
+  type: text("type").notNull(), // 'click', 'registration', 'first_deposit', 'deposit', 'profit'
+  amount: decimal("amount", { precision: 10, scale: 2 }).default("0"),
+  commission: decimal("commission", { precision: 10, scale: 2 }).default("0"),
+  customerId: text("customer_id"), // ID do cliente na casa de apostas
   conversionData: jsonb("conversion_data"), // Additional data from postback
   convertedAt: timestamp("converted_at").defaultNow(),
 });
