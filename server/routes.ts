@@ -104,7 +104,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Sistema de postbacks dinâmico - baseado na sua imagem
   
-  // Postback para Registration
+  // 1. Postback para Cliques
+  app.get("/api/postback/click", async (req, res) => {
+    try {
+      const { house, subid, customer_id, ...otherParams } = req.query;
+      
+      if (!house || !subid) {
+        return res.status(400).json({ message: "house e subid são obrigatórios" });
+      }
+      
+      const user = await storage.getUserByUsername(subid as string);
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      
+      const bettingHouses = await storage.getAllBettingHouses();
+      const bettingHouse = bettingHouses.find(h => 
+        h.name.toLowerCase() === (house as string).toLowerCase()
+      );
+      if (!bettingHouse) {
+        return res.status(404).json({ message: `Casa ${house} não encontrada` });
+      }
+      
+      // Registra o clique
+      await storage.createConversion({
+        userId: user.id,
+        houseId: bettingHouse.id,
+        affiliateLinkId: null,
+        type: "click",
+        amount: "0",
+        commission: "0",
+        customerId: customer_id as string || null,
+        conversionData: { house, ...otherParams },
+      });
+      
+      res.json({ 
+        success: true,
+        message: "Clique rastreado com sucesso",
+        house: bettingHouse.name
+      });
+    } catch (error) {
+      console.error("Erro no postback de clique:", error);
+      res.status(500).json({ message: "Falha ao rastrear clique" });
+    }
+  });
+
+  // 2. Postback para Registros
   app.get("/api/postback/registration", async (req, res) => {
     try {
       const { house, subid, customer_id, ...otherParams } = req.query;
@@ -155,7 +200,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Postback para Deposit
+  // 3. Postback para Primeiro Depósito
   app.get("/api/postback/deposit", async (req, res) => {
     try {
       const { house, subid, customer_id, amount, ...otherParams } = req.query;
@@ -208,7 +253,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Postback para Profit
+  // 4. Postback para Depósitos Recorrentes
+  app.get("/api/postback/recurring-deposit", async (req, res) => {
+    try {
+      const { house, subid, customer_id, amount, ...otherParams } = req.query;
+      
+      if (!house || !subid || !amount) {
+        return res.status(400).json({ message: "house, subid e amount são obrigatórios" });
+      }
+      
+      const user = await storage.getUserByUsername(subid as string);
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      
+      const bettingHouses = await storage.getAllBettingHouses();
+      const bettingHouse = bettingHouses.find(h => 
+        h.name.toLowerCase() === (house as string).toLowerCase()
+      );
+      if (!bettingHouse) {
+        return res.status(404).json({ message: `Casa ${house} não encontrada` });
+      }
+      
+      // Calcula comissão para depósitos recorrentes (geralmente RevShare)
+      let commission = "0";
+      if (bettingHouse.commissionType === "RevShare") {
+        const depositAmount = parseFloat(amount as string);
+        const commissionPercentage = parseFloat(bettingHouse.commissionValue.toString());
+        commission = ((depositAmount * commissionPercentage) / 100).toString();
+      }
+      
+      await storage.createConversion({
+        userId: user.id,
+        houseId: bettingHouse.id,
+        affiliateLinkId: null,
+        type: "recurring_deposit",
+        amount: amount as string,
+        commission,
+        customerId: customer_id as string || null,
+        conversionData: { house, ...otherParams },
+      });
+      
+      res.json({ 
+        success: true,
+        message: "Depósito recorrente rastreado com sucesso", 
+        commission: parseFloat(commission),
+        house: bettingHouse.name
+      });
+    } catch (error) {
+      console.error("Erro no postback de depósito recorrente:", error);
+      res.status(500).json({ message: "Falha ao rastrear depósito recorrente" });
+    }
+  });
+
+  // 5. Postback para Profit/Lucro
   app.get("/api/postback/profit", async (req, res) => {
     try {
       const { house, subid, customer_id, amount, ...otherParams } = req.query;
@@ -271,6 +369,181 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Get user stats error:", error);
       res.status(500).json({ message: "Failed to get user statistics" });
+    }
+  });
+
+  // Relatórios detalhados para admin
+  app.get("/api/admin/reports/general", requireAdmin, async (req, res) => {
+    try {
+      const conversions = await db.select({
+        id: schema.conversions.id,
+        type: schema.conversions.type,
+        amount: schema.conversions.amount,
+        commission: schema.conversions.commission,
+        convertedAt: schema.conversions.convertedAt,
+        userName: schema.users.username,
+        houseName: schema.bettingHouses.name,
+        customerId: schema.conversions.customerId
+      })
+      .from(schema.conversions)
+      .leftJoin(schema.users, eq(schema.conversions.userId, schema.users.id))
+      .leftJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
+      .orderBy(sql`${schema.conversions.convertedAt} DESC`);
+
+      // Estatísticas agregadas
+      const totalClicks = conversions.filter(c => c.type === 'click').length;
+      const totalRegistrations = conversions.filter(c => c.type === 'registration').length;
+      const totalDeposits = conversions.filter(c => c.type === 'deposit').length;
+      const totalRecurringDeposits = conversions.filter(c => c.type === 'recurring_deposit').length;
+      const totalProfits = conversions.filter(c => c.type === 'profit').length;
+      
+      const totalCommission = conversions
+        .filter(c => c.commission && parseFloat(c.commission) > 0)
+        .reduce((sum, c) => sum + parseFloat(c.commission || '0'), 0);
+
+      const totalVolume = conversions
+        .filter(c => c.amount && parseFloat(c.amount) > 0)
+        .reduce((sum, c) => sum + parseFloat(c.amount || '0'), 0);
+
+      res.json({
+        totalClicks,
+        totalRegistrations,
+        totalDeposits,
+        totalRecurringDeposits,
+        totalProfits,
+        totalCommission,
+        totalVolume,
+        conversions: conversions.slice(0, 100) // Últimas 100 conversões
+      });
+    } catch (error) {
+      console.error("Erro nos relatórios gerais:", error);
+      res.status(500).json({ message: "Falha ao obter relatórios gerais" });
+    }
+  });
+
+  app.get("/api/admin/reports/affiliate/:id", requireAdmin, async (req, res) => {
+    try {
+      const affiliateId = parseInt(req.params.id);
+      
+      const conversions = await db.select({
+        id: schema.conversions.id,
+        type: schema.conversions.type,
+        amount: schema.conversions.amount,
+        commission: schema.conversions.commission,
+        convertedAt: schema.conversions.convertedAt,
+        houseName: schema.bettingHouses.name,
+        customerId: schema.conversions.customerId,
+        conversionData: schema.conversions.conversionData
+      })
+      .from(schema.conversions)
+      .leftJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
+      .where(eq(schema.conversions.userId, affiliateId))
+      .orderBy(sql`${schema.conversions.convertedAt} DESC`);
+
+      // Estatísticas detalhadas por afiliado
+      const totalClicks = conversions.filter(c => c.type === 'click').length;
+      const totalRegistrations = conversions.filter(c => c.type === 'registration').length;
+      const totalDeposits = conversions.filter(c => c.type === 'deposit').length;
+      const totalRecurringDeposits = conversions.filter(c => c.type === 'recurring_deposit').length;
+      const totalProfits = conversions.filter(c => c.type === 'profit').length;
+      
+      const totalCommission = conversions
+        .filter(c => c.commission && parseFloat(c.commission) > 0)
+        .reduce((sum, c) => sum + parseFloat(c.commission || '0'), 0);
+
+      const totalVolume = conversions
+        .filter(c => c.amount && parseFloat(c.amount) > 0)
+        .reduce((sum, c) => sum + parseFloat(c.amount || '0'), 0);
+
+      // Conversão por casa de apostas
+      const conversionsByHouse = conversions.reduce((acc, conv) => {
+        const house = conv.houseName || 'Desconhecido';
+        if (!acc[house]) {
+          acc[house] = {
+            clicks: 0,
+            registrations: 0,
+            deposits: 0,
+            recurringDeposits: 0,
+            profits: 0,
+            totalCommission: 0,
+            totalVolume: 0
+          };
+        }
+        
+        acc[house][conv.type === 'click' ? 'clicks' : 
+                  conv.type === 'registration' ? 'registrations' :
+                  conv.type === 'deposit' ? 'deposits' :
+                  conv.type === 'recurring_deposit' ? 'recurringDeposits' : 'profits']++;
+        
+        if (conv.commission) acc[house].totalCommission += parseFloat(conv.commission);
+        if (conv.amount) acc[house].totalVolume += parseFloat(conv.amount);
+        
+        return acc;
+      }, {} as any);
+
+      res.json({
+        totalClicks,
+        totalRegistrations,
+        totalDeposits,
+        totalRecurringDeposits,
+        totalProfits,
+        totalCommission,
+        totalVolume,
+        conversionsByHouse,
+        conversions
+      });
+    } catch (error) {
+      console.error("Erro no relatório do afiliado:", error);
+      res.status(500).json({ message: "Falha ao obter relatório do afiliado" });
+    }
+  });
+
+  app.get("/api/admin/reports/house/:id", requireAdmin, async (req, res) => {
+    try {
+      const houseId = parseInt(req.params.id);
+      
+      const conversions = await db.select({
+        id: schema.conversions.id,
+        type: schema.conversions.type,
+        amount: schema.conversions.amount,
+        commission: schema.conversions.commission,
+        convertedAt: schema.conversions.convertedAt,
+        userName: schema.users.username,
+        customerId: schema.conversions.customerId
+      })
+      .from(schema.conversions)
+      .leftJoin(schema.users, eq(schema.conversions.userId, schema.users.id))
+      .where(eq(schema.conversions.houseId, houseId))
+      .orderBy(sql`${schema.conversions.convertedAt} DESC`);
+
+      // Estatísticas por casa
+      const totalClicks = conversions.filter(c => c.type === 'click').length;
+      const totalRegistrations = conversions.filter(c => c.type === 'registration').length;
+      const totalDeposits = conversions.filter(c => c.type === 'deposit').length;
+      const totalRecurringDeposits = conversions.filter(c => c.type === 'recurring_deposit').length;
+      const totalProfits = conversions.filter(c => c.type === 'profit').length;
+      
+      const totalCommission = conversions
+        .filter(c => c.commission && parseFloat(c.commission) > 0)
+        .reduce((sum, c) => sum + parseFloat(c.commission || '0'), 0);
+
+      const totalVolume = conversions
+        .filter(c => c.amount && parseFloat(c.amount) > 0)
+        .reduce((sum, c) => sum + parseFloat(c.amount || '0'), 0);
+
+      res.json({
+        totalClicks,
+        totalRegistrations,
+        totalDeposits,
+        totalRecurringDeposits,
+        totalProfits,
+        totalCommission,
+        totalVolume,
+        conversions
+      });
+    } catch (error) {
+      console.error("Erro no relatório da casa:", error);
+      res.status(500).json({ message: "Falha ao obter relatório da casa" });
     }
   });
 
