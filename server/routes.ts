@@ -4,6 +4,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { db } from "./db";
 import { affiliateLinks } from "@shared/schema";
+import * as schema from "@shared/schema";
 import { eq, sql } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import session from "express-session";
@@ -276,7 +277,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin routes
+  // Admin routes - visualizar todos os links
+  app.get("/api/admin/all-links", requireAdmin, async (req, res) => {
+    try {
+      const links = await db.select({
+        id: affiliateLinks.id,
+        userId: affiliateLinks.userId,
+        houseId: affiliateLinks.houseId,
+        generatedUrl: affiliateLinks.generatedUrl,
+        isActive: affiliateLinks.isActive,
+        createdAt: affiliateLinks.createdAt,
+        userName: schema.users.username,
+        houseName: schema.bettingHouses.name
+      })
+      .from(affiliateLinks)
+      .leftJoin(schema.users, eq(affiliateLinks.userId, schema.users.id))
+      .leftJoin(schema.bettingHouses, eq(affiliateLinks.houseId, schema.bettingHouses.id))
+      .orderBy(sql`${affiliateLinks.createdAt} DESC`);
+      
+      res.json(links);
+    } catch (error) {
+      console.error("Get all links error:", error);
+      res.status(500).json({ message: "Failed to get all links" });
+    }
+  });
+
   app.get("/api/admin/stats", requireAdmin, async (req, res) => {
     try {
       const stats = await storage.getAdminStats();
