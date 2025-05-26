@@ -459,6 +459,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Relatórios detalhados por afiliado para o modal de detalhes
+  app.get("/api/admin/affiliate-stats/:id", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const affiliateId = parseInt(req.params.id);
+      const stats = await storage.getUserStats(affiliateId);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching affiliate stats:", error);
+      res.status(500).json({ message: "Failed to fetch affiliate stats" });
+    }
+  });
+
+  app.get("/api/admin/affiliate-conversions/:id", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const affiliateId = parseInt(req.params.id);
+      const conversions = await storage.getConversionsByUserId(affiliateId);
+      
+      // Buscar nomes das casas para cada conversão
+      const conversionsWithHouses = await Promise.all(
+        conversions.map(async (conversion) => {
+          const house = await storage.getBettingHouseById(conversion.houseId);
+          return {
+            ...conversion,
+            houseName: house?.name || 'Casa desconhecida'
+          };
+        })
+      );
+      
+      res.json(conversionsWithHouses);
+    } catch (error) {
+      console.error("Error fetching affiliate conversions:", error);
+      res.status(500).json({ message: "Failed to fetch affiliate conversions" });
+    }
+  });
+
   app.get("/api/user/payments", requireAuth, async (req: any, res) => {
     try {
       const userId = req.session.user.id;

@@ -151,7 +151,7 @@ export const conversionsRelations = relations(conversions, ({ one }) => ({
     references: [bettingHouses.id],
   }),
   link: one(affiliateLinks, {
-    fields: [conversions.linkId],
+    fields: [conversions.affiliateLinkId],
     references: [affiliateLinks.id],
   }),
 }));
