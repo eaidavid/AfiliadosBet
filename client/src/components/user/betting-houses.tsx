@@ -23,27 +23,8 @@ export default function BettingHouses({ onPageChange }: BettingHousesProps) {
 
   const affiliateMutation = useMutation({
     mutationFn: async (houseId: number) => {
-      try {
-        const response = await apiRequest("POST", `/api/betting-houses/${houseId}/affiliate`);
-        
-        // Verificar se a resposta é JSON válida
-        const contentType = response.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-          throw new Error("Resposta inválida do servidor");
-        }
-        
-        const text = await response.text();
-        if (!text) {
-          throw new Error("Resposta vazia do servidor");
-        }
-        
-        return JSON.parse(text);
-      } catch (error: any) {
-        if (error.name === 'SyntaxError') {
-          throw new Error("Erro de comunicação com o servidor");
-        }
-        throw error;
-      }
+      const response = await apiRequest("POST", `/api/betting-houses/${houseId}/affiliate`);
+      return response.json();
     },
     onSuccess: (data) => {
       toast({
