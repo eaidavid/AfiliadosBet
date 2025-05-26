@@ -602,6 +602,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 4. Postback para depósitos recorrentes (após o primeiro)
+  app.get("/api/postback/deposit", async (req, res) => {
+    try {
+      const { house, subid, customer_id, amount, ...otherParams } = req.query;
+      
+      const user = await storage.getUserByUsername(subid as string);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const bettingHouses = await storage.getAllBettingHouses();
+      const targetHouse = bettingHouses.find(h => h.name.toLowerCase().replace(/\s+/g, '') === house);
+      if (!targetHouse) {
+        return res.status(404).json({ message: "Betting house not found" });
+      }
+      
+      // Calcular comissão apenas para RevShare em depósitos recorrentes
+      let commission = 0;
+      if (targetHouse.commissionType === "revshare") {
+        const percentage = parseFloat(targetHouse.commissionValue.replace("%", ""));
+        commission = (parseFloat(amount as string) * percentage) / 100;
+      }
+      
+      await storage.createConversion({
+        userId: user.id,
+        houseId: targetHouse.id,
+        affiliateLinkId: null,
+        type: "deposit",
+        amount: amount as string,
+        commission: commission.toString(),
+        customerId: customer_id as string || null,
+        conversionData: otherParams,
+      });
+      
+      res.json({ message: "Deposit tracked successfully", commission });
+    } catch (error) {
+      console.error("Postback deposit error:", error);
+      res.status(500).json({ message: "Failed to track deposit" });
+    }
+  });
+
+  // 5. Postback para profit/lucro líquido do jogador
+  app.get("/api/postback/profit", async (req, res) => {
+    try {
+      const { house, subid, customer_id, amount, ...otherParams } = req.query;
+      
+      const user = await storage.getUserByUsername(subid as string);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const bettingHouses = await storage.getAllBettingHouses();
+      const targetHouse = bettingHouses.find(h => h.name.toLowerCase().replace(/\s+/g, '') === house);
+      if (!targetHouse) {
+        return res.status(404).json({ message: "Betting house not found" });
+      }
+      
+      // Calcular comissão sobre profit (geralmente RevShare)
+      let commission = 0;
+      if (targetHouse.commissionType === "revshare") {
+        const percentage = parseFloat(targetHouse.commissionValue.replace("%", ""));
+        commission = (parseFloat(amount as string) * percentage) / 100;
+      }
+      
+      await storage.createConversion({
+        userId: user.id,
+        houseId: targetHouse.id,
+        affiliateLinkId: null,
+        type: "profit",
+        amount: amount as string,
+        commission: commission.toString(),
+        customerId: customer_id as string || null,
+        conversionData: otherParams,
+      });
+      
+      res.json({ message: "Profit tracked successfully", commission });
+    } catch (error) {
+      console.error("Postback profit error:", error);
+      res.status(500).json({ message: "Failed to track profit" });
+    }
+  });
+
   // Postback routes for betting houses
   app.get("/api/postback/registration", async (req, res) => {
     try {
