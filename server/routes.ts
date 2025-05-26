@@ -460,6 +460,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Rota para obter links do usuário
+  app.get("/api/my-links", requireAuth, async (req: any, res) => {
+    try {
+      const links = await storage.getAffiliateLinksByUserId(req.session.user.id);
+      res.json(links);
+    } catch (error) {
+      console.error("Get user links error:", error);
+      res.status(500).json({ message: "Failed to get user links" });
+    }
+  });
+
+  // Rota para eventos do usuário
+  app.get("/api/user/events", requireAuth, async (req: any, res) => {
+    try {
+      const conversions = await storage.getConversionsByUserId(req.session.user.id);
+      res.json(conversions);
+    } catch (error) {
+      console.error("Get user events error:", error);
+      res.status(500).json({ message: "Failed to get user events" });
+    }
+  });
+
   // Relatórios detalhados para admin
   app.get("/api/admin/reports/general", requireAdmin, async (req, res) => {
     try {
