@@ -4,7 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Search, Bell, Moon, ChevronDown } from "lucide-react";
 import { useState } from "react";
 
-export default function UserTopBar() {
+interface UserTopBarProps {
+  onPageChange?: (page: string) => void;
+}
+
+export default function UserTopBar({ onPageChange }: UserTopBarProps) {
   const { user } = useAuth();
   const logout = useLogout();
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -59,15 +63,30 @@ export default function UserTopBar() {
             {showProfileDropdown && (
               <div className="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-xl shadow-lg z-10">
                 <div className="py-1">
-                  <button className="block w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
+                  <button 
+                    onClick={() => {
+                      onPageChange?.('profile');
+                      setShowProfileDropdown(false);
+                    }}
+                    className="block w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+                  >
                     Ver Perfil
                   </button>
-                  <button className="block w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
+                  <button 
+                    onClick={() => {
+                      onPageChange?.('profile');
+                      setShowProfileDropdown(false);
+                    }}
+                    className="block w-full text-left px-4 py-2 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+                  >
                     Configurações
                   </button>
                   <hr className="border-slate-700 my-1" />
                   <button
-                    onClick={() => logout.mutate()}
+                    onClick={() => {
+                      logout.mutate();
+                      setShowProfileDropdown(false);
+                    }}
                     className="block w-full text-left px-4 py-2 text-red-400 hover:bg-slate-700 hover:text-red-300 transition-colors"
                   >
                     Sair

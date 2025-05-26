@@ -195,7 +195,7 @@ export default function UserDashboard() {
       <UserSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
       
       <div className="ml-72">
-        <UserTopBar />
+        <UserTopBar onPageChange={setCurrentPage} />
         <main className="p-6">
           {renderContent()}
         </main>
