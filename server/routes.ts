@@ -109,6 +109,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Registration error:", error);
       
       // Verificar se é erro de constraint unique do banco
+      if (error.code === '23505') { // PostgreSQL unique constraint error code
+        if (error.constraint === 'users_username_unique') {
+          return res.status(400).json({ message: "Nome de usuário já está em uso" });
+        }
+        if (error.constraint === 'users_email_unique') {
+          return res.status(400).json({ message: "Email já está em uso" });
+        }
+        if (error.constraint === 'users_cpf_unique') {
+          return res.status(400).json({ message: "CPF já está em uso" });
+        }
+      }
+      
+      // Fallback para mensagens genéricas
       if (error.message && error.message.includes('unique')) {
         if (error.message.includes('username')) {
           return res.status(400).json({ message: "Nome de usuário já está em uso" });
