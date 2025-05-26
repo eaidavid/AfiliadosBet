@@ -143,7 +143,7 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                         <span className="text-emerald-500 font-semibold">
-                          R$ {affiliate.totalCommission?.toFixed(2) || "0.00"}
+                          R$ {(Number(affiliate.totalCommission) || 0).toFixed(2)}
                         </span>
                       </div>
                     ))}
