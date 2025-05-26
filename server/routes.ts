@@ -408,6 +408,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Rota para afiliação de usuários
+  app.post("/api/betting-houses/:id/affiliate", requireAuth, async (req: any, res) => {
+    try {
+      const houseId = parseInt(req.params.id);
+      const userId = req.session.user.id;
+      
+      // Verificar se já está afiliado
+      const existingLink = await storage.getAffiliateLinkByUserAndHouse(userId, houseId);
+      if (existingLink) {
+        return res.status(400).json({ message: "Já afiliado a esta casa" });
+      }
+      
+      const house = await storage.getBettingHouseById(houseId);
+      if (!house) {
+        return res.status(404).json({ message: "Casa de apostas não encontrada" });
+      }
+      
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      
+      // Gerar URL de afiliado
+      const generatedUrl = house.baseUrl.replace("VALUE", user.username);
+      
+      const affiliateLink = await storage.createAffiliateLink({
+        userId,
+        houseId,
+        generatedUrl,
+        isActive: true,
+      });
+      
+      res.status(201).json({ 
+        message: "Afiliado com sucesso", 
+        link: affiliateLink 
+      });
+    } catch (error) {
+      console.error("Affiliate error:", error);
+      res.status(500).json({ message: "Falha ao criar link de afiliado" });
+    }
+  });
+
   app.get("/api/stats/user", requireAuth, async (req: any, res) => {
     try {
       const stats = await storage.getUserStats(req.session.user.id);
