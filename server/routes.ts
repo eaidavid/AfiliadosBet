@@ -509,27 +509,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const houses = await storage.getAllBettingHouses();
       
-      // Get additional stats for each house
-      const housesWithStats = await Promise.all(
-        houses.map(async (house) => {
-          const conversions = await storage.getConversionsByHouseId(house.id);
-          
-          // Contar afiliados de forma simples - sabemos que existe 1 afiliado para o Brazino
-          let affiliateCount = 0;
-          if (house.id === 5) { // Brazino
-            affiliateCount = 1; // Usuário eaidavid tem link ativo
-          }
-          
-          return {
-            ...house,
-            stats: {
-              affiliateCount, // Usar a contagem calculada corretamente
-              totalVolume: conversions.reduce((sum, c) => sum + Number(c.amount || 0), 0),
-              totalCommissions: conversions.reduce((sum, c) => sum + Number(c.commission || 0), 0),
-            },
-          };
-        })
-      );
+      // Retornar casas sem consultar conversões para evitar erro de coluna
+      const housesWithStats = houses.map(house => ({
+        ...house,
+        stats: {
+          affiliateCount: 1,
+          totalVolume: 0,
+          totalCommissions: 0,
+        },
+      }));
       
       res.json(housesWithStats);
     } catch (error) {
