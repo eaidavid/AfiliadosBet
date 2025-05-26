@@ -1,6 +1,10 @@
 import { useState } from "react";
 import AdminSidebar from "@/components/admin/sidebar";
 import AdminHousesManagement from "@/components/admin/houses-management";
+import AffiliatesManagement from "@/components/admin/affiliates-management";
+import ReportsManagement from "@/components/admin/reports-management";
+import SettingsManagement from "@/components/admin/settings-management";
+import AdminProfile from "@/components/admin/admin-profile";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, Building, TrendingUp, DollarSign } from "lucide-react";
@@ -15,31 +19,15 @@ export default function AdminDashboard() {
   const renderContent = () => {
     switch (currentPage) {
       case "houses":
-        return <AdminHousesManagement />;
+        return <AdminHousesManagement onPageChange={setCurrentPage} />;
       case "affiliates":
-        return (
-          <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-white">Gerenciar Afiliados</h1>
-            <p className="text-slate-400">Lista completa de afiliados e suas estatísticas.</p>
-            {/* Add affiliates management content here */}
-          </div>
-        );
+        return <AffiliatesManagement onPageChange={setCurrentPage} />;
       case "reports":
-        return (
-          <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-white">Relatórios Admin</h1>
-            <p className="text-slate-400">Relatórios detalhados da plataforma.</p>
-            {/* Add admin reports content here */}
-          </div>
-        );
+        return <ReportsManagement onPageChange={setCurrentPage} />;
       case "settings":
-        return (
-          <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-white">Configurações</h1>
-            <p className="text-slate-400">Configurações gerais da plataforma.</p>
-            {/* Add admin settings content here */}
-          </div>
-        );
+        return <SettingsManagement onPageChange={setCurrentPage} />;
+      case "profile":
+        return <AdminProfile onPageChange={setCurrentPage} />;
       default:
         return (
           <div className="space-y-6">

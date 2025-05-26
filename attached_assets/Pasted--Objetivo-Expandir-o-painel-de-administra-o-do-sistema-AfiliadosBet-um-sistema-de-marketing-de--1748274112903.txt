@@ -1,0 +1,167 @@
+🎯 Objetivo:
+Expandir o painel de administração do sistema AfiliadosBet, um sistema de marketing de afiliados voltado para apostas. As páginas "Dashboard" e "Casas de Apostas" já foram desenvolvidas. Agora, criar as páginas:
+
+Afiliados
+
+Relatórios
+
+Configurações
+
+Meu Perfil (do Admin)
+
+Todas as páginas devem seguir o design atual: moderno, escuro, elegante e responsivo. Utilizar framework React com Tailwind e biblioteca de componentes como ShadCN/UI.
+
+👥 Página: Afiliados
+Objetivo:
+Gerenciar os afiliados cadastrados na plataforma.
+
+Funcionalidades:
+Tabela de afiliados com:
+
+Usuário (subid)
+
+Nome completo
+
+Email
+
+CPF
+
+Data de cadastro
+
+Status (Ativo/Inativo)
+
+Total de casas afiliadas
+
+Botão: "Ver detalhes"
+
+Ação: Bloquear / Ativar conta
+
+Filtro por:
+
+Status
+
+Data de cadastro
+
+Nome ou subid
+
+Modal “Ver Detalhes” com:
+
+Informações completas do afiliado
+
+Casas de apostas que ele está afiliado
+
+Comissões geradas
+
+Histórico de ações (registros, cliques, depósitos, postbacks)
+
+Botão "Resetar Senha"
+
+Botão "Excluir conta"
+
+📈 Página: Relatórios
+Objetivo:
+Acompanhar dados agregados e por afiliado.
+
+Sessões:
+1. Relatório Geral
+Gráficos e métricas:
+
+Total de cliques
+
+Total de registros
+
+Total de depósitos
+
+Receita por tipo de comissão (RevShare / CPA)
+
+Casas mais rentáveis
+
+Afiliados mais lucrativos
+
+2. Relatório por Afiliado
+Selecionar afiliado (dropdown)
+
+Exibir:
+
+Tabela de eventos (cliques, registros, depósitos)
+
+Comissões geradas
+
+Comparativo por casa de aposta
+
+Exportar CSV
+
+3. Relatório por Casa de Aposta
+Selecionar casa
+
+Exibir:
+
+Total de afiliados ativos
+
+Total de tráfego enviado
+
+Receita gerada
+
+⚙️ Página: Configurações
+Objetivo:
+Ajustes gerais da plataforma.
+
+Sessões:
+1. Configurações do Sistema
+Nome do sistema
+
+Email de suporte
+
+API Key geral para integração
+
+Domínio principal
+
+URL base para postbacks
+
+2. Configurações de Comissão Padrão
+Valor padrão de RevShare (%)
+
+Valor padrão de CPA (R$)
+
+Regras adicionais por casa (opcional)
+
+3. Parâmetros Globais
+Permitir múltiplas afiliações por casa: Sim/Não
+
+Permitir edição de perfil pelo afiliado: Sim/Não
+
+Tema padrão (claro/escuro)
+
+👑 Página: Meu Perfil (Admin)
+Objetivo:
+Gerenciar os dados pessoais e de acesso do administrador.
+
+Conteúdo:
+Nome do admin
+
+Email
+
+Imagem de perfil (opcional)
+
+Alterar senha:
+
+Senha atual
+
+Nova senha
+
+Confirmar nova senha
+
+Botão "Salvar alterações"
+
+🧩 Requisitos Técnicos Comuns
+Utilizar React + TailwindCSS
+
+Usar componentes modernos e responsivos com ShadCN/UI
+
+Usar ícones de lucide-react
+
+Design escuro, elegante, coeso com o restante do sistema
+
+Sidebar com submenu recolhível (se necessário)
+
+Topbar com opções: Notificações, Perfil, Tema claro/escuro
