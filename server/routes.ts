@@ -414,6 +414,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const houseId = parseInt(req.params.id);
       const userId = req.session.user.id;
       
+      console.log("Afiliação solicitada:", { userId, houseId, userRole: req.session.user.role });
+      
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      
       // Verificar se já está afiliado
       const existingLink = await storage.getAffiliateLinkByUserAndHouse(userId, houseId);
       if (existingLink) {
@@ -423,11 +430,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const house = await storage.getBettingHouseById(houseId);
       if (!house) {
         return res.status(404).json({ message: "Casa de apostas não encontrada" });
-      }
-      
-      const user = await storage.getUserById(userId);
-      if (!user) {
-        return res.status(404).json({ message: "Usuário não encontrado" });
       }
       
       // Gerar URL de afiliado
@@ -440,9 +442,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isActive: true,
       });
       
+      console.log("Link criado:", affiliateLink);
+      
       // Garantir que retorna JSON válido
       res.setHeader('Content-Type', 'application/json');
-      res.status(201).json({ 
+      res.status(200).json({ 
         success: true,
         message: "Afiliado com sucesso", 
         link: affiliateLink 
