@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { db } from "./db";
 import { affiliateLinks } from "@shared/schema";
@@ -1044,5 +1045,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  
+  // Configurar WebSocket para atualizações em tempo real
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  const clients = new Set<WebSocket>();
+  
+  wss.on('connection', (ws) => {
+    clients.add(ws);
+    console.log('Cliente WebSocket conectado');
+    
+    ws.on('close', () => {
+      clients.delete(ws);
+      console.log('Cliente WebSocket desconectado');
+    });
+  });
+  
+  // Função global para broadcast
+  (global as any).broadcast = (data: any) => {
+    const message = JSON.stringify(data);
+    clients.forEach(client => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    });
+  };
+  
   return httpServer;
 }
