@@ -5,7 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { MousePointer, UserPlus, CreditCard, DollarSign, Copy, BarChart3, Unlink, Link as LinkIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-export default function MyLinks() {
+interface MyLinksProps {
+  onPageChange?: (page: string) => void;
+}
+
+export default function MyLinks({ onPageChange }: MyLinksProps) {
   const { toast } = useToast();
 
   const { data: links, isLoading } = useQuery({
@@ -180,7 +184,10 @@ export default function MyLinks() {
             <p className="text-slate-400 mb-6">
               Você ainda não se afiliou a nenhuma casa de apostas. Comece agora!
             </p>
-            <Button className="bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white">
+            <Button 
+              onClick={() => onPageChange?.('houses')}
+              className="bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white"
+            >
               Ver Casas Disponíveis
             </Button>
           </CardContent>

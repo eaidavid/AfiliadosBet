@@ -8,7 +8,11 @@ import { Building, Search, Plus, Link as LinkIcon, Check } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
-export default function BettingHouses() {
+interface BettingHousesProps {
+  onPageChange?: (page: string) => void;
+}
+
+export default function BettingHouses({ onPageChange }: BettingHousesProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();

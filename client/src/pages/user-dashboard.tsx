@@ -19,9 +19,9 @@ export default function UserDashboard() {
   const renderContent = () => {
     switch (currentPage) {
       case "houses":
-        return <BettingHouses />;
+        return <BettingHouses onPageChange={setCurrentPage} />;
       case "links":
-        return <MyLinks />;
+        return <MyLinks onPageChange={setCurrentPage} />;
       case "dashboard":
         return (
           <div className="space-y-6">
