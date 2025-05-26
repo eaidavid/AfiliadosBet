@@ -565,12 +565,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Postback routes completas para capturar todos os eventos das casas de apostas
+  // Postbacks únicos para cada casa de apostas
   
-  // 1. Postback para cliques (quando alguém clica no link do afiliado)
-  app.get("/api/postback/click", async (req, res) => {
+  // BRAZINO - Postbacks específicos
+  app.get("/api/postback/brazino/click", async (req, res) => {
     try {
-      const { house, subid, customer_id, ...otherParams } = req.query;
+      const { subid, customer_id, ...otherParams } = req.query;
       
       const user = await storage.getUserByUsername(subid as string);
       if (!user) {
@@ -578,15 +578,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const bettingHouses = await storage.getAllBettingHouses();
-      const targetHouse = bettingHouses.find(h => h.name.toLowerCase().replace(/\s+/g, '') === house);
-      if (!targetHouse) {
-        return res.status(404).json({ message: "Betting house not found" });
+      const brazinoHouse = bettingHouses.find(h => h.name.toLowerCase() === 'brazino');
+      if (!brazinoHouse) {
+        return res.status(404).json({ message: "Brazino house not found" });
       }
       
-      // Registrar clique como conversão
       await storage.createConversion({
         userId: user.id,
-        houseId: targetHouse.id,
+        houseId: brazinoHouse.id,
         affiliateLinkId: null,
         type: "click",
         amount: "0",
@@ -595,10 +594,275 @@ export async function registerRoutes(app: Express): Promise<Server> {
         conversionData: otherParams,
       });
       
-      res.json({ message: "Click tracked successfully" });
+      res.json({ message: "Brazino click tracked successfully" });
     } catch (error) {
-      console.error("Postback click error:", error);
-      res.status(500).json({ message: "Failed to track click" });
+      console.error("Brazino postback click error:", error);
+      res.status(500).json({ message: "Failed to track Brazino click" });
+    }
+  });
+
+  app.get("/api/postback/brazino/registration", async (req, res) => {
+    try {
+      const { subid, customer_id, ...otherParams } = req.query;
+      
+      const user = await storage.getUserByUsername(subid as string);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const bettingHouses = await storage.getAllBettingHouses();
+      const brazinoHouse = bettingHouses.find(h => h.name.toLowerCase() === 'brazino');
+      if (!brazinoHouse) {
+        return res.status(404).json({ message: "Brazino house not found" });
+      }
+      
+      // Brazino usa RevShare, então não paga por registro
+      await storage.createConversion({
+        userId: user.id,
+        houseId: brazinoHouse.id,
+        affiliateLinkId: null,
+        type: "registration",
+        amount: "0",
+        commission: "0",
+        customerId: customer_id as string || null,
+        conversionData: otherParams,
+      });
+      
+      res.json({ message: "Brazino registration tracked successfully" });
+    } catch (error) {
+      console.error("Brazino postback registration error:", error);
+      res.status(500).json({ message: "Failed to track Brazino registration" });
+    }
+  });
+
+  app.get("/api/postback/brazino/deposit", async (req, res) => {
+    try {
+      const { subid, customer_id, amount, ...otherParams } = req.query;
+      
+      const user = await storage.getUserByUsername(subid as string);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const bettingHouses = await storage.getAllBettingHouses();
+      const brazinoHouse = bettingHouses.find(h => h.name.toLowerCase() === 'brazino');
+      if (!brazinoHouse) {
+        return res.status(404).json({ message: "Brazino house not found" });
+      }
+      
+      // Brazino: 30% RevShare sobre depósitos
+      const percentage = 30;
+      const commission = (parseFloat(amount as string) * percentage) / 100;
+      
+      await storage.createConversion({
+        userId: user.id,
+        houseId: brazinoHouse.id,
+        affiliateLinkId: null,
+        type: "deposit",
+        amount: amount as string,
+        commission: commission.toString(),
+        customerId: customer_id as string || null,
+        conversionData: otherParams,
+      });
+      
+      res.json({ 
+        message: "Brazino deposit tracked successfully", 
+        commission,
+        house: "Brazino"
+      });
+    } catch (error) {
+      console.error("Brazino postback deposit error:", error);
+      res.status(500).json({ message: "Failed to track Brazino deposit" });
+    }
+  });
+
+  app.get("/api/postback/brazino/profit", async (req, res) => {
+    try {
+      const { subid, customer_id, amount, ...otherParams } = req.query;
+      
+      const user = await storage.getUserByUsername(subid as string);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const bettingHouses = await storage.getAllBettingHouses();
+      const brazinoHouse = bettingHouses.find(h => h.name.toLowerCase() === 'brazino');
+      if (!brazinoHouse) {
+        return res.status(404).json({ message: "Brazino house not found" });
+      }
+      
+      // Brazino: 30% RevShare sobre profit
+      const percentage = 30;
+      const commission = (parseFloat(amount as string) * percentage) / 100;
+      
+      await storage.createConversion({
+        userId: user.id,
+        houseId: brazinoHouse.id,
+        affiliateLinkId: null,
+        type: "profit",
+        amount: amount as string,
+        commission: commission.toString(),
+        customerId: customer_id as string || null,
+        conversionData: otherParams,
+      });
+      
+      res.json({ 
+        message: "Brazino profit tracked successfully", 
+        commission,
+        house: "Brazino"
+      });
+    } catch (error) {
+      console.error("Brazino postback profit error:", error);
+      res.status(500).json({ message: "Failed to track Brazino profit" });
+    }
+  });
+
+  // BET365 - Postbacks específicos (CPA R$ 150)
+  app.get("/api/postback/bet365/click", async (req, res) => {
+    try {
+      const { subid, customer_id, ...otherParams } = req.query;
+      
+      const user = await storage.getUserByUsername(subid as string);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const bettingHouses = await storage.getAllBettingHouses();
+      const bet365House = bettingHouses.find(h => h.name.toLowerCase() === 'bet365');
+      if (!bet365House) {
+        return res.status(404).json({ message: "Bet365 house not found" });
+      }
+      
+      await storage.createConversion({
+        userId: user.id,
+        houseId: bet365House.id,
+        affiliateLinkId: null,
+        type: "click",
+        amount: "0",
+        commission: "0",
+        customerId: customer_id as string || null,
+        conversionData: otherParams,
+      });
+      
+      res.json({ message: "Bet365 click tracked successfully" });
+    } catch (error) {
+      console.error("Bet365 postback click error:", error);
+      res.status(500).json({ message: "Failed to track Bet365 click" });
+    }
+  });
+
+  app.get("/api/postback/bet365/registration", async (req, res) => {
+    try {
+      const { subid, customer_id, ...otherParams } = req.query;
+      
+      const user = await storage.getUserByUsername(subid as string);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const bettingHouses = await storage.getAllBettingHouses();
+      const bet365House = bettingHouses.find(h => h.name.toLowerCase() === 'bet365');
+      if (!bet365House) {
+        return res.status(404).json({ message: "Bet365 house not found" });
+      }
+      
+      // Bet365: CPA R$ 150 por registro
+      const commission = 150;
+      
+      await storage.createConversion({
+        userId: user.id,
+        houseId: bet365House.id,
+        affiliateLinkId: null,
+        type: "registration",
+        amount: "0",
+        commission: commission.toString(),
+        customerId: customer_id as string || null,
+        conversionData: otherParams,
+      });
+      
+      res.json({ 
+        message: "Bet365 registration tracked successfully", 
+        commission,
+        house: "Bet365"
+      });
+    } catch (error) {
+      console.error("Bet365 postback registration error:", error);
+      res.status(500).json({ message: "Failed to track Bet365 registration" });
+    }
+  });
+
+  // PIXBET - Postbacks específicos (RevShare 25%)
+  app.get("/api/postback/pixbet/click", async (req, res) => {
+    try {
+      const { subid, customer_id, ...otherParams } = req.query;
+      
+      const user = await storage.getUserByUsername(subid as string);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const bettingHouses = await storage.getAllBettingHouses();
+      const pixbetHouse = bettingHouses.find(h => h.name.toLowerCase() === 'pixbet');
+      if (!pixbetHouse) {
+        return res.status(404).json({ message: "Pixbet house not found" });
+      }
+      
+      await storage.createConversion({
+        userId: user.id,
+        houseId: pixbetHouse.id,
+        affiliateLinkId: null,
+        type: "click",
+        amount: "0",
+        commission: "0",
+        customerId: customer_id as string || null,
+        conversionData: otherParams,
+      });
+      
+      res.json({ message: "Pixbet click tracked successfully" });
+    } catch (error) {
+      console.error("Pixbet postback click error:", error);
+      res.status(500).json({ message: "Failed to track Pixbet click" });
+    }
+  });
+
+  app.get("/api/postback/pixbet/deposit", async (req, res) => {
+    try {
+      const { subid, customer_id, amount, ...otherParams } = req.query;
+      
+      const user = await storage.getUserByUsername(subid as string);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const bettingHouses = await storage.getAllBettingHouses();
+      const pixbetHouse = bettingHouses.find(h => h.name.toLowerCase() === 'pixbet');
+      if (!pixbetHouse) {
+        return res.status(404).json({ message: "Pixbet house not found" });
+      }
+      
+      // Pixbet: 25% RevShare sobre depósitos
+      const percentage = 25;
+      const commission = (parseFloat(amount as string) * percentage) / 100;
+      
+      await storage.createConversion({
+        userId: user.id,
+        houseId: pixbetHouse.id,
+        affiliateLinkId: null,
+        type: "deposit",
+        amount: amount as string,
+        commission: commission.toString(),
+        customerId: customer_id as string || null,
+        conversionData: otherParams,
+      });
+      
+      res.json({ 
+        message: "Pixbet deposit tracked successfully", 
+        commission,
+        house: "Pixbet"
+      });
+    } catch (error) {
+      console.error("Pixbet postback deposit error:", error);
+      res.status(500).json({ message: "Failed to track Pixbet deposit" });
     }
   });
 
