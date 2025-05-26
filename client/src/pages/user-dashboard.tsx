@@ -35,41 +35,7 @@ export default function UserDashboard() {
       case "profile":
         return <Profile onPageChange={setCurrentPage} />;
       case "dashboard":
-        return (
-          <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-white">Dashboard Detalhado</h1>
-            <p className="text-slate-400">Análise completa do seu desempenho como afiliado.</p>
-            {/* Add detailed dashboard content here */}
-          </div>
-        );
-            <p className="text-slate-400">Configure sua forma de recebimento e acompanhe o histórico.</p>
-            {/* Add payments content here */}
-          </div>
-        );
-      case "reports":
-        return (
-          <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-white">Relatórios</h1>
-            <p className="text-slate-400">Relatórios detalhados por período e casa de apostas.</p>
-            {/* Add reports content here */}
-          </div>
-        );
-      case "support":
-        return (
-          <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-white">Suporte</h1>
-            <p className="text-slate-400">Entre em contato conosco para tirar suas dúvidas.</p>
-            {/* Add support content here */}
-          </div>
-        );
-      case "profile":
-        return (
-          <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-white">Meu Perfil</h1>
-            <p className="text-slate-400">Gerencie suas informações pessoais e configurações.</p>
-            {/* Add profile content here */}
-          </div>
-        );
+        return <Reports onPageChange={setCurrentPage} />;
       default:
         return (
           <div className="space-y-6">
