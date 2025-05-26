@@ -290,6 +290,183 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin Affiliates Management
+  app.get("/api/admin/affiliates", requireAdmin, async (req, res) => {
+    try {
+      const affiliates = await storage.getAllAffiliates();
+      res.json(affiliates);
+    } catch (error) {
+      console.error("Get affiliates error:", error);
+      res.status(500).json({ message: "Failed to get affiliates" });
+    }
+  });
+
+  app.put("/api/admin/affiliates/:id/status", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { isActive } = req.body;
+      await storage.updateUserStatus(id, isActive);
+      res.json({ message: "Affiliate status updated successfully" });
+    } catch (error) {
+      console.error("Update affiliate status error:", error);
+      res.status(500).json({ message: "Failed to update affiliate status" });
+    }
+  });
+
+  app.post("/api/admin/affiliates/:id/reset-password", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.resetUserPassword(id);
+      res.json({ message: "Password reset successfully" });
+    } catch (error) {
+      console.error("Reset password error:", error);
+      res.status(500).json({ message: "Failed to reset password" });
+    }
+  });
+
+  app.delete("/api/admin/affiliates/:id", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteUser(id);
+      res.json({ message: "Affiliate deleted successfully" });
+    } catch (error) {
+      console.error("Delete affiliate error:", error);
+      res.status(500).json({ message: "Failed to delete affiliate" });
+    }
+  });
+
+  // Admin Reports
+  app.get("/api/admin/reports/general", requireAdmin, async (req, res) => {
+    try {
+      const stats = await storage.getAdminStats();
+      const topAffiliates = await storage.getTopAffiliates(10);
+      const topHouses = await storage.getTopHouses(10);
+      
+      res.json({
+        totalClicks: stats.totalVolume,
+        totalRegistrations: 0,
+        totalDeposits: 0,
+        totalRevenue: stats.paidCommissions,
+        topAffiliates,
+        topHouses,
+      });
+    } catch (error) {
+      console.error("Get general reports error:", error);
+      res.status(500).json({ message: "Failed to get general reports" });
+    }
+  });
+
+  app.get("/api/admin/reports/affiliate/:id", requireAdmin, async (req, res) => {
+    try {
+      const affiliateId = parseInt(req.params.id);
+      const stats = await storage.getUserStats(affiliateId);
+      res.json({
+        totalClicks: stats.totalClicks,
+        totalRegistrations: stats.totalRegistrations,
+        totalDeposits: stats.totalDeposits,
+        totalCommission: stats.totalCommission,
+        events: [], // Implementar eventos específicos se necessário
+      });
+    } catch (error) {
+      console.error("Get affiliate report error:", error);
+      res.status(500).json({ message: "Failed to get affiliate report" });
+    }
+  });
+
+  app.get("/api/admin/reports/house/:id", requireAdmin, async (req, res) => {
+    try {
+      const houseId = parseInt(req.params.id);
+      const conversions = await storage.getConversionsByHouseId(houseId);
+      
+      res.json({
+        activeAffiliates: 0,
+        totalTraffic: 0,
+        conversions: conversions.length,
+        revenue: 0,
+        topAffiliates: [],
+      });
+    } catch (error) {
+      console.error("Get house report error:", error);
+      res.status(500).json({ message: "Failed to get house report" });
+    }
+  });
+
+  // Admin Settings
+  app.get("/api/admin/settings/system", requireAdmin, async (req, res) => {
+    try {
+      // Retornar configurações padrão ou de um banco de configurações
+      res.json({
+        systemName: "AfiliadosBet",
+        supportEmail: "suporte@afiliadosbet.com",
+        apiKey: "ak_" + Math.random().toString(36).substring(2),
+        mainDomain: "afiliadosbet.com",
+        postbackBaseUrl: "https://api.afiliadosbet.com/postback",
+      });
+    } catch (error) {
+      console.error("Get system settings error:", error);
+      res.status(500).json({ message: "Failed to get system settings" });
+    }
+  });
+
+  app.get("/api/admin/settings/commission", requireAdmin, async (req, res) => {
+    try {
+      res.json({
+        defaultRevShare: 30,
+        defaultCPA: 50,
+      });
+    } catch (error) {
+      console.error("Get commission settings error:", error);
+      res.status(500).json({ message: "Failed to get commission settings" });
+    }
+  });
+
+  app.get("/api/admin/settings/global", requireAdmin, async (req, res) => {
+    try {
+      res.json({
+        allowMultipleAffiliations: true,
+        allowProfileEditing: true,
+        defaultTheme: "dark",
+      });
+    } catch (error) {
+      console.error("Get global settings error:", error);
+      res.status(500).json({ message: "Failed to get global settings" });
+    }
+  });
+
+  // User Events for Reports
+  app.get("/api/user/events", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.session.user.id;
+      // Retornar eventos do usuário (por enquanto vazio)
+      res.json([]);
+    } catch (error) {
+      console.error("Get user events error:", error);
+      res.status(500).json({ message: "Failed to get user events" });
+    }
+  });
+
+  // User Payment Config
+  app.get("/api/user/payment-config", requireAuth, async (req: any, res) => {
+    try {
+      // Retornar configuração de pagamento do usuário
+      res.json({});
+    } catch (error) {
+      console.error("Get payment config error:", error);
+      res.status(500).json({ message: "Failed to get payment config" });
+    }
+  });
+
+  app.get("/api/user/payments", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.session.user.id;
+      const payments = await storage.getPaymentsByUserId(userId);
+      res.json(payments);
+    } catch (error) {
+      console.error("Get user payments error:", error);
+      res.status(500).json({ message: "Failed to get user payments" });
+    }
+  });
+
   app.get("/api/admin/betting-houses", requireAdmin, async (req, res) => {
     try {
       const houses = await storage.getAllBettingHouses();

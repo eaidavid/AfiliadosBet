@@ -77,6 +77,12 @@ export interface IStorage {
   
   getTopAffiliates(limit?: number): Promise<Array<User & { totalCommission: number }>>;
   getTopHouses(limit?: number): Promise<Array<BettingHouse & { totalVolume: number; affiliateCount: number }>>;
+  
+  // Additional admin operations
+  getAllAffiliates(): Promise<Array<User & { affiliateHouses?: number }>>;
+  updateUserStatus(id: number, isActive: boolean): Promise<void>;
+  resetUserPassword(id: number): Promise<void>;
+  deleteUser(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -430,6 +436,52 @@ export class DatabaseStorage implements IStorage {
       totalVolume: row.totalVolume || 0,
       affiliateCount: row.affiliateCount || 0,
     }));
+  }
+
+  async getAllAffiliates(): Promise<Array<User & { affiliateHouses?: number }>> {
+    // Buscar todos os usuários que não são admin
+    const affiliatesWithStats = await db
+      .select({
+        ...users,
+        affiliateHouses: sql<number>`COALESCE(COUNT(${affiliateLinks.id}), 0)`,
+      })
+      .from(users)
+      .leftJoin(affiliateLinks, eq(users.id, affiliateLinks.userId))
+      .where(or(eq(users.role, 'affiliate'), isNull(users.role)))
+      .groupBy(users.id);
+
+    return affiliatesWithStats;
+  }
+
+  async updateUserStatus(id: number, isActive: boolean): Promise<void> {
+    await db
+      .update(users)
+      .set({ isActive })
+      .where(eq(users.id, id));
+  }
+
+  async resetUserPassword(id: number): Promise<void> {
+    // Gerar nova senha temporária
+    const tempPassword = Math.random().toString(36).slice(-8);
+    const hashedPassword = await bcrypt.hash(tempPassword, 10);
+    
+    await db
+      .update(users)
+      .set({ password: hashedPassword })
+      .where(eq(users.id, id));
+    
+    // Em uma implementação real, enviaria email com a nova senha
+    console.log(`New password for user ${id}: ${tempPassword}`);
+  }
+
+  async deleteUser(id: number): Promise<void> {
+    // Primeiro, excluir dados relacionados
+    await db.delete(affiliateLinks).where(eq(affiliateLinks.userId, id));
+    await db.delete(clickTracking).where(eq(clickTracking.userId, id));
+    await db.delete(payments).where(eq(payments.userId, id));
+    
+    // Depois, excluir o usuário
+    await db.delete(users).where(eq(users.id, id));
   }
 }
 
