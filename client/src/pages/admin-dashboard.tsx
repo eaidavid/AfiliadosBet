@@ -170,7 +170,7 @@ export default function AdminDashboard() {
                         </div>
                         <div className="text-right">
                           <p className="text-emerald-500 font-semibold">
-                            R$ {house.totalVolume?.toFixed(2) || "0.00"}
+                            R$ {(Number(house.totalVolume) || 0).toFixed(2)}
                           </p>
                           <p className="text-green-400 text-sm">+12.5%</p>
                         </div>
