@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -242,22 +243,13 @@ export default function ReportsManagement({ onPageChange }: ReportsManagementPro
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="relative w-64">
-                    <Input
-                      placeholder="Buscar afiliado..."
-                      value={affiliateSearch}
-                      onChange={(e) => setAffiliateSearch(e.target.value)}
-                      className="bg-slate-700 border-slate-600 text-white pr-10"
-                    />
-                    <Search className="h-4 w-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
-                  </div>
                   <Select value={selectedAffiliate} onValueChange={setSelectedAffiliate}>
                     <SelectTrigger className="w-64 bg-slate-700 border-slate-600 text-white">
                       <SelectValue placeholder="Selecionar Afiliado" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Todos os Afiliados</SelectItem>
-                      {filteredAffiliates.map((affiliate: any) => (
+                      {affiliates?.map((affiliate: any) => (
                         <SelectItem key={affiliate.id} value={affiliate.id.toString()}>
                           {affiliate.fullName} ({affiliate.username})
                         </SelectItem>
