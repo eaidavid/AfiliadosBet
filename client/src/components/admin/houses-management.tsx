@@ -19,9 +19,11 @@ import { insertBettingHouseSchema, type InsertBettingHouse } from "@shared/schem
 function generatePostbackPreview(houseName: string, primaryParam: string) {
   const houseNameLower = houseName.toLowerCase().replace(/\s+/g, '');
   return {
-    registration: `/api/postback/registration?house=${houseNameLower}&${primaryParam}={${primaryParam}}&customer_id={customer_id}`,
-    deposit: `/api/postback/deposit?house=${houseNameLower}&${primaryParam}={${primaryParam}}&amount={amount}&customer_id={customer_id}`,
-    profit: `/api/postback/profit?house=${houseNameLower}&${primaryParam}={${primaryParam}}&amount={amount}&customer_id={customer_id}`
+    click: `/api/postback/click?house=${houseNameLower}&subid={subid}&customer_id={customer_id}`,
+    registration: `/api/postback/registration?house=${houseNameLower}&subid={subid}&customer_id={customer_id}`,
+    deposit: `/api/postback/deposit?house=${houseNameLower}&subid={subid}&amount={amount}&customer_id={customer_id}`,
+    'recurring-deposit': `/api/postback/recurring-deposit?house=${houseNameLower}&subid={subid}&amount={amount}&customer_id={customer_id}`,
+    profit: `/api/postback/profit?house=${houseNameLower}&subid={subid}&amount={amount}&customer_id={customer_id}`
   };
 }
 
@@ -329,6 +331,12 @@ export default function AdminHousesManagement() {
                   <h4 className="text-lg font-semibold text-white mb-3">Preview das Rotas de Postback</h4>
                   <div className="space-y-2 text-sm">
                     <div>
+                      <span className="text-emerald-400 font-semibold">Click:</span>
+                      <span className="text-slate-300 font-mono ml-2 break-all text-xs">
+                        /api/postback/click?house={form.watch("name").toLowerCase()}&subid={`{subid}`}&customer_id={`{customer_id}`}
+                      </span>
+                    </div>
+                    <div>
                       <span className="text-emerald-400 font-semibold">Registration:</span>
                       <span className="text-slate-300 font-mono ml-2 break-all text-xs">
                         /api/postback/registration?house={form.watch("name").toLowerCase()}&subid={`{subid}`}&customer_id={`{customer_id}`}
@@ -338,6 +346,12 @@ export default function AdminHousesManagement() {
                       <span className="text-emerald-400 font-semibold">Deposit:</span>
                       <span className="text-slate-300 font-mono ml-2 break-all text-xs">
                         /api/postback/deposit?house={form.watch("name").toLowerCase()}&subid={`{subid}`}&amount={`{amount}`}&customer_id={`{customer_id}`}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-emerald-400 font-semibold">Recurring Deposit:</span>
+                      <span className="text-slate-300 font-mono ml-2 break-all text-xs">
+                        /api/postback/recurring-deposit?house={form.watch("name").toLowerCase()}&subid={`{subid}`}&amount={`{amount}`}&customer_id={`{customer_id}`}
                       </span>
                     </div>
                     <div>
@@ -499,22 +513,76 @@ export default function AdminHousesManagement() {
                   <div>
                     <h4 className="text-lg font-semibold text-white mb-3">Postbacks</h4>
                     <div className="space-y-2 text-sm">
-                      {Object.entries(generatePostbackPreview(house.name, house.primaryParam)).map(([event, url]) => (
-                        <div key={event} className="flex justify-between items-center">
-                          <span className="text-slate-400 capitalize">{event}:</span>
-                          <div className="flex items-center space-x-2">
-                            <span className="text-emerald-400 text-xs">Ativo</span>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => navigator.clipboard.writeText(window.location.origin + url)}
-                              className="h-6 w-6 p-0 text-slate-400 hover:text-white"
-                            >
-                              <ExternalLink className="h-3 w-3" />
-                            </Button>
-                          </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400">Click:</span>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-emerald-400 text-xs">Ativo</span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => navigator.clipboard.writeText(window.location.origin + `/api/postback/click?house=${house.name.toLowerCase()}&subid={subid}&customer_id={customer_id}`)}
+                            className="h-6 w-6 p-0 text-slate-400 hover:text-white"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                          </Button>
                         </div>
-                      ))}
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400">Registration:</span>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-emerald-400 text-xs">Ativo</span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => navigator.clipboard.writeText(window.location.origin + `/api/postback/registration?house=${house.name.toLowerCase()}&subid={subid}&customer_id={customer_id}`)}
+                            className="h-6 w-6 p-0 text-slate-400 hover:text-white"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400">Deposit:</span>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-emerald-400 text-xs">Ativo</span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => navigator.clipboard.writeText(window.location.origin + `/api/postback/deposit?house=${house.name.toLowerCase()}&subid={subid}&amount={amount}&customer_id={customer_id}`)}
+                            className="h-6 w-6 p-0 text-slate-400 hover:text-white"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400">Recurring Deposit:</span>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-emerald-400 text-xs">Ativo</span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => navigator.clipboard.writeText(window.location.origin + `/api/postback/recurring-deposit?house=${house.name.toLowerCase()}&subid={subid}&amount={amount}&customer_id={customer_id}`)}
+                            className="h-6 w-6 p-0 text-slate-400 hover:text-white"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-400">Profit:</span>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-emerald-400 text-xs">Ativo</span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => navigator.clipboard.writeText(window.location.origin + `/api/postback/profit?house=${house.name.toLowerCase()}&subid={subid}&amount={amount}&customer_id={customer_id}`)}
+                            className="h-6 w-6 p-0 text-slate-400 hover:text-white"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
