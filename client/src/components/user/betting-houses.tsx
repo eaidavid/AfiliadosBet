@@ -23,8 +23,31 @@ export default function BettingHouses({ onPageChange }: BettingHousesProps) {
 
   const affiliateMutation = useMutation({
     mutationFn: async (houseId: number) => {
-      const response = await apiRequest("POST", `/api/betting-houses/${houseId}/affiliate`);
-      return response.json();
+      try {
+        const response = await apiRequest("POST", `/api/betting-houses/${houseId}/affiliate`);
+        
+        // Verificar se a resposta é válida
+        const text = await response.text();
+        
+        // Se for vazio, retornar sucesso padrão
+        if (!text || text.trim() === '') {
+          return { success: true, message: "Afiliado com sucesso" };
+        }
+        
+        // Tentar fazer parse do JSON
+        try {
+          return JSON.parse(text);
+        } catch (parseError) {
+          // Se não for JSON válido, mas a resposta foi ok, considerar sucesso
+          if (response.ok) {
+            return { success: true, message: "Afiliado com sucesso" };
+          }
+          throw new Error("Resposta inválida do servidor");
+        }
+      } catch (error: any) {
+        // Se for erro de rede/conexão, relançar
+        throw error;
+      }
     },
     onSuccess: (data) => {
       toast({
