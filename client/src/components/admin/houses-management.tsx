@@ -137,6 +137,7 @@ export default function AdminHousesManagement() {
 
   const handleEdit = (house: any) => {
     setEditingHouse(house);
+    setIsAddModalOpen(true);
     form.reset({
       name: house.name,
       description: house.description || "",
