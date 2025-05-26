@@ -83,12 +83,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid user data" });
       }
       
+      // Verificar se já existe usuário com mesmo username
+      const existingUsername = await storage.getUserByUsername(result.data.username);
+      if (existingUsername) {
+        return res.status(400).json({ message: "Nome de usuário já está em uso" });
+      }
+      
+      // Verificar se já existe usuário com mesmo email
+      const existingEmail = await storage.getUserByEmail(result.data.email);
+      if (existingEmail) {
+        return res.status(400).json({ message: "Email já está em uso" });
+      }
+      
+      // Verificar se já existe usuário com mesmo CPF
+      const users = await storage.getAllAffiliates();
+      const existingCpf = users.find(user => user.cpf === result.data.cpf);
+      if (existingCpf) {
+        return res.status(400).json({ message: "CPF já está em uso" });
+      }
+      
       const user = await storage.createUser(result.data);
       req.session.user = user;
       res.json(user);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Registration error:", error);
-      res.status(500).json({ message: "Registration failed" });
+      
+      // Verificar se é erro de constraint unique do banco
+      if (error.message && error.message.includes('unique')) {
+        if (error.message.includes('username')) {
+          return res.status(400).json({ message: "Nome de usuário já está em uso" });
+        }
+        if (error.message.includes('email')) {
+          return res.status(400).json({ message: "Email já está em uso" });
+        }
+        if (error.message.includes('cpf')) {
+          return res.status(400).json({ message: "CPF já está em uso" });
+        }
+      }
+      
+      res.status(500).json({ message: "Falha no registro" });
     }
   });
 
