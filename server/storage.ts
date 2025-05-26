@@ -178,13 +178,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteBettingHouse(id: number): Promise<void> {
-    // Primeiro, deletar todas as conversões relacionadas à casa de apostas
-    await db.delete(conversions).where(eq(conversions.houseId, id));
-    
-    // Depois, deletar todos os links de afiliados relacionados
-    await db.delete(affiliateLinks).where(eq(affiliateLinks.houseId, id));
-    
-    // Por fim, deletar a casa de apostas
     await db.delete(bettingHouses).where(eq(bettingHouses.id, id));
   }
 

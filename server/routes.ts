@@ -559,9 +559,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       await storage.deleteBettingHouse(id);
       res.json({ message: "Betting house deleted successfully" });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Delete betting house error:", error);
-      res.status(500).json({ message: "Failed to delete betting house" });
+      
+      // Verificar se é erro de chave estrangeira
+      if (error.code === '23503' && error.constraint === 'conversions_house_id_betting_houses_id_fk') {
+        res.status(400).json({ 
+          message: "Não é possível excluir esta casa de apostas pois ela possui conversões registradas. Para manter a integridade dos dados históricos, desative a casa em vez de excluí-la.",
+          type: "FOREIGN_KEY_CONSTRAINT"
+        });
+      } else {
+        res.status(500).json({ message: "Failed to delete betting house" });
+      }
     }
   });
 
