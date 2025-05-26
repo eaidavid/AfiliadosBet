@@ -94,6 +94,10 @@ export default function AdminHousesManagement() {
   const deleteHouseMutation = useMutation({
     mutationFn: async (id: number) => {
       const response = await apiRequest("DELETE", `/api/admin/betting-houses/${id}`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Falha ao remover casa de apostas");
+      }
       return response.json();
     },
     onSuccess: () => {
@@ -105,7 +109,7 @@ export default function AdminHousesManagement() {
     },
     onError: (error: any) => {
       toast({
-        title: "Erro",
+        title: "Não é possível excluir",
         description: error.message || "Falha ao remover casa de apostas",
         variant: "destructive",
       });
