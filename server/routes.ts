@@ -475,12 +475,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const housesWithStats = await Promise.all(
         houses.map(async (house) => {
           const conversions = await storage.getConversionsByHouseId(house.id);
-          const links = await storage.getAffiliateLinksByUserId(0); // This needs to be fixed to get all links for house
+          
+          // Buscar TODOS os links afiliados no sistema e filtrar por casa
+          const allUsers = await storage.getAllAffiliates();
+          let affiliateCount = 0;
+          
+          for (const user of allUsers) {
+            const userLinks = await storage.getAffiliateLinksByUserId(user.id);
+            const hasLinkToThisHouse = userLinks.some(link => link.houseId === house.id);
+            if (hasLinkToThisHouse) {
+              affiliateCount++;
+            }
+          }
           
           return {
             ...house,
             stats: {
-              affiliateCount: links.length, // This should be corrected
+              affiliateCount, // Usar a contagem calculada corretamente
               totalVolume: conversions.reduce((sum, c) => sum + Number(c.amount || 0), 0),
               totalCommissions: conversions.reduce((sum, c) => sum + Number(c.commission || 0), 0),
             },
