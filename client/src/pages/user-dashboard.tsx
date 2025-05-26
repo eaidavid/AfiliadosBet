@@ -3,6 +3,10 @@ import UserSidebar from "@/components/user/sidebar";
 import UserTopBar from "@/components/user/topbar";
 import BettingHouses from "@/components/user/betting-houses";
 import MyLinks from "@/components/user/my-links";
+import Payments from "@/components/user/payments";
+import Reports from "@/components/user/reports";
+import Support from "@/components/user/support";
+import Profile from "@/components/user/profile";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,6 +26,14 @@ export default function UserDashboard() {
         return <BettingHouses onPageChange={setCurrentPage} />;
       case "links":
         return <MyLinks onPageChange={setCurrentPage} />;
+      case "payments":
+        return <Payments onPageChange={setCurrentPage} />;
+      case "reports":
+        return <Reports onPageChange={setCurrentPage} />;
+      case "support":
+        return <Support onPageChange={setCurrentPage} />;
+      case "profile":
+        return <Profile onPageChange={setCurrentPage} />;
       case "dashboard":
         return (
           <div className="space-y-6">
@@ -30,10 +42,6 @@ export default function UserDashboard() {
             {/* Add detailed dashboard content here */}
           </div>
         );
-      case "payments":
-        return (
-          <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-white">Pagamentos</h1>
             <p className="text-slate-400">Configure sua forma de recebimento e acompanhe o histórico.</p>
             {/* Add payments content here */}
           </div>

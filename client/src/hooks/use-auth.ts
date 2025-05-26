@@ -54,7 +54,9 @@ export function useLogout() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      // Clear all cache and redirect
+      queryClient.clear();
+      window.location.href = "/";
     },
   });
 }

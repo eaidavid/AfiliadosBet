@@ -1,0 +1,147 @@
+Crie as seguintes páginas para o painel do usuário do site AfiliadosBet, mantendo o design já implementado nas páginas "Dashboard", "Casas de Apostas" e "Meus Links":
+
+🎯 Contexto Geral
+Este é um sistema de afiliados de casas de apostas, com painel do usuário moderno, elegante, responsivo. A sidebar já contém os itens:
+
+Início
+
+Dashboard
+
+Casas de Apostas ✅
+
+Meus Links ✅
+
+Pagamentos 🔧
+
+Relatórios 🔧
+
+Suporte (Fale Conosco) 🔧
+
+Meu Perfil 🔧
+
+Desenvolver agora as páginas que estão marcadas com 🔧. Todas devem ser funcionais, organizadas e conectadas à estrutura de dados do usuário logado.
+
+💰 Página: Pagamentos
+Objetivo:
+Permitir ao usuário configurar seus dados de recebimento e visualizar pagamentos realizados.
+
+Conteúdo:
+Formulário de dados bancários/PIX
+
+Tipo de recebimento (Pix, Bancário)
+
+Nome do titular
+
+CPF
+
+Chave Pix (ou dados bancários)
+
+Botão "Salvar alterações"
+
+Tabela de pagamentos
+
+Data do pagamento
+
+Valor recebido
+
+Status (Pendente / Pago)
+
+Método (Pix, Banco)
+
+Observação (campo de texto curto do admin, se houver)
+
+📊 Página: Relatórios
+Objetivo:
+Exibir métricas detalhadas das ações realizadas via links do usuário.
+
+Conteúdo:
+Filtro por casa de aposta (dropdown)
+
+Tabela de eventos:
+
+Data
+
+Tipo de evento: (Clique, Registro, Depósito, Pagamento, Lucro)
+
+Casa de aposta
+
+Valor envolvido (se aplicável)
+
+Comissão gerada
+
+Resumo estatístico no topo (opcional):
+
+Total de cliques
+
+Total de registros
+
+Total de depósitos
+
+Lucro total
+
+Comissões geradas
+
+Esses dados vêm das rotas de postback configuradas no admin e associadas ao subid do usuário.
+
+🎧 Página: Suporte (Fale Conosco)
+Objetivo:
+Canal de atendimento direto do usuário com o suporte do sistema.
+
+Conteúdo:
+Formulário com:
+
+Nome (preenchido automaticamente)
+
+Email (preenchido automaticamente)
+
+Assunto (input)
+
+Mensagem (textarea)
+
+Botão "Enviar mensagem"
+
+Enviar os dados via API ou salvar em banco de dados para visualização do admin.
+
+👤 Página: Meu Perfil
+Objetivo:
+Permitir ao usuário atualizar seus dados cadastrais e de contato.
+
+Conteúdo:
+Dados imutáveis:
+
+Nome completo
+
+CPF
+
+Email
+
+Dados editáveis:
+
+Telefone
+
+WhatsApp
+
+Data de nascimento
+
+País, Estado, Cidade
+
+Senha (com opção de atualizar senha atual)
+
+Botão "Salvar alterações"
+
+Validação:
+Senha mínima de 8 caracteres
+
+Telefone e WhatsApp aceitam apenas números
+
+Proteção contra alterações no CPF ou email
+
+🔧 Extras Comuns a Todas as Páginas
+Seguir o mesmo layout com sidebar lateral e topbar (com tema, notificações e perfil)
+
+Responsivo para mobile/tablet
+
+Animações suaves com Framer Motion ou Tailwind Transitions
+
+Usar componentes prontos do ShadCN/UI
+
