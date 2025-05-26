@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginData } from "@shared/schema";
@@ -13,6 +13,7 @@ import { ChartLine, Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
+  const [, setLocation] = useLocation();
   const login = useLogin();
 
   const form = useForm<LoginData>({
@@ -24,7 +25,11 @@ export default function Login() {
   });
 
   const onSubmit = (data: LoginData) => {
-    login.mutate(data);
+    login.mutate(data, {
+      onSuccess: () => {
+        setLocation("/");
+      }
+    });
   };
 
   return (
