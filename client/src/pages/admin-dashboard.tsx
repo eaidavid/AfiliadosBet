@@ -26,6 +26,8 @@ export default function AdminDashboard() {
         return <ReportsManagement onPageChange={setCurrentPage} />;
       case "settings":
         return <SettingsManagement onPageChange={setCurrentPage} />;
+      case "links":
+        return <LinksManagement onPageChange={setCurrentPage} />;
       case "profile":
         return <AdminProfile onPageChange={setCurrentPage} />;
       default:
