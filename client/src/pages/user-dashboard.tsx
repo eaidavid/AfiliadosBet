@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import UserSidebar from "@/components/user/sidebar";
 import UserTopBar from "@/components/user/topbar";
 import BettingHouses from "@/components/user/betting-houses";
@@ -8,13 +8,25 @@ import Reports from "@/components/user/reports";
 import Support from "@/components/user/support";
 import Profile from "@/components/user/profile";
 import { useAuth } from "@/hooks/use-auth";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { MousePointer, UserPlus, CreditCard, DollarSign } from "lucide-react";
 
 export default function UserDashboard() {
   const [currentPage, setCurrentPage] = useState("home");
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Atualização automática a cada 3 segundos para sincronizar com mudanças do admin
+  useEffect(() => {
+    const interval = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ["/api/betting-houses"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/my-links"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/stats/user"] });
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [queryClient]);
 
   const { data: stats } = useQuery({
     queryKey: ["/api/stats/user"],
