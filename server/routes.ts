@@ -470,8 +470,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Rota para obter links do usuário
   app.get("/api/my-links", requireAuth, async (req: any, res) => {
     try {
-      const links = await storage.getAffiliateLinksByUserId(req.session.user.id);
-      res.json(links);
+      const userId = req.session.user.id;
+      const links = await storage.getAffiliateLinksByUserId(userId);
+      
+      // Get house details for each link
+      const linksWithDetails = await Promise.all(
+        links.map(async (link) => {
+          const house = await storage.getBettingHouseById(link.houseId);
+          return {
+            ...link,
+            house,
+            stats: {
+              clicks: 0,
+              registrations: 0,
+              deposits: 0,
+              commission: 0,
+            },
+          };
+        })
+      );
+      
+      res.json(linksWithDetails);
     } catch (error) {
       console.error("Get user links error:", error);
       res.status(500).json({ message: "Failed to get user links" });
