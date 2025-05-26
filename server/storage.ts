@@ -329,10 +329,9 @@ export class DatabaseStorage implements IStorage {
     totalVolume: number;
     paidCommissions: number;
   }> {
-    const [affiliatesResult] = await db
-      .select({ count: count() })
-      .from(users)
-      .where(eq(users.role, 'affiliate'));
+    // Contar todos os usuários exceto admin para manter consistência
+    const allUsers = await db.select().from(users);
+    const totalAffiliates = allUsers.filter(user => user.role !== 'admin').length;
 
     const [housesResult] = await db
       .select({ count: count() })
@@ -349,10 +348,10 @@ export class DatabaseStorage implements IStorage {
       .where(eq(payments.status, 'completed'));
 
     return {
-      totalAffiliates: affiliatesResult.count,
+      totalAffiliates,
       activeHouses: housesResult.count,
-      totalVolume: volumeResult[0]?.total || 0,
-      paidCommissions: commissionsResult[0]?.total || 0,
+      totalVolume: volumeResult?.total || 0,
+      paidCommissions: commissionsResult?.total || 0,
     };
   }
 
