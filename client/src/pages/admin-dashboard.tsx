@@ -2,6 +2,9 @@ import { useState } from "react";
 import AdminSidebar from "@/components/admin/sidebar";
 import AdminHousesManagement from "@/components/admin/houses-management";
 import AffiliatesManagement from "@/components/admin/affiliates-management";
+import LinksManagement from "@/components/admin/links-management";
+import PostbacksManagement from "@/components/admin/postbacks-management";
+import CommissionsManagement from "@/components/admin/commissions-management";
 import ReportsManagement from "@/components/admin/reports-management";
 import SettingsManagement from "@/components/admin/settings-management";
 import AdminProfile from "@/components/admin/admin-profile";
@@ -22,12 +25,16 @@ export default function AdminDashboard() {
         return <AdminHousesManagement onPageChange={setCurrentPage} />;
       case "affiliates":
         return <AffiliatesManagement onPageChange={setCurrentPage} />;
+      case "links":
+        return <LinksManagement onPageChange={setCurrentPage} />;
+      case "postbacks":
+        return <PostbacksManagement onPageChange={setCurrentPage} />;
+      case "commissions":
+        return <CommissionsManagement onPageChange={setCurrentPage} />;
       case "reports":
         return <ReportsManagement onPageChange={setCurrentPage} />;
       case "settings":
         return <SettingsManagement onPageChange={setCurrentPage} />;
-      case "links":
-        return <LinksManagement onPageChange={setCurrentPage} />;
       case "profile":
         return <AdminProfile onPageChange={setCurrentPage} />;
       default:

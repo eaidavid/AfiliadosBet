@@ -742,20 +742,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin routes
+  // Admin routes - Gestão completa de afiliados
   app.get("/api/admin/affiliates", async (req, res) => {
     try {
-      // Verificar se é admin via session
-      if (!req.session?.user?.role || req.session.user.role !== "admin") {
-        return res.status(403).json({ message: "Admin access required" });
-      }
+      console.log("=== API ADMIN AFFILIATES ===");
+      console.log("Session:", req.session);
+      console.log("User:", req.session?.user);
       
       const affiliates = await storage.getAllAffiliates();
-      console.log("Admin affiliates found:", affiliates.length, affiliates);
+      console.log("Affiliates encontrados:", affiliates.length);
+      console.log("Dados:", affiliates);
+      
       res.json(affiliates);
     } catch (error) {
-      console.error("Get admin affiliates error:", error);
-      res.status(500).json({ message: "Failed to get affiliates" });
+      console.error("Erro ao buscar afiliados:", error);
+      res.status(500).json({ message: "Erro interno do servidor" });
     }
   });
 

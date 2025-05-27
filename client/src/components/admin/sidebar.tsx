@@ -1,5 +1,5 @@
 import { useLogout } from "@/hooks/use-auth";
-import { Crown, BarChart3, Users, Building, PieChart, Settings, LogOut } from "lucide-react";
+import { Crown, BarChart3, Users, Building, PieChart, Settings, LogOut, Webhook, DollarSign, Link2 } from "lucide-react";
 
 interface AdminSidebarProps {
   currentPage: string;
@@ -13,6 +13,9 @@ export default function AdminSidebar({ currentPage, onPageChange }: AdminSidebar
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
     { id: "affiliates", label: "Afiliados", icon: Users },
     { id: "houses", label: "Casas de Apostas", icon: Building },
+    { id: "links", label: "Links", icon: Link2 },
+    { id: "postbacks", label: "Postbacks", icon: Webhook },
+    { id: "commissions", label: "Comissões", icon: DollarSign },
     { id: "reports", label: "Relatórios", icon: PieChart },
     { id: "settings", label: "Configurações", icon: Settings },
   ];
