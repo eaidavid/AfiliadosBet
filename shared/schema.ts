@@ -215,3 +215,69 @@ export type InsertConversion = z.infer<typeof insertConversionSchema>;
 export type Payment = typeof payments.$inferSelect;
 export type InsertPayment = z.infer<typeof insertPaymentSchema>;
 export type ClickTracking = typeof clickTracking.$inferSelect;
+
+// === NOVAS TABELAS PARA SISTEMA COMPLETO DE POSTBACK ===
+
+// Tabela de eventos
+export const eventos = pgTable("eventos", {
+  id: serial("id").primaryKey(),
+  afiliadoId: integer("afiliado_id").notNull().references(() => users.id),
+  casa: varchar("casa").notNull(),
+  evento: varchar("evento").notNull(), // click, registration, deposit, revenue, profit
+  valor: decimal("valor", { precision: 10, scale: 2 }).default("0"),
+  criadoEm: timestamp("criado_em").defaultNow().notNull(),
+});
+
+// Tabela de comissões
+export const comissoes = pgTable("comissoes", {
+  id: serial("id").primaryKey(),
+  afiliadoId: integer("afiliado_id").notNull().references(() => users.id),
+  eventoId: integer("evento_id").notNull().references(() => eventos.id),
+  tipo: varchar("tipo").notNull(), // CPA, RevShare
+  valor: decimal("valor", { precision: 10, scale: 2 }).notNull(),
+  criadoEm: timestamp("criado_em").defaultNow().notNull(),
+});
+
+// Tabela de logs de postback
+export const postbackLogs = pgTable("postback_logs", {
+  id: serial("id").primaryKey(),
+  casa: varchar("casa").notNull(),
+  subid: varchar("subid").notNull(),
+  evento: varchar("evento").notNull(),
+  valor: decimal("valor", { precision: 10, scale: 2 }).default("0"),
+  ip: varchar("ip"),
+  raw: text("raw"), // query string completa recebida
+  status: varchar("status").notNull(), // processando, registrado, erro_subid, erro_casa
+  criadoEm: timestamp("criado_em").defaultNow().notNull(),
+});
+
+// Relações das novas tabelas
+export const eventosRelations = relations(eventos, ({ one }) => ({
+  afiliado: one(users, {
+    fields: [eventos.afiliadoId],
+    references: [users.id],
+  }),
+}));
+
+export const comissoesRelations = relations(comissoes, ({ one }) => ({
+  afiliado: one(users, {
+    fields: [comissoes.afiliadoId],
+    references: [users.id],
+  }),
+  evento: one(eventos, {
+    fields: [comissoes.eventoId],
+    references: [eventos.id],
+  }),
+}));
+
+export const postbackLogsRelations = relations(postbackLogs, ({ one }) => ({
+  // Não precisa de relação direta pois subid pode não existir
+}));
+
+// Tipos das novas tabelas
+export type Evento = typeof eventos.$inferSelect;
+export type InsertEvento = typeof eventos.$inferInsert;
+export type Comissao = typeof comissoes.$inferSelect;
+export type InsertComissao = typeof comissoes.$inferInsert;
+export type PostbackLog = typeof postbackLogs.$inferSelect;
+export type InsertPostbackLog = typeof postbackLogs.$inferInsert;

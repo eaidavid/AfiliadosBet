@@ -67,6 +67,124 @@ function requireAdmin(req: any, res: any, next: any) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // === SISTEMA COMPLETO DE POSTBACK ===
+  // IMPORTANTE: Esta rota deve vir ANTES de qualquer middleware para funcionar
+  
+  // Rota principal de postback GET /postback/:casa
+  app.get("/postback/:casa", async (req, res) => {
+    try {
+      const casa = req.params.casa;
+      const { subid, event, amount } = req.query;
+      const ip = req.ip || req.connection.remoteAddress || 'unknown';
+      const rawQuery = req.url;
+      
+      console.log(`📩 Postback recebido: casa=${casa}, subid=${subid}, event=${event}, amount=${amount}`);
+      
+      // Log inicial do postback
+      const logEntry = await db.insert(schema.postbackLogs).values({
+        casa,
+        subid: subid as string,
+        evento: event as string,
+        valor: parseFloat(amount as string) || 0,
+        ip,
+        raw: rawQuery,
+        status: 'processando',
+        criadoEm: new Date()
+      }).returning();
+      
+      // Validar se subid existe
+      const affiliate = await db.select()
+        .from(schema.users)
+        .where(eq(schema.users.username, subid as string))
+        .limit(1);
+      
+      if (!affiliate.length) {
+        await db.update(schema.postbackLogs)
+          .set({ status: 'erro_subid' })
+          .where(eq(schema.postbackLogs.id, logEntry[0].id));
+        
+        console.log(`❌ SubID não encontrado: ${subid}`);
+        return res.status(400).json({ error: "SubID não encontrado" });
+      }
+      
+      // Buscar casa
+      const houseRecord = await db.select()
+        .from(schema.bettingHouses)
+        .where(sql`LOWER(${schema.bettingHouses.name}) = ${casa.toLowerCase()}`)
+        .limit(1);
+      
+      if (!houseRecord.length) {
+        await db.update(schema.postbackLogs)
+          .set({ status: 'erro_casa' })
+          .where(eq(schema.postbackLogs.id, logEntry[0].id));
+        
+        console.log(`❌ Casa não encontrada: ${casa}`);
+        return res.status(400).json({ error: "Casa não encontrada" });
+      }
+      
+      // Registrar evento
+      const evento = await db.insert(schema.eventos).values({
+        afiliadoId: affiliate[0].id,
+        casa,
+        evento: event as string,
+        valor: parseFloat(amount as string) || 0,
+        criadoEm: new Date()
+      }).returning();
+      
+      // Calcular comissão
+      let commissionValue = 0;
+      let tipo = '';
+      const depositAmount = parseFloat(amount as string) || 0;
+      
+      if (event === 'registration') {
+        commissionValue = 50; // CPA fixa R$50
+        tipo = 'CPA';
+      } else if (['deposit', 'revenue', 'profit'].includes(event as string)) {
+        commissionValue = (depositAmount * 20) / 100; // RevShare 20%
+        tipo = 'RevShare';
+      }
+      
+      // Salvar comissão se houver
+      if (commissionValue > 0) {
+        await db.insert(schema.comissoes).values({
+          afiliadoId: affiliate[0].id,
+          eventoId: evento[0].id,
+          tipo,
+          valor: commissionValue,
+          criadoEm: new Date()
+        });
+        
+        // Criar pagamento
+        await storage.createPayment({
+          userId: affiliate[0].id,
+          amount: commissionValue,
+          status: 'pending',
+          description: `${tipo} ${event} - ${casa}`,
+          conversionId: evento[0].id
+        });
+        
+        console.log(`💰 Comissão ${tipo}: R$ ${commissionValue} para ${affiliate[0].username}`);
+      }
+      
+      // Atualizar log como registrado
+      await db.update(schema.postbackLogs)
+        .set({ status: 'registrado' })
+        .where(eq(schema.postbackLogs.id, logEntry[0].id));
+      
+      console.log(`✅ Postback processado com sucesso`);
+      res.json({ 
+        success: true, 
+        message: "Postback processado com sucesso",
+        commission: commissionValue,
+        type: tipo
+      });
+      
+    } catch (error) {
+      console.error("Erro no postback:", error);
+      res.status(500).json({ error: "Erro interno no processamento" });
+    }
+  });
+
   app.use(getSession());
 
   // Auth routes
@@ -1159,7 +1277,124 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Endpoint MELHORADO para postbacks com processamento de comissões
+  // === SISTEMA COMPLETO DE POSTBACK ===
+  
+  // Rota principal de postback GET /postback/:casa
+  app.get("/postback/:casa", async (req, res) => {
+    try {
+      const casa = req.params.casa;
+      const { subid, event, amount } = req.query;
+      const ip = req.ip || req.connection.remoteAddress || 'unknown';
+      const rawQuery = req.url;
+      
+      console.log(`📩 Postback recebido: casa=${casa}, subid=${subid}, event=${event}, amount=${amount}`);
+      
+      // Log inicial do postback
+      const logEntry = await db.insert(schema.postbackLogs).values({
+        casa,
+        subid: subid as string,
+        evento: event as string,
+        valor: parseFloat(amount as string) || 0,
+        ip,
+        raw: rawQuery,
+        status: 'processando',
+        criadoEm: new Date()
+      }).returning();
+      
+      // Validar se subid existe
+      const affiliate = await db.select()
+        .from(schema.users)
+        .where(eq(schema.users.username, subid as string))
+        .limit(1);
+      
+      if (!affiliate.length) {
+        await db.update(schema.postbackLogs)
+          .set({ status: 'erro_subid' })
+          .where(eq(schema.postbackLogs.id, logEntry[0].id));
+        
+        console.log(`❌ SubID não encontrado: ${subid}`);
+        return res.status(400).json({ error: "SubID não encontrado" });
+      }
+      
+      // Buscar casa
+      const houseRecord = await db.select()
+        .from(schema.bettingHouses)
+        .where(sql`LOWER(${schema.bettingHouses.name}) = ${casa.toLowerCase()}`)
+        .limit(1);
+      
+      if (!houseRecord.length) {
+        await db.update(schema.postbackLogs)
+          .set({ status: 'erro_casa' })
+          .where(eq(schema.postbackLogs.id, logEntry[0].id));
+        
+        console.log(`❌ Casa não encontrada: ${casa}`);
+        return res.status(400).json({ error: "Casa não encontrada" });
+      }
+      
+      // Registrar evento
+      const evento = await db.insert(schema.eventos).values({
+        afiliadoId: affiliate[0].id,
+        casa,
+        evento: event as string,
+        valor: parseFloat(amount as string) || 0,
+        criadoEm: new Date()
+      }).returning();
+      
+      // Calcular comissão
+      let commissionValue = 0;
+      let tipo = '';
+      const depositAmount = parseFloat(amount as string) || 0;
+      
+      if (event === 'registration') {
+        commissionValue = 50; // CPA fixa R$50
+        tipo = 'CPA';
+      } else if (['deposit', 'revenue', 'profit'].includes(event as string)) {
+        commissionValue = (depositAmount * 20) / 100; // RevShare 20%
+        tipo = 'RevShare';
+      }
+      
+      // Salvar comissão se houver
+      if (commissionValue > 0) {
+        await db.insert(schema.comissoes).values({
+          afiliadoId: affiliate[0].id,
+          eventoId: evento[0].id,
+          tipo,
+          valor: commissionValue,
+          criadoEm: new Date()
+        });
+        
+        // Criar pagamento
+        await storage.createPayment({
+          userId: affiliate[0].id,
+          amount: commissionValue,
+          status: 'pending',
+          description: `${tipo} ${event} - ${casa}`,
+          conversionId: evento[0].id
+        });
+        
+        console.log(`💰 Comissão ${tipo}: R$ ${commissionValue} para ${affiliate[0].username}`);
+      }
+      
+      // Atualizar log como registrado
+      await db.update(schema.postbackLogs)
+        .set({ status: 'registrado' })
+        .where(eq(schema.postbackLogs.id, logEntry[0].id));
+      
+      console.log(`✅ Postback processado com sucesso`);
+      res.json({ 
+        success: true, 
+        message: "Postback processado com sucesso",
+        commission: commissionValue,
+        type: tipo
+      });
+      
+    } catch (error) {
+      console.error("Erro no postback:", error);
+      res.status(500).json({ error: "Erro interno no processamento" });
+    }
+  });
+
+  // Endpoint MELHORADO para postbacks com processamento de comissões (POST)
   app.post("/api/postback", async (req, res) => {
     try {
       const { event, ref, subid, amount, house, customer_id } = req.body;
@@ -1241,6 +1476,215 @@ export async function registerRoutes(app: Express): Promise<Server> {
     ws.on('close', () => {
       console.log('Cliente WebSocket desconectado');
     });
+  });
+
+  // === SISTEMA DE TESTE DE POSTBACK ===
+  
+  // Rota de teste de postback
+  app.get("/postback-test", (req, res) => {
+    const testHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Teste de Postback - AfiliadosBet</title>
+      <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #0f172a; color: white; }
+        .container { background: #1e293b; padding: 20px; border-radius: 8px; margin: 10px 0; }
+        .form-group { margin: 15px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #475569; background: #334155; color: white; border-radius: 4px; }
+        button { background: #10b981; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #059669; }
+        .result { background: #1f2937; padding: 15px; border-radius: 4px; margin: 10px 0; font-family: monospace; }
+        .success { border-left: 4px solid #10b981; }
+        .error { border-left: 4px solid #ef4444; }
+      </style>
+    </head>
+    <body>
+      <h1>🧪 Teste de Postback - AfiliadosBet</h1>
+      
+      <div class="container">
+        <h2>Simular Postback</h2>
+        <form id="postbackForm">
+          <div class="form-group">
+            <label>Casa de Apostas:</label>
+            <select name="casa" required>
+              <option value="brazzino">Brazzino</option>
+              <option value="pixbet">PixBet</option>
+              <option value="bet365">Bet365</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>SubID (Username do Afiliado):</label>
+            <input type="text" name="subid" placeholder="adminuser" required>
+          </div>
+          
+          <div class="form-group">
+            <label>Evento:</label>
+            <select name="event" required>
+              <option value="click">Click</option>
+              <option value="registration">Registration (CPA R$50)</option>
+              <option value="deposit">Deposit (RevShare 20%)</option>
+              <option value="revenue">Revenue (RevShare 20%)</option>
+              <option value="profit">Profit (RevShare 20%)</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>Valor (opcional, para eventos monetários):</label>
+            <input type="number" name="amount" placeholder="100" step="0.01">
+          </div>
+          
+          <button type="submit">🚀 Enviar Postback</button>
+          <button type="button" onclick="gerarExemplos()">📋 Gerar Exemplos</button>
+        </form>
+      </div>
+      
+      <div class="container">
+        <h2>Exemplos de URLs</h2>
+        <div id="exemplos">
+          <p><strong>Registration:</strong><br>
+          <code>/postback/brazzino?subid=adminuser&event=registration</code></p>
+          
+          <p><strong>Deposit:</strong><br>
+          <code>/postback/brazzino?subid=adminuser&event=deposit&amount=500</code></p>
+          
+          <p><strong>Profit:</strong><br>
+          <code>/postback/pixbet?subid=adminuser&event=profit&amount=150</code></p>
+        </div>
+      </div>
+      
+      <div class="container">
+        <h2>Resultado</h2>
+        <div id="resultado">Nenhum teste executado ainda...</div>
+      </div>
+      
+      <script>
+        document.getElementById('postbackForm').addEventListener('submit', async function(e) {
+          e.preventDefault();
+          const formData = new FormData(e.target);
+          const params = new URLSearchParams();
+          
+          for (let [key, value] of formData.entries()) {
+            if (value) params.append(key, value);
+          }
+          
+          const casa = formData.get('casa');
+          const url = '/postback/' + casa + '?' + params.toString().replace('casa=' + casa + '&', '');
+          
+          document.getElementById('resultado').innerHTML = 
+            '<div class="result"><strong>Enviando:</strong> ' + url + '</div>';
+          
+          try {
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            document.getElementById('resultado').innerHTML = 
+              '<div class="result ' + (response.ok ? 'success' : 'error') + '">' +
+              '<strong>Status:</strong> ' + response.status + '<br>' +
+              '<strong>URL:</strong> ' + url + '<br>' +
+              '<strong>Resposta:</strong><br>' + JSON.stringify(data, null, 2) +
+              '</div>';
+          } catch (error) {
+            document.getElementById('resultado').innerHTML = 
+              '<div class="result error"><strong>Erro:</strong> ' + error.message + '</div>';
+          }
+        });
+        
+        function gerarExemplos() {
+          const exemplos = [
+            '/postback/brazzino?subid=adminuser&event=registration',
+            '/postback/brazzino?subid=adminuser&event=deposit&amount=500',
+            '/postback/pixbet?subid=adminuser&event=profit&amount=150',
+            '/postback/bet365?subid=adminuser&event=revenue&amount=1000'
+          ];
+          
+          let html = '<h3>URLs para Teste:</h3>';
+          exemplos.forEach(url => {
+            html += '<p><a href="' + url + '" target="_blank">' + url + '</a></p>';
+          });
+          
+          document.getElementById('exemplos').innerHTML = html;
+        }
+      </script>
+    </body>
+    </html>
+    `;
+    
+    res.send(testHtml);
+  });
+
+  // APIs para os dashboards
+  app.get("/api/admin/postback-logs", requireAdmin, async (req, res) => {
+    try {
+      const { status, casa, subid } = req.query;
+      
+      let query = db.select().from(schema.postbackLogs);
+      
+      if (status && status !== 'all') {
+        query = query.where(eq(schema.postbackLogs.status, status as string));
+      }
+      if (casa) {
+        query = query.where(eq(schema.postbackLogs.casa, casa as string));
+      }
+      if (subid) {
+        query = query.where(eq(schema.postbackLogs.subid, subid as string));
+      }
+      
+      const logs = await query.orderBy(sql\`\${schema.postbackLogs.criadoEm} DESC\`).limit(100);
+      res.json(logs);
+    } catch (error) {
+      console.error("Error fetching postback logs:", error);
+      res.status(500).json({ message: "Failed to fetch postback logs" });
+    }
+  });
+
+  app.get("/api/admin/eventos", requireAdmin, async (req, res) => {
+    try {
+      const eventos = await db.select({
+        id: schema.eventos.id,
+        casa: schema.eventos.casa,
+        evento: schema.eventos.evento,
+        valor: schema.eventos.valor,
+        criadoEm: schema.eventos.criadoEm,
+        afiliadoUsername: schema.users.username,
+        afiliadoEmail: schema.users.email
+      })
+      .from(schema.eventos)
+      .leftJoin(schema.users, eq(schema.eventos.afiliadoId, schema.users.id))
+      .orderBy(sql\`\${schema.eventos.criadoEm} DESC\`)
+      .limit(100);
+      
+      res.json(eventos);
+    } catch (error) {
+      console.error("Error fetching eventos:", error);
+      res.status(500).json({ message: "Failed to fetch eventos" });
+    }
+  });
+
+  app.get("/api/admin/comissoes", requireAdmin, async (req, res) => {
+    try {
+      const comissoes = await db.select({
+        id: schema.comissoes.id,
+        tipo: schema.comissoes.tipo,
+        valor: schema.comissoes.valor,
+        criadoEm: schema.comissoes.criadoEm,
+        afiliadoUsername: schema.users.username,
+        eventoTipo: schema.eventos.evento,
+        eventoCasa: schema.eventos.casa
+      })
+      .from(schema.comissoes)
+      .leftJoin(schema.users, eq(schema.comissoes.afiliadoId, schema.users.id))
+      .leftJoin(schema.eventos, eq(schema.comissoes.eventoId, schema.eventos.id))
+      .orderBy(sql\`\${schema.comissoes.criadoEm} DESC\`)
+      .limit(100);
+      
+      res.json(comissoes);
+    } catch (error) {
+      console.error("Error fetching comissoes:", error);
+      res.status(500).json({ message: "Failed to fetch comissoes" });
+    }
   });
 
   return httpServer;

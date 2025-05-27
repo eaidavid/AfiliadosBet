@@ -1,0 +1,107 @@
+Estou desenvolvendo um sistema de afiliados de apostas com as seguintes características:
+
+✅ CENÁRIO ATUAL
+
+O sistema já gera links personalizados com subid para cada afiliado.
+
+O front-end e painel já estão funcionando.
+
+O banco de dados é PostgreSQL.
+
+O back-end é em Node.js com Express.
+
+Preciso agora implementar a integração completa com o postback das casas de apostas.
+
+✅ O QUE PRECISO QUE VOCÊ FAÇA COMPLETAMENTE AGORA
+
+1. ROTA DE POSTBACK
+Criar rota:
+
+bash
+Copiar
+Editar
+GET /postback/:casa
+Parâmetros esperados:
+
+subid: ID do afiliado
+
+event: tipo de evento (click, registration, deposit, revenue, profit)
+
+amount: valor da receita (opcional, depende do evento)
+
+A rota deve:
+
+Registrar todos os postbacks recebidos em uma tabela de logs
+
+Validar se o subid existe
+
+Registrar o evento (caso válido)
+
+Calcular e salvar a comissão:
+
+CPA fixa para registration (ex: R$50)
+
+RevShare de 20% para deposit, revenue, profit
+
+Atualizar o status do log (registrado, erro_subid, etc.)
+
+2. MODELOS NO BANCO
+Criar tabelas (PostgreSQL):
+
+sql
+Copiar
+Editar
+afiliados (id, nome, subid)
+eventos (id, afiliado_id, casa, evento, valor, criado_em)
+comissoes (id, afiliado_id, evento_id, tipo, valor, criado_em)
+postback_logs (id, casa, subid, evento, valor, ip, raw, status, criado_em)
+3. DASHBOARD DO USUÁRIO
+Mostrar:
+
+Total de cliques, registros, depósitos, lucros
+
+Comissões separadas por CPA e RevShare
+
+Valor total de comissão
+
+Tabela ou gráfico por período
+
+4. DASHBOARD DO ADMIN
+Mostrar:
+
+Todos afiliados com estatísticas
+
+Logs completos de postbacks com filtro por status
+
+Painel para debug com visualização do raw (query string recebida)
+
+5. TESTE DE POSTBACK
+Criar rota ou painel de teste:
+
+bash
+Copiar
+Editar
+/postback-test
+Que permita simular chamadas como:
+
+bash
+Copiar
+Editar
+/postback/brazzino?subid=abc123&event=deposit&amount=100
+/postback/brazzino?subid=abc123&event=registration
+/postback/brazzino?subid=abc123&event=profit&amount=40
+✅ OBSERVAÇÕES
+
+O sistema já está funcional, com afiliados cadastrados e links gerados.
+
+Só preciso agora que os dados de postback cheguem, sejam registrados e visualizados.
+
+O banco é PostgreSQL.
+
+O back é Node.js/Express.
+
+O front pode ser React com Tailwind (já temos painel em funcionamento).
+
+Faça tudo funcionar: banco, rota, cálculo de comissão, e visualização nos painéis.
+Pode simular dados para facilitar testes.
+
