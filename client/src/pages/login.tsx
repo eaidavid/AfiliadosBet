@@ -28,7 +28,7 @@ export default function Login() {
     login.mutate(data, {
       onSuccess: (response) => {
         // Redireciona baseado no tipo de usuário
-        if (response.user.role === "admin") {
+        if (response && response.role === "admin") {
           setLocation("/admin");
         } else {
           setLocation("/");
