@@ -162,13 +162,13 @@ export default function BettingHousesNew() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-slate-400">Comissão:</span>
                     <span className="text-white font-medium">
-                      {house.commissionModel === 'cpa' ? `R$ ${house.commissionValue}` : `${house.commissionValue}%`}
+                      {house.commissionType === 'cpa' ? `R$ ${house.commissionValue}` : `${house.commissionValue}%`}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-slate-400">Modelo:</span>
                     <span className="text-white font-medium">
-                      {house.commissionModel === 'cpa' ? 'CPA' : 'RevShare'}
+                      {house.commissionType === 'cpa' ? 'CPA' : 'RevShare'}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
@@ -272,13 +272,13 @@ export default function BettingHousesNew() {
                 <div>
                   <h4 className="text-sm font-medium text-slate-400 mb-1">Comissão</h4>
                   <p className="text-white font-medium">
-                    {selectedHouse.commissionModel === 'cpa' ? `R$ ${selectedHouse.commissionValue}` : `${selectedHouse.commissionValue}%`}
+                    {selectedHouse.commissionType === 'cpa' ? `R$ ${selectedHouse.commissionValue}` : `${selectedHouse.commissionValue}%`}
                   </p>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-slate-400 mb-1">Modelo</h4>
                   <p className="text-white font-medium">
-                    {selectedHouse.commissionModel === 'cpa' ? 'CPA' : 'RevShare'}
+                    {selectedHouse.commissionType === 'cpa' ? 'CPA' : 'RevShare'}
                   </p>
                 </div>
               </div>

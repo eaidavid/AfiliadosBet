@@ -493,7 +493,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               name: house.name,
               description: house.description,
               logoUrl: house.logoUrl,
-              commissionModel: house.commissionModel,
+              commissionType: house.commissionType,
               commissionValue: house.commissionValue,
             } : null,
             stats: {
