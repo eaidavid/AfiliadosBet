@@ -29,10 +29,7 @@ export default function BettingHousesNew() {
     queryKey: ["/api/betting-houses"],
   });
 
-  // Buscar links de afiliação do usuário
-  const { data: userLinks = [], isLoading: linksLoading } = useQuery({
-    queryKey: ["/api/my-affiliate-links"],
-  });
+  // Não precisamos buscar links separadamente - já vem nos dados das casas
 
   // Mutação para se afiliar
   const affiliateMutation = useMutation({
@@ -45,9 +42,8 @@ export default function BettingHousesNew() {
         title: "Sucesso!",
         description: "Você foi afiliado com sucesso! Verifique seus links na aba 'Meus Links'.",
       });
-      // Refazer busca dos dados para atualizar a interface
-      queryClient.refetchQueries({ queryKey: ["/api/my-affiliate-links"] });
-      queryClient.refetchQueries({ queryKey: ["/api/betting-houses"] });
+      // Apenas invalidar os dados das casas de apostas
+      queryClient.invalidateQueries({ queryKey: ["/api/betting-houses"] });
     },
     onError: (error: any) => {
       toast({
@@ -83,7 +79,7 @@ export default function BettingHousesNew() {
     house.name.toLowerCase().includes(searchTerm.toLowerCase())
   ) : [];
 
-  if (housesLoading || linksLoading) {
+  if (housesLoading) {
     return (
       <div className="space-y-6">
         <div className="h-8 bg-slate-700 rounded animate-pulse"></div>
@@ -118,7 +114,7 @@ export default function BettingHousesNew() {
           </div>
           <div className="flex gap-2">
             <Badge variant="outline" className="border-emerald-500/30 text-emerald-400">
-              {userLinks.length} Afiliado{userLinks.length !== 1 ? 's' : ''}
+              {filteredHouses.filter(house => house.isAffiliated).length} Afiliado{filteredHouses.filter(house => house.isAffiliated).length !== 1 ? 's' : ''}
             </Badge>
             <Badge variant="outline" className="border-blue-500/30 text-blue-400">
               {filteredHouses.length} Disponívei{filteredHouses.length !== 1 ? 's' : ''}

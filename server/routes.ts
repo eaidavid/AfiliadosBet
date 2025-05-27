@@ -491,36 +491,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.session.user.id;
       const links = await storage.getAffiliateLinksByUserId(userId);
       
-      // Adicionar detalhes da casa para cada link
+      // Adicionar detalhes da casa para cada link com validação
       const linksWithDetails = await Promise.all(
         links.map(async (link) => {
-          const house = await storage.getBettingHouseById(link.houseId);
-          return {
-            id: link.id,
-            userId: link.userId,
-            houseId: link.houseId,
-            generatedUrl: link.generatedUrl,
-            isActive: link.isActive,
-            createdAt: link.createdAt,
-            house: house ? {
-              id: house.id,
-              name: house.name,
-              description: house.description,
-              logoUrl: house.logoUrl,
-              commissionType: house.commissionType,
-              commissionValue: house.commissionValue,
-            } : null,
-            stats: {
-              clicks: 0,
-              registrations: 0,
-              deposits: 0,
-              commission: 0,
-            },
-          };
+          try {
+            const house = await storage.getBettingHouseById(link.houseId);
+            return {
+              id: link.id || 0,
+              userId: link.userId || 0,
+              houseId: link.houseId || 0,
+              generatedUrl: link.generatedUrl || "",
+              isActive: link.isActive || false,
+              createdAt: link.createdAt || new Date(),
+              house: house ? {
+                id: house.id || 0,
+                name: house.name || "",
+                description: house.description || "",
+                logoUrl: house.logoUrl || "",
+                commissionType: house.commissionType || "revshare",
+                commissionValue: house.commissionValue || "0",
+              } : null,
+              stats: {
+                clicks: 0,
+                registrations: 0,
+                deposits: 0,
+                commission: 0,
+              },
+            };
+          } catch (error) {
+            console.error("Error processing link:", error);
+            return null;
+          }
         })
       );
       
-      res.json(linksWithDetails);
+      // Filtrar links nulos e enviar resposta
+      const validLinks = linksWithDetails.filter(link => link !== null);
+      res.json(validLinks);
     } catch (error) {
       console.error("Erro ao buscar links:", error);
       res.status(500).json({ message: "Erro ao buscar links de afiliação" });
