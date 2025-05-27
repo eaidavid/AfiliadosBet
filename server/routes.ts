@@ -151,9 +151,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Sistema de postbacks dinâmico - baseado na sua imagem
   
   // 1. Postback para Cliques
-  app.get("/api/postback/click", async (req, res) => {
+  app.post("/api/postback/click", async (req, res) => {
     try {
-      const { house, subid, customer_id, ...otherParams } = req.query;
+      const { house, subid, customer_id, ...otherParams } = req.body;
       
       if (!house || !subid) {
         return res.status(400).json({ message: "house e subid são obrigatórios" });
@@ -172,11 +172,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: `Casa ${house} não encontrada` });
       }
       
-      // Registra o clique
+      // Buscar o link de afiliação específico
+      const affiliateLink = await storage.getAffiliateLinkByUserAndHouse(user.id, bettingHouse.id);
+      if (!affiliateLink) {
+        return res.status(404).json({ message: "Link de afiliação não encontrado" });
+      }
+      
+      // Registra o clique VINCULADO ao link correto
       await storage.createConversion({
         userId: user.id,
         houseId: bettingHouse.id,
-        affiliateLinkId: null,
+        affiliateLinkId: affiliateLink.id,
         type: "click",
         amount: "0",
         commission: "0",
@@ -196,9 +202,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 2. Postback para Registros
-  app.get("/api/postback/registration", async (req, res) => {
+  app.post("/api/postback/registration", async (req, res) => {
     try {
-      const { house, subid, customer_id, ...otherParams } = req.query;
+      const { house, subid, customer_id, ...otherParams } = req.body;
       
       if (!house || !subid) {
         return res.status(400).json({ message: "house e subid são obrigatórios" });
