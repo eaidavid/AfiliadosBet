@@ -89,17 +89,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "SubID não encontrado", subid });
       }
       
-      // Calcular comissão
+      // Buscar configurações da casa para calcular comissão correta
+      const houseRecord = await db.select()
+        .from(schema.bettingHouses)
+        .where(sql`LOWER(${schema.bettingHouses.name}) = ${casa.toLowerCase()}`)
+        .limit(1);
+      
+      if (!houseRecord.length) {
+        console.log(`❌ Casa não encontrada: ${casa}`);
+        return res.status(400).json({ error: "Casa não encontrada", casa });
+      }
+      
+      const house = houseRecord[0];
+      
+      // Calcular comissão baseada nas configurações definidas pelo admin
       let commissionValue = 0;
       let tipo = '';
       const depositAmount = parseFloat(amount as string) || 0;
       
-      if (event === 'registration') {
-        commissionValue = 50; // CPA fixa R$50
+      if (event === 'registration' && house.commissionType === 'CPA') {
+        commissionValue = house.commissionValue; // CPA configurado pelo admin
         tipo = 'CPA';
-      } else if (['deposit', 'revenue', 'profit'].includes(event as string)) {
-        commissionValue = (depositAmount * 20) / 100; // RevShare 20%
+        console.log(`💰 CPA calculado: R$ ${commissionValue} (configurado para ${house.name})`);
+      } else if (['deposit', 'revenue', 'profit'].includes(event as string) && house.commissionType === 'RevShare') {
+        commissionValue = (depositAmount * house.commissionValue) / 100; // RevShare configurado pelo admin
         tipo = 'RevShare';
+        console.log(`💰 RevShare calculado: R$ ${commissionValue} (${house.commissionValue}% de R$ ${depositAmount})`);
       }
       
       // Criar pagamento se houver comissão
@@ -108,11 +123,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           userId: affiliate[0].id,
           amount: commissionValue,
           status: 'pending',
-          description: `${tipo} ${event} - ${casa}`,
+          description: `${tipo} ${event} - ${casa} (${house.commissionValue}${tipo === 'RevShare' ? '%' : ''})`,
           conversionId: null
         });
         
-        console.log(`💰 Comissão ${tipo}: R$ ${commissionValue} para ${affiliate[0].username}`);
+        console.log(`💰 Comissão ${tipo}: R$ ${commissionValue} para ${affiliate[0].username} (${house.name})`);
       }
       
       console.log(`✅ Postback processado com sucesso`);
@@ -121,7 +136,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Postback processado com sucesso",
         commission: commissionValue,
         type: tipo,
-        affiliate: affiliate[0].username
+        affiliate: affiliate[0].username,
+        house: house.name,
+        houseCommission: house.commissionValue
       });
       
     } catch (error) {
