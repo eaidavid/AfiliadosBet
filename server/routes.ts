@@ -729,6 +729,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes
+  app.get("/api/admin/affiliates", requireAdmin, async (req, res) => {
+    try {
+      const affiliates = await storage.getAllAffiliates();
+      res.json(affiliates);
+    } catch (error) {
+      console.error("Get admin affiliates error:", error);
+      res.status(500).json({ message: "Failed to get affiliates" });
+    }
+  });
+
+  app.put("/api/admin/affiliates/:id/status", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { isActive } = req.body;
+      
+      await storage.updateUserStatus(id, isActive);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Update affiliate status error:", error);
+      res.status(500).json({ message: "Failed to update affiliate status" });
+    }
+  });
   app.get("/api/admin/betting-houses", requireAdmin, async (req, res) => {
     try {
       const houses = await storage.getAllBettingHouses();
