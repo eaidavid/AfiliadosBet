@@ -732,6 +732,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/affiliates", requireAdmin, async (req, res) => {
     try {
       const affiliates = await storage.getAllAffiliates();
+      console.log("Admin affiliates found:", affiliates.length, affiliates);
       res.json(affiliates);
     } catch (error) {
       console.error("Get admin affiliates error:", error);
