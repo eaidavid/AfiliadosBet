@@ -414,10 +414,15 @@ export default function AffiliatesManagement({ onPageChange }: AffiliatesManagem
   const [selectedAffiliate, setSelectedAffiliate] = useState<any>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-  const { data: affiliates = [] } = useQuery({
+  const { data: affiliates = [], isLoading: affiliatesLoading, error: affiliatesError } = useQuery({
     queryKey: ["/api/admin/affiliates"],
     retry: false,
   });
+
+  // Debug: Verificar se os dados estão chegando
+  console.log("Affiliates data:", affiliates);
+  console.log("Affiliates loading:", affiliatesLoading);
+  console.log("Affiliates error:", affiliatesError);
 
   const toggleAffiliateStatus = useMutation({
     mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
@@ -581,22 +586,23 @@ export default function AffiliatesManagement({ onPageChange }: AffiliatesManagem
                       {affiliate.username}
                     </TableCell>
                     <TableCell className="text-white">
-                      {affiliate.fullName}
+                      {affiliate.fullName || affiliate.full_name || 'N/A'}
                     </TableCell>
                     <TableCell className="text-slate-300">
-                      {affiliate.email}
+                      {affiliate.email || 'N/A'}
                     </TableCell>
                     <TableCell className="text-slate-300">
-                      {affiliate.cpf}
+                      {affiliate.cpf || 'N/A'}
                     </TableCell>
                     <TableCell className="text-slate-300">
-                      {new Date(affiliate.createdAt).toLocaleDateString('pt-BR')}
+                      {affiliate.createdAt ? new Date(affiliate.createdAt).toLocaleDateString('pt-BR') : 
+                       affiliate.created_at ? new Date(affiliate.created_at).toLocaleDateString('pt-BR') : 'N/A'}
                     </TableCell>
                     <TableCell>
-                      {getStatusBadge(affiliate.isActive)}
+                      {getStatusBadge(affiliate.isActive || affiliate.is_active)}
                     </TableCell>
                     <TableCell className="text-white">
-                      {affiliate.affiliateHouses || 0}
+                      {affiliate.affiliateHouses || affiliate.affiliate_links_count || 0}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">

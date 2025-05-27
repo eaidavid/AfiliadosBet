@@ -14,7 +14,7 @@ import { MousePointer, UserPlus, CreditCard, DollarSign } from "lucide-react";
 
 export default function UserDashboard() {
   const [currentPage, setCurrentPage] = useState("home");
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const queryClient = useQueryClient();
 
   // Atualização automática a cada 3 segundos para sincronizar com mudanças do admin
@@ -28,9 +28,23 @@ export default function UserDashboard() {
     return () => clearInterval(interval);
   }, [queryClient]);
 
-  const { data: stats = {} } = useQuery({
+  const { data: stats = {}, isLoading: statsLoading, error: statsError } = useQuery({
     queryKey: ["/api/stats/user"],
   });
+
+  // Estado de carregamento seguro
+  if (authLoading || statsLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-white text-xl">Carregando...</div>
+      </div>
+    );
+  }
+
+  // Verificação de erro
+  if (statsError) {
+    console.error("Stats error:", statsError);
+  }
 
   const renderContent = () => {
     switch (currentPage) {

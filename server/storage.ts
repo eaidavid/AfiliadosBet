@@ -294,36 +294,40 @@ export class DatabaseStorage implements IStorage {
     totalCommission: number;
     conversionRate: number;
   }> {
-    // Get total clicks
-    const [clicksResult] = await db
-      .select({ count: count() })
-      .from(clickTracking)
-      .where(eq(clickTracking.userId, userId));
-
-    // Get conversion stats
+    // Get conversion stats from conversions table (onde todos os postbacks são salvos)
     const conversionStats = await db
       .select({
         type: conversions.type,
         count: count(),
-        totalCommission: sql<number>`sum(${conversions.commission})`,
+        totalCommission: sql<number>`sum(CAST(${conversions.commission} AS DECIMAL))`,
       })
       .from(conversions)
       .where(eq(conversions.userId, userId))
       .groupBy(conversions.type);
 
-    const totalClicks = clicksResult.count;
+    console.log(`Conversion stats for user ${userId}:`, conversionStats);
+
+    const totalClicks = conversionStats.find(s => s.type === 'click')?.count || 0;
     const registrations = conversionStats.find(s => s.type === 'registration')?.count || 0;
-    const deposits = conversionStats.find(s => s.type === 'deposit')?.count || 0;
+    const deposits = conversionStats.filter(s => 
+      s.type === 'deposit' || 
+      s.type === 'first_deposit' || 
+      s.type === 'recurring_deposit'
+    ).reduce((sum, stat) => sum + (stat.count || 0), 0);
+    
     const totalCommission = conversionStats.reduce((sum, stat) => sum + (stat.totalCommission || 0), 0);
     const conversionRate = totalClicks > 0 ? (registrations / totalClicks) * 100 : 0;
 
-    return {
+    const result = {
       totalClicks,
       totalRegistrations: registrations,
       totalDeposits: deposits,
       totalCommission,
       conversionRate,
     };
+
+    console.log(`Final stats for user ${userId}:`, result);
+    return result;
   }
 
   async getAdminStats(): Promise<{
