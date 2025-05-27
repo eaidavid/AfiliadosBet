@@ -1016,6 +1016,136 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // === SISTEMA DE RASTREAMENTO COMPLETO ===
+  
+  // Endpoint para rastreamento de cliques (/go/casa?ref=123)
+  app.get("/go/:casa", async (req, res) => {
+    try {
+      const casaName = req.params.casa.toLowerCase();
+      const refId = req.query.ref || req.query.subid;
+      const ip = req.ip || req.connection.remoteAddress || 'unknown';
+      const userAgent = req.get('User-Agent') || 'unknown';
+      
+      console.log(`🔗 Clique rastreado: casa=${casaName}, ref=${refId}, ip=${ip}`);
+      
+      // Busca a casa de apostas
+      const house = await db.select()
+        .from(schema.bettingHouses)
+        .where(sql`LOWER(${schema.bettingHouses.name}) = ${casaName}`)
+        .limit(1);
+      
+      if (!house.length) {
+        console.log(`❌ Casa não encontrada: ${casaName}`);
+        return res.status(404).send("Casa de apostas não encontrada");
+      }
+      
+      // Busca o afiliado pelo username (ref/subid)
+      const affiliate = await db.select()
+        .from(schema.users)
+        .where(eq(schema.users.username, refId))
+        .limit(1);
+      
+      if (!affiliate.length) {
+        console.log(`❌ Afiliado não encontrado: ${refId}`);
+        return res.status(404).send("Afiliado não encontrado");
+      }
+      
+      // Registra o clique
+      await storage.trackClick({
+        userId: affiliate[0].id,
+        houseId: house[0].id,
+        ipAddress: ip,
+        userAgent: userAgent,
+        referrer: req.get('Referer') || null
+      });
+      
+      console.log(`✅ Clique registrado: userId=${affiliate[0].id}, houseId=${house[0].id}`);
+      
+      // Redireciona para o link da casa
+      res.redirect(house[0].baseUrl.replace('{subid}', refId));
+      
+    } catch (error) {
+      console.error("Erro no rastreamento de clique:", error);
+      res.status(500).send("Erro interno");
+    }
+  });
+
+  // Endpoint MELHORADO para postbacks com processamento de comissões
+  app.post("/api/postback", async (req, res) => {
+    try {
+      const { event, ref, subid, amount, house, customer_id } = req.body;
+      const userRef = ref || subid;
+      
+      console.log(`📩 Postback recebido: event=${event}, ref=${userRef}, amount=${amount}, house=${house}`);
+      
+      // Busca o afiliado
+      const affiliate = await db.select()
+        .from(schema.users)
+        .where(eq(schema.users.username, userRef))
+        .limit(1);
+      
+      if (!affiliate.length) {
+        console.log(`❌ Afiliado não encontrado no postback: ${userRef}`);
+        return res.status(400).json({ error: "Afiliado não encontrado" });
+      }
+      
+      // Busca a casa
+      const houseRecord = await db.select()
+        .from(schema.bettingHouses)
+        .where(sql`LOWER(${schema.bettingHouses.name}) = ${house.toLowerCase()}`)
+        .limit(1);
+      
+      if (!houseRecord.length) {
+        console.log(`❌ Casa não encontrada no postback: ${house}`);
+        return res.status(400).json({ error: "Casa não encontrada" });
+      }
+      
+      // Registra a conversão
+      const conversion = await storage.createConversion({
+        userId: affiliate[0].id,
+        houseId: houseRecord[0].id,
+        type: event,
+        amount: parseFloat(amount) || 0,
+        customerId: customer_id || null,
+        status: 'confirmed'
+      });
+      
+      // Calcula comissão baseada no tipo da casa
+      let commissionValue = 0;
+      const depositAmount = parseFloat(amount) || 0;
+      
+      if (event === 'registration' && houseRecord[0].commissionType === 'CPA') {
+        commissionValue = houseRecord[0].commissionValue || 50; // CPA fixo
+      } else if ((event === 'deposit' || event === 'recurring-deposit') && houseRecord[0].commissionType === 'RevShare') {
+        commissionValue = (depositAmount * (houseRecord[0].commissionValue || 30)) / 100; // RevShare %
+      }
+      
+      // Cria pagamento se houver comissão
+      if (commissionValue > 0) {
+        await storage.createPayment({
+          userId: affiliate[0].id,
+          amount: commissionValue,
+          status: 'pending',
+          description: `Comissão ${event} - ${houseRecord[0].name}`,
+          conversionId: conversion.id
+        });
+        
+        console.log(`💰 Comissão criada: R$ ${commissionValue} para ${affiliate[0].username}`);
+      }
+      
+      console.log(`✅ Postback processado com sucesso`);
+      res.json({ 
+        success: true, 
+        message: "Postback processado com sucesso",
+        commission: commissionValue
+      });
+      
+    } catch (error) {
+      console.error("Erro no processamento do postback:", error);
+      res.status(500).json({ error: "Erro interno no processamento" });
+    }
+  });
+
   wss.on('connection', (ws) => {
     console.log('Cliente WebSocket conectado');
     

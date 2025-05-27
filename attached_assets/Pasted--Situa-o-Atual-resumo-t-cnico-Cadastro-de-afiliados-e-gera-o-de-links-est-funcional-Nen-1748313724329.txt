@@ -1,0 +1,102 @@
+🧩 Situação Atual (resumo técnico)
+✅ Cadastro de afiliados e geração de links está funcional
+
+⚠️ Nenhum evento (clique, registro, depósito) está sendo registrado
+
+⚠️ Painel do usuário aparece vazio (sem comissões, sem estatísticas)
+
+⚠️ Painel admin sem dados e sem capacidade de gerenciamento
+
+⚠️ Postbacks não estão sendo processados
+
+⏱️ Você tem 10 minutos para entregar uma versão funcional
+
+🎯 Requisitos detalhados com foco em painel admin gerenciável
+🔧 1. Admin deve conseguir gerenciar tudo, incluindo:
+Recurso	Ações que o admin precisa poder fazer
+Afiliados	Ver, editar, aprovar/desativar, resetar senha
+Casas de apostas	Criar, editar, deletar, configurar parâmetros de postback
+Links gerados	Ver links por afiliado, desativar, copiar
+Eventos (postbacks)	Ver todos os registros, aprovar manualmente, deletar, corrigir valores se necessário
+Comissões	Ver total, editar valores manualmente, adicionar bônus
+Relatórios	Gerar por período, exportar CSV/Excel
+Configurações do sistema	Editar regras de comissão, tokens de segurança, IP whitelist, notificações
+
+🧪 2. Lógica de registro e rastreamento
+Cliques: quando alguém acessa um link do tipo /go/casa?ref=123, o sistema deve:
+
+Gravar o clique com data/hora, IP, user-agent, ID do afiliado e casa
+
+Redirecionar o usuário para o link de destino da casa
+
+Exemplo de estrutura:
+
+json
+Copiar
+Editar
+{
+  "affiliate_id": 123,
+  "house_id": 5,
+  "type": "click",
+  "ip": "192.168.0.10",
+  "ua": "Mozilla/5.0",
+  "timestamp": "2025-05-26 15:42"
+}
+Postbacks (registros, depósitos):
+
+Endpoint como /api/postback?event=deposit&ref=123&amount=100&house_id=5
+
+O sistema identifica o afiliado (ref), casa, tipo de evento, e valor
+
+Aplica regra de comissão (ex: 30% do depósito)
+
+Salva o evento e a comissão no banco
+
+📊 3. Painéis alimentados com dados reais
+🧑‍💼 Painel Admin
+Dashboard com:
+
+Total de afiliados
+
+Total de cliques, registros, depósitos
+
+Comissões totais pagas
+
+Casas com melhor performance
+
+Abas para:
+
+Gerenciar afiliados
+
+Ver todos os postbacks
+
+Editar comissões
+
+Filtros por data, casa, afiliado
+
+👤 Painel Afiliado
+Tabela com:
+
+Cliques por casa e data
+
+Depósitos realizados
+
+Comissão acumulada
+
+Link personalizado para cada casa
+
+Gráfico com evolução diária ou semanal
+
+✅ Exemplo de checklist de correções para agora:
+ Criar ou consertar endpoint /api/postback (GET e/ou POST)
+
+ Criar lógica de rastreamento no /go/casa para registrar cliques
+
+ Inserir registros no banco (clicks, events, commissions)
+
+ Atualizar painel admin com listagens e gerenciamento
+
+ Atualizar painel afiliado com estatísticas e comissão
+
+ Garantir que admin possa editar tudo via painel (afiliados, eventos, valores, regras)
+
