@@ -432,7 +432,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Casa de apostas não encontrada" });
       }
       
-      // Gerar URL de afiliado
+      // Gerar URL de afiliado único para o usuário
       const generatedUrl = house.baseUrl.replace("VALUE", user.username);
       
       const affiliateLink = await storage.createAffiliateLink({

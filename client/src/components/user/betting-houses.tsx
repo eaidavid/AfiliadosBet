@@ -21,6 +21,10 @@ export default function BettingHouses({ onPageChange }: BettingHousesProps) {
     queryKey: ["/api/betting-houses"],
   });
 
+  const { data: myLinks } = useQuery({
+    queryKey: ["/api/my-links"],
+  });
+
   const affiliateMutation = useMutation({
     mutationFn: async (houseId: number) => {
       try {
@@ -77,6 +81,11 @@ export default function BettingHouses({ onPageChange }: BettingHousesProps) {
   const filteredHouses = houses?.filter((house: any) =>
     house.name.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
+
+  // Função para verificar se já está afiliado a uma casa
+  const isAffiliated = (houseId: number) => {
+    return myLinks?.some((link: any) => link.houseId === houseId && link.isActive);
+  };
 
   if (isLoading) {
     return (
@@ -167,13 +176,13 @@ export default function BettingHouses({ onPageChange }: BettingHousesProps) {
                 </div>
               </div>
 
-              {house.isAffiliated ? (
+              {isAffiliated(house.id) ? (
                 <Button
-                  onClick={() => copyLink(house.affiliateLink)}
-                  className="w-full bg-slate-700 hover:bg-slate-600 text-white"
+                  disabled
+                  className="w-full bg-slate-700 text-slate-400 cursor-not-allowed"
                 >
-                  <LinkIcon className="h-4 w-4 mr-2" />
-                  Copiar Link
+                  <Check className="h-4 w-4 mr-2" />
+                  Já sou Afiliado
                 </Button>
               ) : (
                 <Button
