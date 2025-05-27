@@ -990,6 +990,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin - Editar valor de comissão manualmente
+  app.patch("/api/admin/commissions/:id", requireAdmin, async (req, res) => {
+    try {
+      const conversionId = parseInt(req.params.id);
+      const { amount, status } = req.body;
+      
+      await db.update(schema.conversions)
+        .set({ 
+          commission: parseFloat(amount),
+          status: status || 'confirmed'
+        })
+        .where(eq(schema.conversions.id, conversionId));
+
+      res.json({ 
+        message: "Comissão atualizada com sucesso",
+        conversionId,
+        newAmount: amount
+      });
+    } catch (error) {
+      console.error("Update commission error:", error);
+      res.status(500).json({ message: "Failed to update commission" });
+    }
+  });
+
+  // Admin - Criar evento/conversão manual
+  app.post("/api/admin/manual-conversion", requireAdmin, async (req, res) => {
+    try {
+      const { userId, houseId, type, amount, commission, description } = req.body;
+      
+      const conversion = await storage.createConversion({
+        userId: parseInt(userId),
+        houseId: parseInt(houseId),
+        type,
+        amount: parseFloat(amount) || 0,
+        customerId: `manual_${Date.now()}`,
+        status: 'confirmed'
+      });
+
+      // Cria pagamento se houver comissão
+      if (commission > 0) {
+        await storage.createPayment({
+          userId: parseInt(userId),
+          amount: parseFloat(commission),
+          status: 'pending',
+          description: description || `Conversão manual ${type}`,
+          conversionId: conversion.id
+        });
+      }
+
+      res.json({ 
+        message: "Conversão manual criada com sucesso",
+        conversion,
+        commission
+      });
+    } catch (error) {
+      console.error("Create manual conversion error:", error);
+      res.status(500).json({ message: "Failed to create manual conversion" });
+    }
+  });
+
+  // Admin - Obter todas as conversões/eventos
+  app.get("/api/admin/all-conversions", requireAdmin, async (req, res) => {
+    try {
+      const conversions = await db.select({
+        id: schema.conversions.id,
+        userId: schema.conversions.userId,
+        houseId: schema.conversions.houseId,
+        type: schema.conversions.type,
+        amount: schema.conversions.amount,
+        commission: schema.conversions.commission,
+        status: schema.conversions.status,
+        convertedAt: schema.conversions.convertedAt,
+        customerId: schema.conversions.customerId,
+        userName: schema.users.username,
+        userEmail: schema.users.email,
+        houseName: schema.bettingHouses.name
+      })
+      .from(schema.conversions)
+      .leftJoin(schema.users, eq(schema.conversions.userId, schema.users.id))
+      .leftJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
+      .orderBy(sql`${schema.conversions.convertedAt} DESC`);
+      
+      res.json(conversions);
+    } catch (error) {
+      console.error("Get all conversions error:", error);
+      res.status(500).json({ message: "Failed to get conversions" });
+    }
+  });
+
   // Usuário - Verificar se conta está ativa (afetado por ações do admin)
   app.get("/api/user/account-status", requireAuth, async (req: any, res) => {
     try {
