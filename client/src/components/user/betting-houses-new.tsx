@@ -245,6 +245,79 @@ export default function BettingHousesNew() {
           <p className="text-slate-400">Nenhuma casa de apostas encontrada.</p>
         </div>
       )}
+
+      {/* Modal de Detalhes */}
+      <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
+        <DialogContent className="sm:max-w-md bg-slate-800 border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center space-x-2">
+              <Building className="h-5 w-5 text-emerald-400" />
+              <span>{selectedHouse?.name}</span>
+            </DialogTitle>
+            <DialogDescription className="text-slate-300">
+              Informações detalhadas sobre esta casa de apostas
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedHouse && (
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-medium text-slate-400 mb-2">Descrição</h4>
+                <p className="text-slate-300 text-sm">
+                  {selectedHouse.description || "Casa de apostas confiável com ótimas oportunidades de comissão."}
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="text-sm font-medium text-slate-400 mb-1">Comissão</h4>
+                  <p className="text-white font-medium">
+                    {selectedHouse.commissionModel === 'cpa' ? `R$ ${selectedHouse.commissionValue}` : `${selectedHouse.commissionValue}%`}
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-slate-400 mb-1">Modelo</h4>
+                  <p className="text-white font-medium">
+                    {selectedHouse.commissionModel === 'cpa' ? 'CPA' : 'RevShare'}
+                  </p>
+                </div>
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-medium text-slate-400 mb-1">Status</h4>
+                <Badge className={selectedHouse.isActive ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}>
+                  {selectedHouse.isActive ? 'Ativa' : 'Inativa'}
+                </Badge>
+              </div>
+              
+              {selectedHouse.baseUrl && (
+                <div>
+                  <h4 className="text-sm font-medium text-slate-400 mb-1">Site Oficial</h4>
+                  <a 
+                    href={selectedHouse.baseUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-emerald-400 hover:text-emerald-300 text-sm flex items-center space-x-1"
+                  >
+                    <span>{selectedHouse.baseUrl}</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
+              )}
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button
+              onClick={() => setIsDetailsModalOpen(false)}
+              variant="outline"
+              className="border-slate-600 text-slate-300 hover:bg-slate-700"
+            >
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
