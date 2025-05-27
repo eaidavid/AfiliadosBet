@@ -57,8 +57,8 @@ function requireAdmin(req: any, res: any, next: any) {
     return res.status(401).json({ message: "Authentication required" });
   }
   
-  if (req.session.user.role !== "admin") {
-    console.log("Usuário não é admin:", req.session.user.role);
+  if (!req.session.user.role || req.session.user.role !== "admin") {
+    console.log("Usuário não é admin:", req.session.user?.role || 'role undefined');
     return res.status(403).json({ message: "Admin access required" });
   }
   
