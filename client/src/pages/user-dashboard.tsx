@@ -10,7 +10,8 @@ import Profile from "@/components/user/profile";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
-import { MousePointer, UserPlus, CreditCard, DollarSign } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { MousePointer, UserPlus, CreditCard, DollarSign, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
 
 export default function UserDashboard() {
   const [currentPage, setCurrentPage] = useState("home");
@@ -32,6 +33,12 @@ export default function UserDashboard() {
     queryKey: ["/api/stats/user"],
   });
 
+  // Verificação do status da conta (afetado por ações do admin)
+  const { data: accountStatus = {} } = useQuery({
+    queryKey: ["/api/user/account-status"],
+    refetchInterval: 5000, // Verifica a cada 5 segundos
+  });
+
   // Estado de carregamento seguro
   if (authLoading || statsLoading) {
     return (
@@ -45,6 +52,35 @@ export default function UserDashboard() {
   if (statsError) {
     console.error("Stats error:", statsError);
   }
+
+  // Renderiza notificações de ações administrativas
+  const renderAdminNotifications = () => {
+    const notifications = [];
+    
+    if (accountStatus?.isActive === false) {
+      notifications.push(
+        <Alert key="blocked" className="mb-4 border-red-500 bg-red-500/10">
+          <XCircle className="h-4 w-4 text-red-500" />
+          <AlertDescription className="text-red-400">
+            Sua conta foi bloqueada pelo administrador. Entre em contato com o suporte.
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
+    if (accountStatus?.activeLinksCount !== undefined && accountStatus.activeLinksCount < accountStatus?.totalLinks) {
+      notifications.push(
+        <Alert key="links-disabled" className="mb-4 border-yellow-500 bg-yellow-500/10">
+          <AlertTriangle className="h-4 w-4 text-yellow-500" />
+          <AlertDescription className="text-yellow-400">
+            Alguns dos seus links foram desativados pelo administrador.
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
+    return notifications;
+  };
 
   const renderContent = () => {
     switch (currentPage) {

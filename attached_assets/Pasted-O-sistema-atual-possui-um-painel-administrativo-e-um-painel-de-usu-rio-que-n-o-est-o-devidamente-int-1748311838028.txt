@@ -1,0 +1,47 @@
+O sistema atual possui um painel administrativo e um painel de usuário que não estão devidamente integrados em seus fluxos de dados. Embora visualmente os menus estejam presentes, apenas o módulo de "Casas de Apostas" está alimentando corretamente os dados no painel do usuário. Os demais menus estão com dados isolados ou desconectados, gerando lacunas, erros constantes e falhas na experiência de uso.
+
+Esse problema afeta diretamente:
+
+A visibilidade do usuário sobre seus próprios resultados e ações;
+
+A capacidade do admin de gerir e monitorar afiliados com precisão;
+
+A eficácia dos relatórios, cálculos de comissão e rastreio de performance;
+
+A confiança no sistema como um todo.
+
+🎯 Objetivo Esperado
+Criar um fluxo sólido, funcional e bidirecional entre o painel do Admin e o painel do Usuário, com base em menus e submenus já existentes.
+O fluxo deve garantir que toda ação administrativa tenha impacto direto e visível no painel do usuário. Ao mesmo tempo, as ações do usuário devem gerar dados para o Admin acompanhar, controlar e intervir quando necessário.
+
+🔄 Fluxo Integrado Admin ⇄ Usuário (com Menus/Submenus)
+🛠️ Admin Panel (Menu > Submenu)	👤 Painel do Usuário (Menu > Submenu)	🔄 Descrição da Integração
+Dashboard	Dashboard	Admin vê visão geral do sistema, usuários veem estatísticas próprias
+Afiliados	Meu Perfil / Acesso ao Sistema	Controle de status da conta (ativa/bloqueada), permissões
+Casas de Apostas	Casas de Apostas	Casas disponíveis para afiliação, controladas pelo admin
+Links	Meus Links	Geração e rastreamento de links com ID único
+Links > Parâmetros de Link	Meus Links	Parâmetros automáticos aplicados nos links do usuário
+Postbacks	Relatórios > Ações e Conversões	Histórico de eventos disparados por clique, registro, depósito
+Comissões	Pagamentos > Meus Ganhos	Cálculo de CPA, RevShare e status de pagamento
+Relatórios > Por Usuário / Por Casa / Global	Relatórios > Meus Dados	Dados filtrados para o usuário, com estatísticas pessoais
+Configurações > Regras de Comissão / Sistema	—	Impactam regras aplicadas globalmente (sem exibição direta ao user)
+Configurações > Templates de Postback / IP / Segurança	—	Afetam rastreamento de ações e segurança dos dados recebidos
+Afiliados > Controle de Permissões / Subafiliados	Meu Perfil / Subafiliados (se aplicável)	Libera ou bloqueia funcionalidades específicas por afiliado
+Relatórios > Desempenho de Campanhas	Dashboard / Relatórios	Permite que usuário veja estatísticas de campanhas onde participa
+Suporte (Interno)	Suporte	Visualização e envio de tickets, histórico de mensagens
+
+✅ Instrução para Desenvolvedores ou IA (Prompt Técnico de Execução)
+Você é uma IA desenvolvedora com experiência em integração full-stack. Seu objetivo é revisar todo o sistema do projeto AfiliadosBet.
+O painel do Admin e o painel do Usuário precisam ser 100% integrados, refletindo corretamente todas as ações, permissões e dados descritos no fluxo abaixo.
+
+⚙️ Tarefa:
+Audite todos os endpoints/API existentes e veja se estão recebendo ou enviando dados corretamente entre painéis.
+
+Corrija as rotas e estados para garantir que tudo que o admin gerencia tenha reflexo no painel do usuário e vice-versa.
+
+Garanta que todos os menus tenham dados reais, dinâmicos e sincronizados, conforme o fluxo técnico descrito.
+
+Evite erros repetitivos e desconexões de estado. Ao detectar um erro, explique a causa, corrija, teste internamente e reaplique.
+
+Ao final, apresente um resumo técnico das correções aplicadas.
+

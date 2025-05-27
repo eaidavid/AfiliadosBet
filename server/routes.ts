@@ -867,6 +867,155 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // WebSocket
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
   
+  // === INTEGRAÇÃO BIDIRECIONAL ADMIN ⇄ USUÁRIO ===
+  
+  // Admin - Atualizar status do usuário (afeta painel do usuário)
+  app.patch("/api/admin/users/:id/status", requireAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { isActive } = req.body;
+      
+      await storage.updateUserStatus(userId, isActive);
+      
+      // Se bloqueado, desativa todos os links do usuário
+      if (!isActive) {
+        const userLinks = await storage.getAffiliateLinksByUserId(userId);
+        for (const link of userLinks) {
+          await storage.deactivateAffiliateLink(link.id);
+        }
+      }
+      
+      res.json({ 
+        message: isActive ? "Usuário desbloqueado com sucesso" : "Usuário bloqueado e links desativados",
+        affectedUser: await storage.getUserById(userId),
+        affectedLinks: !isActive ? await storage.getAffiliateLinksByUserId(userId) : []
+      });
+    } catch (error) {
+      console.error("Update user status error:", error);
+      res.status(500).json({ message: "Failed to update user status" });
+    }
+  });
+
+  // Admin - Forçar geração de link para usuário específico
+  app.post("/api/admin/users/:userId/generate-link", requireAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { houseId } = req.body;
+      
+      const user = await storage.getUserById(userId);
+      const house = await storage.getBettingHouseById(houseId);
+      
+      if (!user || !house) {
+        return res.status(404).json({ message: "Usuário ou casa não encontrados" });
+      }
+
+      // Verifica se já existe link
+      const existingLink = await storage.getAffiliateLinkByUserAndHouse(userId, houseId);
+      if (existingLink) {
+        return res.status(400).json({ message: "Link já existe para este usuário e casa" });
+      }
+
+      // Gera novo link
+      const newLink = await storage.createAffiliateLink({
+        userId,
+        houseId,
+        generatedUrl: house.baseUrl.replace('{subid}', user.username),
+        isActive: true
+      });
+
+      res.json({ 
+        message: "Link gerado com sucesso pelo admin",
+        link: newLink,
+        user: user.username,
+        house: house.name
+      });
+    } catch (error) {
+      console.error("Admin generate link error:", error);
+      res.status(500).json({ message: "Failed to generate link" });
+    }
+  });
+
+  // Admin - Visualizar dados específicos de um usuário (para relatórios)
+  app.get("/api/admin/users/:id/detailed-stats", requireAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const user = await storage.getUserById(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+
+      const stats = await storage.getUserStats(userId);
+      const links = await storage.getAffiliateLinksByUserId(userId);
+      const conversions = await storage.getConversionsByUserId(userId);
+      const clicks = await storage.getClicksByUserId(userId);
+      const payments = await storage.getPaymentsByUserId(userId);
+
+      res.json({
+        user,
+        stats,
+        links: links.length,
+        activeLinks: links.filter(l => l.isActive).length,
+        conversions: conversions.length,
+        clicks: clicks.length,
+        payments,
+        totalEarnings: payments.reduce((sum, p) => sum + (p.amount || 0), 0)
+      });
+    } catch (error) {
+      console.error("Get user detailed stats error:", error);
+      res.status(500).json({ message: "Failed to get user detailed stats" });
+    }
+  });
+
+  // Admin - Aprovar/rejeitar pagamento (afeta painel do usuário)
+  app.patch("/api/admin/payments/:id/status", requireAdmin, async (req, res) => {
+    try {
+      const paymentId = parseInt(req.params.id);
+      const { status, transactionId } = req.body;
+      
+      await storage.updatePaymentStatus(paymentId, status, transactionId);
+      
+      const payment = await db.select()
+        .from(schema.payments)
+        .where(eq(schema.payments.id, paymentId))
+        .limit(1);
+
+      res.json({ 
+        message: `Pagamento ${status === 'paid' ? 'aprovado' : 'rejeitado'} com sucesso`,
+        payment: payment[0]
+      });
+    } catch (error) {
+      console.error("Update payment status error:", error);
+      res.status(500).json({ message: "Failed to update payment status" });
+    }
+  });
+
+  // Usuário - Verificar se conta está ativa (afetado por ações do admin)
+  app.get("/api/user/account-status", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.session.user.id;
+      const user = await storage.getUserById(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+
+      const activeLinks = await storage.getAffiliateLinksByUserId(userId);
+      const stats = await storage.getUserStats(userId);
+
+      res.json({
+        isActive: user.isActive,
+        username: user.username,
+        totalLinks: activeLinks.length,
+        activeLinksCount: activeLinks.filter(l => l.isActive).length,
+        stats
+      });
+    } catch (error) {
+      console.error("Get account status error:", error);
+      res.status(500).json({ message: "Failed to get account status" });
+    }
+  });
+
   wss.on('connection', (ws) => {
     console.log('Cliente WebSocket conectado');
     
