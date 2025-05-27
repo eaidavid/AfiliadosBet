@@ -6,6 +6,12 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Middleware para garantir JSON válido em todas as respostas da API
+app.use('/api', (req, res, next) => {
+  res.setHeader('Content-Type', 'application/json');
+  next();
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;

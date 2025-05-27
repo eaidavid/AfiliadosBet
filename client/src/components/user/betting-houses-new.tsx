@@ -35,7 +35,12 @@ export default function BettingHousesNew() {
   const affiliateMutation = useMutation({
     mutationFn: async (houseId: number) => {
       const response = await apiRequest("POST", `/api/affiliate/${houseId}`);
-      return response.json();
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        return response.json();
+      } else {
+        throw new Error("Resposta inválida do servidor");
+      }
     },
     onSuccess: () => {
       toast({
