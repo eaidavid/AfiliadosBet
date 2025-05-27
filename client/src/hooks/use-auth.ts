@@ -6,15 +6,17 @@ export function useAuth() {
   const { data: user, isLoading, error } = useQuery({
     queryKey: ["/api/auth/me"],
     retry: false,
+    staleTime: 1000 * 60 * 5, // 5 minutos
   });
 
-  const safeUser = user as User | undefined;
+  // Garantir que user seja tratado corretamente
+  const safeUser = user && typeof user === 'object' && 'id' in user ? user as User : undefined;
 
   return {
     user: safeUser,
     isLoading,
-    isAuthenticated: !!safeUser && !isLoading,
-    isAdmin: safeUser?.role === "admin" && !isLoading,
+    isAuthenticated: !!safeUser && !isLoading && !!safeUser.id,
+    isAdmin: !isLoading && !!safeUser && safeUser.role === "admin",
     error,
   };
 }

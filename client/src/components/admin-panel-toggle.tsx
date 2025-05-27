@@ -5,9 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Shield, User, ChevronUp, ChevronDown } from "lucide-react";
 
 export default function AdminPanelToggle() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, isLoading, user } = useAuth();
   const [location, setLocation] = useLocation();
   const [isExpanded, setIsExpanded] = useState(false);
+  
+  // Aguarda carregamento completo antes de renderizar
+  if (isLoading || !user) return null;
   
   // Só mostra o botão para administradores
   if (!isAdmin) return null;
