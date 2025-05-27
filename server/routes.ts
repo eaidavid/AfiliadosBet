@@ -1701,8 +1701,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log("Buscando logs de postbacks com filtros:", { status, casa, subid });
       
-      // Buscar logs da tabela postback_logs
-      const logs = await db.select().from(schema.postbackLogs)
+      // Buscar logs da tabela postback_logs com filtros opcionais
+      let query = db.select().from(schema.postbackLogs);
+      
+      if (status && status !== 'all') {
+        query = query.where(eq(schema.postbackLogs.status, status as string));
+      }
+      if (casa) {
+        query = query.where(eq(schema.postbackLogs.casa, casa as string));
+      }
+      if (subid) {
+        query = query.where(eq(schema.postbackLogs.subid, subid as string));
+      }
+      
+      const logs = await query
         .orderBy(desc(schema.postbackLogs.criadoEm))
         .limit(100);
       
