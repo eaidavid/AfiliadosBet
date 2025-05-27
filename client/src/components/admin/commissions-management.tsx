@@ -19,8 +19,8 @@ export default function CommissionsManagement({ onPageChange }: CommissionsManag
   const { toast } = useToast();
   const [filters, setFilters] = useState({
     period: "month",
-    affiliate: "",
-    house: "",
+    affiliate: "all",
+    house: "all",
     status: "all",
   });
 
@@ -190,7 +190,7 @@ export default function CommissionsManagement({ onPageChange }: CommissionsManag
                       <SelectValue placeholder="Todos os afiliados" />
                     </SelectTrigger>
                     <SelectContent className="bg-slate-700 border-slate-600">
-                      <SelectItem value="">Todos os afiliados</SelectItem>
+                      <SelectItem value="all">Todos os afiliados</SelectItem>
                       {affiliates.map((affiliate: any) => (
                         <SelectItem key={affiliate.id} value={affiliate.id.toString()}>
                           {affiliate.username}
@@ -207,7 +207,7 @@ export default function CommissionsManagement({ onPageChange }: CommissionsManag
                       <SelectValue placeholder="Todas as casas" />
                     </SelectTrigger>
                     <SelectContent className="bg-slate-700 border-slate-600">
-                      <SelectItem value="">Todas as casas</SelectItem>
+                      <SelectItem value="all">Todas as casas</SelectItem>
                       {houses.map((house: any) => (
                         <SelectItem key={house.id} value={house.id.toString()}>
                           {house.name}
