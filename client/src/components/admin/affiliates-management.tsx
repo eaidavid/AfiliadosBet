@@ -465,6 +465,28 @@ export default function AffiliatesManagement({ onPageChange }: AffiliatesManagem
     },
   });
 
+  // Funcionalidade de bloqueio/desbloqueio (afeta painel do usuário)
+  const toggleUserStatus = useMutation({
+    mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
+      const response = await apiRequest("PATCH", `/api/admin/users/${id}/status`, { isActive });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Sucesso!",
+        description: data.message,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/affiliates"] });
+    },
+    onError: () => {
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar status do usuário.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const deleteAffiliate = useMutation({
     mutationFn: async (id: number) => {
       const response = await apiRequest("DELETE", `/api/admin/affiliates/${id}`);
