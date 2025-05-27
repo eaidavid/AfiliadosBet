@@ -486,7 +486,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Nova rota para buscar links de afiliação do usuário
-  app.get("/api/my-affiliate-links", requireAuth, async (req: any, res) => {
+  app.get("/api/my-links", requireAuth, async (req: any, res) => {
     try {
       const userId = req.session.user.id;
       const links = await storage.getAffiliateLinksByUserId(userId);
