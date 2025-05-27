@@ -28,7 +28,7 @@ export default function UserDashboard() {
     return () => clearInterval(interval);
   }, [queryClient]);
 
-  const { data: stats } = useQuery({
+  const { data: stats = {} } = useQuery({
     queryKey: ["/api/stats/user"],
   });
 
@@ -70,7 +70,7 @@ export default function UserDashboard() {
                     <div>
                       <p className="text-slate-400 text-sm font-medium">Total de Cliques</p>
                       <p className="text-2xl font-bold text-white mt-1">
-                        {stats?.totalClicks?.toLocaleString() || "0"}
+                        {(stats as any)?.totalClicks?.toLocaleString() || "0"}
                       </p>
                     </div>
                     <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">

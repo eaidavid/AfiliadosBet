@@ -482,12 +482,16 @@ export default function AffiliatesManagement({ onPageChange }: AffiliatesManagem
   });
 
   const filteredAffiliates = affiliates.filter((affiliate: any) => {
-    const matchesSearch = affiliate.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         affiliate.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         affiliate.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const fullName = affiliate.fullName || affiliate.full_name || '';
+    const username = affiliate.username || '';
+    const email = affiliate.email || '';
+    
+    const matchesSearch = fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || 
-                         (statusFilter === "active" && affiliate.isActive) ||
-                         (statusFilter === "inactive" && !affiliate.isActive);
+                         (statusFilter === "active" && (affiliate.isActive || affiliate.is_active)) ||
+                         (statusFilter === "inactive" && !(affiliate.isActive || affiliate.is_active));
     return matchesSearch && matchesStatus;
   });
 
