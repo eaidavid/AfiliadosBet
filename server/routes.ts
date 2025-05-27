@@ -46,9 +46,23 @@ function requireAuth(req: any, res: any, next: any) {
 }
 
 function requireAdmin(req: any, res: any, next: any) {
-  if (!req.session?.user || req.session.user.role !== "admin") {
+  console.log("Verificando admin access:", {
+    hasSession: !!req.session,
+    hasUser: !!req.session?.user,
+    userRole: req.session?.user?.role
+  });
+  
+  if (!req.session?.user) {
+    console.log("Sem sessão/usuário");
+    return res.status(401).json({ message: "Authentication required" });
+  }
+  
+  if (req.session.user.role !== "admin") {
+    console.log("Usuário não é admin:", req.session.user.role);
     return res.status(403).json({ message: "Admin access required" });
   }
+  
+  console.log("Admin access autorizado");
   next();
 }
 
@@ -729,8 +743,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes
-  app.get("/api/admin/affiliates", requireAdmin, async (req, res) => {
+  app.get("/api/admin/affiliates", async (req, res) => {
     try {
+      // Verificar se é admin via session
+      if (!req.session?.user?.role || req.session.user.role !== "admin") {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
       const affiliates = await storage.getAllAffiliates();
       console.log("Admin affiliates found:", affiliates.length, affiliates);
       res.json(affiliates);

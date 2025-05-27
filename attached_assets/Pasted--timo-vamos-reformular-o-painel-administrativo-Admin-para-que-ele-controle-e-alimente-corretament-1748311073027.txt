@@ -1,0 +1,107 @@
+Ótimo, vamos reformular o painel administrativo (Admin) para que ele controle e alimente corretamente todos os dados do sistema, e comunique-se plenamente com o painel do usuário.
+
+Aqui está uma proposta completa, funcional e escalável, organizando o que o painel admin precisa gerenciar, enviar e receber, garantindo total integração com o painel do usuário.
+
+✅ Objetivo da Reformulação
+Garantir que o painel admin seja a fonte central de dados do sistema, permitindo:
+
+Cadastro e controle completo de entidades (casas, afiliados, postbacks, comissões, leads, estatísticas etc.).
+
+Comunicação bidirecional eficiente com o painel do usuário (exibição, atualizações e rastreamento de dados).
+
+🧩 Módulos do Novo Painel Admin
+1. 🏠 Casas de Apostas (já funcionando)
+Criar, editar, excluir casas de apostas.
+
+Definir:
+
+Nome, descrição, logo.
+
+Link promocional base com parâmetros (primário e adicionais).
+
+Tipos de comissão (CPA, RevShare).
+
+Visualização da estrutura de postbacks.
+
+2. 👤 Gestão de Usuários/Afiliados
+Listar usuários registrados.
+
+Ver:
+
+Casas às quais estão afiliados.
+
+Links gerados.
+
+Ações realizadas (cliques, registros, depósitos, lucro).
+
+Permitir:
+
+Bloquear/desbloquear afiliados.
+
+Editar permissões (ex: sub-afiliadores).
+
+Acompanhar desempenho individual.
+
+3. 🔗 Gerador de Links Personalizados
+Visualizar links gerados por cada afiliado por casa.
+
+Forçar regeneração se necessário.
+
+Conferir se parâmetros únicos estão funcionando corretamente.
+
+4. 📩 Postbacks Recebidos
+Ver em tempo real os postbacks recebidos (registro, depósito, lucro).
+
+Filtros por:
+
+Usuário
+
+Tipo de evento
+
+Data
+
+Conferir dados brutos e como foram processados.
+
+5. 💰 Comissões e Estatísticas
+Cálculo automático de comissão por afiliado com base nos eventos recebidos.
+
+Exportar relatórios por:
+
+Casa
+
+Afiliado
+
+Período
+
+Visualização gráfica (opcional): registros, depósitos, lucro, comissões.
+
+6. 🔧 Configurações Avançadas
+Definir parâmetros globais:
+
+Taxas de comissão padrão.
+
+Política de validação de postbacks (IP, tokens, segurança).
+
+Intervalo de atualização de estatísticas.
+
+Ativar/desativar casas ou eventos individualmente.
+
+🔁 Fluxo Admin ⇄ Usuário (Integração Total)
+Admin Gerencia	Usuário Recebe Visualiza / Usa
+Casas de Apostas	Casas disponíveis para afiliação
+Parâmetros de links	Link promocional com ID único
+Postbacks recebidos	Histórico de ações e conversões
+Comissão por ação	Painel de ganhos do usuário
+Status de afiliação	Pode se afiliar/desafiliar
+Controle de usuários	Conta ativa/bloqueada, permissões
+Relatórios de desempenho	Usuário visualiza estatísticas próprias
+
+📦 Extras recomendados
+Integração com notificações (ex: "Novo registro confirmado", "Comissão recebida").
+
+Filtros inteligentes por data, ação, casa, afiliado.
+
+Logs de auditoria (quem fez o quê e quando).
+
+Exportação de relatórios em CSV/PDF.
+
