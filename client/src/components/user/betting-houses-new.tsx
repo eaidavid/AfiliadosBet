@@ -45,8 +45,9 @@ export default function BettingHousesNew() {
         title: "Sucesso!",
         description: "Você foi afiliado com sucesso! Verifique seus links na aba 'Meus Links'.",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/my-affiliate-links"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/betting-houses"] });
+      // Refazer busca dos dados para atualizar a interface
+      queryClient.refetchQueries({ queryKey: ["/api/my-affiliate-links"] });
+      queryClient.refetchQueries({ queryKey: ["/api/betting-houses"] });
     },
     onError: (error: any) => {
       toast({
@@ -58,9 +59,8 @@ export default function BettingHousesNew() {
   });
 
   // Verificar se já está afiliado a uma casa
-  const isAffiliated = (houseId: number) => {
-    if (!Array.isArray(userLinks)) return false;
-    return userLinks.some((link: any) => link.houseId === houseId);
+  const isAffiliated = (house: any) => {
+    return house.isAffiliated || false;
   };
 
   // Copiar link para clipboard
@@ -129,7 +129,7 @@ export default function BettingHousesNew() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredHouses.map((house: any) => {
-          const affiliated = isAffiliated(house.id);
+          const affiliated = isAffiliated(house);
           return (
             <Card key={house.id} className="bg-slate-800 border-slate-700 hover:border-slate-600 transition-colors">
               <CardContent className="p-6">
@@ -217,13 +217,10 @@ export default function BettingHousesNew() {
                   )}
 
                   {/* Botão para copiar link se já afiliado */}
-                  {affiliated && Array.isArray(userLinks) && (
+                  {affiliated && house.affiliateLink && (
                     <Button
                       onClick={() => {
-                        const userLink = userLinks.find((link: any) => link.houseId === house.id);
-                        if (userLink) {
-                          copyToClipboard(userLink.generatedUrl);
-                        }
+                        copyToClipboard(house.affiliateLink);
                       }}
                       variant="outline"
                       className="w-full border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"

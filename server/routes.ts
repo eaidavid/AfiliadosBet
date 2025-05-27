@@ -398,10 +398,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User routes
-  app.get("/api/betting-houses", async (req, res) => {
+  app.get("/api/betting-houses", requireAuth, async (req: any, res) => {
     try {
       const houses = await storage.getActiveBettingHouses();
-      res.json(houses);
+      const userId = req.session.user.id;
+      
+      // Para cada casa, verificar se o usuário já está afiliado
+      const housesWithAffiliationStatus = await Promise.all(
+        houses.map(async (house) => {
+          const existingLink = await storage.getAffiliateLinkByUserAndHouse(userId, house.id);
+          return {
+            ...house,
+            isAffiliated: !!existingLink,
+            affiliateLink: existingLink?.generatedUrl || null,
+          };
+        })
+      );
+      
+      res.json(housesWithAffiliationStatus);
     } catch (error) {
       console.error("Get betting houses error:", error);
       res.status(500).json({ message: "Failed to get betting houses" });
