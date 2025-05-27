@@ -78,13 +78,13 @@ export default function BettingHouses({ onPageChange }: BettingHousesProps) {
     });
   };
 
-  const filteredHouses = houses?.filter((house: any) =>
+  const filteredHouses = (houses as any)?.filter((house: any) =>
     house.name.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
   // Função para verificar se já está afiliado a uma casa
   const isAffiliated = (houseId: number) => {
-    return myLinks?.some((link: any) => link.houseId === houseId && link.isActive);
+    return (myLinks as any)?.some((link: any) => link.houseId === houseId && link.isActive);
   };
 
   if (isLoading) {

@@ -90,7 +90,7 @@ export default function UserDashboard() {
                     <div>
                       <p className="text-slate-400 text-sm font-medium">Registros</p>
                       <p className="text-2xl font-bold text-white mt-1">
-                        {stats?.totalRegistrations || "0"}
+                        {(stats as any)?.totalRegistrations || "0"}
                       </p>
                     </div>
                     <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
@@ -110,7 +110,7 @@ export default function UserDashboard() {
                     <div>
                       <p className="text-slate-400 text-sm font-medium">Depósitos</p>
                       <p className="text-2xl font-bold text-white mt-1">
-                        {stats?.totalDeposits || "0"}
+                        {(stats as any)?.totalDeposits || "0"}
                       </p>
                     </div>
                     <div className="w-12 h-12 bg-yellow-500/20 rounded-xl flex items-center justify-center">
@@ -130,7 +130,7 @@ export default function UserDashboard() {
                     <div>
                       <p className="text-slate-400 text-sm font-medium">Comissão Total</p>
                       <p className="text-2xl font-bold text-emerald-500 mt-1">
-                        R$ {stats?.totalCommission?.toFixed(2) || "0.00"}
+                        R$ {(stats as any)?.totalCommission?.toFixed(2) || "0.00"}
                       </p>
                     </div>
                     <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
