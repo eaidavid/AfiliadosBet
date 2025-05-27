@@ -190,10 +190,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAffiliateLinksByUserId(userId: number): Promise<AffiliateLink[]> {
-    return await db
+    console.log("Buscando links para userId:", userId, typeof userId);
+    const result = await db
       .select()
       .from(affiliateLinks)
       .where(and(eq(affiliateLinks.userId, userId), eq(affiliateLinks.isActive, true)));
+    console.log("Resultado da busca:", result.length, result);
+    return result;
   }
 
   async getAffiliateLinkByUserAndHouse(userId: number, houseId: number): Promise<AffiliateLink | undefined> {
