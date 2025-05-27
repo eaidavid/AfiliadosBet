@@ -8,11 +8,13 @@ export function useAuth() {
     retry: false,
   });
 
+  const safeUser = user as User | undefined;
+
   return {
-    user: user as User | undefined,
+    user: safeUser,
     isLoading,
-    isAuthenticated: !!user,
-    isAdmin: user?.role === "admin",
+    isAuthenticated: !!safeUser,
+    isAdmin: safeUser?.role === "admin",
     error,
   };
 }
