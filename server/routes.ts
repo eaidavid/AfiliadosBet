@@ -1692,28 +1692,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.send(testHtml);
   });
 
-  // APIs para os dashboards
+  // === APIS PARA LOGS DE POSTBACKS REAIS ===
+  
+  // API para buscar logs de postbacks recebidos
   app.get("/api/admin/postback-logs", requireAdmin, async (req, res) => {
     try {
       const { status, casa, subid } = req.query;
       
-      let query = db.select().from(schema.postbackLogs);
+      console.log("Buscando logs de postbacks com filtros:", { status, casa, subid });
       
-      if (status && status !== 'all') {
-        query = query.where(eq(schema.postbackLogs.status, status as string));
-      }
-      if (casa) {
-        query = query.where(eq(schema.postbackLogs.casa, casa as string));
-      }
-      if (subid) {
-        query = query.where(eq(schema.postbackLogs.subid, subid as string));
-      }
+      // Buscar logs da tabela postback_logs
+      const logs = await db.select().from(schema.postbackLogs)
+        .orderBy(sql`${schema.postbackLogs.criadoEm} DESC`)
+        .limit(100);
       
-      const logs = await query.orderBy(sql\`\${schema.postbackLogs.criadoEm} DESC\`).limit(100);
+      console.log(`Encontrados ${logs.length} logs de postbacks`);
       res.json(logs);
     } catch (error) {
-      console.error("Error fetching postback logs:", error);
-      res.status(500).json({ message: "Failed to fetch postback logs" });
+      console.error("Erro ao buscar logs de postbacks:", error);
+      res.status(500).json({ message: "Erro ao buscar logs de postbacks" });
     }
   });
 

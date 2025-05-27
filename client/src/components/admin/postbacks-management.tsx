@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Filter, Download, Eye } from "lucide-react";
+import { Calendar, Filter, Download, Eye, Database, Activity } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import PostbackLogs from "./postback-logs";
 
 interface PostbacksManagementProps {
   onPageChange?: (page: string) => void;
@@ -16,6 +17,7 @@ interface PostbacksManagementProps {
 
 export default function PostbacksManagement({ onPageChange }: PostbacksManagementProps) {
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState<'overview' | 'logs'>('logs');
   const [filters, setFilters] = useState({
     type: "all",
     user: "",
@@ -65,7 +67,45 @@ export default function PostbacksManagement({ onPageChange }: PostbacksManagemen
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">Postbacks Recebidos</h1>
+          <h1 className="text-3xl font-bold text-white">Gestão de Postbacks</h1>
+          <p className="text-gray-400 mt-1">Monitore e gerencie postbacks das casas de apostas</p>
+        </div>
+      </div>
+
+      {/* Abas */}
+      <div className="flex space-x-1 bg-slate-800 p-1 rounded-lg border border-slate-700">
+        <button
+          onClick={() => setActiveTab('logs')}
+          className={`flex items-center px-4 py-2 rounded-md transition-colors ${
+            activeTab === 'logs' 
+              ? 'bg-emerald-600 text-white' 
+              : 'text-gray-400 hover:text-white hover:bg-slate-700'
+          }`}
+        >
+          <Database className="w-4 h-4 mr-2" />
+          Logs de Postbacks
+        </button>
+        <button
+          onClick={() => setActiveTab('overview')}
+          className={`flex items-center px-4 py-2 rounded-md transition-colors ${
+            activeTab === 'overview' 
+              ? 'bg-emerald-600 text-white' 
+              : 'text-gray-400 hover:text-white hover:bg-slate-700'
+          }`}
+        >
+          <Activity className="w-4 h-4 mr-2" />
+          Visão Geral
+        </button>
+      </div>
+
+      {/* Conteúdo das Abas */}
+      {activeTab === 'logs' ? (
+        <PostbackLogs onPageChange={onPageChange} />
+      ) : (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-white">Visão Geral dos Postbacks</h2>
           <p className="text-slate-400 mt-2">
             Acompanhe em tempo real todos os postbacks recebidos das casas de apostas
           </p>
