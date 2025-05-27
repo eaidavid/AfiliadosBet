@@ -408,33 +408,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Rota para afiliação de usuários
-  app.post("/api/betting-houses/:id/affiliate", requireAuth, async (req: any, res) => {
+  // Nova rota melhorada para afiliação
+  app.post("/api/affiliate/:houseId", requireAuth, async (req: any, res) => {
     try {
-      const houseId = parseInt(req.params.id);
+      const houseId = parseInt(req.params.houseId);
       const userId = req.session.user.id;
       
-      console.log("Afiliação solicitada:", { userId, houseId, userRole: req.session.user.role });
-      
-      const user = await storage.getUserById(userId);
-      if (!user) {
-        return res.status(404).json({ message: "Usuário não encontrado" });
-      }
-      
-      // Verificar se já está afiliado
-      const existingLink = await storage.getAffiliateLinkByUserAndHouse(userId, houseId);
-      if (existingLink) {
-        return res.status(400).json({ message: "Já afiliado a esta casa" });
-      }
-      
+      // Verificar se a casa existe e está ativa
       const house = await storage.getBettingHouseById(houseId);
       if (!house) {
         return res.status(404).json({ message: "Casa de apostas não encontrada" });
       }
       
-      // Gerar URL de afiliado único para o usuário
+      if (!house.isActive) {
+        return res.status(400).json({ message: "Casa de apostas não está ativa" });
+      }
+      
+      // Verificar se já está afiliado
+      const existingLink = await storage.getAffiliateLinkByUserAndHouse(userId, houseId);
+      if (existingLink) {
+        return res.status(400).json({ message: "Você já é afiliado desta casa" });
+      }
+      
+      // Buscar dados do usuário
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      
+      // Gerar URL único baseado no template da casa + username do usuário
       const generatedUrl = house.baseUrl.replace("VALUE", user.username);
       
+      // Criar link de afiliação
       const affiliateLink = await storage.createAffiliateLink({
         userId,
         houseId,
@@ -442,21 +447,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isActive: true,
       });
       
-      console.log("Link criado:", affiliateLink);
-      
-      // Garantir que retorna JSON válido
-      res.setHeader('Content-Type', 'application/json');
-      res.status(200).json({ 
+      res.json({ 
         success: true,
-        message: "Afiliado com sucesso", 
-        link: affiliateLink 
+        message: "Afiliação realizada com sucesso!",
+        link: affiliateLink
       });
     } catch (error) {
-      console.error("Affiliate error:", error);
-      res.setHeader('Content-Type', 'application/json');
+      console.error("Erro na afiliação:", error);
       res.status(500).json({ 
         success: false,
-        message: "Falha ao criar link de afiliado" 
+        message: "Erro interno do servidor" 
       });
     }
   });
@@ -471,19 +471,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Rota para obter links do usuário
-  app.get("/api/my-links", requireAuth, async (req: any, res) => {
+  // Nova rota para buscar links de afiliação do usuário
+  app.get("/api/my-affiliate-links", requireAuth, async (req: any, res) => {
     try {
       const userId = req.session.user.id;
       const links = await storage.getAffiliateLinksByUserId(userId);
       
-      // Get house details for each link
+      // Adicionar detalhes da casa para cada link
       const linksWithDetails = await Promise.all(
         links.map(async (link) => {
           const house = await storage.getBettingHouseById(link.houseId);
           return {
-            ...link,
-            house,
+            id: link.id,
+            userId: link.userId,
+            houseId: link.houseId,
+            generatedUrl: link.generatedUrl,
+            isActive: link.isActive,
+            createdAt: link.createdAt,
+            house: house ? {
+              id: house.id,
+              name: house.name,
+              description: house.description,
+              logoUrl: house.logoUrl,
+              commissionModel: house.commissionModel,
+              commissionValue: house.commissionValue,
+            } : null,
             stats: {
               clicks: 0,
               registrations: 0,
@@ -496,8 +508,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(linksWithDetails);
     } catch (error) {
-      console.error("Get user links error:", error);
-      res.status(500).json({ message: "Failed to get user links" });
+      console.error("Erro ao buscar links:", error);
+      res.status(500).json({ message: "Erro ao buscar links de afiliação" });
     }
   });
 
