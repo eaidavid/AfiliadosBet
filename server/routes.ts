@@ -489,7 +489,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/my-links", requireAuth, async (req: any, res) => {
     try {
       const userId = req.session.user.id;
+      console.log("Buscando links para usuário:", userId);
       const links = await storage.getAffiliateLinksByUserId(userId);
+      console.log("Links encontrados:", links.length);
       
       // Adicionar detalhes da casa para cada link com validação
       const linksWithDetails = await Promise.all(
