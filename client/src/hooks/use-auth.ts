@@ -13,8 +13,8 @@ export function useAuth() {
   return {
     user: safeUser,
     isLoading,
-    isAuthenticated: !!safeUser,
-    isAdmin: safeUser?.role === "admin",
+    isAuthenticated: !!safeUser && !isLoading,
+    isAdmin: safeUser?.role === "admin" && !isLoading,
     error,
   };
 }
