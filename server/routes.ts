@@ -5,7 +5,7 @@ import { storage } from "./storage";
 import { db } from "./db";
 import { affiliateLinks } from "@shared/schema";
 import * as schema from "@shared/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, desc } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -1703,7 +1703,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Buscar logs da tabela postback_logs
       const logs = await db.select().from(schema.postbackLogs)
-        .orderBy(sql`${schema.postbackLogs.criadoEm} DESC`)
+        .orderBy(desc(schema.postbackLogs.criadoEm))
         .limit(100);
       
       console.log(`Encontrados ${logs.length} logs de postbacks`);
@@ -1727,7 +1727,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       })
       .from(schema.eventos)
       .leftJoin(schema.users, eq(schema.eventos.afiliadoId, schema.users.id))
-      .orderBy(sql\`\${schema.eventos.criadoEm} DESC\`)
+      .orderBy(desc(schema.eventos.criadoEm))
       .limit(100);
       
       res.json(eventos);
@@ -1751,7 +1751,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       .from(schema.comissoes)
       .leftJoin(schema.users, eq(schema.comissoes.afiliadoId, schema.users.id))
       .leftJoin(schema.eventos, eq(schema.comissoes.eventoId, schema.eventos.id))
-      .orderBy(sql\`\${schema.comissoes.criadoEm} DESC\`)
+      .orderBy(desc(schema.comissoes.criadoEm))
       .limit(100);
       
       res.json(comissoes);

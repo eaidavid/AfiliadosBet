@@ -1,13 +1,11 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Filter, Download, Eye, Database, Activity } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+import { Input } from "@/components/ui/input";
+import { Download, Filter, Activity, Database, TrendingUp, Users, DollarSign, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PostbackLogs from "./postback-logs";
 
@@ -16,26 +14,20 @@ interface PostbacksManagementProps {
 }
 
 export default function PostbacksManagement({ onPageChange }: PostbacksManagementProps) {
-  const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<'overview' | 'logs'>('logs');
+  const [activeTab, setActiveTab] = useState<'logs' | 'overview'>('logs');
   const [filters, setFilters] = useState({
     type: "all",
     user: "",
-    dateFrom: "",
-    dateTo: "",
+  });
+  const { toast } = useToast();
+
+  // Buscar dados para a visão geral
+  const { data: postbacks = [] } = useQuery({
+    queryKey: ["/api/admin/postback-logs"],
+    enabled: activeTab === 'overview'
   });
 
-  const { data: postbacks = [], isLoading } = useQuery({
-    queryKey: ["/api/admin/postbacks", filters],
-    retry: false,
-  });
-
-  const { data: users = [] } = useQuery({
-    queryKey: ["/api/admin/affiliates"],
-    retry: false,
-  });
-
-  const getTypeBadge = (type: string) => {
+  const getEventBadge = (type: string) => {
     const colors = {
       click: "bg-blue-500",
       registration: "bg-green-500", 
@@ -57,11 +49,17 @@ export default function PostbacksManagement({ onPageChange }: PostbacksManagemen
     });
   };
 
-  const filteredPostbacks = postbacks.filter((postback: any) => {
-    if (filters.type !== "all" && postback.type !== filters.type) return false;
-    if (filters.user && !postback.username?.toLowerCase().includes(filters.user.toLowerCase())) return false;
+  const filteredPostbacks = Array.isArray(postbacks) ? postbacks.filter((postback: any) => {
+    if (filters.type !== "all" && postback.evento !== filters.type) return false;
+    if (filters.user && !postback.subid?.toLowerCase().includes(filters.user.toLowerCase())) return false;
     return true;
-  });
+  }) : [];
+
+  // Calcular estatísticas
+  const totalPostbacks = filteredPostbacks.length;
+  const totalValue = filteredPostbacks.reduce((sum: number, p: any) => sum + (parseFloat(p.valor) || 0), 0);
+  const successfulPostbacks = filteredPostbacks.filter((p: any) => p.status === 'success').length;
+  const uniqueUsers = new Set(filteredPostbacks.map((p: any) => p.subid)).size;
 
   return (
     <div className="space-y-6">
@@ -106,166 +104,142 @@ export default function PostbacksManagement({ onPageChange }: PostbacksManagemen
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-white">Visão Geral dos Postbacks</h2>
-          <p className="text-slate-400 mt-2">
-            Acompanhe em tempo real todos os postbacks recebidos das casas de apostas
-          </p>
-        </div>
-        <Button onClick={exportPostbacks} className="bg-emerald-600 hover:bg-emerald-700">
-          <Download className="h-4 w-4 mr-2" />
-          Exportar
-        </Button>
-      </div>
-
-      {/* Filtros */}
-      <Card className="bg-slate-800 border-slate-700">
-        <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
-            <Filter className="h-5 w-5 text-emerald-500" />
-            Filtros
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="text-sm text-slate-300 mb-2 block">Tipo de Evento</label>
-              <Select value={filters.type} onValueChange={(value) => setFilters(prev => ({ ...prev, type: value }))}>
-                <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-700 border-slate-600">
-                  <SelectItem value="all">Todos os tipos</SelectItem>
-                  <SelectItem value="click">Cliques</SelectItem>
-                  <SelectItem value="registration">Registros</SelectItem>
-                  <SelectItem value="deposit">Depósitos</SelectItem>
-                  <SelectItem value="recurring_deposit">Depósitos Recorrentes</SelectItem>
-                  <SelectItem value="profit">Lucro</SelectItem>
-                </SelectContent>
-              </Select>
+              <p className="text-slate-400 mt-2">
+                Acompanhe em tempo real todos os postbacks recebidos das casas de apostas
+              </p>
             </div>
-
-            <div>
-              <label className="text-sm text-slate-300 mb-2 block">Usuário</label>
-              <Input
-                placeholder="Filtrar por usuário..."
-                value={filters.user}
-                onChange={(e) => setFilters(prev => ({ ...prev, user: e.target.value }))}
-                className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm text-slate-300 mb-2 block">Data Inicial</label>
-              <Input
-                type="date"
-                value={filters.dateFrom}
-                onChange={(e) => setFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
-                className="bg-slate-700 border-slate-600 text-white"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm text-slate-300 mb-2 block">Data Final</label>
-              <Input
-                type="date"
-                value={filters.dateTo}
-                onChange={(e) => setFilters(prev => ({ ...prev, dateTo: e.target.value }))}
-                className="bg-slate-700 border-slate-600 text-white"
-              />
-            </div>
+            <Button onClick={exportPostbacks} className="bg-emerald-600 hover:bg-emerald-700">
+              <Download className="h-4 w-4 mr-2" />
+              Exportar
+            </Button>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Estatísticas Rápidas */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        {[
-          { label: "Total Postbacks", value: filteredPostbacks.length, color: "text-blue-400" },
-          { label: "Cliques", value: filteredPostbacks.filter(p => p.type === "click").length, color: "text-blue-400" },
-          { label: "Registros", value: filteredPostbacks.filter(p => p.type === "registration").length, color: "text-green-400" },
-          { label: "Depósitos", value: filteredPostbacks.filter(p => p.type === "deposit").length, color: "text-yellow-400" },
-          { label: "Lucro Total", value: `R$ ${filteredPostbacks.filter(p => p.type === "profit").reduce((sum, p) => sum + (p.amount || 0), 0).toFixed(2)}`, color: "text-purple-400" },
-        ].map((stat, index) => (
-          <Card key={index} className="bg-slate-800 border-slate-700">
-            <CardContent className="p-4">
-              <div className="text-center">
-                <p className="text-sm text-slate-400">{stat.label}</p>
-                <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+          {/* Filtros */}
+          <Card className="bg-slate-800 border-slate-700">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center">
+                <Filter className="h-5 w-5 mr-2" />
+                Filtros
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-slate-300">Tipo de Evento</label>
+                  <Select value={filters.type} onValueChange={(value) => setFilters(prev => ({ ...prev, type: value }))}>
+                    <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos</SelectItem>
+                      <SelectItem value="click">Click</SelectItem>
+                      <SelectItem value="registration">Registro</SelectItem>
+                      <SelectItem value="deposit">Depósito</SelectItem>
+                      <SelectItem value="recurring_deposit">Depósito Recorrente</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-300">Usuário (SubID)</label>
+                  <Input
+                    placeholder="Filtrar por usuário..."
+                    value={filters.user}
+                    onChange={(e) => setFilters(prev => ({ ...prev, user: e.target.value }))}
+                    className="bg-slate-700 border-slate-600 text-white"
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
 
-      {/* Tabela de Postbacks */}
-      <Card className="bg-slate-800 border-slate-700">
-        <CardHeader>
-          <CardTitle className="text-white flex items-center justify-between">
-            <span>Postbacks Recebidos ({filteredPostbacks.length})</span>
-            <Badge className="bg-emerald-600 text-white">
-              Tempo Real
-            </Badge>
-          </CardTitle>
-          <CardDescription className="text-slate-400">
-            Lista completa de todos os postbacks processados pelo sistema
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-slate-700">
-                  <TableHead className="text-slate-300">Data/Hora</TableHead>
-                  <TableHead className="text-slate-300">Tipo</TableHead>
-                  <TableHead className="text-slate-300">Usuário</TableHead>
-                  <TableHead className="text-slate-300">Casa</TableHead>
-                  <TableHead className="text-slate-300">Customer ID</TableHead>
-                  <TableHead className="text-slate-300">Valor</TableHead>
-                  <TableHead className="text-slate-300">Comissão</TableHead>
-                  <TableHead className="text-slate-300">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredPostbacks.map((postback: any) => (
-                  <TableRow key={postback.id} className="border-slate-700">
-                    <TableCell className="text-white">
-                      {new Date(postback.createdAt).toLocaleString('pt-BR')}
-                    </TableCell>
-                    <TableCell>
-                      {getTypeBadge(postback.type)}
-                    </TableCell>
-                    <TableCell className="text-white">
-                      {postback.username || 'N/A'}
-                    </TableCell>
-                    <TableCell className="text-slate-300">
-                      {postback.houseName || 'N/A'}
-                    </TableCell>
-                    <TableCell className="text-slate-300">
-                      {postback.customerId || 'N/A'}
-                    </TableCell>
-                    <TableCell className="text-white">
-                      {postback.amount ? `R$ ${postback.amount.toFixed(2)}` : '-'}
-                    </TableCell>
-                    <TableCell className="text-green-400">
-                      {postback.commission ? `R$ ${postback.commission.toFixed(2)}` : '-'}
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          {/* Estatísticas */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <Card className="bg-slate-800 border-slate-700">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-400 text-sm">Total de Postbacks</p>
+                    <p className="text-2xl font-bold text-white">{totalPostbacks}</p>
+                  </div>
+                  <Activity className="h-8 w-8 text-blue-500" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-800 border-slate-700">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-400 text-sm">Valor Total</p>
+                    <p className="text-2xl font-bold text-white">R$ {totalValue.toFixed(2)}</p>
+                  </div>
+                  <DollarSign className="h-8 w-8 text-green-500" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-800 border-slate-700">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-400 text-sm">Taxa de Sucesso</p>
+                    <p className="text-2xl font-bold text-white">
+                      {totalPostbacks > 0 ? ((successfulPostbacks / totalPostbacks) * 100).toFixed(1) : 0}%
+                    </p>
+                  </div>
+                  <TrendingUp className="h-8 w-8 text-emerald-500" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-800 border-slate-700">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-400 text-sm">Usuários Únicos</p>
+                    <p className="text-2xl font-bold text-white">{uniqueUsers}</p>
+                  </div>
+                  <Users className="h-8 w-8 text-purple-500" />
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
-          {filteredPostbacks.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-slate-400">Nenhum postback encontrado com os filtros selecionados.</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          {/* Lista de Postbacks Recentes */}
+          <Card className="bg-slate-800 border-slate-700">
+            <CardHeader>
+              <CardTitle className="text-white">Postbacks Recentes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {filteredPostbacks.slice(0, 10).map((postback: any, index: number) => (
+                  <div key={index} className="flex items-center justify-between p-4 bg-slate-700 rounded-lg">
+                    <div className="flex items-center space-x-4">
+                      {getEventBadge(postback.evento)}
+                      <div>
+                        <p className="text-white font-medium">{postback.casa}</p>
+                        <p className="text-slate-400 text-sm">SubID: {postback.subid}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-white font-medium">R$ {parseFloat(postback.valor || 0).toFixed(2)}</p>
+                      <p className="text-slate-400 text-sm">
+                        {new Date(postback.criadoEm).toLocaleString('pt-BR')}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {filteredPostbacks.length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-slate-400">Nenhum postback encontrado com os filtros selecionados.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
