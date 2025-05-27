@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import {
@@ -18,6 +19,8 @@ import {
 
 export default function BettingHousesNew() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedHouse, setSelectedHouse] = useState<any>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -43,6 +46,7 @@ export default function BettingHousesNew() {
         description: "Você foi afiliado com sucesso! Verifique seus links na aba 'Meus Links'.",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/my-affiliate-links"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/betting-houses"] });
     },
     onError: (error: any) => {
       toast({
@@ -55,6 +59,7 @@ export default function BettingHousesNew() {
 
   // Verificar se já está afiliado a uma casa
   const isAffiliated = (houseId: number) => {
+    if (!Array.isArray(userLinks)) return false;
     return userLinks.some((link: any) => link.houseId === houseId);
   };
 
@@ -67,10 +72,16 @@ export default function BettingHousesNew() {
     });
   };
 
+  // Função para abrir modal de detalhes
+  const openDetailsModal = (house: any) => {
+    setSelectedHouse(house);
+    setIsDetailsModalOpen(true);
+  };
+
   // Filtrar casas por busca
-  const filteredHouses = houses.filter((house: any) =>
+  const filteredHouses = Array.isArray(houses) ? houses.filter((house: any) =>
     house.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  ) : [];
 
   if (housesLoading || linksLoading) {
     return (
@@ -172,6 +183,7 @@ export default function BettingHousesNew() {
                   {/* Botão Ver Detalhes */}
                   <Button
                     variant="outline"
+                    onClick={() => openDetailsModal(house)}
                     className="w-full border-slate-600 text-slate-300 hover:bg-slate-700"
                   >
                     <Eye className="h-4 w-4 mr-2" />
@@ -205,7 +217,7 @@ export default function BettingHousesNew() {
                   )}
 
                   {/* Botão para copiar link se já afiliado */}
-                  {affiliated && (
+                  {affiliated && Array.isArray(userLinks) && (
                     <Button
                       onClick={() => {
                         const userLink = userLinks.find((link: any) => link.houseId === house.id);
