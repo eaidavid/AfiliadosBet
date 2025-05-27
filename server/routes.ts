@@ -68,7 +68,67 @@ function requireAdmin(req: any, res: any, next: any) {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // === SISTEMA COMPLETO DE POSTBACK ===
-  // IMPORTANTE: Esta rota deve vir ANTES de qualquer middleware para funcionar
+  // Rota de API para postback que funciona corretamente
+  app.get("/api/postback/:casa", async (req, res) => {
+    try {
+      const casa = req.params.casa;
+      const { subid, event, amount } = req.query;
+      const ip = req.ip || req.connection.remoteAddress || 'unknown';
+      const rawQuery = req.url;
+      
+      console.log(`📩 Postback recebido: casa=${casa}, subid=${subid}, event=${event}, amount=${amount}`);
+      
+      // Validar se subid existe
+      const affiliate = await db.select()
+        .from(schema.users)
+        .where(eq(schema.users.username, subid as string))
+        .limit(1);
+      
+      if (!affiliate.length) {
+        console.log(`❌ SubID não encontrado: ${subid}`);
+        return res.status(400).json({ error: "SubID não encontrado", subid });
+      }
+      
+      // Calcular comissão
+      let commissionValue = 0;
+      let tipo = '';
+      const depositAmount = parseFloat(amount as string) || 0;
+      
+      if (event === 'registration') {
+        commissionValue = 50; // CPA fixa R$50
+        tipo = 'CPA';
+      } else if (['deposit', 'revenue', 'profit'].includes(event as string)) {
+        commissionValue = (depositAmount * 20) / 100; // RevShare 20%
+        tipo = 'RevShare';
+      }
+      
+      // Criar pagamento se houver comissão
+      if (commissionValue > 0) {
+        await storage.createPayment({
+          userId: affiliate[0].id,
+          amount: commissionValue,
+          status: 'pending',
+          description: `${tipo} ${event} - ${casa}`,
+          conversionId: null
+        });
+        
+        console.log(`💰 Comissão ${tipo}: R$ ${commissionValue} para ${affiliate[0].username}`);
+      }
+      
+      console.log(`✅ Postback processado com sucesso`);
+      res.json({ 
+        success: true, 
+        message: "Postback processado com sucesso",
+        commission: commissionValue,
+        type: tipo,
+        affiliate: affiliate[0].username
+      });
+      
+    } catch (error) {
+      console.error("Erro no postback:", error);
+      res.status(500).json({ error: "Erro interno no processamento" });
+    }
+  });
   
   // Rota principal de postback GET /postback/:casa
   app.get("/postback/:casa", async (req, res) => {
