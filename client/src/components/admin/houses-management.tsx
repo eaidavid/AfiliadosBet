@@ -15,8 +15,15 @@ import { Building, Plus, Edit, Trash2, Users, TrendingUp, DollarSign, ExternalLi
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertBettingHouseSchema, type InsertBettingHouse } from "@shared/schema";
+import { insertBettingHouseSchema, type InsertBettingHouse, type BettingHouse } from "@shared/schema";
 import { useLocation } from "wouter";
+
+interface BettingHouseWithStats extends BettingHouse {
+  stats?: {
+    affiliateCount: number;
+    totalVolume: number;
+  };
+}
 
 // Componente para mostrar URLs de postback após criar uma casa
 function PostbackUrls({ house, onClose }: { house: any; onClose: () => void }) {
@@ -117,10 +124,9 @@ export default function AdminHousesManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: houses, isLoading } = useQuery({
+  const { data: houses, isLoading } = useQuery<BettingHouseWithStats[]>({
     queryKey: ["/api/admin/betting-houses"],
     staleTime: 0, // Forçar atualização dos dados
-    cacheTime: 0, // Não usar cache
   });
 
   const form = useForm<InsertBettingHouse>({
@@ -142,15 +148,27 @@ export default function AdminHousesManagement() {
 
   const createHouseMutation = useMutation({
     mutationFn: async (data: InsertBettingHouse) => {
-      console.log("Enviando dados da casa:", data);
-      const response = await apiRequest("POST", "/api/admin/betting-houses", data);
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Erro HTTP ${response.status}`);
+      try {
+        console.log("Enviando dados da casa:", data);
+        const response = await apiRequest("POST", "/api/admin/betting-houses", data);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          let errorData;
+          try {
+            errorData = JSON.parse(errorText);
+          } catch {
+            errorData = { message: `Erro HTTP ${response.status}: ${errorText}` };
+          }
+          throw new Error(errorData.message || `Erro HTTP ${response.status}`);
+        }
+        
+        const result = await response.json();
+        return result;
+      } catch (error: any) {
+        console.error("Erro na requisição:", error);
+        throw error;
       }
-      
-      return response.json();
     },
     onSuccess: (data) => {
       console.log("Casa criada com sucesso:", data);
@@ -392,14 +410,14 @@ export default function AdminHousesManagement() {
                   </Label>
                   <Select
                     value={form.watch("commissionType")}
-                    onValueChange={(value) => form.setValue("commissionType", value as "revshare" | "cpa")}
+                    onValueChange={(value) => form.setValue("commissionType", value)}
                   >
                     <SelectTrigger className="bg-slate-700 border-slate-600 text-white focus:border-emerald-500">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-slate-700 border-slate-600">
-                      <SelectItem value="revshare">RevShare (%)</SelectItem>
-                      <SelectItem value="cpa">CPA (Valor Fixo)</SelectItem>
+                      <SelectItem value="RevShare">RevShare (%)</SelectItem>
+                      <SelectItem value="CPA">CPA (Valor Fixo)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -501,7 +519,7 @@ export default function AdminHousesManagement() {
       {/* Houses List */}
       <div className="space-y-6">
         {houses && houses.length > 0 ? (
-          houses.map((house: any) => (
+          houses.map((house) => (
             <Card key={house.id} className="bg-slate-800 border-slate-700">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-6">
