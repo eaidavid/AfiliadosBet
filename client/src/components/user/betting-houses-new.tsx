@@ -179,17 +179,8 @@ export default function BettingHousesNew() {
                     Ver Detalhes
                   </Button>
 
-                  {/* Botão de Afiliação */}
-                  {affiliated ? (
-                    <Button
-                      disabled
-                      className="w-full bg-slate-700 text-slate-400 cursor-not-allowed"
-                    >
-                      <Check className="h-4 w-4 mr-2" />
-                      Já sou Afiliado
-                    </Button>
-                  ) : (
-                    <Button
+                  {/* ✅ Botão de Afiliação - sempre "Se Afiliar" pois casas aqui são NÃO afiliadas */}
+                  <Button
                       onClick={() => affiliateMutation.mutate(house.id)}
                       disabled={affiliateMutation.isPending || !house.isActive}
                       className="w-full bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white disabled:opacity-50"
@@ -203,21 +194,6 @@ export default function BettingHousesNew() {
                         </>
                       )}
                     </Button>
-                  )}
-
-                  {/* Botão para copiar link se já afiliado */}
-                  {affiliated && house.affiliateLink && (
-                    <Button
-                      onClick={() => {
-                        copyToClipboard(house.affiliateLink);
-                      }}
-                      variant="outline"
-                      className="w-full border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
-                    >
-                      <Copy className="h-4 w-4 mr-2" />
-                      Copiar Link
-                    </Button>
-                  )}
                 </div>
               </CardContent>
             </Card>
