@@ -8,23 +8,105 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Building, Plus, Edit, Trash2, Users, TrendingUp, DollarSign, ExternalLink } from "lucide-react";
+import { Building, Plus, Edit, Trash2, Users, TrendingUp, DollarSign, ExternalLink, Copy, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertBettingHouseSchema, type InsertBettingHouse } from "@shared/schema";
+import { useLocation } from "wouter";
 
-function generatePostbackPreview(houseName: string, primaryParam: string) {
-  const houseNameLower = houseName.toLowerCase().replace(/\s+/g, '');
-  return {
-    click: `/api/postback/click?house=${houseNameLower}&subid={subid}&customer_id={customer_id}`,
-    registration: `/api/postback/registration?house=${houseNameLower}&subid={subid}&customer_id={customer_id}`,
-    deposit: `/api/postback/deposit?house=${houseNameLower}&subid={subid}&amount={amount}&customer_id={customer_id}`,
-    'recurring-deposit': `/api/postback/recurring-deposit?house=${houseNameLower}&subid={subid}&amount={amount}&customer_id={customer_id}`,
-    profit: `/api/postback/profit?house=${houseNameLower}&subid={subid}&amount={amount}&customer_id={customer_id}`
+// Componente para mostrar URLs de postback após criar uma casa
+function PostbackUrls({ house, onClose }: { house: any; onClose: () => void }) {
+  const [location, setLocation] = useLocation();
+  const { toast } = useToast();
+  const [copiedUrls, setCopiedUrls] = useState<string[]>([]);
+
+  const baseUrl = window.location.origin;
+  const identifier = house.identifier;
+  const enabledEvents = house.enabledPostbacks || [];
+
+  const postbackUrls = {
+    registration: `${baseUrl}/postback/${identifier}/registration?subid={subid}`,
+    first_deposit: `${baseUrl}/postback/${identifier}/first_deposit?subid={subid}&amount={amount}`,
+    deposit: `${baseUrl}/postback/${identifier}/deposit?subid={subid}&amount={amount}`,
+    profit: `${baseUrl}/postback/${identifier}/profit?subid={subid}&amount={amount}`
   };
+
+  const copyToClipboard = (url: string, eventName: string) => {
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedUrls(prev => [...prev, eventName]);
+      toast({
+        title: "URL copiada!",
+        description: `URL do evento ${eventName} foi copiada para a área de transferência.`,
+      });
+      setTimeout(() => {
+        setCopiedUrls(prev => prev.filter(item => item !== eventName));
+      }, 2000);
+    });
+  };
+
+  return (
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <CheckCircle className="w-5 h-5 text-green-500" />
+            Casa criada com sucesso!
+          </DialogTitle>
+          <DialogDescription>
+            URLs de postback geradas para {house.name}. Cole esses links na plataforma da casa de apostas.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          {enabledEvents.map((event: string) => (
+            <Card key={event} className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <h4 className="font-medium capitalize mb-2">{event.replace('_', ' ')}</h4>
+                  <code className="text-sm bg-muted p-2 rounded block break-all">
+                    {postbackUrls[event as keyof typeof postbackUrls]}
+                  </code>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copyToClipboard(postbackUrls[event as keyof typeof postbackUrls], event)}
+                  className="ml-4"
+                >
+                  {copiedUrls.includes(event) ? (
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                  ) : (
+                    <Copy className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+            </Card>
+          ))}
+
+          <Alert>
+            <AlertDescription>
+              <strong>Instruções:</strong> 
+              <br />• Copie cada URL e configure na plataforma da casa de apostas
+              <br />• {`{subid}`} será substituído pelo username do afiliado automaticamente
+              <br />• {`{amount}`} será substituído pelo valor da transação
+              <br />• Status: Aguardando primeiras chamadas...
+            </AlertDescription>
+          </Alert>
+        </div>
+
+        <DialogFooter>
+          <Button onClick={() => setLocation(`/admin/houses/${house.id}/postbacks`)}>
+            Ver Logs de Postback
+          </Button>
+          <Button onClick={onClose}>Fechar</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 export default function AdminHousesManagement() {

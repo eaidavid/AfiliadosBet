@@ -1557,6 +1557,130 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
+  // === SISTEMA COMPLETO DE POSTBACKS DINÂMICOS ===
+  
+  // Rota pública para receber postbacks das casas: GET /postback/:identifier/:event
+  app.get("/postback/:identifier/:event", async (req, res) => {
+    const { identifier, event } = req.params;
+    const { subid, amount, customer_id, ...otherParams } = req.query;
+    
+    const logData = {
+      houseIdentifier: identifier,
+      event: event,
+      subid: subid as string,
+      amount: amount as string,
+      customerId: customer_id as string,
+      rawData: { ...req.query },
+      ipAddress: req.ip || req.connection.remoteAddress,
+      userAgent: req.get('User-Agent'),
+      status: 'PROCESSING',
+      processedAt: new Date()
+    };
+
+    try {
+      console.log(`🔄 Postback recebido: ${identifier}/${event} - subid: ${subid}, amount: ${amount}`);
+      
+      // 1. Validar se a casa existe e aceita esse tipo de postback
+      const house = await db.select()
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.identifier, identifier))
+        .limit(1);
+      
+      if (!house.length) {
+        logData.status = 'INVALID_HOUSE';
+        await db.insert(schema.postbackLogs).values(logData);
+        return res.status(400).json({ error: "Casa não encontrada", status: "INVALID_HOUSE" });
+      }
+      
+      // 2. Verificar se a casa aceita esse evento
+      const enabledEvents = house[0].enabledPostbacks as string[];
+      if (!enabledEvents || !enabledEvents.includes(event)) {
+        logData.status = 'INVALID_EVENT';
+        await db.insert(schema.postbackLogs).values(logData);
+        return res.status(400).json({ error: "Evento não aceito por esta casa", status: "INVALID_EVENT" });
+      }
+      
+      // 3. Validar se o afiliado (subid) existe
+      if (!subid) {
+        logData.status = 'INVALID_SUBID';
+        await db.insert(schema.postbackLogs).values(logData);
+        return res.status(400).json({ error: "SubID obrigatório", status: "INVALID_SUBID" });
+      }
+      
+      const affiliate = await db.select()
+        .from(schema.users)
+        .where(eq(schema.users.username, subid as string))
+        .limit(1);
+      
+      if (!affiliate.length) {
+        logData.status = 'INVALID_SUBID';
+        await db.insert(schema.postbackLogs).values(logData);
+        return res.status(400).json({ error: "Afiliado não encontrado", status: "INVALID_SUBID" });
+      }
+      
+      // 4. Calcular comissão baseada no tipo de evento e casa
+      let commissionValue = 0;
+      const depositAmount = parseFloat(amount as string) || 0;
+      
+      if ((event === 'registration' || event === 'first_deposit') && house[0].commissionType === 'cpa') {
+        // CPA: valor fixo para registro/primeiro depósito
+        const cpaValue = house[0].commissionValue.replace(/[^\d]/g, ''); // Remove R$ e outros caracteres
+        commissionValue = parseFloat(cpaValue) || 0;
+      } else if ((event === 'deposit' || event === 'profit') && house[0].commissionType === 'revshare') {
+        // RevShare: porcentagem do valor
+        const percentage = house[0].commissionValue.replace(/[^\d]/g, ''); // Remove % e outros caracteres
+        commissionValue = (depositAmount * parseFloat(percentage)) / 100;
+      }
+      
+      // 5. Registrar conversão se houver comissão
+      if (commissionValue > 0) {
+        await storage.createConversion({
+          userId: affiliate[0].id,
+          houseId: house[0].id,
+          type: event,
+          amount: depositAmount,
+          customerId: customer_id as string || null,
+          status: 'confirmed'
+        });
+        
+        // 6. Criar pagamento
+        await storage.createPayment({
+          userId: affiliate[0].id,
+          amount: commissionValue,
+          status: 'pending',
+          description: `${event.toUpperCase()} - ${house[0].name}`,
+          conversionId: null // Será atualizado se necessário
+        });
+        
+        console.log(`💰 Comissão calculada: R$ ${commissionValue.toFixed(2)} para ${affiliate[0].username}`);
+      }
+      
+      // 7. Registrar log como sucesso
+      logData.status = 'OK';
+      logData.commissionCalculated = commissionValue.toString();
+      await db.insert(schema.postbackLogs).values(logData);
+      
+      console.log(`✅ Postback processado com sucesso: ${identifier}/${event}`);
+      res.json({ 
+        success: true, 
+        status: "OK",
+        message: "Postback processado com sucesso",
+        commission: commissionValue.toFixed(2),
+        affiliate: affiliate[0].username
+      });
+      
+    } catch (error) {
+      console.error("❌ Erro no processamento do postback:", error);
+      logData.status = 'ERROR';
+      try {
+        await db.insert(schema.postbackLogs).values(logData);
+      } catch (logError) {
+        console.error("Erro ao salvar log:", logError);
+      }
+      res.status(500).json({ error: "Erro interno no processamento", status: "ERROR" });
+    }
+  });
+
   // === APIS PARA LOGS DE POSTBACKS REAIS ===
   
   // API para buscar logs de postbacks recebidos
