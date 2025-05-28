@@ -142,10 +142,18 @@ export default function AdminHousesManagement() {
 
   const createHouseMutation = useMutation({
     mutationFn: async (data: InsertBettingHouse) => {
+      console.log("Enviando dados da casa:", data);
       const response = await apiRequest("POST", "/api/admin/betting-houses", data);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Erro HTTP ${response.status}`);
+      }
+      
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Casa criada com sucesso:", data);
       toast({
         title: "Sucesso!",
         description: "Casa de apostas criada com sucesso!",
@@ -153,11 +161,14 @@ export default function AdminHousesManagement() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/betting-houses"] });
       setIsAddModalOpen(false);
       form.reset();
+      // Reset selected events
+      setSelectedEvents(['registration', 'deposit']);
     },
     onError: (error: any) => {
+      console.error("Erro ao criar casa:", error);
       toast({
-        title: "Erro",
-        description: error.message || "Falha ao criar casa de apostas",
+        title: "Erro ao criar casa",
+        description: error.message || "Falha ao criar casa de apostas. Verifique os dados e tente novamente.",
         variant: "destructive",
       });
     },
@@ -212,6 +223,13 @@ export default function AdminHousesManagement() {
   });
 
   const onSubmit = (data: InsertBettingHouse) => {
+    // Generate identifier if creating new house
+    if (!editingHouse) {
+      const identifier = data.name.toLowerCase().replace(/[^a-z0-9]/g, '') + Date.now();
+      data.identifier = identifier;
+      data.enabledPostbacks = selectedEvents;
+    }
+    
     if (editingHouse) {
       updateHouseMutation.mutate({ id: editingHouse.id, data });
     } else {

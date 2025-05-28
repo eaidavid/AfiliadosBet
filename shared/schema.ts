@@ -186,6 +186,9 @@ export const insertBettingHouseSchema = createInsertSchema(bettingHouses).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  identifier: z.string().optional(),
+  enabledPostbacks: z.array(z.string()).optional(),
 });
 
 export const insertAffiliateLinkSchema = createInsertSchema(affiliateLinks).omit({
