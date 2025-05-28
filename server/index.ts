@@ -23,11 +23,21 @@ app.get("/api/postback-handler/:casa/:evento/:token", async (req, res) => {
 async function handlePostback(req: any, res: any) {
   try {
     const pathParts = req.path.split('/');
-    if (pathParts.length !== 5) {
+    let casa, evento, token;
+    
+    // Verificar formato da URL: /postback/casa/evento/token ou /api/postback-handler/casa/evento/token
+    if (pathParts.length === 5 && pathParts[1] === 'postback') {
+      [, , casa, evento, token] = pathParts;
+    } else if (pathParts.length === 6 && pathParts[1] === 'api' && pathParts[2] === 'postback-handler') {
+      [, , , casa, evento, token] = pathParts;
+    } else if (req.params && req.params.casa) {
+      // Rota com parâmetros do Express
+      casa = req.params.casa;
+      evento = req.params.evento;
+      token = req.params.token;
+    } else {
       return res.status(400).json({ error: "Formato inválido de URL" });
     }
-    
-    const [, , casa, evento, token] = pathParts;
     const { subid, amount, customer_id } = req.query;
     const ip = req.ip || req.connection.remoteAddress || 'unknown';
     
