@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import UserSidebar from "@/components/user/sidebar";
 import UserTopBar from "@/components/user/topbar";
-import BettingHousesNew from "@/components/user/betting-houses-new";
+import BettingHousesFixed from "@/components/user/betting-houses-fixed";
 import MyLinks from "@/components/user/my-links";
 import Payments from "@/components/user/payments";
 import Reports from "@/components/user/reports";
@@ -85,7 +85,7 @@ export default function UserDashboard() {
   const renderContent = () => {
     switch (currentPage) {
       case "houses":
-        return <BettingHousesNew />;
+        return <BettingHousesFixed onPageChange={setCurrentPage} />;
       case "links":
         return <MyLinks onPageChange={setCurrentPage} />;
       case "payments":
