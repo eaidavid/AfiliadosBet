@@ -512,7 +512,7 @@ export default function AdminHousesManagement() {
                     { id: 'registration', label: 'Registro' },
                     { id: 'deposit', label: 'Depósito' },
                     { id: 'first_deposit', label: 'Primeiro Depósito' },
-                    { id: 'recurring_deposit', label: 'Depósito Recorrente' },
+                    { id: 'profit', label: 'Lucro' },
                   ].map((event) => (
                     <div key={event.id} className="flex items-center space-x-2">
                       <Checkbox
