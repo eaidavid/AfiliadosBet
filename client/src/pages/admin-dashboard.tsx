@@ -1,191 +1,83 @@
 import { useState } from "react";
-import AdminSidebar from "@/components/admin/sidebar";
-import AdminHousesManagement from "@/components/admin/houses-management";
+import { useAuth } from "@/hooks/use-auth";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import AffiliatesManagement from "@/components/admin/affiliates-management";
-import LinksManagement from "@/components/admin/links-management";
-import PostbacksManagement from "@/components/admin/postbacks-management";
-import CommissionsManagement from "@/components/admin/commissions-management";
-import ReportsManagement from "@/components/admin/reports-management";
-import SettingsManagement from "@/components/admin/settings-management";
 import AdminProfile from "@/components/admin/admin-profile";
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
-import { Users, Building, TrendingUp, DollarSign } from "lucide-react";
+import { Users, Settings } from "lucide-react";
 
 export default function AdminDashboard() {
-  const [currentPage, setCurrentPage] = useState("dashboard");
+  const { user } = useAuth();
+  const [currentPage, setCurrentPage] = useState("overview");
 
-  const { data: adminStats } = useQuery({
-    queryKey: ["/api/admin/stats"],
-  });
+  if (!user || user.role !== "admin") {
+    return <div>Access denied</div>;
+  }
 
   const renderContent = () => {
     switch (currentPage) {
-      case "houses":
-        return <AdminHousesManagement onPageChange={setCurrentPage} />;
       case "affiliates":
         return <AffiliatesManagement onPageChange={setCurrentPage} />;
-      case "links":
-        return <LinksManagement onPageChange={setCurrentPage} />;
-      case "postbacks":
-        return <PostbacksManagement onPageChange={setCurrentPage} />;
-      case "commissions":
-        return <CommissionsManagement onPageChange={setCurrentPage} />;
-      case "reports":
-        return <ReportsManagement onPageChange={setCurrentPage} />;
-      case "settings":
-        return <SettingsManagement onPageChange={setCurrentPage} />;
       case "profile":
         return <AdminProfile onPageChange={setCurrentPage} />;
       default:
         return (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-white mb-2">Painel Administrativo</h1>
-                <p className="text-slate-400">
-                  Visão geral da plataforma e estatísticas principais.
-                </p>
-              </div>
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight">Admin Dashboard</h2>
+              <p className="text-muted-foreground">
+                Welcome back, {user.fullName}! Manage your system here.
+              </p>
             </div>
 
-            {/* Admin Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="bg-slate-800 border-slate-700 hover:bg-slate-750 transition-colors">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-slate-400 text-sm font-medium">Total Afiliados</p>
-                      <p className="text-2xl font-bold text-white mt-1">
-                        {adminStats?.totalAffiliates?.toLocaleString() || "0"}
-                      </p>
-                    </div>
-                    <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
-                      <Users className="h-6 w-6 text-blue-500" />
-                    </div>
-                  </div>
-                  <div className="flex items-center mt-4">
-                    <span className="text-emerald-500 text-sm font-medium">+15.2%</span>
-                    <span className="text-slate-400 text-sm ml-2">vs mês anterior</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-slate-800 border-slate-700 hover:bg-slate-750 transition-colors">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-slate-400 text-sm font-medium">Casas Ativas</p>
-                      <p className="text-2xl font-bold text-white mt-1">
-                        {adminStats?.activeHouses || "0"}
-                      </p>
-                    </div>
-                    <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
-                      <Building className="h-6 w-6 text-emerald-500" />
-                    </div>
-                  </div>
-                  <div className="flex items-center mt-4">
-                    <span className="text-emerald-500 text-sm font-medium">+3 novos</span>
-                    <span className="text-slate-400 text-sm ml-2">este mês</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-slate-800 border-slate-700 hover:bg-slate-750 transition-colors">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-slate-400 text-sm font-medium">Volume Total</p>
-                      <p className="text-2xl font-bold text-white mt-1">
-                        R$ {adminStats?.totalVolume?.toLocaleString() || "0"}
-                      </p>
-                    </div>
-                    <div className="w-12 h-12 bg-yellow-500/20 rounded-xl flex items-center justify-center">
-                      <TrendingUp className="h-6 w-6 text-yellow-500" />
-                    </div>
-                  </div>
-                  <div className="flex items-center mt-4">
-                    <span className="text-emerald-500 text-sm font-medium">+22.8%</span>
-                    <span className="text-slate-400 text-sm ml-2">vs mês anterior</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-slate-800 border-slate-700 hover:bg-slate-750 transition-colors">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-slate-400 text-sm font-medium">Comissões Pagas</p>
-                      <p className="text-2xl font-bold text-emerald-500 mt-1">
-                        R$ {adminStats?.paidCommissions?.toLocaleString() || "0"}
-                      </p>
-                    </div>
-                    <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
-                      <DollarSign className="h-6 w-6 text-emerald-500" />
-                    </div>
-                  </div>
-                  <div className="flex items-center mt-4">
-                    <span className="text-emerald-500 text-sm font-medium">+18.7%</span>
-                    <span className="text-slate-400 text-sm ml-2">vs mês anterior</span>
-                  </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">0</div>
+                  <p className="text-xs text-muted-foreground">Clean system status</p>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Top performers */}
-            <div className="grid lg:grid-cols-2 gap-6">
-              <Card className="bg-slate-800 border-slate-700">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-white mb-4">Top Afiliados</h3>
-                  <div className="space-y-4">
-                    {adminStats?.topAffiliates?.map((affiliate: any) => (
-                      <div key={affiliate.id} className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-full flex items-center justify-center">
-                            <span className="text-white text-sm font-medium">
-                              {affiliate.fullName?.charAt(0) || affiliate.username?.charAt(0)}
-                            </span>
-                          </div>
-                          <div>
-                            <p className="text-white font-medium">{affiliate.fullName || affiliate.username}</p>
-                            <p className="text-slate-400 text-sm">{affiliate.username}</p>
-                          </div>
-                        </div>
-                        <span className="text-emerald-500 font-semibold">
-                          R$ {(Number(affiliate.totalCommission) || 0).toFixed(2)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>User Management</CardTitle>
+                  <CardDescription>
+                    Manage system users and permissions
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button 
+                    onClick={() => setCurrentPage("affiliates")}
+                    className="w-full"
+                  >
+                    <Users className="mr-2 h-4 w-4" />
+                    Manage Users
+                  </Button>
                 </CardContent>
               </Card>
 
-              <Card className="bg-slate-800 border-slate-700">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-white mb-4">Top Casas</h3>
-                  <div className="space-y-4">
-                    {adminStats?.topHouses?.map((house: any) => (
-                      <div key={house.id} className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
-                            <span className="text-white text-sm font-bold">
-                              {house.name?.charAt(0)}
-                            </span>
-                          </div>
-                          <div>
-                            <p className="text-white font-medium">{house.name}</p>
-                            <p className="text-slate-400 text-sm">{house.affiliateCount} afiliados</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-emerald-500 font-semibold">
-                            R$ {(Number(house.totalVolume) || 0).toFixed(2)}
-                          </p>
-                          <p className="text-green-400 text-sm">+12.5%</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Admin Settings</CardTitle>
+                  <CardDescription>
+                    Configure your admin profile and preferences
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button 
+                    onClick={() => setCurrentPage("profile")}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    Admin Profile
+                  </Button>
                 </CardContent>
               </Card>
             </div>
@@ -195,26 +87,20 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
+    <div className="container mx-auto px-4 py-8">
+      {currentPage !== "overview" && (
+        <div className="mb-6">
+          <Button
+            variant="outline"
+            onClick={() => setCurrentPage("overview")}
+            className="mb-4"
+          >
+            ← Back to Dashboard
+          </Button>
+        </div>
+      )}
       
-      <div className="ml-72">
-        <header className="bg-slate-900 border-b border-slate-700 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-white">Painel Administrativo</h1>
-            <div className="flex items-center space-x-4">
-              <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-semibold">A</span>
-              </div>
-              <span className="text-white">Admin</span>
-            </div>
-          </div>
-        </header>
-        
-        <main className="p-6">
-          {renderContent()}
-        </main>
-      </div>
+      {renderContent()}
     </div>
   );
 }
