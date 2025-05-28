@@ -24,12 +24,10 @@ export default function BettingHousesNew() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Buscar casas de apostas disponíveis
+  // ✅ Buscar apenas casas DISPONÍVEIS para afiliamento (API já filtra casas não afiliadas)
   const { data: houses = [], isLoading: housesLoading } = useQuery({
     queryKey: ["/api/betting-houses"],
   });
-
-  // Não precisamos buscar links separadamente - já vem nos dados das casas
 
   // Mutação para se afiliar
   const affiliateMutation = useMutation({
@@ -59,8 +57,9 @@ export default function BettingHousesNew() {
     },
   });
 
-  // ✅ Agora as casas retornadas pela API já são apenas as DISPONÍVEIS para afiliamento
-  // Não precisamos verificar se está afiliado porque a API já filtra isso
+  // ✅ IMPORTANTE: Casas retornadas pela API são APENAS as disponíveis para afiliamento
+  // Se uma casa aparece aqui, significa que o usuário NÃO está afiliado a ela
+  // Removemos completamente a verificação isAffiliated pois era baseada em dados incorretos
 
   // Copiar link para clipboard
   const copyToClipboard = (text: string) => {
@@ -116,9 +115,6 @@ export default function BettingHousesNew() {
             />
           </div>
           <div className="flex gap-2">
-            <Badge variant="outline" className="border-emerald-500/30 text-emerald-400">
-              {filteredHouses.filter(house => house.isAffiliated).length} Afiliado{filteredHouses.filter(house => house.isAffiliated).length !== 1 ? 's' : ''}
-            </Badge>
             <Badge variant="outline" className="border-blue-500/30 text-blue-400">
               {filteredHouses.length} Disponívei{filteredHouses.length !== 1 ? 's' : ''}
             </Badge>
@@ -128,7 +124,8 @@ export default function BettingHousesNew() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredHouses.map((house: any) => {
-          const affiliated = isAffiliated(house);
+          // ✅ TODAS as casas aqui são NÃO AFILIADAS (API já filtra)
+          // Nunca mostrar como afiliado, sempre mostrar botão "Se Afiliar"
           return (
             <Card key={house.id} className="bg-slate-800 border-slate-700 hover:border-slate-600 transition-colors">
               <CardContent className="p-6">
@@ -141,16 +138,9 @@ export default function BettingHousesNew() {
                       <h3 className="text-lg font-semibold text-white">{house.name}</h3>
                     </div>
                   </div>
-                  {affiliated ? (
-                    <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
-                      <Check className="h-3 w-3 mr-1" />
-                      Afiliado
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="border-blue-500/30 text-blue-400">
-                      Disponível
-                    </Badge>
-                  )}
+                  <Badge variant="outline" className="border-blue-500/30 text-blue-400">
+                    Disponível
+                  </Badge>
                 </div>
 
                 <p className="text-slate-300 text-sm mb-4 line-clamp-2">
