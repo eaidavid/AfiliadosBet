@@ -144,14 +144,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createBettingHouse(houseData: InsertBettingHouse): Promise<BettingHouse> {
-    // Gerar token de segurança automaticamente
-    const securityToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    // Gerar token de segurança robusto
+    const crypto = require('crypto');
+    const securityToken = crypto.randomBytes(32).toString('hex');
+    
+    // Gerar identificador único se não fornecido
+    const identifier = houseData.identifier || 
+      `${houseData.name.toLowerCase().replace(/[^a-z0-9]/g, '')}${Date.now()}`;
     
     // Mapeamento padrão de parâmetros se não fornecido
     const defaultParameterMapping = {
       subid: "subid",
       amount: "amount",
-      valor: "amount",
       customer_id: "customer_id"
     };
     
@@ -159,10 +163,14 @@ export class DatabaseStorage implements IStorage {
       .insert(bettingHouses)
       .values({
         ...houseData,
+        identifier,
         securityToken,
-        parameterMapping: houseData.parameterMapping || defaultParameterMapping
+        parameterMapping: houseData.parameterMapping || defaultParameterMapping,
+        enabledPostbacks: houseData.enabledPostbacks || []
       })
       .returning();
+    
+    console.log(`🔐 Token de segurança gerado para ${house.name}: ${securityToken}`);
     return house;
   }
 
