@@ -144,9 +144,24 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createBettingHouse(houseData: InsertBettingHouse): Promise<BettingHouse> {
+    // Gerar token de segurança automaticamente
+    const securityToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    
+    // Mapeamento padrão de parâmetros se não fornecido
+    const defaultParameterMapping = {
+      subid: "subid",
+      amount: "amount",
+      valor: "amount",
+      customer_id: "customer_id"
+    };
+    
     const [house] = await db
       .insert(bettingHouses)
-      .values(houseData)
+      .values({
+        ...houseData,
+        securityToken,
+        parameterMapping: houseData.parameterMapping || defaultParameterMapping
+      })
       .returning();
     return house;
   }

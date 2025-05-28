@@ -67,7 +67,187 @@ function requireAdmin(req: any, res: any, next: any) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // === SISTEMA COMPLETO DE POSTBACK ===
+  
+  // === NOVO SISTEMA DE POSTBACKS CONFORME ESPECIFICAÇÃO ===
+  // Rota dinâmica: /postback/:casa/:evento/:token
+  app.get("/postback/:casa/:evento/:token", async (req, res) => {
+    try {
+      const { casa, evento, token } = req.params;
+      const queryParams = req.query;
+      const ip = req.ip || req.connection.remoteAddress || 'unknown';
+      const userAgent = req.get('User-Agent') || 'unknown';
+      
+      console.log(`📩 Postback recebido: casa=${casa}, evento=${evento}, token=${token}`);
+      console.log(`📊 Parâmetros:`, queryParams);
+      
+      // 1. Buscar a casa pelo slug/identifier
+      const houseRecord = await db.select()
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.identifier, casa))
+        .limit(1);
+      
+      if (!houseRecord.length) {
+        console.log(`❌ Casa não encontrada: ${casa}`);
+        await db.insert(schema.postbackLogs).values({
+          casa,
+          evento,
+          subid: queryParams.subid as string || 'unknown',
+          status: 'ERROR',
+          erro: 'Casa não encontrada',
+          parametrosRecebidos: queryParams,
+          ip,
+          userAgent
+        });
+        return res.status(400).json({ error: "Casa não encontrada", casa });
+      }
+      
+      const house = houseRecord[0];
+      
+      // 2. Validar token de segurança
+      if (house.securityToken !== token) {
+        console.log(`❌ Token inválido para casa ${casa}. Esperado: ${house.securityToken}, Recebido: ${token}`);
+        await db.insert(schema.postbackLogs).values({
+          casa,
+          evento,
+          subid: queryParams.subid as string || 'unknown',
+          status: 'ERROR',
+          erro: 'Token de segurança inválido',
+          parametrosRecebidos: queryParams,
+          ip,
+          userAgent
+        });
+        return res.status(401).json({ error: "Token de segurança inválido" });
+      }
+      
+      // 3. Normalizar parâmetros usando o mapeamento da casa
+      const paramMapping = house.parameterMapping as Record<string, string> || {};
+      const normalizedParams = {
+        subid: queryParams[paramMapping.subid || 'subid'] as string,
+        amount: queryParams[paramMapping.amount || 'amount'] as string,
+        customer_id: queryParams[paramMapping.customer_id || 'customer_id'] as string
+      };
+      
+      console.log(`🔄 Parâmetros normalizados:`, normalizedParams);
+      
+      if (!normalizedParams.subid) {
+        console.log(`❌ SubID não encontrado nos parâmetros`);
+        await db.insert(schema.postbackLogs).values({
+          casa,
+          evento,
+          subid: 'unknown',
+          status: 'ERROR',
+          erro: 'SubID não encontrado',
+          parametrosRecebidos: queryParams,
+          ip,
+          userAgent
+        });
+        return res.status(400).json({ error: "SubID não encontrado" });
+      }
+      
+      // 4. Buscar afiliado pelo subid (username)
+      const affiliate = await db.select()
+        .from(schema.users)
+        .where(eq(schema.users.username, normalizedParams.subid))
+        .limit(1);
+      
+      if (!affiliate.length) {
+        console.log(`❌ Afiliado não encontrado: ${normalizedParams.subid}`);
+        await db.insert(schema.postbackLogs).values({
+          casa,
+          evento,
+          subid: normalizedParams.subid,
+          status: 'ERROR',
+          erro: 'Afiliado não encontrado',
+          parametrosRecebidos: queryParams,
+          ip,
+          userAgent
+        });
+        return res.status(400).json({ error: "Afiliado não encontrado", subid: normalizedParams.subid });
+      }
+      
+      const affiliateUser = affiliate[0];
+      
+      // 5. Registrar o evento
+      await db.insert(schema.eventos).values({
+        afiliadoId: affiliateUser.id,
+        casa: house.name,
+        evento,
+        valor: normalizedParams.amount ? parseFloat(normalizedParams.amount) : null,
+        customerId: normalizedParams.customer_id,
+        parametros: queryParams,
+        ip
+      });
+      
+      // 6. Calcular e registrar comissão se aplicável
+      if (normalizedParams.amount && (evento === 'deposit' || evento === 'deposito' || evento === 'first_deposit')) {
+        const amount = parseFloat(normalizedParams.amount);
+        let commissionValue = 0;
+        
+        if (house.commissionType === 'RevShare') {
+          const percentage = parseFloat(house.commissionValue.replace('%', ''));
+          commissionValue = (amount * percentage) / 100;
+        } else if (house.commissionType === 'CPA') {
+          commissionValue = parseFloat(house.commissionValue.replace('R$', '').replace(',', '.'));
+        }
+        
+        if (commissionValue > 0) {
+          await db.insert(schema.comissoes).values({
+            afiliadoId: affiliateUser.id,
+            tipo: house.commissionType,
+            valor: commissionValue,
+            eventoId: null // Vamos buscar o último evento inserido se necessário
+          });
+          
+          console.log(`💰 Comissão calculada: R$ ${commissionValue.toFixed(2)} para ${affiliateUser.username}`);
+        }
+      }
+      
+      // 7. Registrar log de sucesso
+      await db.insert(schema.postbackLogs).values({
+        casa,
+        evento,
+        subid: normalizedParams.subid,
+        status: 'SUCCESS',
+        erro: null,
+        parametrosRecebidos: queryParams,
+        ip,
+        userAgent
+      });
+      
+      console.log(`✅ Postback processado com sucesso para ${normalizedParams.subid}`);
+      
+      return res.json({ 
+        status: "success", 
+        message: "Postback processado com sucesso",
+        subid: normalizedParams.subid,
+        evento,
+        casa 
+      });
+      
+    } catch (error) {
+      console.error("❌ Erro no processamento do postback:", error);
+      
+      // Registrar erro no log
+      try {
+        await db.insert(schema.postbackLogs).values({
+          casa: req.params.casa || 'unknown',
+          evento: req.params.evento || 'unknown',
+          subid: req.query.subid as string || 'unknown',
+          status: 'ERROR',
+          erro: error instanceof Error ? error.message : 'Erro desconhecido',
+          parametrosRecebidos: req.query,
+          ip: req.ip || 'unknown',
+          userAgent: req.get('User-Agent') || 'unknown'
+        });
+      } catch (logError) {
+        console.error("Erro ao registrar log:", logError);
+      }
+      
+      return res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // === SISTEMA LEGADO DE POSTBACK (manter compatibilidade) ===
   // Rota de API para postback que funciona corretamente
   app.get("/api/postback/:casa", async (req, res) => {
     try {

@@ -1,0 +1,116 @@
+🛠️ 1. Admin configura a casa de apostas no sistema
+No painel de admin, você já tem um formulário para cadastrar casas. Agora, você precisa de campos específicos para os postbacks:
+
+Nome da casa: Ex: Brazzino
+
+Link base de afiliado: Ex: https://brazpromo.com/promo/click/123abc?subid=UNICO123
+
+Token de segurança: Ex: abcd123
+
+Parâmetro primário (subid): Ex: subid
+
+Eventos suportados (registro, depósito, lucro, etc.)
+
+Estrutura de postback esperada por evento:
+
+Ex: /postback/:casa_slug/:evento/:token
+
+O admin então comunica à casa o seguinte:
+
+"Nos envie os postbacks nos seguintes links:
+
+Registro: https://afiliadosbet.com/postback/brazzino/registro/abcd123?subid={subid}
+
+Depósito: https://afiliadosbet.com/postback/brazzino/deposito/abcd123?subid={subid}&valor={amount}"
+
+✅ Observação: O sistema monta a URL automaticamente com base nos dados cadastrados.
+
+🔁 2. Sistemas recebem os dados (postbacks)
+Cada postback recebido cai em uma rota dinâmica como:
+
+ruby
+Copiar
+Editar
+GET /postback/:casa/:evento/:token
+Exemplo real recebido:
+
+swift
+Copiar
+Editar
+GET /postback/brazzino/deposito/abcd123?subid=abc123&valor=150
+🧩 3. Processo de “transformar dados” (normalização e tratamento)
+Esse é o passo que você não sabia como expressar — o nome disso é normalização de parâmetros.
+Cada casa pode mandar nomes diferentes para os parâmetros (subid, aff_id, amount, val, etc.).
+
+Você precisa de um mapa de parâmetros configurado pelo admin, por exemplo:
+
+json
+Copiar
+Editar
+{
+  "subid": "subid",
+  "valor": "valor"
+}
+Outra casa pode ser:
+
+json
+Copiar
+Editar
+{
+  "subid": "click_id",
+  "valor": "amount"
+}
+Seu sistema então, usa esse mapa para extrair os dados corretamente, independentemente do nome original.
+
+📦 4. Processamento do evento
+Após normalizar, o sistema faz:
+
+Verificação do token (comparado com o cadastrado para a casa)
+
+Busca o link no banco com base no subid
+
+Grava o evento na tabela postbacks com:
+
+usuário
+
+casa
+
+evento
+
+valor
+
+subid
+
+parâmetros brutos recebidos
+
+IP
+
+data
+
+Atualiza relatórios e comissões
+
+Grava o log no painel de postbacks
+
+📝 5. Exemplo de log salvo no painel de postbacks
+Data	Casa	Evento	Subid	Valor	Status	IP	Parâmetros recebidos
+28/05/2025	Brazzino	Depósito	abc123	150	OK	200.1.1.1	{ subid: 'abc123', valor: '150' }
+28/05/2025	Brazzino	Registro	abc123	-	OK	200.1.1.1	{ subid: 'abc123' }
+
+✅ Resumo dos Componentes a Criar ou Adaptar
+📌 No painel do admin:
+Campo de mapeamento de parâmetros ({ subid: "subid", valor: "valor" })
+
+Geração automática das URLs de postback por evento
+
+📌 No back-end:
+Rota: GET /postback/:casa/:evento/:token
+
+Middleware de validação de token
+
+Função para buscar o mapeamento de parâmetros da casa
+
+Função que normaliza os parâmetros
+
+Registro de evento no banco
+
+Registro de log no painel

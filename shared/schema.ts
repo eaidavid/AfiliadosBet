@@ -49,6 +49,8 @@ export const bettingHouses = pgTable("betting_houses", {
   isActive: boolean("is_active").default(true),
   identifier: text("identifier").notNull().unique(), // identificador único para postbacks
   enabledPostbacks: jsonb("enabled_postbacks").default([]), // eventos habilitados: ['registration', 'deposit', etc.]
+  securityToken: text("security_token").notNull(), // token de segurança para validação
+  parameterMapping: jsonb("parameter_mapping").default({}), // mapeamento de parâmetros: { "subid": "subid", "valor": "amount" }
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -186,9 +188,11 @@ export const insertBettingHouseSchema = createInsertSchema(bettingHouses).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+  securityToken: true, // será gerado automaticamente
 }).extend({
   identifier: z.string().optional(),
   enabledPostbacks: z.array(z.string()).optional(),
+  parameterMapping: z.record(z.string()).optional(),
 });
 
 export const insertAffiliateLinkSchema = createInsertSchema(affiliateLinks).omit({
