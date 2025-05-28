@@ -144,7 +144,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createBettingHouse(houseData: InsertBettingHouse): Promise<BettingHouse> {
-    // Usar SQL para gerar token de segurança diretamente no banco
+    // Gerar identificador único se não fornecido
     const identifier = houseData.identifier || 
       `${houseData.name.toLowerCase().replace(/[^a-z0-9]/g, '')}${Date.now()}`;
     
@@ -155,19 +155,18 @@ export class DatabaseStorage implements IStorage {
       customer_id: "customer_id"
     };
     
-    // Inserir com token gerado via SQL
+    // Inserir sem especificar securityToken para usar o valor padrão do banco
     const [house] = await db
       .insert(bettingHouses)
       .values({
         ...houseData,
         identifier,
-        securityToken: sql`md5(random()::text || clock_timestamp()::text)`,
         parameterMapping: houseData.parameterMapping || defaultParameterMapping,
         enabledPostbacks: houseData.enabledPostbacks || []
       })
       .returning();
     
-    console.log(`🔐 Token de segurança gerado para ${house.name}: ${house.securityToken}`);
+    console.log(`🔐 Token de segurança gerado automaticamente para ${house.name}: ${house.securityToken}`);
     return house;
   }
 
