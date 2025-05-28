@@ -446,40 +446,143 @@ export default function AdminHousesManagement() {
                 />
               </div>
 
-              {/* Preview das Rotas de Postback */}
-              {form.watch("name") && form.watch("primaryParam") && (
+              {/* Configuração de Mapeamento de Parâmetros */}
+              <div className="bg-slate-700/30 rounded-xl p-4">
+                <h4 className="text-lg font-semibold text-white mb-3">Mapeamento de Parâmetros</h4>
+                <p className="text-slate-400 text-sm mb-4">
+                  Configure como os parâmetros da casa serão mapeados para o sistema padrão
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">SubID da Casa</Label>
+                    <Input
+                      placeholder="subid, click_id, aff_id..."
+                      defaultValue="subid"
+                      className="bg-slate-700 border-slate-600 text-white placeholder-slate-400 focus:border-emerald-500"
+                      onChange={(e) => {
+                        const currentMapping = form.watch("parameterMapping") || {};
+                        form.setValue("parameterMapping", {
+                          ...currentMapping,
+                          subid: e.target.value || "subid"
+                        });
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Valor/Amount da Casa</Label>
+                    <Input
+                      placeholder="amount, valor, val..."
+                      defaultValue="amount"
+                      className="bg-slate-700 border-slate-600 text-white placeholder-slate-400 focus:border-emerald-500"
+                      onChange={(e) => {
+                        const currentMapping = form.watch("parameterMapping") || {};
+                        form.setValue("parameterMapping", {
+                          ...currentMapping,
+                          amount: e.target.value || "amount"
+                        });
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Customer ID da Casa</Label>
+                    <Input
+                      placeholder="customer_id, user_id..."
+                      defaultValue="customer_id"
+                      className="bg-slate-700 border-slate-600 text-white placeholder-slate-400 focus:border-emerald-500"
+                      onChange={(e) => {
+                        const currentMapping = form.watch("parameterMapping") || {};
+                        form.setValue("parameterMapping", {
+                          ...currentMapping,
+                          customer_id: e.target.value || "customer_id"
+                        });
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Eventos Suportados */}
+              <div className="bg-slate-700/30 rounded-xl p-4">
+                <h4 className="text-lg font-semibold text-white mb-3">Eventos de Postback</h4>
+                <p className="text-slate-400 text-sm mb-4">
+                  Selecione quais eventos esta casa irá enviar via postback
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[
+                    { id: 'registration', label: 'Registro' },
+                    { id: 'deposit', label: 'Depósito' },
+                    { id: 'first_deposit', label: 'Primeiro Depósito' },
+                    { id: 'recurring_deposit', label: 'Depósito Recorrente' },
+                  ].map((event) => (
+                    <div key={event.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={event.id}
+                        checked={selectedEvents.includes(event.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedEvents([...selectedEvents, event.id]);
+                          } else {
+                            setSelectedEvents(selectedEvents.filter(e => e !== event.id));
+                          }
+                        }}
+                        className="border-slate-600 data-[state=checked]:bg-emerald-500"
+                      />
+                      <label htmlFor={event.id} className="text-slate-300 text-sm">
+                        {event.label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Preview das URLs de Postback */}
+              {form.watch("name") && (
                 <div className="bg-slate-700/30 rounded-xl p-4">
-                  <h4 className="text-lg font-semibold text-white mb-3">Preview das Rotas de Postback</h4>
-                  <div className="space-y-2 text-sm">
-                    <div>
-                      <span className="text-emerald-400 font-semibold">Click:</span>
-                      <span className="text-slate-300 font-mono ml-2 break-all text-xs">
-                        /api/postback/click?house={form.watch("name").toLowerCase()}&subid={`{subid}`}&customer_id={`{customer_id}`}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-emerald-400 font-semibold">Registration:</span>
-                      <span className="text-slate-300 font-mono ml-2 break-all text-xs">
-                        /api/postback/registration?house={form.watch("name").toLowerCase()}&subid={`{subid}`}&customer_id={`{customer_id}`}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-emerald-400 font-semibold">Deposit:</span>
-                      <span className="text-slate-300 font-mono ml-2 break-all text-xs">
-                        /api/postback/deposit?house={form.watch("name").toLowerCase()}&subid={`{subid}`}&amount={`{amount}`}&customer_id={`{customer_id}`}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-emerald-400 font-semibold">Recurring Deposit:</span>
-                      <span className="text-slate-300 font-mono ml-2 break-all text-xs">
-                        /api/postback/recurring-deposit?house={form.watch("name").toLowerCase()}&subid={`{subid}`}&amount={`{amount}`}&customer_id={`{customer_id}`}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-emerald-400 font-semibold">Profit:</span>
-                      <span className="text-slate-300 font-mono ml-2 break-all text-xs">
-                        /api/postback/profit?house={form.watch("name").toLowerCase()}&subid={`{subid}`}&amount={`{amount}`}&customer_id={`{customer_id}`}
-                      </span>
+                  <h4 className="text-lg font-semibold text-white mb-3">🎯 URLs de Postback</h4>
+                  <p className="text-slate-400 text-sm mb-4">
+                    URLs que você deve configurar na plataforma da casa de apostas
+                  </p>
+                  <div className="space-y-3">
+                    {selectedEvents.map((event) => {
+                      const houseSlug = form.watch("name").toLowerCase().replace(/[^a-z0-9]/g, '');
+                      const baseUrl = window.location.origin;
+                      const eventUrl = `${baseUrl}/postback/${houseSlug}/${event}/[TOKEN_SERA_GERADO]?subid={subid}${event.includes('deposit') || event === 'profit' ? '&amount={amount}' : ''}&customer_id={customer_id}`;
+                      
+                      return (
+                        <div key={event} className="bg-slate-800/50 rounded-lg p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-emerald-400 font-semibold capitalize">
+                              {event.replace('_', ' ')}:
+                            </span>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => navigator.clipboard.writeText(eventUrl)}
+                              className="h-6 w-6 p-0 text-slate-400 hover:text-white"
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          <code className="text-slate-300 font-mono text-xs break-all block bg-slate-900/50 p-2 rounded">
+                            {eventUrl}
+                          </code>
+                        </div>
+                      );
+                    })}
+                    
+                    {selectedEvents.length === 0 && (
+                      <div className="text-slate-400 text-center py-4">
+                        Selecione os eventos para ver as URLs de postback
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                    <div className="text-blue-400 text-sm font-medium mb-1">📋 Instruções:</div>
+                    <div className="text-blue-300 text-xs space-y-1">
+                      <div>• Copie as URLs e configure na plataforma da casa</div>
+                      <div>• [TOKEN_SERA_GERADO] será substituído pelo token real após criação</div>
+                      <div>• {`{subid}`}, {`{amount}`}, {`{customer_id}`} são variáveis da casa</div>
                     </div>
                   </div>
                 </div>
