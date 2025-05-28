@@ -84,7 +84,7 @@ export default function LinksManagement({ onPageChange }: LinksManagementProps) 
     house.enabledPostbacks?.forEach(event => {
       const hasAmount = ['deposit', 'first_deposit', 'profit'].includes(event);
       const amountParam = hasAmount ? '&amount={amount}' : '';
-      urls[event] = `${baseUrl}/postback/${house.identifier}/${event}/${house.securityToken}?subid={subid}${amountParam}&customer_id={customer_id}`;
+      urls[event] = `${baseUrl}/api/postback-handler/${house.identifier}/${event}/${house.securityToken}?subid={subid}${amountParam}&customer_id={customer_id}`;
     });
     
     return urls;

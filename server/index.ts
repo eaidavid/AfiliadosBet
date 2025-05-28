@@ -38,10 +38,11 @@ async function handlePostback(req: any, res: any) {
     } else {
       return res.status(400).json({ error: "Formato inválido de URL" });
     }
+    
     const { subid, amount, customer_id } = req.query;
     const ip = req.ip || req.connection.remoteAddress || 'unknown';
     
-    console.log(`📩 Postback recebido: casa=${casa}, evento=${evento}, token=${token}, subid=${subid}`);
+    console.log(`📩 Postback recebido: casa=${casa}, evento=${evento}, token=${token}, subid=${subid}, amount=${amount}`);
     
     // Verificar se a casa existe pelo identificador
     const house = await db.select()
@@ -51,12 +52,32 @@ async function handlePostback(req: any, res: any) {
     
     if (house.length === 0) {
       console.log(`❌ Casa não encontrada: ${casa}`);
+      // Log de erro no postback
+      await db.insert(schema.postbackLogs).values({
+        casa,
+        evento,
+        subid: subid as string || 'unknown',
+        valor: amount ? parseFloat(amount as string) : 0,
+        ip,
+        raw: req.url,
+        status: 'ERROR_HOUSE_NOT_FOUND'
+      });
       return res.status(404).json({ error: "Casa de apostas não encontrada" });
     }
     
     // Verificar token de segurança
     if (house[0].securityToken !== token) {
       console.log(`❌ Token inválido: esperado ${house[0].securityToken}, recebido ${token}`);
+      // Log de erro no postback
+      await db.insert(schema.postbackLogs).values({
+        casa,
+        evento,
+        subid: subid as string || 'unknown',
+        valor: amount ? parseFloat(amount as string) : 0,
+        ip,
+        raw: req.url,
+        status: 'ERROR_INVALID_TOKEN'
+      });
       return res.status(401).json({ error: "Token de segurança inválido" });
     }
     
@@ -68,21 +89,62 @@ async function handlePostback(req: any, res: any) {
     
     if (affiliate.length === 0) {
       console.log(`❌ Afiliado não encontrado: ${subid}`);
+      // Log de erro no postback
+      await db.insert(schema.postbackLogs).values({
+        casa,
+        evento,
+        subid: subid as string || 'unknown',
+        valor: amount ? parseFloat(amount as string) : 0,
+        ip,
+        raw: req.url,
+        status: 'ERROR_AFFILIATE_NOT_FOUND'
+      });
       return res.status(404).json({ error: "Afiliado não encontrado" });
     }
+    
+    // Registrar evento no banco
+    const eventoData = await db.insert(schema.eventos).values({
+      afiliadoId: affiliate[0].id,
+      casa,
+      evento,
+      valor: amount ? (amount as string) : null
+    }).returning();
     
     // Calcular comissão baseada no tipo da casa
     let commissionValue = 0;
     let tipo = 'CPA';
     
-    if (house[0].commissionType === 'CPA') {
+    if (house[0].commissionType === 'CPA' && (evento === 'registration' || evento === 'first_deposit')) {
       commissionValue = parseFloat(house[0].commissionValue);
       tipo = 'CPA';
-    } else if (house[0].commissionType === 'RevShare' && amount) {
+    } else if (house[0].commissionType === 'RevShare' && amount && (evento === 'deposit' || evento === 'profit')) {
       const percentage = parseFloat(house[0].commissionValue) / 100;
       commissionValue = parseFloat(amount as string) * percentage;
       tipo = 'RevShare';
     }
+    
+    // Salvar comissão se houver
+    if (commissionValue > 0) {
+      await db.insert(schema.comissoes).values({
+        afiliadoId: affiliate[0].id,
+        eventoId: eventoData[0].id,
+        tipo,
+        valor: commissionValue.toString()
+      });
+      
+      console.log(`💰 Comissão ${tipo}: R$ ${commissionValue} para ${affiliate[0].username} (${house[0].name})`);
+    }
+    
+    // Log de sucesso no postback
+    await db.insert(schema.postbackLogs).values({
+      casa,
+      evento,
+      subid: subid as string,
+      valor: amount ? parseFloat(amount as string) : 0,
+      ip,
+      raw: req.url,
+      status: 'SUCCESS'
+    });
     
     console.log(`✅ Postback processado com sucesso - Casa: ${house[0].name}, Evento: ${evento}, Afiliado: ${affiliate[0].username}, Comissão: R$ ${commissionValue}`);
     
@@ -94,11 +156,28 @@ async function handlePostback(req: any, res: any) {
       affiliate: affiliate[0].username,
       house: house[0].name,
       event: evento,
+      customer_id,
       processed_at: new Date().toISOString()
     });
     
   } catch (error) {
     console.error("❌ Erro no processamento do postback:", error);
+    
+    // Log de erro genérico
+    try {
+      await db.insert(schema.postbackLogs).values({
+        casa: req.params?.casa || 'unknown',
+        evento: req.params?.evento || 'unknown',
+        subid: req.query?.subid as string || 'unknown',
+        valor: req.query?.amount ? parseFloat(req.query.amount as string) : 0,
+        ip: req.ip || 'unknown',
+        raw: req.url,
+        status: 'ERROR_INTERNAL'
+      });
+    } catch (logError) {
+      console.error("❌ Erro ao registrar log:", logError);
+    }
+    
     res.status(500).json({ error: "Erro interno no processamento", status: "ERROR" });
   }
 }
