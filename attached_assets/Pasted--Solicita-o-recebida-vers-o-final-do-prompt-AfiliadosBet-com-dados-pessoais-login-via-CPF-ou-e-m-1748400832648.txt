@@ -1,0 +1,155 @@
+**Solicitação recebida: versão final do prompt AfiliadosBet com dados pessoais, login via CPF ou e-mail, banco de dados consolidado e estrutura otimizada.**
+🔥 *Modo engenheiro de sistemas com foco em banco relacional limpo e funcional ativado.*
+
+---
+
+### ✅ PROMPT FINAL — PRONTO PARA COLAR NA IA DO REPLIT
+
+```
+Crie um sistema web completo chamado **AfiliadosBet**, com frontend em React.js e backend em Node.js (Express), para gerenciar afiliados de casas de apostas online com autenticação segura e painel para usuários e administradores.
+
+🏗️ STACK TECNOLÓGICA
+- Frontend: React.js (Vite) + TailwindCSS + React Router + Axios
+- Backend: Node.js + Express + Prisma ORM
+- Banco de dados: PostgreSQL (estruturado de forma consolidada)
+- Autenticação: JWT + Bcrypt
+- Validação: Zod (opcional mas recomendado)
+- Armazenamento de logo: base64 simples
+- Gráficos: Chart.js no frontend
+
+📁 ESTRUTURA DO PROJETO
+```
+
+txt
+afiliadosbet/
+├── backend/
+│   ├── prisma/
+│   ├── controllers/
+│   ├── routes/
+│   ├── middlewares/
+│   ├── utils/
+│   └── server.js
+├── frontend/
+│   ├── components/
+│   ├── pages/
+│   ├── services/
+│   └── App.jsx
+
+```
+
+---
+
+🔐 AUTENTICAÇÃO E CADASTRO
+Usuário pode fazer login com **CPF ou e-mail**.  
+Tabela `User` deve conter os seguintes campos:
+- id (PK)
+- nome_completo
+- cpf (único)
+- email (único)
+- senha_hash
+- data_nascimento
+- telefone
+- role (`user` ou `admin`)
+- método_pagamento
+	cadastrar no perfil do usuário
+- criado_em
+
+---
+
+📄 TABELAS (POSTGRES via Prisma ORM)
+- **User**: todos os dados pessoais e controle de acesso (role)
+- **BettingHouse**: casas de apostas
+  - id, nome, descricao, logo, link_base, tipo_comissao, rotas_postback
+- **Afiliacao**: vincula usuário a casas
+  - id, user_id, casa_id, link_afiliado_gerado, data_afiliacao
+- **Transacao**: comissão recebida por afiliado
+  - id, afiliacao_id, tipo (registro, depósito, lucro), valor, timestamp
+- (Evite criar tabelas desnecessárias)
+
+---
+
+🎯 PAINEL DO USUÁRIO (AFILIADO)
+- Tela de cadastro/login com CPF, email e senha
+- tela de cadastro deve pedir:
+
+- usuário (alfanúmerico de no mínimo 6 dígitos (será o id)
+- nome_completo
+- cpf (único)
+- email (único)
+- senha_hash
+- data_nascimento
+- telefone
+
+- Painel com:
+  - Lista de casas disponíveis
+  	- Botão “Se afiliar” → gera link com `subid={id_usuario}`
+  - Histórico de transações com valor e data(dasboard financeiro)
+  	- Saldo atual (somatório das transações)
+  -Seção de "meus links" com todas as casas que o usuário se afiliou
+- Seção “Meus dados” com CPF, telefone, email, data de nascimento, método de pagamento
+
+---
+
+🛠️ PAINEL DO ADMIN
+- Gerenciar casa de aposta:
+  Cadastrar casas com:
+	- nome, descrição, logo (url), link_base
+  	- tipo de comissão: CPA, RevShare, Ambos
+  	- definir rotas de postback simuladas reais
+  Gerenciar todas(excluir, editar link, etc.)
+- Página para Ver lista de afiliados com:
+  - nome, e-mail, cpf, telefone, valor ganho, status de pagamento
+	Opções de gerenciamento(ver mais detalhes, aviso de demissão, etc)
+- Dashboard:
+  - Total de afiliados
+  - Total de transações
+  - Gráficos com receita por casa e afiliado
+- Tabelas reativas com filtros
+-Página de gerenciar pagamentos
+-Página de conferir postbacks(logs, requisições)
+	defino um endereço e vejo o que está sendo recebido.
+
+---
+
+🔐 SEGURANÇA E INTEGRAÇÃO
+- Senhas criptografadas com Bcrypt
+- Tokens JWT com `role` para proteger rotas
+- Middleware:
+  - `verifyToken`
+  - `isAdmin`
+- Validação de CPF e email única
+- Validação de dados no backend
+
+---
+
+📄 ENV EXEMPLO
+```
+
+DATABASE\_URL=postgresql://usuario\:senha\@localhost:5432/afiliadosbet
+JWT\_SECRET=superseguro
+
+```
+
+---
+
+📦 FUNCIONALIDADES EXTRAS
+- Toasts para erros/sucesso (frontend)
+- Skeleton loader para listas
+- Responsive design (mobile/tablet/desktop)
+- Charts com dados simulados no dashboard
+- Backend com CORS + Helmet
+
+---
+
+✅ REQUISITOS FINAIS
+- Todas as entidades devem estar ligadas entre si com chaves estrangeiras corretas
+- Nenhuma casa deve ter afiliados automáticos — vínculo ocorre ao clicar "Se Afiliar"
+- Usar apenas as tabelas essenciais, mas com dados completos (como pessoais)
+- Interface moderna e com identidade visual profissional
+- Backend organizado com rotas REST completas
+
+```
+
+---
+
+
