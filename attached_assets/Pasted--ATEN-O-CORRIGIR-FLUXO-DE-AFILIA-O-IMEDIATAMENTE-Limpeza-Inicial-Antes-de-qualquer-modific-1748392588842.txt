@@ -1,0 +1,58 @@
+⚠️ ATENÇÃO: CORRIGIR FLUXO DE AFILIAÇÃO IMEDIATAMENTE ⚠️
+
+Limpeza Inicial:
+Antes de qualquer modificação, execute comandos para limpar os dados anteriores, especialmente nas tabelas relacionadas a afiliações e casas vinculadas:
+
+sql
+Copiar
+Editar
+DELETE FROM afiliacoes;
+-- Se necessário, também limpar casas ou tabelas relacionadas.
+Cadastro de Casas:
+Ao criar uma casa no painel administrativo, não vincule nenhum usuário automaticamente como afiliado. A casa deve ser cadastrada normalmente, apenas armazenando os dados básicos e o link base com o parâmetro “VALUE”.
+
+Exibição no Painel do Usuário:
+No painel do usuário, as casas cadastradas devem aparecer listadas com um botão “Se Afiliar” apenas se o usuário ainda não for afiliado àquela casa.
+
+Ação do Botão “Se Afiliar”:
+Ao clicar no botão “Se Afiliar”, o sistema deve:
+
+Verificar no banco se já existe afiliação para o usuário e aquela casa.
+
+Se não existir, criar a afiliação na tabela correspondente.
+
+Gerar o link personalizado substituindo o parâmetro “VALUE” no link base pelo identificador único do usuário (exemplo: subid=47).
+
+Armazenar esse link personalizado junto da afiliação.
+
+Renderização Condicional:
+Para cada casa no painel do usuário, antes de mostrar qualquer tag “Afiliado” ou botão “Copiar Link”, faça uma consulta real à tabela de afiliações para confirmar se o usuário está afiliado àquela casa.
+
+Se estiver, exiba “Afiliado” + botão “Copiar Link” com o link personalizado.
+
+Se não estiver, exiba o botão “Se Afiliar”.
+
+Nunca exibir o link base com “VALUE” para o usuário. O link deve ser sempre gerado dinamicamente e personalizado para o usuário.
+
+RESUMO:
+
+Limpar dados antigos.
+
+Casas criadas sem afiliados.
+
+No painel, mostrar botão “Se Afiliar” se o usuário não for afiliado.
+
+Ao clicar, criar afiliação, gerar link personalizado, armazenar e atualizar a interface.
+
+Mostrar “Afiliado” e link personalizado somente se a afiliação existir.
+
+⚠️ Por favor, corrija o fluxo de afiliação e geração de links exatamente conforme essas instruções. Teste criando uma nova casa e simulando afiliação de usuário para garantir que:
+
+O botão “Se Afiliar” aparece corretamente para usuários não afiliados.
+
+O clique no botão gera e armazena o link correto (com id do usuário).
+
+A interface atualiza para mostrar o status “Afiliado” e o link correto.
+
+Resolva isso de forma definitiva e sem erros.
+
