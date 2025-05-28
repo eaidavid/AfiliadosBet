@@ -1,0 +1,84 @@
+❗️PROBLEMA DETECTADO
+Quando o admin cadastra uma nova casa:
+
+Ela aparece automaticamente no painel do afiliado como se ele já estivesse afiliado ✅
+
+O link promocional exibido é o mesmo link genérico da casa, sem personalização por afiliado ❌
+
+🎯 CAUSA PROVÁVEL
+Isso acontece porque:
+
+O sistema está exibindo todas as casas cadastradas como se fossem “afiliações ativas” para qualquer usuário.
+
+O link está vindo diretamente da tabela casas, em vez de ser gerado pela relação casa + usuário (afiliado).
+
+Não está ocorrendo o processo de afiliamento (salvar em afiliacoes ou similar) nem a substituição de parâmetros como subid={id_afiliado}.
+
+✅ SOLUÇÃO EXATA (em etapas)
+1. Separar visualmente no painel do usuário:
+Casas disponíveis para se afiliar ✅
+
+Casas às quais ele já está afiliado ✅
+
+2. Ao clicar “Se afiliar”, o sistema deve:
+Criar um registro em afiliacoes com:
+
+id_user
+
+id_casa
+
+link_personalizado: gerar substituindo subid=VALUE por subid=<id_user> ou outro identificador único
+
+Exibir o link gerado apenas após afiliação
+
+3. Lógica do link personalizado:
+Se o link base da casa for:
+
+arduino
+Copiar
+Editar
+https://brazzino.com/promo?subid=VALUE
+Então, para o afiliado com ID 23:
+
+arduino
+Copiar
+Editar
+https://brazzino.com/promo?subid=23
+Use essa lógica para montar o link dinâmico com base em parâmetros registrados na casa (ex: subid, affid, etc.)
+
+🔄 AJUSTES NO BACKEND
+Ao criar uma casa: não gerar vínculo automático com nenhum afiliado
+
+Criar endpoint POST /afiliar que:
+
+Recebe id_user + id_casa
+
+Gera link personalizado (com o parâmetro primário da casa)
+
+Salva na tabela afiliacoes
+
+Alterar o endpoint que lista casas para o usuário:
+
+Mostrar “afiliar-se” se ainda não está afiliado
+
+Mostrar link personalizado + botão “desafiliar” se já estiver afiliado
+
+💡 BONUS: Se quiser padronizar ainda mais...
+Adicione um campo parametro_primario e parametros_adicionais no cadastro de casa para automatizar:
+
+json
+Copiar
+Editar
+{
+  "parametro_primario": "subid",
+  "parametros_adicionais": {
+    "utm_source": "afiliadosbet",
+    "lang": "pt"
+  }
+}
+E o sistema gera automaticamente:
+
+arduino
+Copiar
+Editar
+https://brazzino.com/promo?subid=23&utm_source=afiliadosbet&lang=pt

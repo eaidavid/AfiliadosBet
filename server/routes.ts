@@ -612,28 +612,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // User routes
+  // ✅ API para casas DISPONÍVEIS para afiliamento (NÃO afiliadas ainda)
   app.get("/api/betting-houses", requireAuth, async (req: any, res) => {
     try {
-      const houses = await storage.getActiveBettingHouses();
       const userId = req.session.user.id;
       
-      // Para cada casa, verificar se o usuário já está afiliado
-      const housesWithAffiliationStatus = await Promise.all(
-        houses.map(async (house) => {
-          const existingLink = await storage.getAffiliateLinkByUserAndHouse(userId, house.id);
+      // Buscar todas as casas ativas
+      const allHouses = await storage.getActiveBettingHouses();
+      
+      // Buscar casas às quais o usuário já está afiliado
+      const userAffiliations = await storage.getAffiliateLinksByUserId(userId);
+      const affiliatedHouseIds = userAffiliations.map(link => link.houseId);
+      
+      // Retornar apenas casas NÃO afiliadas (disponíveis para afiliamento)
+      const availableHouses = allHouses.filter(house => 
+        !affiliatedHouseIds.includes(house.id)
+      );
+      
+      console.log(`Casas disponíveis para afiliamento (usuário ${userId}):`, availableHouses.length);
+      res.json(availableHouses);
+    } catch (error) {
+      console.error("Erro ao buscar casas disponíveis:", error);
+      res.status(500).json({ message: "Erro interno do servidor" });
+    }
+  });
+
+  // ✅ Nova API para AFILIAÇÕES ATIVAS do usuário
+  app.get("/api/my-affiliations", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.session.user.id;
+      
+      // Buscar links de afiliação do usuário com dados da casa
+      const affiliateLinks = await storage.getAffiliateLinksByUserId(userId);
+      
+      const affiliationsWithHouses = await Promise.all(
+        affiliateLinks.map(async (link) => {
+          const house = await storage.getBettingHouseById(link.houseId);
           return {
-            ...house,
-            isAffiliated: !!existingLink,
-            affiliateLink: existingLink?.generatedUrl || null,
+            id: link.id,
+            house: house,
+            personalizedUrl: link.generatedUrl,
+            isActive: link.isActive,
+            affiliatedAt: link.createdAt
           };
         })
       );
-      
-      res.json(housesWithAffiliationStatus);
+
+      console.log(`Afiliações ativas (usuário ${userId}):`, affiliationsWithHouses.length);
+      res.json(affiliationsWithHouses);
     } catch (error) {
-      console.error("Get betting houses error:", error);
-      res.status(500).json({ message: "Failed to get betting houses" });
+      console.error("Erro ao buscar afiliações:", error);
+      res.status(500).json({ message: "Erro interno do servidor" });
     }
   });
 
@@ -986,18 +1015,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const house = await storage.createBettingHouse(result.data);
       
-      // Gerar links de afiliados para todos os usuários existentes
-      const users = await storage.getAllAffiliates();
-      for (const user of users) {
-        if (user.role !== 'admin') {
-          await storage.createAffiliateLink({
-            userId: user.id,
-            houseId: house.id,
-            generatedUrl: house.baseUrl.replace('{subid}', user.username),
-            isActive: true
-          });
-        }
-      }
+      // ❌ REMOVIDO: Não criar links automáticos para todos os usuários
+      // Agora as casas ficam disponíveis para afiliamento manual
       
       res.json(house);
     } catch (error) {
