@@ -47,6 +47,8 @@ export const bettingHouses = pgTable("betting_houses", {
   minDeposit: text("min_deposit"),
   paymentMethods: text("payment_methods"),
   isActive: boolean("is_active").default(true),
+  identifier: text("identifier").notNull().unique(), // identificador único para postbacks
+  enabledPostbacks: jsonb("enabled_postbacks").default([]), // eventos habilitados: ['registration', 'deposit', etc.]
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

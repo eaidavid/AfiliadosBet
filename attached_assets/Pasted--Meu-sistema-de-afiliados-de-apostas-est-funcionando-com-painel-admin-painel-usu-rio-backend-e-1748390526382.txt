@@ -1,0 +1,126 @@
+⚙️ Meu sistema de afiliados de apostas está funcionando, com painel admin, painel usuário, backend em Node.js + Express e banco PostgreSQL.
+O sistema já gera links promocionais exclusivos por afiliado.
+
+Agora preciso que você implemente todo o sistema de postbacks, com as seguintes exigências avançadas:
+
+🧩 FUNCIONALIDADES PRINCIPAIS
+1. CRIAÇÃO DE CASA COM CONFIGURAÇÃO DINÂMICA DE POSTBACKS
+Ao cadastrar uma nova casa pelo painel admin:
+
+Mostrar uma lista de eventos possíveis via checkbox:
+
+Registro (registration)
+
+Primeiro Depósito (first_deposit)
+
+Depósito (deposit)
+
+Lucro (profit)
+
+O admin marca apenas os que a casa envia.
+
+O sistema deve:
+
+Gerar um postback diferente para cada evento, contendo o identificador da casa, por exemplo:
+
+ruby
+Copiar
+Editar
+https://meusite.com/postback/brazzino/registration?subid={subid}
+https://meusite.com/postback/brazzino/deposit?subid={subid}&amount={amount}
+https://meusite.com/postback/brazzino/profit?subid={subid}&amount={amount}
+Salvar os postbacks habilitados no banco junto com a casa.
+
+Exibir uma tela com os links prontos para copiar e colar na plataforma da casa (ex: lista com botão “Copiar URL”).
+
+Exibir notificação de sucesso ao criar a casa e redirecionar para uma página tipo /admin/casas/:id/postbacks com os links.
+
+2. ROTAS PÚBLICAS DE POSTBACK
+Para cada evento criado, o sistema deve criar rotas como:
+
+ts
+Copiar
+Editar
+GET /postback/:identificador/:evento
+Essa rota:
+
+Valida o subid (e amount se necessário)
+
+Valida se a casa aceita esse tipo de postback
+
+Registra o evento no banco
+
+Calcula comissão:
+
+CPA para registro / first_deposit
+
+RevShare para deposit / profit
+
+Salva log completo com:
+
+Identificador da casa
+
+Evento
+
+Dados recebidos
+
+Timestamp
+
+Status ("OK", "INVALID_SUBID", etc.)
+
+3. INTEGRAÇÃO NO PAINEL ADMIN
+Página de criação de casa com os checkboxes dos eventos
+
+Página pós-criação com:
+
+Lista dos URLs gerados para cada postback ativado
+
+Botão “Copiar link”
+
+Status: “Aguardando chamadas” ou “Chamadas recebidas”
+
+Página de logs:
+
+Filtro por casa, evento, status
+
+Exibe todos os postbacks recebidos
+
+4. INTEGRAÇÃO NO PAINEL DO AFILIADO
+Aba “Minhas Atividades”:
+
+Lista com tipo de evento, valor (se houver), data
+
+Aba “Minhas Comissões”:
+
+Total CPA, total RevShare, comissão acumulada
+
+Mostrar quais casas o afiliado está vinculado e os eventos rastreados
+
+🔐 REQUISITOS DE SEGURANÇA E ESCALABILIDADE
+Cada casa tem seus próprios endpoints (isolamento de URLs)
+
+SubID deve ser único por afiliado
+
+Toda requisição GET deve ter validação segura
+
+Logs armazenam todos os dados crus (raw_data)
+
+Roteamento dinâmico com Express Router para cada tipo de evento
+
+🧠 EXTRA OPCIONAL
+Botão “Testar postback” com simulação no admin
+
+Indicador de quais postbacks já receberam chamadas
+
+Opção de exportar os logs CSV
+
+⚠️ MUITO IMPORTANTE
+⚠️ A IA deve:
+
+Criar apenas os trechos novos relacionados a postback.
+
+Não modificar o sistema de links promocionais que já está funcionando.
+
+Seguir uma estrutura modular, reutilizável e segura.
+
+Testar com exemplos reais e simular chamadas GET.
