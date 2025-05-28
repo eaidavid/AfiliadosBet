@@ -1,0 +1,63 @@
+🚨 PROMPT PARA IA — REFORMULE O SISTEMA DE AFILIAÇÃO (ERRO PERSISTE)
+ATENÇÃO, IA.
+Mesmo após os ajustes solicitados, o erro crítico persiste: ao criar uma casa de apostas via painel admin, o usuário eaidavid1 (e possivelmente outros) continua sendo automaticamente afiliado, sem clicar em “Se Afiliar”.
+
+Já testamos e esse comportamento não ocorre quando a casa é criada via código ou diretamente no banco — apenas quando é criada via interface administrativa.
+
+❌ ESTE COMPORTAMENTO É INACEITÁVEL:
+Nenhum usuário deve ser afiliado automaticamente à casa no momento da criação.
+
+A afiliação só deve acontecer após o clique explícito no botão “Se Afiliar”, no painel do usuário.
+
+A verificação deve ser real no banco de dados, e o vínculo só deve ser criado se não houver registro prévio em afiliacoes.
+
+✅ SOLICITAÇÃO CLARA:
+Peço que reformule completamente o sistema de afiliação, corrigindo definitivamente o fluxo de criação de casas e afiliação, conforme as seguintes regras:
+
+🛠️ NOVO FLUXO QUE DEVE SER IMPLEMENTADO:
+1. Criação da Casa (pelo Admin):
+Ao preencher o formulário no painel admin e clicar em “Criar Casa”:
+
+A casa deve ser salva somente na tabela casas.
+
+Nenhum vínculo com usuários deve ser criado.
+
+Nenhuma entrada na tabela afiliacoes deve ser gerada.
+
+Nenhum link promocional com ID de usuário deve ser montado neste momento.
+
+2. Painel do Usuário:
+Ao exibir as casas:
+
+Se o usuário não estiver afiliado (SELECT * FROM afiliacoes WHERE id_user = :user_id AND id_casa = :casa_id):
+
+Exibir botão “Se Afiliar”.
+
+Se o usuário estiver afiliado:
+
+Exibir status “Afiliado” e botão “Copiar Link”.
+
+3. Afiliação:
+Quando o usuário clicar em “Se Afiliar”:
+
+O sistema verifica no banco se ele já está afiliado.
+
+Se não estiver:
+
+Cria a entrada na tabela afiliacoes com id_user, id_casa, link_gerado.
+
+Gera o link personalizado substituindo VALUE pelo ID do usuário (ou outro identificador definido).
+
+Atualiza a interface dinamicamente com o novo estado.
+
+📌 PEDIDO FINAL:
+Reformule esse fluxo desde a criação da casa no painel admin até a exibição correta no painel do usuário, garantindo que:
+
+❌ Nenhum usuário seja afiliado automaticamente.
+
+✅ A afiliação só ocorra por ação manual do usuário.
+
+✅ Toda verificação seja feita por consulta real ao banco.
+
+✅ O painel se comporte corretamente conforme o estado de afiliação.
+

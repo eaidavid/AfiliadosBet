@@ -1008,20 +1008,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/betting-houses", requireAdmin, async (req, res) => {
     try {
+      console.log("🏠 Admin criando nova casa de apostas...");
       const result = insertBettingHouseSchema.safeParse(req.body);
       if (!result.success) {
-        return res.status(400).json({ message: "Invalid betting house data" });
+        console.log("❌ Validação falhou:", result.error);
+        return res.status(400).json({ 
+          message: "Dados inválidos da casa de apostas",
+          errors: result.error.errors 
+        });
       }
       
+      console.log("✅ Dados validados, criando casa:", result.data);
       const house = await storage.createBettingHouse(result.data);
       
-      // ❌ REMOVIDO: Não criar links automáticos para todos os usuários
-      // Agora as casas ficam disponíveis para afiliamento manual
+      console.log("✅ Casa criada com sucesso, ID:", house.id);
+      console.log("🚫 IMPORTANTE: Nenhuma afiliação automática será criada");
+      
+      // REGRA CRÍTICA: Apenas a casa é criada, ZERO afiliações automáticas
+      // Afiliações só acontecem quando usuário clica "Se Afiliar"
       
       res.json(house);
     } catch (error) {
-      console.error("Create betting house error:", error);
-      res.status(500).json({ message: "Failed to create betting house" });
+      console.error("❌ Erro ao criar casa:", error);
+      res.status(500).json({ message: "Falha ao criar casa de apostas" });
     }
   });
 
