@@ -112,6 +112,8 @@ function PostbackUrls({ house, onClose }: { house: any; onClose: () => void }) {
 export default function AdminHousesManagement() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingHouse, setEditingHouse] = useState<any>(null);
+  const [showPostbackUrls, setShowPostbackUrls] = useState<any>(null);
+  const [selectedEvents, setSelectedEvents] = useState<string[]>(['registration', 'deposit']);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
