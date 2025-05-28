@@ -1,0 +1,54 @@
+🚨 PROMPT PARA IA — CORRIGIR AFILIAÇÃO AUTOMÁTICA AO CRIAR CASA PELO ADMIN
+⚠️ ERRO GRAVE IDENTIFICADO:
+
+Quando o admin cria uma nova casa de apostas pelo painel administrativo, o usuário eaidavid1 (e possivelmente outros) está sendo automaticamente afiliado, mesmo sem clicar em “Se Afiliar”.
+
+✅ Esse erro não ocorre quando a casa é criada diretamente no código ou no banco — apenas via painel admin.
+
+✅ COMPORTAMENTO ESPERADO:
+Nenhum usuário deve ser afiliado automaticamente durante o cadastro de uma nova casa de apostas, independentemente de como ela é criada.
+
+O vínculo de afiliação deve ser criado somente quando o usuário clica no botão “Se Afiliar” em seu próprio painel.
+
+O sistema deve verificar via banco se já existe uma afiliação antes de criar uma nova.
+
+📌 ORDENS DE CORREÇÃO:
+Inspecione o código da rota ou função que trata a criação de casa no painel admin.
+
+Verifique se há algum trecho criando automaticamente um vínculo entre usuário e casa recém-criada.
+
+Verifique se há alguma lógica oculta que associa o usuário logado (eaidavid1) como afiliado.
+
+Remova qualquer lógica que crie entradas na tabela afiliacoes durante a criação da casa.
+
+A criação da casa deve afetar apenas a tabela casas.
+
+Após corrigir, crie uma nova casa no painel admin e confirme que:
+
+Nenhum vínculo é criado automaticamente para eaidavid1 ou qualquer outro usuário.
+
+A casa aparece no painel do usuário com o botão “Se Afiliar”.
+
+Somente ao clicar no botão, a afiliação é criada e o link personalizado é gerado.
+
+🧪 TESTE O FLUXO:
+Logue como admin e crie uma nova casa via painel.
+
+Logue como o usuário eaidavid1.
+
+Vá para a aba “Casas de Apostas” e verifique:
+
+A nova casa aparece sem status de afiliação.
+
+O botão “Se Afiliar” está visível.
+
+O link ainda não foi gerado.
+
+Clique em “Se Afiliar” e confirme que:
+
+O vínculo é criado.
+
+O link é personalizado corretamente com o ID do usuário.
+
+Por favor, corrija esse comportamento no painel admin, elimine a afiliação automática, e reforce a regra de que afiliação só deve acontecer após ação explícita do usuário.
+
