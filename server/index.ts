@@ -16,25 +16,22 @@ app.use((req, res, next) => {
 });
 
 // Rota adicional com prefixo /api para evitar interceptação do Vite
-app.get("/api/postback-handler/:casa/:evento/:token", async (req, res) => {
+app.get("/api/postback-handler/:casa/:evento", async (req, res) => {
   return handlePostback(req, res);
 });
 
 async function handlePostback(req: any, res: any) {
   try {
     const pathParts = req.path.split('/');
-    let casa, evento, token;
+    let casa, evento;
     
-    // Verificar formato da URL: /postback/casa/evento/token ou /api/postback-handler/casa/evento/token
-    if (pathParts.length === 5 && pathParts[1] === 'postback') {
-      [, , casa, evento, token] = pathParts;
-    } else if (pathParts.length === 6 && pathParts[1] === 'api' && pathParts[2] === 'postback-handler') {
-      [, , , casa, evento, token] = pathParts;
+    // Verificar formato da URL: /api/postback-handler/casa/evento
+    if (pathParts.length === 5 && pathParts[1] === 'api' && pathParts[2] === 'postback-handler') {
+      [, , , casa, evento] = pathParts;
     } else if (req.params && req.params.casa) {
       // Rota com parâmetros do Express
       casa = req.params.casa;
       evento = req.params.evento;
-      token = req.params.token;
     } else {
       return res.status(400).json({ error: "Formato inválido de URL" });
     }
@@ -42,7 +39,7 @@ async function handlePostback(req: any, res: any) {
     const { subid, amount, customer_id } = req.query;
     const ip = req.ip || req.connection.remoteAddress || 'unknown';
     
-    console.log(`📩 Postback recebido: casa=${casa}, evento=${evento}, token=${token}, subid=${subid}, amount=${amount}`);
+    console.log(`📩 Postback recebido: casa=${casa}, evento=${evento}, subid=${subid}, amount=${amount}`);
     
     // Verificar se a casa existe pelo identificador
     const house = await db.select()
@@ -63,22 +60,6 @@ async function handlePostback(req: any, res: any) {
         status: 'ERROR_HOUSE_NOT_FOUND'
       });
       return res.status(404).json({ error: "Casa de apostas não encontrada" });
-    }
-    
-    // Verificar token de segurança
-    if (house[0].securityToken !== token) {
-      console.log(`❌ Token inválido: esperado ${house[0].securityToken}, recebido ${token}`);
-      // Log de erro no postback
-      await db.insert(schema.postbackLogs).values({
-        casa,
-        evento,
-        subid: subid as string || 'unknown',
-        valor: amount ? parseFloat(amount as string) : 0,
-        ip,
-        raw: req.url,
-        status: 'ERROR_INVALID_TOKEN'
-      });
-      return res.status(401).json({ error: "Token de segurança inválido" });
     }
     
     // Buscar afiliado pelo subid

@@ -84,7 +84,7 @@ export default function LinksManagement({ onPageChange }: LinksManagementProps) 
     house.enabledPostbacks?.forEach(event => {
       const hasAmount = ['deposit', 'first_deposit', 'profit'].includes(event);
       const amountParam = hasAmount ? '&amount={amount}' : '';
-      urls[event] = `${baseUrl}/api/postback-handler/${house.identifier}/${event}/${house.securityToken}?subid={subid}${amountParam}&customer_id={customer_id}`;
+      urls[event] = `${baseUrl}/api/postback/${house.identifier}/${event}?subid={subid}${amountParam}&customer_id={customer_id}`;
     });
     
     return urls;
@@ -167,8 +167,21 @@ export default function LinksManagement({ onPageChange }: LinksManagementProps) 
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                          <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-xl flex items-center justify-center">
-                            <Globe className="h-6 w-6 text-white" />
+                          <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center overflow-hidden border border-slate-600">
+                            {house.logoUrl ? (
+                              <img 
+                                src={house.logoUrl} 
+                                alt={`${house.name} logo`}
+                                className="w-full h-full object-contain"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  target.parentElement!.innerHTML = `<div class="w-full h-full bg-gradient-to-br from-emerald-500 to-blue-500 rounded-xl flex items-center justify-center"><svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"></path></svg></div>`;
+                                }}
+                              />
+                            ) : (
+                              <Globe className="h-6 w-6 text-emerald-500" />
+                            )}
                           </div>
                           <div>
                             <CardTitle className="text-white flex items-center gap-2">
