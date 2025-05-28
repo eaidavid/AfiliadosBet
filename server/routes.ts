@@ -694,8 +694,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Usuário não encontrado" });
       }
       
-      // Gerar URL único baseado no template da casa + ID do usuário
-      const generatedUrl = house.baseUrl.replace("VALUE", userId.toString());
+      // Gerar URL único baseado no template da casa + username do usuário
+      const generatedUrl = house.baseUrl.replace("VALUE", user.username);
       
       // Criar link de afiliação
       const affiliateLink = await storage.createAffiliateLink({
@@ -1031,6 +1031,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("❌ Erro ao criar casa:", error);
       res.status(500).json({ message: "Falha ao criar casa de apostas" });
+    }
+  });
+
+  // Nova rota de afiliação compatível com o componente seguro
+  app.post("/api/affiliate", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.session.user.id;
+      const { houseId } = req.body;
+      
+      console.log("🔗 Nova afiliação solicitada:", { userId, houseId });
+      
+      if (!userId || !houseId) {
+        return res.status(400).json({ message: "Dados inválidos" });
+      }
+      
+      // Verificar se a casa existe e está ativa
+      const house = await storage.getBettingHouseById(houseId);
+      if (!house || !house.isActive) {
+        return res.status(404).json({ message: "Casa não encontrada ou inativa" });
+      }
+      
+      // Verificar se já está afiliado (ignorar links com VALUE)
+      const existingLink = await storage.getAffiliateLinkByUserAndHouse(userId, houseId);
+      if (existingLink && existingLink.generatedUrl && !existingLink.generatedUrl.includes('VALUE')) {
+        return res.status(400).json({ message: "Você já está afiliado a esta casa" });
+      }
+      
+      // Buscar dados do usuário
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      
+      // Gerar URL personalizada (substitui VALUE pelo username)
+      const generatedUrl = house.baseUrl.replace("VALUE", user.username);
+      
+      console.log("✅ Criando afiliação:", { generatedUrl, username: user.username });
+      
+      // Remover link antigo com VALUE se existir
+      if (existingLink && existingLink.generatedUrl && existingLink.generatedUrl.includes('VALUE')) {
+        await storage.deactivateAffiliateLink(existingLink.id);
+      }
+      
+      // Criar nova afiliação
+      const affiliateLink = await storage.createAffiliateLink({
+        userId,
+        houseId,
+        generatedUrl,
+        isActive: true,
+      });
+      
+      console.log("✅ Afiliação criada com sucesso:", affiliateLink);
+      
+      res.json({ 
+        success: true,
+        message: "Afiliação realizada com sucesso!",
+        link: affiliateLink
+      });
+    } catch (error) {
+      console.error("❌ Erro na afiliação:", error);
+      res.status(500).json({ message: "Erro interno do servidor" });
     }
   });
 
