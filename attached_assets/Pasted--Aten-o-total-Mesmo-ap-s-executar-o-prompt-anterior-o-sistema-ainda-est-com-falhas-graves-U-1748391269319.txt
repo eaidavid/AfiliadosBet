@@ -1,0 +1,80 @@
+⚠️ Atenção total:
+
+Mesmo após executar o prompt anterior, o sistema ainda está com falhas graves:
+
+Usuários aparecem automaticamente afiliados após uma casa ser criada.
+
+O link promocional exibido não é personalizado com o ID do afiliado, ou ainda aparece com VALUE ou genérico.
+
+A lógica de afiliação não está sendo respeitada – o sistema não está aguardando o clique em "Se afiliar" para gerar o link.
+
+🎯 Corrija tudo com máxima precisão e passo a passo:
+
+✅ Etapa 1 – Limpeza de dados corrompidos
+Antes de qualquer correção, execute:
+
+Delete todas as entradas da tabela casas
+
+Delete todas as entradas da tabela afiliacoes
+
+Para garantir que o sistema não se baseie em registros antigos e errados.
+
+sql
+Copiar
+Editar
+DELETE FROM afiliacoes;
+DELETE FROM casas;
+⚠️ Essa limpeza é necessária para reiniciar o fluxo corretamente.
+
+✅ Etapa 2 – Fluxo correto da afiliação
+Quando o admin cria uma casa, ela deve apenas ser registrada no banco:
+
+Com o campo link_base (ex: https://brazzino.com/promo?subid=VALUE)
+
+Com o campo parametro_primario (ex: subid)
+
+Sem gerar afiliação para nenhum usuário
+
+No painel do afiliado:
+
+O sistema deve buscar as casas disponíveis para afiliação
+
+Mostrar botão “Se afiliar” ao lado de cada casa
+
+Quando o usuário clicar “Se afiliar”:
+
+Criar entrada na tabela afiliacoes com id_user, id_casa
+
+Gerar link substituindo VALUE pelo id_user (ou outro identificador único)
+
+Exemplo: https://brazzino.com/promo?subid=47
+
+Salvar esse link em link_personalizado no banco
+
+Exibir no painel do usuário:
+
+Apenas casas às quais ele está afiliado
+
+Apenas links já personalizados
+
+Botão “Desafiliar” se necessário
+
+✅ Etapa 3 – Regras obrigatórias de segurança
+Nunca exibir o link base com VALUE diretamente
+
+Nunca assumir que o usuário está afiliado sem verificar no banco
+
+Nunca gerar afiliação automática ao cadastrar a casa
+
+✅ Etapa 4 – Validação
+Valide que:
+
+O link final gerado contém o parâmetro certo (ex: subid=47)
+
+A casa só aparece como “afiliado” após clicar no botão
+
+O painel do admin consegue ver claramente quais usuários estão afiliados a cada casa
+
+✅ Conclusão:
+Refaça o fluxo com essa estrutura. Antes de aplicar qualquer nova lógica, limpe o banco e recomece os testes com base nesse comportamento correto.
+

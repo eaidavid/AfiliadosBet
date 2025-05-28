@@ -59,10 +59,8 @@ export default function BettingHousesNew() {
     },
   });
 
-  // Verificar se já está afiliado a uma casa
-  const isAffiliated = (house: any) => {
-    return house.isAffiliated || false;
-  };
+  // ✅ Agora as casas retornadas pela API já são apenas as DISPONÍVEIS para afiliamento
+  // Não precisamos verificar se está afiliado porque a API já filtra isso
 
   // Copiar link para clipboard
   const copyToClipboard = (text: string) => {
