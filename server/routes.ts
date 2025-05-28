@@ -1202,10 +1202,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const house = await storage.createBettingHouse(result.data);
       
       console.log("✅ Casa criada com sucesso, ID:", house.id);
-      console.log("🚫 IMPORTANTE: Nenhuma afiliação automática será criada");
       
-      // REGRA CRÍTICA: Apenas a casa é criada, ZERO afiliações automáticas
-      // Afiliações só acontecem quando usuário clica "Se Afiliar"
+      // 🎯 CRIAR LINKS AUTOMATICAMENTE PARA TODOS OS AFILIADOS ATIVOS
+      try {
+        const activeAffiliates = await db
+          .select()
+          .from(schema.users)
+          .where(and(
+            eq(schema.users.role, 'affiliate'),
+            eq(schema.users.isActive, true)
+          ));
+        
+        console.log(`🎯 Criando links automáticos para ${activeAffiliates.length} afiliados ativos da casa ${house.name}`);
+        
+        let linksCreated = 0;
+        for (const affiliate of activeAffiliates) {
+          // Verificar se já existe link para este afiliado e casa
+          const existingLink = await storage.getAffiliateLinkByUserAndHouse(affiliate.id, house.id);
+          
+          if (!existingLink) {
+            // Gerar URL do afiliado baseada na URL base da casa
+            const affiliateUrl = house.baseUrl.replace('VALUE', affiliate.username);
+            
+            const linkData = {
+              userId: affiliate.id,
+              houseId: house.id,
+              generatedUrl: affiliateUrl,
+              isActive: true
+            };
+            
+            await storage.createAffiliateLink(linkData);
+            linksCreated++;
+            console.log(`✅ Link criado automaticamente: ${affiliate.username} -> ${house.name}`);
+          }
+        }
+        
+        console.log(`🎉 ${linksCreated} links automáticos criados para a casa ${house.name}`);
+      } catch (linkError) {
+        console.error("⚠️ Erro ao criar links automáticos:", linkError);
+        // Não falha a criação da casa se houver erro nos links
+      }
       
       res.json(house);
     } catch (error) {
