@@ -1,0 +1,95 @@
+⚠️ ORDENS IMEDIATAS DE CORREÇÃO:
+Limpeza de Dados:
+
+Execute, antes de qualquer nova modificação, os comandos para limpar os registros:
+
+sql
+Copiar
+Editar
+-- Limpar todas as entradas de afiliações
+DELETE FROM afiliacoes;
+
+-- Limpar todas as casas (ou, se necessário, apenas as associações vinculadas ao afiliado em questão)
+DELETE FROM casas;
+Também, por segurança, se houver tabela específica que vincule casas aos afiliados (ou outra lógica similar), limpe esses registros.
+
+Fluxo Correto de Afilição:
+
+Não vincule automaticamente o afiliado à nova casa ao ser criada pelo admin.
+
+No painel do usuário, a casa deve ser mostrada com um botão “Se Afiliar” – somente se o usuário ainda não tiver se afiliado àquela casa.
+
+Apenas quando o usuário clicar em “Se Afiliar”, o sistema deve:
+
+Verificar no banco se existe uma entrada na tabela afiliacoes para aquele id_user e id_casa.
+
+Se não houver, então criar a afiliação e gerar o link personalizado substituindo o parâmetro:
+
+javascript
+Copiar
+Editar
+// Exemplo em JavaScript:
+const linkPersonalizado = casa.link_base.replace('VALUE', userId);
+Armazenar esse link na tabela afiliacoes.
+
+Verificações e Renderização Condicional:
+
+No backend e/ou frontend, antes de renderizar a tag “Afiliado”, o botão “Copiar Link” ou qualquer informação de afiliação, efetue uma consulta real à tabela afiliacoes para confirmar que o usuário está afiliado àquela casa:
+
+sql
+Copiar
+Editar
+SELECT * FROM afiliacoes WHERE id_user = :user_id AND id_casa = :casa_id;
+Exiba:
+
+Somente a tag “Afiliado” e o botão “Copiar Link” se essa consulta retornar resultados.
+
+Caso contrário, exiba o botão “Se Afiliar”.
+
+Reforço na Geração do Link:
+
+Não permita que o link base (com “VALUE”) seja exibido ao usuário.
+
+O link personalizado deve ser gerado dinamicamente, assegurando que o parâmetro (por exemplo, subid) seja substituído pelo identificador único do usuário (por exemplo: subid=47).
+
+🚨 RESUMO DO FLUXO CORRETO:
+Limpeza:
+
+DELETE nas tabelas afiliacoes e registros indesejados de casas para eliminar associações anteriores.
+
+Cadastro da Casa (Admin):
+
+A casa é cadastrada com seus dados (link base, parâmetro primário, etc.), sem vincular automaticamente nenhum afiliado.
+
+Painel do Usuário:
+
+Exibe as casas disponíveis com botão “Se Afiliar”.
+
+Ao clicar, o sistema executa:
+
+Verificação no banco (se já está afiliado).
+
+Se não existe afiliação, cria a entrada na tabela afiliacoes e gera o link personalizado (por exemplo, substituindo subid=VALUE por subid=<id_user>).
+
+Exibição:
+
+O painel mostra a tag “Afiliado” e o link apenas se a consulta confirmar a afiliação.
+
+Se não houver afiliação, o botão “Se Afiliar” continua visível.
+
+Mensagem Final para a IA:
+Por favor, corrija o fluxo de afiliação e geração de links seguindo exatamente as instruções acima. Lembre-se que:
+
+Nenhum usuário deve ser afiliado automaticamente ao criar uma casa.
+
+Verifique sempre no banco se o vínculo de afiliação existe antes de mostrar qualquer status de afiliação ou link personalizado.
+
+Garanta a limpeza de todos os registros anteriores (limpar as tabelas afiliacoes e associadas) para evitar conflitos com dados previamente corrompidos.
+
+Corrija esse comportamento imediatamente, testando o fluxo com um novo cadastro de casa e afiliação, e confirme que a interface mostra:
+
+Botão “Se Afiliar” se o usuário não estiver afiliado.
+
+Após o clique, o link gerado deve conter o identificador correto (ex: subid=<id_user>) e a interface deve atualizar para mostrar que o usuário está afiliado.
+
+Resolva isso de uma vez por todas.
