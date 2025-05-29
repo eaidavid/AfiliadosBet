@@ -1,6 +1,7 @@
 // Servidor de postbacks funcional com CPA e RevShare simultâneos
-const express = require('express');
-const { Pool } = require('pg');
+import express from 'express';
+import pkg from 'pg';
+const { Pool } = pkg;
 const app = express();
 
 // Conexão com banco usando variável de ambiente
