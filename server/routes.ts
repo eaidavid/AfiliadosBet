@@ -2292,5 +2292,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ROTA SIMPLES PARA POSTBACKS - SEM QUEBRAR CÓDIGO EXISTENTE
+  app.get("/webhook/:casa/:evento", async (req, res) => {
+    try {
+      const { casa, evento } = req.params;
+      const { subid, amount, customer_id } = req.query;
+      
+      console.log(`📩 Postback recebido: casa=${casa}, evento=${evento}, subid=${subid}`);
+      
+      // Verificar se a casa existe
+      const house = await db.select()
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.identifier, casa))
+        .limit(1);
+      
+      if (house.length === 0) {
+        console.log(`❌ Casa não encontrada: ${casa}`);
+        return res.status(404).json({ error: "Casa não encontrada" });
+      }
+      
+      // Verificar se o afiliado existe
+      const affiliate = await db.select()
+        .from(schema.users)
+        .where(eq(schema.users.username, subid as string))
+        .limit(1);
+      
+      if (affiliate.length === 0) {
+        console.log(`❌ Afiliado não encontrado: ${subid}`);
+        return res.status(404).json({ error: "Afiliado não encontrado" });
+      }
+      
+      console.log(`✅ Postback processado: ${affiliate[0].username} - ${house[0].name}`);
+      res.json({ 
+        success: true, 
+        message: "Postback processado com sucesso",
+        affiliate: affiliate[0].username,
+        house: house[0].name
+      });
+      
+    } catch (error) {
+      console.error("❌ Erro no postback:", error);
+      res.status(500).json({ error: "Erro interno" });
+    }
+  });
+
   return httpServer;
 }
