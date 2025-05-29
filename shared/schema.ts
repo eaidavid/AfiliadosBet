@@ -244,6 +244,7 @@ export const comissoes = pgTable("comissoes", {
   eventoId: integer("evento_id").notNull().references(() => eventos.id),
   tipo: varchar("tipo").notNull(), // CPA, RevShare
   valor: decimal("valor", { precision: 10, scale: 2 }).notNull(),
+  affiliate: varchar("affiliate").notNull(), // username do afiliado
   criadoEm: timestamp("criado_em").defaultNow().notNull(),
 });
 
