@@ -1,0 +1,85 @@
+COMO COLOCAR SEU SITE NO VPS DA HOSTINGER - PASSO A PASSO
+
+=== PARTE 1: PREPARAR COMPUTADOR ===
+
+1. Baixe o WinSCP ou FileZilla (para transferir arquivos)
+2. Baixe o PuTTY (para conectar no servidor)
+3. Faça download de TODOS os arquivos do seu projeto do Replit
+
+=== PARTE 2: CONECTAR NO VPS ===
+
+1. Abra o PuTTY
+2. Digite o IP do seu VPS
+3. Clique "Open"
+4. Login: root (ou o usuário da Hostinger)
+5. Senha: (a senha do VPS)
+
+=== PARTE 3: PREPARAR O SERVIDOR ===
+
+Cole estes comandos um por vez no terminal:
+
+apt update && apt upgrade -y
+curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+apt-get install -y nodejs
+npm install -g pm2
+apt install postgresql postgresql-contrib nginx -y
+
+=== PARTE 4: CONFIGURAR BANCO ===
+
+sudo -u postgres createuser --interactive --pwprompt
+(Nome: afiliadosbet, Senha: escolha uma senha forte)
+
+sudo -u postgres createdb afiliadosbet
+
+=== PARTE 5: ENVIAR ARQUIVOS ===
+
+1. Abra WinSCP ou FileZilla
+2. Conecte no VPS (mesmo IP, usuário e senha)
+3. No servidor, vá para: /var/www/
+4. Crie pasta: afiliadosbet
+5. Envie TODOS os arquivos do projeto para essa pasta
+
+=== PARTE 6: CONFIGURAR PROJETO ===
+
+No terminal SSH:
+
+cd /var/www/afiliadosbet
+npm install
+npm run build
+nano .env
+
+No arquivo .env, cole:
+NODE_ENV=production
+PORT=3000
+DATABASE_URL=postgresql://afiliadosbet:SUA_SENHA@localhost:5432/afiliadosbet
+SESSION_SECRET=uma_chave_muito_secreta_aqui
+
+Salve com: Ctrl+X, Y, Enter
+
+=== PARTE 7: INICIAR SITE ===
+
+npx drizzle-kit push
+pm2 start "npm start" --name afiliadosbet
+pm2 startup
+pm2 save
+
+=== PARTE 8: CONFIGURAR DOMÍNIO ===
+
+nano /etc/nginx/sites-available/afiliadosbet
+
+Cole:
+server {
+    listen 80;
+    server_name SEU_DOMINIO.com;
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+    }
+}
+
+ln -s /etc/nginx/sites-available/afiliadosbet /etc/nginx/sites-enabled/
+nginx -t
+systemctl reload nginx
+
+PRONTO! Seu site estará no ar em SEU_DOMINIO.com
