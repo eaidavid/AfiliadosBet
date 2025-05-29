@@ -52,43 +52,43 @@ export default function AdminDashboard() {
             </div>
 
             {/* Admin Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
               <Card className="bg-slate-800 border-slate-700 hover:bg-slate-750 transition-colors">
-                <CardContent className="p-6">
+                <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-slate-400 text-sm font-medium">Total Afiliados</p>
-                      <p className="text-2xl font-bold text-white mt-1">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-slate-400 text-xs md:text-sm font-medium truncate">Total Afiliados</p>
+                      <p className="text-xl md:text-2xl font-bold text-white mt-1">
                         {adminStats?.totalAffiliates?.toLocaleString() || "0"}
                       </p>
                     </div>
-                    <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
-                      <Users className="h-6 w-6 text-blue-500" />
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-500/20 rounded-xl flex items-center justify-center ml-3">
+                      <Users className="h-5 w-5 md:h-6 md:w-6 text-blue-500" />
                     </div>
                   </div>
-                  <div className="flex items-center mt-4">
-                    <span className="text-emerald-500 text-sm font-medium">+15.2%</span>
-                    <span className="text-slate-400 text-sm ml-2">vs mês anterior</span>
+                  <div className="flex items-center mt-3 md:mt-4">
+                    <span className="text-emerald-500 text-xs md:text-sm font-medium">+15.2%</span>
+                    <span className="text-slate-400 text-xs md:text-sm ml-2">vs mês anterior</span>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="bg-slate-800 border-slate-700 hover:bg-slate-750 transition-colors">
-                <CardContent className="p-6">
+                <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-slate-400 text-sm font-medium">Casas Ativas</p>
-                      <p className="text-2xl font-bold text-white mt-1">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-slate-400 text-xs md:text-sm font-medium truncate">Casas Ativas</p>
+                      <p className="text-xl md:text-2xl font-bold text-white mt-1">
                         {adminStats?.activeHouses || "0"}
                       </p>
                     </div>
-                    <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
-                      <Building className="h-6 w-6 text-emerald-500" />
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center ml-3">
+                      <Building className="h-5 w-5 md:h-6 md:w-6 text-emerald-500" />
                     </div>
                   </div>
-                  <div className="flex items-center mt-4">
-                    <span className="text-emerald-500 text-sm font-medium">+3 novos</span>
-                    <span className="text-slate-400 text-sm ml-2">este mês</span>
+                  <div className="flex items-center mt-3 md:mt-4">
+                    <span className="text-emerald-500 text-xs md:text-sm font-medium">+3 novos</span>
+                    <span className="text-slate-400 text-xs md:text-sm ml-2">este mês</span>
                   </div>
                 </CardContent>
               </Card>
@@ -200,7 +200,7 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-slate-950">
       <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
       
-      <div className={isMobile ? "w-full" : "ml-72"}>
+      <div className={isMobile ? "w-full" : "md:ml-72"}>
         <header className={`bg-slate-900 border-b border-slate-700 ${isMobile ? "px-4 py-3 pt-16" : "px-6 py-4"}`}>
           <div className="flex items-center justify-between">
             <h1 className={`font-bold text-white ${isMobile ? "text-xl" : "text-2xl"}`}>Painel Administrativo</h1>
@@ -208,7 +208,7 @@ export default function AdminDashboard() {
               <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center">
                 <span className="text-white text-sm font-semibold">A</span>
               </div>
-              <span className="text-white">Admin</span>
+              <span className={`text-white ${isMobile ? "hidden" : "block"}`}>Admin</span>
             </div>
           </div>
         </header>

@@ -119,7 +119,7 @@ export default function AdminSidebar({ currentPage, onPageChange }: AdminSidebar
 
   // Desktop sidebar
   return (
-    <div className="fixed inset-y-0 left-0 w-72 bg-slate-900 border-r border-slate-700 z-40 hidden lg:block">
+    <div className="fixed inset-y-0 left-0 w-72 bg-slate-900 border-r border-slate-700 z-40 hidden md:block">
       <div className="flex flex-col h-full">
         {/* Logo */}
         <div className="flex items-center px-6 py-4 border-b border-slate-700">
