@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLogout } from "@/hooks/use-auth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Crown, BarChart3, Users, Building, PieChart, Settings, LogOut, Webhook, DollarSign, Link2, Menu, X } from "lucide-react";
-import logoPath from "@assets/Documento de David.png";
+import logoPath from "@assets/Afiliados Bet positivo.png";
 
 interface AdminSidebarProps {
   currentPage: string;

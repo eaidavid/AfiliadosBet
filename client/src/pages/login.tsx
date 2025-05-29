@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ChartLine, Eye, EyeOff } from "lucide-react";
-import logoPath from "@assets/Documento de David.png";
+import logoPath from "@assets/Afiliados Bet positivo.png";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
