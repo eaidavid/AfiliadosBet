@@ -4,6 +4,10 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
+// Configure JSON parsing middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // Redirect to the actual React app
 app.get('/', (req, res) => {
   res.redirect('/login');
