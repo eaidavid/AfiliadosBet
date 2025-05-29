@@ -29,7 +29,7 @@ function Router() {
         <Route path="/register" component={Register} />
         {!isAuthenticated ? (
           <>
-            <Route path="/" component={Register} />
+            <Route path="/" component={Login} />
           </>
         ) : (
           <>

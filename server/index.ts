@@ -4,8 +4,18 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
-// Serve the modern frontend interface
+// Redirect to the actual React app
 app.get('/', (req, res) => {
+  res.redirect('/login');
+});
+
+// Health check endpoint for deployment
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
+
+// Fallback for landing page if needed
+app.get('/landing', (req, res) => {
   res.send(`
     <!DOCTYPE html>
     <html lang="pt-BR">
