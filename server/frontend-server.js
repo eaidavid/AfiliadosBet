@@ -32,149 +32,311 @@ app.get('*', (req, res) => {
           color: white;
           min-height: 100vh;
           overflow-x: hidden;
+          position: relative;
+        }
+
+        body::before {
+          content: '';
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-image: 
+            radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 40% 40%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+          z-index: -1;
+          animation: backgroundShift 20s ease-in-out infinite;
+        }
+
+        @keyframes backgroundShift {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          25% { transform: translate(-5px, -10px) rotate(1deg); }
+          50% { transform: translate(5px, 5px) rotate(-1deg); }
+          75% { transform: translate(-3px, 8px) rotate(0.5deg); }
         }
 
         .navbar {
-          background: rgba(15, 23, 42, 0.8);
-          backdrop-filter: blur(10px);
-          border-bottom: 1px solid #334155;
-          padding: 1rem 2rem;
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          background: rgba(15, 23, 42, 0.95);
+          backdrop-filter: blur(20px);
+          border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+          padding: 1.5rem 2rem;
           display: flex;
           justify-content: space-between;
           align-items: center;
+          z-index: 1000;
+          transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+          background: rgba(15, 23, 42, 0.98);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
         .logo {
-          font-size: 1.5rem;
-          font-weight: bold;
-          color: #3b82f6;
+          font-size: 1.8rem;
+          font-weight: 800;
+          background: linear-gradient(135deg, #3b82f6, #10b981);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          letter-spacing: -0.02em;
         }
 
         .nav-links {
           display: flex;
-          gap: 2rem;
+          gap: 2.5rem;
           list-style: none;
         }
 
         .nav-links a {
-          color: #94a3b8;
+          color: #cbd5e1;
           text-decoration: none;
-          transition: color 0.3s;
+          font-weight: 500;
+          position: relative;
+          transition: all 0.3s ease;
+          padding: 0.5rem 0;
+        }
+
+        .nav-links a::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 0;
+          height: 2px;
+          background: linear-gradient(90deg, #3b82f6, #10b981);
+          transition: width 0.3s ease;
         }
 
         .nav-links a:hover {
           color: #3b82f6;
+          transform: translateY(-1px);
+        }
+
+        .nav-links a:hover::after {
+          width: 100%;
         }
 
         .container {
           max-width: 1200px;
           margin: 0 auto;
           padding: 2rem;
+          margin-top: 80px;
         }
 
         .hero {
+          position: relative;
           text-align: center;
-          padding: 4rem 0;
+          padding: 6rem 0;
+          overflow: hidden;
+        }
+
+        .hero::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+          z-index: -1;
         }
 
         .hero h1 {
-          font-size: 3rem;
-          margin-bottom: 1rem;
+          font-size: 3.5rem;
+          font-weight: 800;
+          margin-bottom: 1.5rem;
+          background: linear-gradient(135deg, #3b82f6 0%, #10b981 50%, #06b6d4 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          letter-spacing: -0.02em;
+          line-height: 1.1;
+        }
+
+        .hero p {
+          font-size: 1.4rem;
+          color: #cbd5e1;
+          margin-bottom: 3rem;
+          max-width: 600px;
+          margin-left: auto;
+          margin-right: auto;
+          line-height: 1.6;
+        }
+
+        .cards {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+          gap: 2.5rem;
+          margin-top: 4rem;
+        }
+
+        .card {
+          position: relative;
+          background: linear-gradient(145deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.6) 100%);
+          border: 1px solid rgba(59, 130, 246, 0.2);
+          border-radius: 20px;
+          padding: 2.5rem;
+          backdrop-filter: blur(20px);
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          overflow: hidden;
+        }
+
+        .card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 3px;
+          background: linear-gradient(90deg, #3b82f6, #10b981, #06b6d4);
+          transform: scaleX(0);
+          transition: transform 0.4s;
+        }
+
+        .card:hover {
+          transform: translateY(-8px) scale(1.02);
+          border-color: rgba(59, 130, 246, 0.5);
+          box-shadow: 0 25px 50px rgba(59, 130, 246, 0.15);
+        }
+
+        .card:hover::before {
+          transform: scaleX(1);
+        }
+
+        .card-icon {
+          font-size: 2.5rem;
+          margin-bottom: 1.5rem;
+          display: inline-block;
           background: linear-gradient(135deg, #3b82f6, #10b981);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
         }
 
-        .hero p {
-          font-size: 1.2rem;
-          color: #94a3b8;
-          margin-bottom: 2rem;
-        }
-
-        .cards {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 2rem;
-          margin-top: 3rem;
-        }
-
-        .card {
-          background: rgba(30, 41, 59, 0.5);
-          border: 1px solid #334155;
-          border-radius: 12px;
-          padding: 2rem;
-          backdrop-filter: blur(10px);
-          transition: transform 0.3s, border-color 0.3s;
-        }
-
-        .card:hover {
-          transform: translateY(-5px);
-          border-color: #3b82f6;
-        }
-
         .card h3 {
-          color: #3b82f6;
+          color: #e2e8f0;
           margin-bottom: 1rem;
-          font-size: 1.3rem;
+          font-size: 1.4rem;
+          font-weight: 600;
+          letter-spacing: -0.01em;
         }
 
         .card p {
           color: #94a3b8;
-          line-height: 1.6;
+          line-height: 1.7;
+          margin-bottom: 1.5rem;
         }
 
         .btn {
-          background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+          position: relative;
+          background: linear-gradient(135deg, #3b82f6, #1e40af);
           color: white;
           border: none;
-          padding: 12px 24px;
-          border-radius: 8px;
-          font-size: 1rem;
+          padding: 14px 28px;
+          border-radius: 12px;
+          font-size: 0.95rem;
+          font-weight: 600;
           cursor: pointer;
-          transition: all 0.3s;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           text-decoration: none;
           display: inline-block;
-          margin-top: 1rem;
+          margin-top: 1.5rem;
+          overflow: hidden;
+          letter-spacing: 0.01em;
+        }
+
+        .btn::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+          transition: left 0.5s;
         }
 
         .btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+          transform: translateY(-3px);
+          box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4);
+          background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        }
+
+        .btn:hover::before {
+          left: 100%;
         }
 
         .stats {
-          display: flex;
-          justify-content: space-around;
-          margin: 3rem 0;
-          flex-wrap: wrap;
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 2rem;
+          margin: 4rem 0;
+          padding: 3rem 0;
         }
 
         .stat {
           text-align: center;
-          margin: 1rem;
+          padding: 2rem;
+          background: linear-gradient(145deg, rgba(30, 41, 59, 0.6) 0%, rgba(51, 65, 85, 0.4) 100%);
+          border: 1px solid rgba(59, 130, 246, 0.1);
+          border-radius: 16px;
+          backdrop-filter: blur(10px);
+          transition: all 0.3s ease;
+        }
+
+        .stat:hover {
+          transform: translateY(-5px);
+          border-color: rgba(59, 130, 246, 0.3);
+          background: linear-gradient(145deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.6) 100%);
         }
 
         .stat-number {
-          font-size: 2.5rem;
-          font-weight: bold;
-          color: #10b981;
+          font-size: 2.8rem;
+          font-weight: 800;
+          background: linear-gradient(135deg, #10b981, #059669);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
           display: block;
+          margin-bottom: 0.5rem;
+          letter-spacing: -0.02em;
         }
 
         .stat-label {
-          color: #94a3b8;
-          margin-top: 0.5rem;
+          color: #cbd5e1;
+          font-size: 0.95rem;
+          font-weight: 500;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
         }
 
         .login-section {
-          background: rgba(30, 41, 59, 0.7);
-          border: 1px solid #334155;
-          border-radius: 12px;
-          padding: 2rem;
-          max-width: 400px;
-          margin: 2rem auto;
-          backdrop-filter: blur(10px);
+          position: relative;
+          background: linear-gradient(145deg, rgba(30, 41, 59, 0.9) 0%, rgba(51, 65, 85, 0.7) 100%);
+          border: 1px solid rgba(59, 130, 246, 0.2);
+          border-radius: 24px;
+          padding: 3rem;
+          max-width: 450px;
+          margin: 4rem auto;
+          backdrop-filter: blur(20px);
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-section::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.5), transparent);
         }
 
         .form-group {
@@ -190,18 +352,26 @@ app.get('*', (req, res) => {
 
         .form-group input {
           width: 100%;
-          padding: 12px;
-          background: rgba(51, 65, 85, 0.5);
-          border: 1px solid #475569;
-          border-radius: 8px;
+          padding: 16px 20px;
+          background: rgba(51, 65, 85, 0.3);
+          border: 1px solid rgba(71, 85, 105, 0.6);
+          border-radius: 12px;
           color: white;
           font-size: 1rem;
+          transition: all 0.3s ease;
+          backdrop-filter: blur(10px);
         }
 
         .form-group input:focus {
           outline: none;
           border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+          background: rgba(51, 65, 85, 0.5);
+          transform: translateY(-1px);
+        }
+
+        .form-group input::placeholder {
+          color: #64748b;
         }
 
         .footer {
@@ -259,38 +429,44 @@ app.get('*', (req, res) => {
 
         <div class="cards">
           <div class="card">
-            <h3>🎯 Gestão de Afiliados</h3>
-            <p>Sistema completo para cadastro, acompanhamento e gerenciamento de afiliados. Controle total sobre performance e comissões.</p>
+            <div class="card-icon">👥</div>
+            <h3>Gestão de Afiliados</h3>
+            <p>Sistema completo para cadastro, acompanhamento e gerenciamento de afiliados. Controle total sobre performance e comissões em tempo real.</p>
             <a href="#" class="btn">Gerenciar Afiliados</a>
           </div>
           
           <div class="card">
-            <h3>🏢 Casas de Apostas</h3>
-            <p>Cadastre e configure casas de apostas com diferentes modelos de comissão: CPA, RevShare ou Híbrido.</p>
+            <div class="card-icon">🏢</div>
+            <h3>Casas de Apostas</h3>
+            <p>Configure casas parceiras com modelos de comissão flexíveis: CPA, RevShare ou Híbrido com valores específicos para cada tipo.</p>
             <a href="#" class="btn">Gerenciar Casas</a>
           </div>
           
           <div class="card">
-            <h3>📊 Postbacks Avançados</h3>
-            <p>Sistema de postbacks inteligente com suporte a múltiplos eventos: registro, depósito, profit e conversões.</p>
-            <a href="#" class="btn">Ver Postbacks</a>
+            <div class="card-icon">🔄</div>
+            <h3>Postbacks Avançados</h3>
+            <p>Processamento inteligente de postbacks com suporte completo a registros, depósitos, profits e conversões automáticas.</p>
+            <a href="#" class="btn">Configurar Postbacks</a>
           </div>
           
           <div class="card">
-            <h3>💰 Comissões Híbridas</h3>
-            <p>Configure valores específicos para CPA e RevShare no mesmo modelo, maximizando ganhos dos afiliados.</p>
+            <div class="card-icon">💎</div>
+            <h3>Comissões Híbridas</h3>
+            <p>Modelo revolucionário que combina CPA e RevShare com valores independentes, maximizando o potencial de ganhos.</p>
             <a href="#" class="btn">Configurar Comissões</a>
           </div>
           
           <div class="card">
-            <h3>📈 Relatórios Detalhados</h3>
-            <p>Acompanhe performance em tempo real com dashboards interativos e relatórios personalizados.</p>
+            <div class="card-icon">📊</div>
+            <h3>Analytics Avançado</h3>
+            <p>Dashboards interativos com métricas em tempo real, relatórios personalizados e insights de performance detalhados.</p>
             <a href="#" class="btn">Ver Relatórios</a>
           </div>
           
           <div class="card">
-            <h3>🔗 Links Personalizados</h3>
-            <p>Geração automática de links únicos para cada afiliado com tracking completo de conversões.</p>
+            <div class="card-icon">🚀</div>
+            <h3>Links Inteligentes</h3>
+            <p>Geração automática de links únicos com tracking avançado, pixel de conversão e análise completa de comportamento.</p>
             <a href="#" class="btn">Gerar Links</a>
           </div>
         </div>
