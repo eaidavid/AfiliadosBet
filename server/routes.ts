@@ -678,9 +678,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.post("/api/auth/login", async (req, res) => {
     try {
+      console.log("=== LOGIN DEBUG ===");
+      console.log("Request body:", req.body);
+      console.log("Body type:", typeof req.body);
+      console.log("Body keys:", Object.keys(req.body || {}));
+      
       const result = loginSchema.safeParse(req.body);
       if (!result.success) {
-        return res.status(400).json({ message: "Invalid credentials format" });
+        console.log("Schema validation failed:", result.error);
+        return res.status(400).json({ message: "Invalid credentials format", errors: result.error.issues });
       }
       
       const user = await storage.authenticateUser(result.data);
