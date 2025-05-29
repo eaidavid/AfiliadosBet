@@ -4,6 +4,11 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
+// Health check endpoint for deployment
+app.get('/', (req, res) => {
+  res.status(200).send('OK');
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -49,25 +54,16 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   log(`Unhandled application error: ${err.message}`);
 });
 
-// Add health check route for deployments
-app.get("/", (_req, res) => {
-  res.status(200).send("OK");
-});
-
 (async () => {
   try {
+    console.log('starting up user application');
     const server = await registerRoutes(app);
     if (process.env.NODE_ENV === "development") {
       await setupVite(app, server);
     } else {
       serveStatic(app);
     }
-    
-    // Start HTTP server and keep it running
-    const PORT = process.env.PORT || 5000;
-    server.listen(PORT, "0.0.0.0", () => {
-      console.log(`Main server running on port ${PORT}`);
-    });
+    console.log('Application ready to receive requests');
   } catch (error) {
     console.error("Erro ao iniciar servidor:", error);
     process.exit(1);
