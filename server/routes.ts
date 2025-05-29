@@ -67,14 +67,6 @@ function requireAdmin(req: any, res: any, next: any) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  const httpServer = createServer(app);
-  
-  // Start server on correct port and host
-  const PORT = process.env.PORT || 5000;
-  httpServer.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server listening on port ${PORT}`);
-  });
-
   // ROTA DE POSTBACK SIMPLIFICADA - SEMPRE REGISTRA LOGS
   app.get("/api/postback/:casa/:evento", async (req, res) => {
     const startTime = Date.now();
@@ -1595,6 +1587,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  const httpServer = createServer(app);
+  
   // WebSocket
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
   
