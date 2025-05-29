@@ -2292,13 +2292,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ROTA SIMPLES PARA POSTBACKS - SEM QUEBRAR CÓDIGO EXISTENTE
+  // ROTA FUNCIONAL PARA POSTBACKS COM CPA E REVSHARE SIMULTÂNEOS
   app.get("/webhook/:casa/:evento", async (req, res) => {
     try {
       const { casa, evento } = req.params;
       const { subid, amount, customer_id } = req.query;
+      const valorAmount = amount ? parseFloat(amount as string) : 0;
       
-      console.log(`📩 Postback recebido: casa=${casa}, evento=${evento}, subid=${subid}`);
+      console.log(`📩 Postback recebido: casa=${casa}, evento=${evento}, subid=${subid}, amount=${valorAmount}`);
       
       // Verificar se a casa existe
       const house = await db.select()
@@ -2322,12 +2323,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Afiliado não encontrado" });
       }
       
-      console.log(`✅ Postback processado: ${affiliate[0].username} - ${house[0].name}`);
+      // Calcular comissões - CPA e RevShare podem ser aplicados juntos
+      let totalCommission = 0;
+      let commissions = [];
+      
+      // Verificar CPA para registration e first_deposit
+      if ((evento === 'registration' || evento === 'first_deposit') && house[0].commissionType === 'CPA') {
+        const cpaValue = parseFloat(house[0].commissionValue);
+        totalCommission += cpaValue;
+        commissions.push({ type: 'CPA', value: cpaValue });
+        console.log(`💰 CPA aplicado: R$ ${cpaValue.toFixed(2)}`);
+      }
+      
+      // Verificar RevShare para deposit e profit
+      if ((evento === 'deposit' || evento === 'profit') && valorAmount > 0) {
+        // RevShare pode ser aplicado mesmo se já teve CPA
+        if (house[0].commissionType === 'RevShare' || house[0].commissionType === 'Hybrid') {
+          const percentage = parseFloat(house[0].commissionValue) / 100;
+          const revShareValue = valorAmount * percentage;
+          totalCommission += revShareValue;
+          commissions.push({ type: 'RevShare', value: revShareValue, percentage });
+          console.log(`💰 RevShare aplicado: ${percentage}% de R$ ${valorAmount} = R$ ${revShareValue.toFixed(2)}`);
+        }
+      }
+      
+      console.log(`✅ Postback processado: ${affiliate[0].username} - ${house[0].name} - Comissão total: R$ ${totalCommission.toFixed(2)}`);
       res.json({ 
         success: true, 
         message: "Postback processado com sucesso",
         affiliate: affiliate[0].username,
-        house: house[0].name
+        house: house[0].name,
+        evento,
+        amount: valorAmount,
+        totalCommission: totalCommission.toFixed(2),
+        commissions
       });
       
     } catch (error) {

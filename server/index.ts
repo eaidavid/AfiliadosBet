@@ -24,7 +24,7 @@ app.use((req, res, next) => {
   }
 
   const originalEnd = res.end;
-  res.end = function (chunk, encoding) {
+  res.end = function (chunk?: any, encoding?: any) {
     res.end = originalEnd;
     const duration = Date.now() - start;
 
@@ -49,10 +49,12 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   log(`Unhandled application error: ${err.message}`);
 });
 
-if (process.env.NODE_ENV === "development") {
-  const server = await registerRoutes(app);
-  await setupVite(app, server);
-} else {
-  const server = await registerRoutes(app);
-  serveStatic(app);
-}
+(async () => {
+  if (process.env.NODE_ENV === "development") {
+    const server = await registerRoutes(app);
+    await setupVite(app, server);
+  } else {
+    const server = await registerRoutes(app);
+    serveStatic(app);
+  }
+})();
