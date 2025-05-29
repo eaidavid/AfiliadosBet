@@ -44,14 +44,23 @@ app.get('/webhook/:casa/:evento', async (req, res) => {
     
     const affiliate = affiliateResult.rows[0];
     
-    // Calcular comissões - CPA e RevShare podem ser aplicados simultaneamente
+    // Calcular comissões - Hybrid tem valores separados para CPA e RevShare
     let totalCommission = 0;
     let commissions = [];
     
     // CPA para registration e first_deposit
     if ((evento === 'registration' || evento === 'first_deposit') && 
         (house.commission_type === 'CPA' || house.commission_type === 'Hybrid')) {
-      const cpaValue = parseFloat(house.commission_value);
+      
+      let cpaValue;
+      if (house.commission_type === 'Hybrid') {
+        // Para Hybrid, usar cpa_value específico
+        cpaValue = parseFloat(house.cpa_value || house.commission_value);
+      } else {
+        // Para CPA puro, usar commission_value
+        cpaValue = parseFloat(house.commission_value);
+      }
+      
       totalCommission += cpaValue;
       commissions.push({ type: 'CPA', value: cpaValue });
       console.log(`💰 CPA aplicado: R$ ${cpaValue.toFixed(2)}`);
@@ -60,11 +69,20 @@ app.get('/webhook/:casa/:evento', async (req, res) => {
     // RevShare para deposit e profit (pode ser aplicado junto com CPA)
     if ((evento === 'deposit' || evento === 'profit') && valorAmount > 0 &&
         (house.commission_type === 'RevShare' || house.commission_type === 'Hybrid')) {
-      const percentage = parseFloat(house.commission_value) / 100;
+      
+      let percentage;
+      if (house.commission_type === 'Hybrid') {
+        // Para Hybrid, usar revshare_value específico
+        percentage = parseFloat(house.revshare_value || house.commission_value) / 100;
+      } else {
+        // Para RevShare puro, usar commission_value
+        percentage = parseFloat(house.commission_value) / 100;
+      }
+      
       const revShareValue = valorAmount * percentage;
       totalCommission += revShareValue;
-      commissions.push({ type: 'RevShare', value: revShareValue, percentage });
-      console.log(`💰 RevShare aplicado: ${percentage}% de R$ ${valorAmount} = R$ ${revShareValue.toFixed(2)}`);
+      commissions.push({ type: 'RevShare', value: revShareValue, percentage: percentage * 100 });
+      console.log(`💰 RevShare aplicado: ${(percentage * 100).toFixed(1)}% de R$ ${valorAmount} = R$ ${revShareValue.toFixed(2)}`);
     }
     
     console.log(`✅ Postback processado: ${affiliate.username} - ${house.name} - Comissão total: R$ ${totalCommission.toFixed(2)}`);

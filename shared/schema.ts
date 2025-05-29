@@ -42,8 +42,10 @@ export const bettingHouses = pgTable("betting_houses", {
   baseUrl: text("base_url").notNull(), // Base affiliate URL with VALUE placeholder
   primaryParam: text("primary_param").notNull(), // subid, affid, etc.
   additionalParams: jsonb("additional_params"), // Optional additional parameters
-  commissionType: text("commission_type").notNull(), // 'revshare' or 'cpa'
-  commissionValue: text("commission_value").notNull(), // "35%" or "R$ 150"
+  commissionType: text("commission_type").notNull(), // 'CPA', 'RevShare', or 'Hybrid'
+  commissionValue: text("commission_value").notNull(), // Valor principal
+  cpaValue: text("cpa_value"), // Valor específico para CPA em modelo Hybrid
+  revshareValue: text("revshare_value"), // Valor específico para RevShare em modelo Hybrid
   minDeposit: text("min_deposit"),
   paymentMethods: text("payment_methods"),
   isActive: boolean("is_active").default(true),

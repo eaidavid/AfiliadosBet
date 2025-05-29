@@ -418,6 +418,7 @@ export default function AdminHousesManagement() {
                     <SelectContent className="bg-slate-700 border-slate-600">
                       <SelectItem value="RevShare">RevShare (%)</SelectItem>
                       <SelectItem value="CPA">CPA (Valor Fixo)</SelectItem>
+                      <SelectItem value="Hybrid">Hybrid (CPA + RevShare)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
