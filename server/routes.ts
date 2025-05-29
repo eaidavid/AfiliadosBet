@@ -67,6 +67,132 @@ function requireAdmin(req: any, res: any, next: any) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // ROTA DE POSTBACK SIMPLIFICADA - SEMPRE REGISTRA LOGS
+  app.get("/api/postback/:casa/:evento", async (req, res) => {
+    const startTime = Date.now();
+    console.log(`🔔 === POSTBACK RECEBIDO === ${new Date().toISOString()}`);
+    console.log(`URL completa: ${req.url}`);
+    console.log(`Parâmetros: casa=${req.params.casa}, evento=${req.params.evento}`);
+    console.log(`Query: ${JSON.stringify(req.query)}`);
+    console.log(`IP: ${req.ip}`);
+    
+    try {
+      const { casa, evento } = req.params;
+      const { subid, amount, customer_id } = req.query;
+      const ip = req.ip || req.connection.remoteAddress || 'unknown';
+      
+      // SEMPRE registrar o log primeiro, independentemente de validações
+      const logData = {
+        casa: casa as string,
+        evento: evento as string,
+        subid: (subid as string) || 'unknown',
+        valor: amount ? parseFloat(amount as string) : 0,
+        ip,
+        raw: req.url,
+        status: 'PROCESSING'
+      };
+      
+      console.log(`📝 Registrando log inicial:`, logData);
+      const logEntry = await db.insert(schema.postbackLogs).values(logData).returning();
+      console.log(`✅ Log criado com ID: ${logEntry[0].id}`);
+      
+      // Verificar se a casa existe
+      const houses = await db.select()
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.identifier, casa));
+      
+      if (houses.length === 0) {
+        console.log(`❌ Casa não encontrada: ${casa}`);
+        await db.update(schema.postbackLogs)
+          .set({ status: 'ERROR_HOUSE_NOT_FOUND' })
+          .where(eq(schema.postbackLogs.id, logEntry[0].id));
+        return res.status(404).json({ error: "Casa de apostas não encontrada", logId: logEntry[0].id });
+      }
+      
+      const house = houses[0];
+      console.log(`✅ Casa encontrada: ${house.name}`);
+      
+      // Verificar se o afiliado existe
+      const affiliates = await db.select()
+        .from(schema.users)
+        .where(eq(schema.users.username, subid as string));
+      
+      if (affiliates.length === 0) {
+        console.log(`❌ Afiliado não encontrado: ${subid}`);
+        await db.update(schema.postbackLogs)
+          .set({ status: 'ERROR_AFFILIATE_NOT_FOUND' })
+          .where(eq(schema.postbackLogs.id, logEntry[0].id));
+        return res.status(404).json({ error: "Afiliado não encontrado", logId: logEntry[0].id });
+      }
+      
+      const affiliate = affiliates[0];
+      console.log(`✅ Afiliado encontrado: ${affiliate.username}`);
+      
+      // Registrar evento
+      console.log(`📊 Registrando evento...`);
+      const eventoData = await db.insert(schema.eventos).values({
+        afiliadoId: affiliate.id,
+        casa: house.identifier,
+        evento,
+        valor: amount ? (amount as string) : null
+      }).returning();
+      console.log(`✅ Evento registrado com ID: ${eventoData[0].id}`);
+      
+      // Calcular comissão
+      let commissionValue = 0;
+      let tipo = 'CPA';
+      
+      if (house.commissionType === 'CPA' && (evento === 'registration' || evento === 'first_deposit')) {
+        commissionValue = parseFloat(house.commissionValue);
+        tipo = 'CPA';
+      } else if (house.commissionType === 'RevShare' && amount && (evento === 'deposit' || evento === 'profit')) {
+        const percentage = parseFloat(house.commissionValue) / 100;
+        commissionValue = parseFloat(amount as string) * percentage;
+        tipo = 'RevShare';
+      }
+      
+      // Salvar comissão se houver
+      if (commissionValue > 0) {
+        console.log(`💰 Calculando comissão ${tipo}: R$ ${commissionValue}`);
+        await db.insert(schema.comissoes).values({
+          afiliadoId: affiliate.id,
+          eventoId: eventoData[0].id,
+          tipo,
+          valor: commissionValue.toString()
+        });
+        console.log(`✅ Comissão salva: R$ ${commissionValue} para ${affiliate.username}`);
+      }
+      
+      // Atualizar log como sucesso
+      await db.update(schema.postbackLogs)
+        .set({ status: 'SUCCESS' })
+        .where(eq(schema.postbackLogs.id, logEntry[0].id));
+      
+      const processTime = Date.now() - startTime;
+      console.log(`🎉 Postback processado com sucesso em ${processTime}ms`);
+      console.log(`=== FIM DO POSTBACK ===`);
+      
+      res.json({ 
+        success: true, 
+        message: "Postback processado com sucesso",
+        commission: commissionValue,
+        type: tipo,
+        affiliate: affiliate.username,
+        house: house.name,
+        event: evento,
+        logId: logEntry[0].id,
+        processTime: `${processTime}ms`
+      });
+      
+    } catch (error) {
+      console.error("❌ ERRO CRÍTICO no postback:", error);
+      res.status(500).json({ 
+        error: "Erro interno no processamento", 
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // POSTBACK ROUTE - Must be first to avoid being caught by other routes
   app.get("/postback/:casa/:evento/:token", async (req, res) => {
     try {
