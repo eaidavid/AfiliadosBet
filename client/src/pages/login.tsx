@@ -41,16 +41,20 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
+    <div className={`min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center ${isMobile ? "p-2" : "p-4"}`}>
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-blue-600/5"></div>
       
-      <Card className="w-full max-w-md bg-slate-900/90 border-slate-700 backdrop-blur-sm">
+      <Card className={`w-full ${isMobile ? "max-w-sm mx-2" : "max-w-md"} bg-slate-900/90 border-slate-700 backdrop-blur-sm`}>
         <CardHeader className="text-center space-y-4">
-          <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto">
-            <ChartLine className="h-8 w-8 text-white" />
+          <div className={`${isMobile ? "w-12 h-12" : "w-16 h-16"} mx-auto flex items-center justify-center`}>
+            <img 
+              src={logoPath} 
+              alt="AfiliadosBet Logo" 
+              className={`${isMobile ? "w-12 h-12" : "w-16 h-16"} object-contain`}
+            />
           </div>
           <div>
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
+            <CardTitle className={`${isMobile ? "text-2xl" : "text-3xl"} font-bold bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent`}>
               Bem-vindo de volta
             </CardTitle>
             <CardDescription className="text-slate-400 mt-2">
