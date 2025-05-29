@@ -624,8 +624,25 @@ app.get('*', (req, res) => {
   `);
 });
 
-const PORT = 3000;
-app.listen(PORT, '0.0.0.0', () => {
+const PORT = process.env.PORT || 3000;
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Frontend server funcionando na porta ${PORT}`);
   console.log(`Acesse: http://localhost:${PORT}`);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('Encerrando servidor frontend...');
+  server.close(() => {
+    console.log('Servidor frontend encerrado.');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('Encerrando servidor frontend...');
+  server.close(() => {
+    console.log('Servidor frontend encerrado.');
+    process.exit(0);
+  });
 });
