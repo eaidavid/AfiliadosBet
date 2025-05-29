@@ -493,23 +493,131 @@ app.get('*', (req, res) => {
       </footer>
 
       <script>
-        // Animações suaves
+        // Scroll navbar effect
+        window.addEventListener('scroll', () => {
+          const navbar = document.querySelector('.navbar');
+          if (window.scrollY > 50) {
+            navbar.classList.add('scrolled');
+          } else {
+            navbar.classList.remove('scrolled');
+          }
+        });
+
+        // Smooth entrance animations
+        const observerOptions = {
+          threshold: 0.1,
+          rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.style.opacity = '1';
+              entry.target.style.transform = 'translateY(0)';
+            }
+          });
+        }, observerOptions);
+
+        // Animate cards on load
         const cards = document.querySelectorAll('.card');
         cards.forEach((card, index) => {
           card.style.opacity = '0';
           card.style.transform = 'translateY(30px)';
-          setTimeout(() => {
-            card.style.transition = 'all 0.6s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-          }, index * 100);
+          card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+          card.style.transitionDelay = \`\${index * 100}ms\`;
+          observer.observe(card);
         });
 
-        // Form handling
+        // Animate stats
+        const stats = document.querySelectorAll('.stat');
+        stats.forEach((stat, index) => {
+          stat.style.opacity = '0';
+          stat.style.transform = 'translateY(20px)';
+          stat.style.transition = 'all 0.5s ease';
+          stat.style.transitionDelay = \`\${index * 150}ms\`;
+          observer.observe(stat);
+        });
+
+        // Enhanced form handling
         document.querySelector('form').addEventListener('submit', (e) => {
           e.preventDefault();
-          alert('Sistema de login implementado! Redirecionando para o painel...');
+          const btn = e.target.querySelector('.btn');
+          const originalText = btn.textContent;
+          
+          btn.textContent = 'Autenticando...';
+          btn.style.opacity = '0.7';
+          
+          setTimeout(() => {
+            btn.textContent = 'Acesso autorizado!';
+            btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            
+            setTimeout(() => {
+              window.location.href = '#dashboard';
+            }, 1000);
+          }, 2000);
         });
+
+        // Smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+          anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+              target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+              });
+            }
+          });
+        });
+
+        // Add floating particles animation
+        function createParticle() {
+          const particle = document.createElement('div');
+          particle.style.position = 'fixed';
+          particle.style.width = '2px';
+          particle.style.height = '2px';
+          particle.style.background = 'rgba(59, 130, 246, 0.6)';
+          particle.style.borderRadius = '50%';
+          particle.style.pointerEvents = 'none';
+          particle.style.zIndex = '-1';
+          
+          const startX = Math.random() * window.innerWidth;
+          const startY = window.innerHeight + 10;
+          
+          particle.style.left = startX + 'px';
+          particle.style.top = startY + 'px';
+          
+          document.body.appendChild(particle);
+          
+          const duration = 8000 + Math.random() * 4000;
+          const endY = -10;
+          const drift = (Math.random() - 0.5) * 100;
+          
+          particle.animate([
+            { 
+              transform: \`translate(0, 0) scale(0)\`,
+              opacity: 0
+            },
+            { 
+              transform: \`translate(\${drift/2}px, -\${window.innerHeight/2}px) scale(1)\`,
+              opacity: 1,
+              offset: 0.1
+            },
+            { 
+              transform: \`translate(\${drift}px, -\${window.innerHeight + 20}px) scale(0)\`,
+              opacity: 0
+            }
+          ], {
+            duration: duration,
+            easing: 'linear'
+          }).onfinish = () => {
+            particle.remove();
+          };
+        }
+
+        // Create particles periodically
+        setInterval(createParticle, 800);
       </script>
     </body>
     </html>
