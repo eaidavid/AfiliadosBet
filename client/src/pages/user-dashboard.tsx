@@ -8,6 +8,7 @@ import Reports from "@/components/user/reports";
 import Support from "@/components/user/support";
 import Profile from "@/components/user/profile";
 import { useAuth } from "@/hooks/use-auth";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -16,6 +17,7 @@ import { MousePointer, UserPlus, CreditCard, DollarSign, AlertTriangle, CheckCir
 export default function UserDashboard() {
   const [currentPage, setCurrentPage] = useState("home");
   const { user, isLoading: authLoading } = useAuth();
+  const isMobile = useIsMobile();
   const queryClient = useQueryClient();
 
   // Atualização automática a cada 3 segundos para sincronizar com mudanças do admin
@@ -230,9 +232,9 @@ export default function UserDashboard() {
     <div className="min-h-screen bg-slate-950">
       <UserSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
       
-      <div className="ml-72">
+      <div className={isMobile ? "w-full" : "ml-72"}>
         <UserTopBar onPageChange={setCurrentPage} />
-        <main className="p-6">
+        <main className={isMobile ? "p-4 pt-16" : "p-6"}>
           {renderContent()}
         </main>
       </div>

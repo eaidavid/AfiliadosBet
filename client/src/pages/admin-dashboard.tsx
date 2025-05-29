@@ -8,12 +8,14 @@ import CommissionsManagement from "@/components/admin/commissions-management";
 import ReportsManagement from "@/components/admin/reports-management";
 import SettingsManagement from "@/components/admin/settings-management";
 import AdminProfile from "@/components/admin/admin-profile";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, Building, TrendingUp, DollarSign } from "lucide-react";
 
 export default function AdminDashboard() {
   const [currentPage, setCurrentPage] = useState("dashboard");
+  const isMobile = useIsMobile();
 
   const { data: adminStats } = useQuery({
     queryKey: ["/api/admin/stats"],
@@ -198,10 +200,10 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-slate-950">
       <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
       
-      <div className="ml-72">
-        <header className="bg-slate-900 border-b border-slate-700 px-6 py-4">
+      <div className={isMobile ? "w-full" : "ml-72"}>
+        <header className={`bg-slate-900 border-b border-slate-700 ${isMobile ? "px-4 py-3 pt-16" : "px-6 py-4"}`}>
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-white">Painel Administrativo</h1>
+            <h1 className={`font-bold text-white ${isMobile ? "text-xl" : "text-2xl"}`}>Painel Administrativo</h1>
             <div className="flex items-center space-x-4">
               <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center">
                 <span className="text-white text-sm font-semibold">A</span>
@@ -211,7 +213,7 @@ export default function AdminDashboard() {
           </div>
         </header>
         
-        <main className="p-6">
+        <main className={isMobile ? "p-4" : "p-6"}>
           {renderContent()}
         </main>
       </div>
