@@ -423,19 +423,56 @@ export default function AdminHousesManagement() {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="commissionValue" className="text-slate-300">
-                    Valor da Comissão <span className="text-red-400">*</span>
-                  </Label>
-                  <Input
-                    {...form.register("commissionValue")}
-                    placeholder="35% ou R$ 150"
-                    className="bg-slate-700 border-slate-600 text-white placeholder-slate-400 focus:border-emerald-500"
-                  />
-                  {form.formState.errors.commissionValue && (
-                    <p className="text-red-400 text-sm">{form.formState.errors.commissionValue.message}</p>
-                  )}
-                </div>
+                {form.watch("commissionType") === "Hybrid" ? (
+                  <div className="space-y-4">
+                    <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-lg p-4">
+                      <h4 className="text-emerald-400 font-medium mb-3">Configuração Híbrida</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-slate-300">
+                            Valor CPA (Registration) <span className="text-red-400">*</span>
+                          </Label>
+                          <Input
+                            {...form.register("cpaValue")}
+                            placeholder="R$ 50.00"
+                            className="bg-slate-700 border-slate-600 text-white placeholder-slate-400 focus:border-emerald-500"
+                          />
+                          <p className="text-xs text-slate-400">Valor fixo pago por registro</p>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-slate-300">
+                            RevShare (Deposits/Profit) <span className="text-red-400">*</span>
+                          </Label>
+                          <Input
+                            {...form.register("revshareValue")}
+                            placeholder="5.0"
+                            className="bg-slate-700 border-slate-600 text-white placeholder-slate-400 focus:border-emerald-500"
+                          />
+                          <p className="text-xs text-slate-400">Porcentagem sobre depósitos/lucros</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label htmlFor="commissionValue" className="text-slate-300">
+                      Valor da Comissão <span className="text-red-400">*</span>
+                    </Label>
+                    <Input
+                      {...form.register("commissionValue")}
+                      placeholder={form.watch("commissionType") === "RevShare" ? "35.0" : "150.00"}
+                      className="bg-slate-700 border-slate-600 text-white placeholder-slate-400 focus:border-emerald-500"
+                    />
+                    <p className="text-xs text-slate-400">
+                      {form.watch("commissionType") === "RevShare" 
+                        ? "Porcentagem sobre depósitos/lucros" 
+                        : "Valor fixo em reais por ação"}
+                    </p>
+                    {form.formState.errors.commissionValue && (
+                      <p className="text-red-400 text-sm">{form.formState.errors.commissionValue.message}</p>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
