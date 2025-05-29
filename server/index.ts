@@ -50,11 +50,15 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
 });
 
 (async () => {
-  if (process.env.NODE_ENV === "development") {
+  try {
     const server = await registerRoutes(app);
-    await setupVite(app, server);
-  } else {
-    const server = await registerRoutes(app);
-    serveStatic(app);
+    if (process.env.NODE_ENV === "development") {
+      await setupVite(app, server);
+    } else {
+      serveStatic(app);
+    }
+  } catch (error) {
+    console.error("Erro ao iniciar servidor:", error);
+    process.exit(1);
   }
 })();
