@@ -19,7 +19,7 @@ export default function AdminPanelToggle() {
 
   const handleToggle = () => {
     if (isOnAdminPanel) {
-      setLocation("/");
+      setLocation("/home");
     } else {
       setLocation("/admin");
     }
