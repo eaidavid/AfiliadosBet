@@ -5,7 +5,11 @@ const { Pool } = pg;
 
 async function fixAdmin() {
   const pool = new Pool({
-    connectionString: 'postgresql://afiliadosbet:AfiliadosBet1001@localhost:5432/afiliadosbet'
+    user: 'afiliadosbet',
+    host: 'localhost',
+    database: 'afiliadosbet',
+    password: 'AfiliadosBet1001',
+    port: 5432,
   });
 
   try {
