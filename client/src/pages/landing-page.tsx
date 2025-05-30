@@ -35,7 +35,7 @@ import {
   Lock,
   Wallet
 } from "lucide-react";
-import logoPath from "@assets/Documento de David.png";
+import logoPath from "@assets/Afiliados Bet positivo.png";
 
 interface AnimatedCounterProps {
   end: number;
