@@ -14,13 +14,15 @@ import NotFound from "@/pages/not-found";
 import AdminPanelToggle from "@/components/admin-panel-toggle";
 
 function HomePage() {
-  const [, setLocation] = useLocation();
-  
   useEffect(() => {
-    setLocation("/lp");
-  }, [setLocation]);
+    window.location.replace("/lp");
+  }, []);
   
-  return null;
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+      <div className="text-white text-xl">Redirecionando...</div>
+    </div>
+  );
 }
 
 function Router() {
