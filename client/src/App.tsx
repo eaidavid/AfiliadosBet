@@ -15,7 +15,8 @@ import AdminPanelToggle from "@/components/admin-panel-toggle";
 function PublicRouter() {
   return (
     <Switch>
-      <Route path="/" component={LandingPage} />
+      <Route path="/lp" component={LandingPage} />
+      <Route path="/" component={AuthenticatedLogin} />
       <Route path="/login" component={AuthenticatedLogin} />
       <Route path="/register" component={Register} />
       <Route path="/dashboard" component={AuthenticatedUserDashboard} />
