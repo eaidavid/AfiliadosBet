@@ -1,5 +1,5 @@
-const bcrypt = require('bcrypt');
-const { Pool } = require('pg');
+import bcrypt from 'bcrypt';
+import { Pool } from 'pg';
 
 async function debugLogin() {
   const pool = new Pool({
