@@ -17,7 +17,7 @@ function Router() {
     <Switch>
       <Route path="/" component={LandingPage} />
       <Route path="/lp" component={LandingPage} />
-      <Route path="/login" component={AuthenticatedLogin} />
+      <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/dashboard" component={AuthenticatedUserDashboard} />
       <Route path="/admin" component={AuthenticatedAdminDashboard} />
