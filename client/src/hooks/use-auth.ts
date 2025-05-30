@@ -1,23 +1,83 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { User, InsertUser, LoginData } from "@shared/schema";
 
 export function useAuth() {
-  const { data: user, isLoading, error } = useQuery({
-    queryKey: ["/api/auth/me"],
-    retry: false,
-    staleTime: 1000 * 60 * 5, // 5 minutos
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-  // Garantir que user seja tratado corretamente
-  const safeUser = user && typeof user === 'object' && 'id' in user ? user as User : undefined;
+  useEffect(() => {
+    let isMounted = true;
+    
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("/api/auth/me", {
+          credentials: "include"
+        });
+        
+        if (response.ok) {
+          const userData = await response.json();
+          if (isMounted) {
+            setUser(userData);
+            setError(null);
+          }
+        } else {
+          if (isMounted) {
+            setUser(null);
+            setError(null); // 401 não é um erro real
+          }
+        }
+      } catch (err) {
+        if (isMounted) {
+          setUser(null);
+          setError(err instanceof Error ? err : new Error("Auth check failed"));
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    checkAuth();
+    
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const refreshUser = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/auth/me", {
+        credentials: "include"
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+        setError(null);
+      } else {
+        setUser(null);
+        setError(null);
+      }
+    } catch (err) {
+      setUser(null);
+      setError(err instanceof Error ? err : new Error("Auth check failed"));
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return {
-    user: safeUser,
+    user,
     isLoading,
-    isAuthenticated: !!safeUser && !isLoading && !!safeUser.id,
-    isAdmin: !isLoading && !!safeUser && safeUser.role === "admin",
+    isAuthenticated: !!user && !!user.id,
+    isAdmin: !!user && user.role === "admin",
     error,
+    refreshUser
   };
 }
 
