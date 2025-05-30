@@ -26,7 +26,7 @@ function AuthenticatedHome() {
   }
 
   if (!isAuthenticated) {
-    window.location.href = "/login";
+    window.location.href = "/";
     return null;
   }
 
@@ -83,7 +83,7 @@ function AuthenticatedUserDashboard() {
   }
 
   if (!isAuthenticated) {
-    window.location.href = "/login";
+    window.location.href = "/";
     return null;
   }
 
@@ -107,7 +107,7 @@ function AuthenticatedAdminDashboard() {
   }
 
   if (!isAuthenticated || !isAdmin) {
-    window.location.href = "/login";
+    window.location.href = "/";
     return null;
   }
 
