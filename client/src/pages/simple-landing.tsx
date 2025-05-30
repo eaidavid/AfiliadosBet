@@ -1,5 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import logoPath from "@assets/Afiliados Bet positivo.png";
+
+// Estilos CSS inline para animações fade-in
+const fadeInStyles = `
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-fade-in {
+    animation: fadeInUp 0.8s ease-out forwards;
+  }
+`;
 
 export default function SimpleLanding() {
   const [statsCount, setStatsCount] = useState({ earnings: 0, affiliates: 0, commission: 0 });
@@ -21,6 +38,7 @@ export default function SimpleLanding() {
 
   return (
     <div className="dark min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-green-950 overflow-hidden relative">
+      <style>{fadeInStyles}</style>
       {/* Animated Background Elements */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-20 left-10 w-72 h-72 bg-green-500 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '3s' }}></div>
@@ -60,7 +78,9 @@ export default function SimpleLanding() {
       <div className="relative z-10 container mx-auto px-6 py-20">
         <div className="text-center">
           {/* Badge */}
-          <div className="inline-flex items-center px-4 py-2 mb-8 bg-gradient-to-r from-blue-900/50 to-green-900/50 border border-blue-500/30 rounded-full animate-pulse transform hover:scale-105 transition-all duration-300">
+          <div className="inline-flex items-center px-4 py-2 mb-8 bg-gradient-to-r from-blue-900/50 to-green-900/50 border border-blue-500/30 rounded-full animate-pulse transform hover:scale-105 transition-all duration-700 opacity-0 animate-fade-in"
+            style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}
+          >
             <div className="w-2 h-2 bg-green-400 rounded-full mr-3 animate-pulse" style={{ animationDuration: '1.5s' }}></div>
             <span className="text-blue-300 text-sm font-semibold">🚀 #1 Sistema de Afiliados de Apostas do Brasil</span>
           </div>
