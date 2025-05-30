@@ -13,6 +13,21 @@ import NotFound from "@/pages/not-found";
 import AdminPanelToggle from "@/components/admin-panel-toggle";
 
 function Router() {
+  return (
+    <>
+      <Switch>
+        <Route path="/" component={LandingPage} />
+        <Route path="/login" component={AuthenticatedLogin} />
+        <Route path="/register" component={Register} />
+        <Route path="/dashboard" component={AuthenticatedUserDashboard} />
+        <Route path="/admin" component={AuthenticatedAdminDashboard} />
+        <Route component={NotFound} />
+      </Switch>
+    </>
+  );
+}
+
+function AuthenticatedLogin() {
   const { isAuthenticated, isLoading, isAdmin } = useAuth();
 
   if (isLoading) {
@@ -23,21 +38,58 @@ function Router() {
     );
   }
 
+  if (isAuthenticated) {
+    window.location.href = isAdmin ? "/admin" : "/dashboard";
+    return null;
+  }
+
+  return <Login />;
+}
+
+function AuthenticatedUserDashboard() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-emerald-500 text-xl">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    window.location.href = "/login";
+    return null;
+  }
+
   return (
     <>
-      <Switch>
-        <Route path="/" component={LandingPage} />
-        <Route path="/login" component={Login} />
-        <Route path="/register" component={Register} />
-        {isAuthenticated && (
-          <>
-            <Route path="/dashboard" component={UserDashboard} />
-            <Route path="/admin" component={AdminDashboard} />
-          </>
-        )}
-        <Route component={NotFound} />
-      </Switch>
-      {isAuthenticated && <AdminPanelToggle />}
+      <UserDashboard />
+      <AdminPanelToggle />
+    </>
+  );
+}
+
+function AuthenticatedAdminDashboard() {
+  const { isAuthenticated, isLoading, isAdmin } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-emerald-500 text-xl">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !isAdmin) {
+    window.location.href = "/login";
+    return null;
+  }
+
+  return (
+    <>
+      <AdminDashboard />
+      <AdminPanelToggle />
     </>
   );
 }

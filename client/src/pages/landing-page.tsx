@@ -250,11 +250,11 @@ export default function LandingPage() {
               <Button
                 variant="outline"
                 size="lg"
-                onClick={() => scrollToSection('demo')}
+                onClick={() => scrollToSection('features')}
                 className="border-slate-600 text-slate-300 hover:bg-slate-800 text-lg px-8 py-4"
               >
-                <PlayCircle className="mr-2 h-5 w-5" />
-                Ver Demo
+                Conhecer Recursos
+                <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
 
