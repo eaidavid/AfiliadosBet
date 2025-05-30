@@ -164,21 +164,287 @@ export default function SimpleLanding() {
         </div>
       </div>
 
+      {/* Como Funciona */}
+      <div className="relative z-10 py-20">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              Como Funciona em 3 Passos Simples
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Em menos de 10 minutos você estará ganhando suas primeiras comissões
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center group">
+              <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-2xl shadow-blue-900/50">
+                <span className="text-3xl font-bold text-white">1</span>
+              </div>
+              <h3 className="text-2xl font-bold text-blue-400 mb-4">Cadastre-se Grátis</h3>
+              <p className="text-gray-300 text-lg">Faça seu registro em menos de 2 minutos. Sem taxas, sem burocracia, totalmente gratuito para sempre.</p>
+            </div>
+            
+            <div className="text-center group">
+              <div className="bg-gradient-to-br from-green-600 to-green-800 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-2xl shadow-green-900/50">
+                <span className="text-3xl font-bold text-white">2</span>
+              </div>
+              <h3 className="text-2xl font-bold text-green-400 mb-4">Promova Seus Links</h3>
+              <p className="text-gray-300 text-lg">Compartilhe seus links personalizados nas redes sociais, WhatsApp, Telegram ou qualquer canal digital.</p>
+            </div>
+            
+            <div className="text-center group">
+              <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-2xl shadow-emerald-900/50">
+                <span className="text-3xl font-bold text-white">3</span>
+              </div>
+              <h3 className="text-2xl font-bold text-emerald-400 mb-4">Receba Comissões</h3>
+              <p className="text-gray-300 text-lg">Ganhe automaticamente até 45% de comissão por cada apostador que se cadastrar através dos seus links.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Depoimentos */}
+      <div className="relative z-10 bg-slate-800/30 backdrop-blur-sm py-20">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              Histórias de Sucesso Reais
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Veja como nossos afiliados transformaram suas vidas financeiras
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-green-800/30 hover:scale-105 transition-all">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center text-white font-bold mr-4">CS</div>
+                <div>
+                  <h4 className="text-white font-semibold">Carlos Silva</h4>
+                  <p className="text-gray-400 text-sm">Marketing Digital</p>
+                </div>
+              </div>
+              <p className="text-gray-300 mb-4 italic">"Em 6 meses saí de R$ 0 para R$ 12.340 mensais. O suporte é excepcional e nunca tive problemas com pagamentos."</p>
+              <div className="text-green-400 font-bold">R$ 12.340/mês</div>
+            </div>
+            
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-blue-800/30 hover:scale-105 transition-all">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold mr-4">AC</div>
+                <div>
+                  <h4 className="text-white font-semibold">Ana Costa</h4>
+                  <p className="text-gray-400 text-sm">Influencer</p>
+                </div>
+              </div>
+              <p className="text-gray-300 mb-4 italic">"Consegui monetizar meu Instagram de forma consistente. Interface intuitiva e relatórios detalhados que facilitam muito o trabalho."</p>
+              <div className="text-blue-400 font-bold">R$ 8.750/mês</div>
+            </div>
+            
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-emerald-800/30 hover:scale-105 transition-all">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-500 rounded-full flex items-center justify-center text-white font-bold mr-4">RS</div>
+                <div>
+                  <h4 className="text-white font-semibold">Rafael Santos</h4>
+                  <p className="text-gray-400 text-sm">Youtuber</p>
+                </div>
+              </div>
+              <p className="text-gray-300 mb-4 italic">"Sistema transparente e confiável. Hoje tenho uma renda passiva que cresce todo mês sem precisar me preocupar."</p>
+              <div className="text-emerald-400 font-bold">R$ 15.200/mês</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Vantagens Exclusivas */}
+      <div className="relative z-10 py-20">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              Vantagens Exclusivas para Afiliados
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Benefícios que fazem a diferença na sua renda mensal
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <div className="flex items-start space-x-4 group hover:scale-105 transition-transform">
+                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <span className="text-white text-xl">✓</span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Sem Investimento Inicial</h3>
+                  <p className="text-gray-300">Comece a ganhar sem investir um centavo. 100% gratuito para sempre, sem taxas ocultas.</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-4 group hover:scale-105 transition-transform">
+                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <span className="text-white text-xl">✓</span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Comissões Vitalícias</h3>
+                  <p className="text-gray-300">Ganhe comissão para sempre de cada cliente que trouxer, sem prazo de validade.</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-4 group hover:scale-105 transition-transform">
+                <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <span className="text-white text-xl">✓</span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Saques Rápidos</h3>
+                  <p className="text-gray-300">Receba seus ganhos em até 24h via PIX, TED ou carteira digital. Valor mínimo: R$ 50.</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="flex items-start space-x-4 group hover:scale-105 transition-transform">
+                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <span className="text-white text-xl">✓</span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Múltiplas Casas de Apostas</h3>
+                  <p className="text-gray-300">Promova as melhores casas do mercado e diversifique sua fonte de renda.</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-4 group hover:scale-105 transition-transform">
+                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <span className="text-white text-xl">✓</span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Sistema Automatizado</h3>
+                  <p className="text-gray-300">Tudo funciona automaticamente: rastreamento, cálculo de comissões e relatórios.</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-4 group hover:scale-105 transition-transform">
+                <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <span className="text-white text-xl">✓</span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Suporte 24/7</h3>
+                  <p className="text-gray-300">Equipe especializada disponível 24 horas por dia para maximizar seus resultados.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* FAQ */}
+      <div className="relative z-10 bg-slate-800/30 backdrop-blur-sm py-20">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              Perguntas Frequentes
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Tire suas dúvidas sobre como funciona o sistema
+            </p>
+          </div>
+          
+          <div className="max-w-4xl mx-auto space-y-4">
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-blue-800/30">
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-white mb-3">Como faço para me cadastrar como afiliado?</h3>
+                <p className="text-gray-300">O cadastro é 100% gratuito e simples. Clique em 'Cadastrar Grátis', preencha seus dados básicos e em poucos minutos você estará pronto para começar a ganhar dinheiro como afiliado.</p>
+              </div>
+            </div>
+            
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-green-800/30">
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-white mb-3">Quanto posso ganhar como afiliado?</h3>
+                <p className="text-gray-300">Não há limite de ganhos. Nossos afiliados ganham desde R$ 500 até mais de R$ 20.000 por mês, dependendo do volume de tráfego e qualidade dos indicados. A média dos nossos top afiliados é de R$ 8.000-15.000 mensais.</p>
+              </div>
+            </div>
+            
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-emerald-800/30">
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-white mb-3">Como e quando recebo meus pagamentos?</h3>
+                <p className="text-gray-300">Os pagamentos são realizados semanalmente via PIX, TED ou carteira digital. O valor mínimo para saque é de apenas R$ 50. Temos histórico de 100% de pagamentos em dia.</p>
+              </div>
+            </div>
+            
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-blue-800/30">
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-white mb-3">Preciso ter experiência para ser afiliado?</h3>
+                <p className="text-gray-300">Não! O sistema é muito intuitivo e oferecemos suporte completo. Muitos dos nossos afiliados de sucesso começaram sem nenhuma experiência anterior em marketing digital.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Urgência e Escassez */}
+      <div className="relative z-10 bg-gradient-to-r from-red-900/30 to-orange-900/30 py-16">
+        <div className="container mx-auto px-6 text-center">
+          <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-8 border border-red-500/30 max-w-4xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              ⚠️ Oportunidade Limitada
+            </h2>
+            <p className="text-xl text-gray-300 mb-6">
+              Devido ao alto volume de cadastros, estamos limitando as novas inscrições para garantir a qualidade do suporte. 
+              <span className="text-red-400 font-bold"> Apenas 47 vagas restantes esta semana.</span>
+            </p>
+            <div className="bg-slate-700 rounded-full h-4 mb-6">
+              <div className="bg-gradient-to-r from-red-500 to-orange-500 h-4 rounded-full" style={{ width: '83%' }}></div>
+            </div>
+            <button 
+              onClick={() => window.location.href = "/register"}
+              className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white px-10 py-4 text-xl font-bold rounded-xl shadow-2xl shadow-red-900/50 transition-all transform hover:scale-105 animate-pulse"
+            >
+              🔥 Garantir Minha Vaga Agora
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* CTA Final */}
       <div className="relative z-10 bg-gradient-to-r from-green-900/50 to-blue-900/50 py-20">
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-4xl md:text-6xl font-bold text-white mb-8">
-            Pronto Para Ganhar Dinheiro?
+            Pronto Para Transformar Sua Vida Financeira?
           </h2>
           <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
             Junte-se a mais de 2.800 afiliados que já estão lucrando todos os dias. Cadastro gratuito em menos de 2 minutos.
           </p>
-          <button 
-            onClick={() => window.location.href = "/register"}
-            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-12 py-6 text-2xl font-bold rounded-xl shadow-2xl shadow-green-900/50 transition-all transform hover:scale-110 animate-pulse"
-          >
-            🚀 Começar Agora Grátis
-          </button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+            <button 
+              onClick={() => window.location.href = "/register"}
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-12 py-6 text-2xl font-bold rounded-xl shadow-2xl shadow-green-900/50 transition-all transform hover:scale-110 animate-pulse"
+            >
+              🚀 Começar Agora Grátis
+            </button>
+            <button 
+              onClick={() => window.location.href = "/login"}
+              className="border-2 border-white text-white hover:bg-white hover:text-gray-900 px-12 py-6 text-xl font-semibold rounded-xl transition-all transform hover:scale-105"
+            >
+              👤 Já Tenho Conta
+            </button>
+          </div>
+          <div className="flex flex-wrap justify-center items-center gap-6 text-gray-300">
+            <div className="flex items-center space-x-2">
+              <span className="text-green-400">✓</span>
+              <span>Cadastro Gratuito</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-blue-400">✓</span>
+              <span>Sem Mensalidades</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-emerald-400">✓</span>
+              <span>Suporte 24h</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-green-400">✓</span>
+              <span>Pagamentos Garantidos</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
