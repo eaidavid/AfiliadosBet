@@ -8,10 +8,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Redirect to the actual React app
-app.get('/', (req, res) => {
-  res.redirect('/login');
-});
+// Remove redirect - let React handle routing
 
 // Health check endpoint for deployment
 app.get('/health', (req, res) => {
