@@ -187,7 +187,7 @@ export default function LandingPage() {
         if (tag.property) {
           meta.setAttribute('property', tag.property);
         } else {
-          meta.setAttribute('name', tag.name);
+          meta.setAttribute('name', tag.name || '');
         }
         document.head.appendChild(meta);
       }
@@ -208,9 +208,9 @@ export default function LandingPage() {
       }
     };
 
-    let script = document.querySelector('script[type="application/ld+json"]');
+    let script = document.querySelector('script[type="application/ld+json"]') as HTMLScriptElement;
     if (!script) {
-      script = document.createElement('script');
+      script = document.createElement('script') as HTMLScriptElement;
       script.type = 'application/ld+json';
       document.head.appendChild(script);
     }
@@ -220,7 +220,7 @@ export default function LandingPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900 dark:to-indigo-900">
+      <div className="dark min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900">
         {/* Navigation */}
         <nav className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -491,15 +491,15 @@ export default function LandingPage() {
                 <div className="flex items-start space-x-4">
                   <CheckCircle className="h-6 w-6 text-green-400 mt-1 flex-shrink-0" />
                   <div>
-                    <h3 className="text-xl font-semibold mb-2">Materiais de Marketing</h3>
-                    <p className="text-blue-100">Banners, vídeos e textos prontos para suas campanhas de divulgação.</p>
+                    <h3 className="text-xl font-semibold mb-2">Relatórios Detalhados</h3>
+                    <p className="text-blue-100">Acompanhe cliques, conversões e ganhos com dashboards completos em tempo real.</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-4">
                   <CheckCircle className="h-6 w-6 text-green-400 mt-1 flex-shrink-0" />
                   <div>
-                    <h3 className="text-xl font-semibold mb-2">Treinamento Gratuito</h3>
-                    <p className="text-blue-100">Curso completo sobre como ser um afiliado de sucesso e maximizar ganhos.</p>
+                    <h3 className="text-xl font-semibold mb-2">Links Personalizados</h3>
+                    <p className="text-blue-100">Crie links únicos e rastreie a performance de cada campanha individualmente.</p>
                   </div>
                 </div>
               </motion.div>
@@ -528,15 +528,15 @@ export default function LandingPage() {
                 <div className="flex items-start space-x-4">
                   <CheckCircle className="h-6 w-6 text-green-400 mt-1 flex-shrink-0" />
                   <div>
-                    <h3 className="text-xl font-semibold mb-2">Programa de Fidelidade</h3>
-                    <p className="text-blue-100">Quanto mais trouxer, maior sua porcentagem de comissão.</p>
+                    <h3 className="text-xl font-semibold mb-2">Sistema Automatizado</h3>
+                    <p className="text-blue-100">Tudo funciona automaticamente: rastreamento, cálculo de comissões e relatórios.</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-4">
                   <CheckCircle className="h-6 w-6 text-green-400 mt-1 flex-shrink-0" />
                   <div>
-                    <h3 className="text-xl font-semibold mb-2">Gerente Pessoal</h3>
-                    <p className="text-blue-100">Afiliados top ganham um gerente dedicado para otimizar resultados.</p>
+                    <h3 className="text-xl font-semibold mb-2">Interface Intuitiva</h3>
+                    <p className="text-blue-100">Painel de controle simples e fácil de usar, mesmo para iniciantes.</p>
                   </div>
                 </div>
               </motion.div>
@@ -637,8 +637,8 @@ export default function LandingPage() {
                 answer="Sim! Nossos links funcionam em todas as plataformas: Instagram, Facebook, TikTok, YouTube, WhatsApp, Telegram, Twitter e qualquer outro canal que você quiser usar."
               />
               <FAQItem
-                question="O sistema fornece materiais de marketing?"
-                answer="Sim! Você terá acesso a banners profissionais, vídeos promocionais, textos persuasivos e landing pages otimizadas para conversão. Tudo pronto para usar."
+                question="Como funciona o sistema de rastreamento?"
+                answer="Cada afiliado recebe links únicos e personalizados. O sistema rastreia automaticamente todos os cliques, conversões e comissões em tempo real através do seu painel de controle."
               />
               <FAQItem
                 question="Como acompanho meus resultados?"
