@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -27,14 +27,15 @@ export default function Login() {
   });
 
   // Redirecionar usuário autenticado
-  if (isAuthenticated) {
-    if (isAdmin) {
-      setLocation("/admin");
-    } else {
-      setLocation("/dashboard");
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (isAdmin) {
+        setLocation("/admin");
+      } else {
+        setLocation("/dashboard");
+      }
     }
-    return null;
-  }
+  }, [isAuthenticated, isAdmin, setLocation]);
 
   const onSubmit = async (data: LoginData) => {
     try {

@@ -82,15 +82,14 @@ export function useAuth() {
 }
 
 export function useLogin() {
-  const queryClient = useQueryClient();
-  
   return useMutation({
     mutationFn: async (credentials: LoginData) => {
       const response = await apiRequest("POST", "/api/auth/login", credentials);
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      // Recarregar a página para atualizar o estado de autenticação
+      window.location.reload();
     },
   });
 }
