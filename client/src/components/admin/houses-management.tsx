@@ -25,96 +25,7 @@ interface BettingHouseWithStats extends BettingHouse {
   };
 }
 
-// Componente para mostrar URLs de postback após criar uma casa
-function PostbackUrls({ house, onClose }: { house: any; onClose: () => void }) {
-  const [location, setLocation] = useLocation();
-  const { toast } = useToast();
-  const [copiedUrls, setCopiedUrls] = useState<string[]>([]);
-
-  const baseUrl = window.location.origin;
-  const identifier = house.identifier;
-  const enabledEvents = house.enabledPostbacks || [];
-
-  const postbackUrls = {
-    registration: `${baseUrl}/postback/${identifier}/registration?subid={subid}`,
-    first_deposit: `${baseUrl}/postback/${identifier}/first_deposit?subid={subid}&amount={amount}`,
-    deposit: `${baseUrl}/postback/${identifier}/deposit?subid={subid}&amount={amount}`,
-    profit: `${baseUrl}/postback/${identifier}/profit?subid={subid}&amount={amount}`
-  };
-
-  const copyToClipboard = (url: string, eventName: string) => {
-    navigator.clipboard.writeText(url).then(() => {
-      setCopiedUrls(prev => [...prev, eventName]);
-      toast({
-        title: "URL copiada!",
-        description: `URL do evento ${eventName} foi copiada para a área de transferência.`,
-      });
-      setTimeout(() => {
-        setCopiedUrls(prev => prev.filter(item => item !== eventName));
-      }, 2000);
-    });
-  };
-
-  return (
-    <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-green-500" />
-            Casa criada com sucesso!
-          </DialogTitle>
-          <DialogDescription>
-            URLs de postback geradas para {house.name}. Cole esses links na plataforma da casa de apostas.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4">
-          {enabledEvents.map((event: string) => (
-            <Card key={event} className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <h4 className="font-medium capitalize mb-2">{event.replace('_', ' ')}</h4>
-                  <code className="text-sm bg-muted p-2 rounded block break-all">
-                    {postbackUrls[event as keyof typeof postbackUrls]}
-                  </code>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => copyToClipboard(postbackUrls[event as keyof typeof postbackUrls], event)}
-                  className="ml-4"
-                >
-                  {copiedUrls.includes(event) ? (
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                  ) : (
-                    <Copy className="w-4 h-4" />
-                  )}
-                </Button>
-              </div>
-            </Card>
-          ))}
-
-          <Alert>
-            <AlertDescription>
-              <strong>Instruções:</strong> 
-              <br />• Copie cada URL e configure na plataforma da casa de apostas
-              <br />• {`{subid}`} será substituído pelo username do afiliado automaticamente
-              <br />• {`{amount}`} será substituído pelo valor da transação
-              <br />• Status: Aguardando primeiras chamadas...
-            </AlertDescription>
-          </Alert>
-        </div>
-
-        <DialogFooter>
-          <Button onClick={() => setLocation(`/admin/houses/${house.id}/postbacks`)}>
-            Ver Logs de Postback
-          </Button>
-          <Button onClick={onClose}>Fechar</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
+// Postback URLs component removed - configuration handled in code
 
 interface AdminHousesManagementProps {
   onPageChange?: (page: string) => void;
@@ -123,8 +34,7 @@ interface AdminHousesManagementProps {
 export default function AdminHousesManagement({ onPageChange }: AdminHousesManagementProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingHouse, setEditingHouse] = useState<any>(null);
-  const [showPostbackUrls, setShowPostbackUrls] = useState<any>(null);
-  const [selectedEvents, setSelectedEvents] = useState<string[]>(['registration', 'deposit']);
+  // Postback configuration removed - handled in code
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -249,7 +159,7 @@ export default function AdminHousesManagement({ onPageChange }: AdminHousesManag
     if (!editingHouse) {
       const identifier = data.name.toLowerCase().replace(/[^a-z0-9]/g, '') + Date.now();
       data.identifier = identifier;
-      data.enabledPostbacks = selectedEvents;
+      // Postback configuration removed - will be handled in code
     }
     
     if (editingHouse) {
@@ -679,7 +589,7 @@ export default function AdminHousesManagement({ onPageChange }: AdminHousesManag
                     <div>
                       <h3 className="text-2xl font-semibold text-white">{house.name}</h3>
                       <p className="text-slate-400">
-                        {house.isActive ? "Ativa" : "Inativa"} desde {new Date(house.createdAt).toLocaleDateString()}
+                        {house.isActive ? "Ativa" : "Inativa"} desde {house.createdAt ? new Date(house.createdAt).toLocaleDateString() : "N/A"}
                       </p>
                     </div>
                   </div>
