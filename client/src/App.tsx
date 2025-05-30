@@ -14,33 +14,27 @@ import AdminDashboard from "@/pages/admin-dashboard";
 import NotFound from "@/pages/not-found";
 import AdminPanelToggle from "@/components/admin-panel-toggle";
 
-function HomePage() {
-  useEffect(() => {
-    // Redirecionamento imediato e forçado
-    window.location.href = "/lp";
-  }, []);
-  
-  // Também adiciona um redirecionamento via JavaScript como backup
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (window.location.pathname === "/") {
-        window.location.href = "/lp";
-      }
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
-  
+function AuthenticatedHome() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-emerald-500 text-xl">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    window.location.href = "/login";
+    return null;
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-      <div className="text-white text-xl animate-pulse">Redirecionando para AfiliadosBet...</div>
-      <script dangerouslySetInnerHTML={{
-        __html: `
-          if (window.location.pathname === '/') {
-            window.location.href = '/lp';
-          }
-        `
-      }} />
-    </div>
+    <>
+      <UserDashboard />
+      <AdminPanelToggle />
+    </>
   );
 }
 
@@ -48,7 +42,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={SimpleLanding} />
-      <Route path="/lp" component={SimpleLanding} />
+      <Route path="/home" component={AuthenticatedHome} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/dashboard" component={AuthenticatedUserDashboard} />
@@ -70,7 +64,7 @@ function AuthenticatedLogin() {
   }
 
   if (isAuthenticated) {
-    window.location.href = isAdmin ? "/admin" : "/dashboard";
+    window.location.href = isAdmin ? "/admin" : "/home";
     return null;
   }
 

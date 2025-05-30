@@ -110,9 +110,15 @@ export default function SimpleLanding() {
               💰 Começar Agora Grátis
             </button>
             <button 
-              onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
+              onClick={() => window.location.href = "/login"}
               className="border-2 border-blue-400 text-blue-300 hover:bg-blue-600 hover:text-white px-10 py-5 text-xl font-semibold rounded-xl transition-all transform hover:scale-105 animate-pulse hover:animate-none active:scale-95"
-              style={{ animationDuration: '2.5s', animationDelay: '1s' }}
+              style={{ animationDuration: '2.5s', animationDelay: '0.5s' }}
+            >
+              🔑 Já Tenho Conta - Entrar
+            </button>
+            <button 
+              onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
+              className="border border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-white px-8 py-4 text-lg font-medium rounded-xl transition-all transform hover:scale-105 opacity-75 hover:opacity-100"
             >
               ⚡ Como Funciona
             </button>
