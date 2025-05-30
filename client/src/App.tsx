@@ -16,12 +16,30 @@ import AdminPanelToggle from "@/components/admin-panel-toggle";
 
 function HomePage() {
   useEffect(() => {
-    window.location.replace("/lp");
+    // Redirecionamento imediato e forçado
+    window.location.href = "/lp";
+  }, []);
+  
+  // Também adiciona um redirecionamento via JavaScript como backup
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (window.location.pathname === "/") {
+        window.location.href = "/lp";
+      }
+    }, 100);
+    return () => clearTimeout(timer);
   }, []);
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-      <div className="text-white text-xl">Redirecionando...</div>
+      <div className="text-white text-xl animate-pulse">Redirecionando para AfiliadosBet...</div>
+      <script dangerouslySetInnerHTML={{
+        __html: `
+          if (window.location.pathname === '/') {
+            window.location.href = '/lp';
+          }
+        `
+      }} />
     </div>
   );
 }
