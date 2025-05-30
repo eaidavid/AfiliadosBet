@@ -17,7 +17,7 @@ export default function AdminDashboard() {
   const [currentPage, setCurrentPage] = useState("dashboard");
   const isMobile = useIsMobile();
 
-  const { data: adminStats } = useQuery({
+  const { data: adminStats = {} } = useQuery({
     queryKey: ["/api/admin/stats"],
   });
 
@@ -59,7 +59,7 @@ export default function AdminDashboard() {
                     <div className="min-w-0 flex-1">
                       <p className="text-slate-400 text-xs md:text-sm font-medium truncate">Total Afiliados</p>
                       <p className="text-xl md:text-2xl font-bold text-white mt-1">
-                        {adminStats?.totalAffiliates?.toLocaleString() || "0"}
+                        {(adminStats as any)?.totalAffiliates?.toLocaleString() || "0"}
                       </p>
                     </div>
                     <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-500/20 rounded-xl flex items-center justify-center ml-3">

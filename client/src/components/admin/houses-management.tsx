@@ -116,7 +116,11 @@ function PostbackUrls({ house, onClose }: { house: any; onClose: () => void }) {
   );
 }
 
-export default function AdminHousesManagement() {
+interface AdminHousesManagementProps {
+  onPageChange?: (page: string) => void;
+}
+
+export default function AdminHousesManagement({ onPageChange }: AdminHousesManagementProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingHouse, setEditingHouse] = useState<any>(null);
   const [showPostbackUrls, setShowPostbackUrls] = useState<any>(null);
