@@ -125,24 +125,12 @@ function AuthenticatedAdminDashboard() {
   );
 }
 
-// Componente para forçar a landing page na rota principal
-function AppWithOverride() {
-  const currentPath = window.location.pathname;
-  
-  // Se estiver na rota principal, força a exibição da landing page
-  if (currentPath === '/') {
-    return <SimpleLanding />;
-  }
-  
-  return <Router />;
-}
-
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
-        <AppWithOverride />
+        <Router />
       </TooltipProvider>
     </QueryClientProvider>
   );
