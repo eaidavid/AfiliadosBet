@@ -1,29 +1,33 @@
 #!/bin/bash
 
-# Script de Deploy para VPS Hostinger
 echo "🚀 Iniciando deploy do AfiliadosBet..."
 
-# Instalar dependências
-echo "📦 Instalando dependências..."
-npm install
-
-# Build do projeto
-echo "🏗️ Fazendo build do projeto..."
+# 1. Compilar o projeto
+echo "📦 Compilando projeto..."
 npm run build
 
-# Copiar arquivos necessários
-echo "📂 Organizando arquivos..."
-mkdir -p production
-cp -r dist/ production/
-cp package.json production/
-cp ecosystem.config.js production/
-cp .env production/
+# 2. Criar pasta de deploy
+echo "📁 Preparando arquivos..."
+rm -rf deploy
+mkdir -p deploy
 
-echo "✅ Deploy preparado! Arquivos prontos na pasta 'production'"
+# 3. Copiar arquivos necessários
+cp -r dist/ deploy/
+cp package.json deploy/
+cp ecosystem.config.js deploy/
+cp .env.production deploy/.env
+cp -r node_modules/ deploy/ 2>/dev/null || echo "⚠️  node_modules não copiado - será instalado no servidor"
+
+echo "✅ Arquivos preparados na pasta 'deploy/'"
 echo ""
-echo "📋 Próximos passos no VPS:"
-echo "1. Conecte via SSH ao seu VPS"
-echo "2. Instale Node.js (versão 18+) e PM2"
-echo "3. Configure PostgreSQL"
-echo "4. Transfira os arquivos da pasta 'production'"
-echo "5. Configure o Nginx como proxy reverso"
+echo "📋 Próximos passos no servidor:"
+echo "1. Envie a pasta 'deploy/' para /var/www/site/"
+echo "2. No servidor, execute:"
+echo "   cd /var/www/site"
+echo "   npm install --production"
+echo "   npm run db:push"
+echo "   pm2 delete afiliadosbet 2>/dev/null || true"
+echo "   pm2 start ecosystem.config.js"
+echo "   pm2 save"
+echo ""
+echo "🌐 O site estará disponível na porta 3000"

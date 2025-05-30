@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   apps: [{
     name: 'afiliadosbet',
     script: 'dist/index.js',
@@ -8,7 +8,8 @@ module.exports = {
     max_memory_restart: '1G',
     env: {
       NODE_ENV: 'production',
-      PORT: 3000
+      PORT: 3000,
+      DATABASE_URL: 'postgresql://afiliadosbet:AfiliadosBet1001@localhost:5432/afiliadosbet'
     }
   }]
 };
