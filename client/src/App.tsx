@@ -12,7 +12,7 @@ import AdminDashboard from "@/pages/admin-dashboard";
 import NotFound from "@/pages/not-found";
 import AdminPanelToggle from "@/components/admin-panel-toggle";
 
-function PublicRouter() {
+function Router() {
   return (
     <Switch>
       <Route path="/" component={LandingPage} />
@@ -23,14 +23,6 @@ function PublicRouter() {
       <Route path="/admin" component={AuthenticatedAdminDashboard} />
       <Route component={NotFound} />
     </Switch>
-  );
-}
-
-function Router() {
-  return (
-    <>
-      <PublicRouter />
-    </>
   );
 }
 
