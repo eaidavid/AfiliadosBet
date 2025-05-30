@@ -47,7 +47,7 @@ function HomePage() {
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={HomePage} />
+      <Route path="/" component={SimpleLanding} />
       <Route path="/lp" component={SimpleLanding} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
