@@ -142,39 +142,16 @@ export async function registerRoutes(app: any): Promise<Server> {
         }
       }
       
-      // Verificar se a casa existe - CORRECAO CRITICA
-      console.log(`🔍 Buscando casa: "${casa}"`);
-      console.log(`🔍 Tipo da variável casa: ${typeof casa}`);
-      console.log(`🔍 Valor exato da casa: [${casa}]`);
+      // Buscar casa pelo identificador no banco de dados
+      console.log(`🔍 Buscando casa pelo identificador: "${casa}"`);
       
-      let houses = [];
+      const houses = await db.select().from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.identifier, casa))
+        .limit(1);
       
-      // Para casas brazino e brazzino especificamente - hardcode temporário para resolver urgência
-      console.log(`🔍 Verificando se casa "${casa}" === "brazzino" ou "brazino"`);
-      if (casa === 'brazzino') {
-        console.log(`🎯 MATCH! Casa brazzino detectada - aplicando configuração direta`);
-        houses = [{
-          id: 3,
-          name: 'brazzino',
-          identifier: 'brazzino1748655896152',
-          commissionType: 'revshare',
-          revshareValue: 30,
-          enabledPostbacks: ['register', 'deposit', 'profit', 'payout']
-        }];
-        console.log(`✅ Casa brazzino encontrada - usando configuração direta`);
-      } else if (casa === 'brazino') {
-        console.log(`🎯 MATCH! Casa brazino detectada - aplicando configuração direta`);
-        houses = [{
-          id: 4,
-          name: 'Brazino',
-          identifier: 'brazino',
-          commissionType: 'RevShare',
-          revshareValue: 30,
-          enabledPostbacks: ['register', 'first_deposit', 'deposit', 'revenue', 'profit']
-        }];
-        console.log(`✅ Casa brazino encontrada - usando configuração direta`);
-      } else {
-        console.log(`❌ Casa "${casa}" não é brazzino nem brazino`);
+      console.log(`🔍 Resultado da busca: ${houses.length} casa(s) encontrada(s)`);
+      if (houses.length > 0) {
+        console.log(`✅ Casa encontrada: ${houses[0].name} (ID: ${houses[0].id})`);
       }
       
       if (houses.length === 0) {
