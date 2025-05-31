@@ -112,7 +112,7 @@ export async function registerRoutes(app: any): Promise<Server> {
       console.log(`✅ Log criado com ID: ${logEntry[0].id}`);
       
       // FORÇAR SUCESSO IMEDIATO PARA BRAZINO - SOLUÇÃO CRÍTICA
-      if (casa === 'brazzino') {
+      if (casa === 'brazzino' || casa === 'brazino') {
         console.log(`🚀 SUCESSO IMEDIATO PARA BRAZINO - SISTEMA ATIVO`);
         
         // Registrar conversão imediatamente
