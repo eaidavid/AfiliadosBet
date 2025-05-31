@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Router, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
@@ -6,6 +6,7 @@ import { db } from "./db";
 import { affiliateLinks } from "@shared/schema";
 import * as schema from "@shared/schema";
 import { eq, sql, desc } from "drizzle-orm";
+import { postbackLogs } from "../shared/schema"; // sua tabela de logs
 import bcrypt from "bcrypt";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -669,6 +670,221 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
     } catch (error) {
       console.error("Erro no postback:", error);
+      res.status(500).json({ error: "Erro interno no processamento" });
+    }
+  });
+
+  // ENDPOINT DE POSTBACK PRINCIPAL
+  app.get("/api/postback", async (req: Request, res: Response) => {
+    try {
+      const { event, ref, subid, amount, house, customer_id } = req.query;
+      const userRef = ref || subid;
+      
+      console.log(`📩 Postback recebido: event=${event}, ref=${userRef}, amount=${amount}, house=${house}`);
+      
+      // Registrar log do postback
+      const logData = {
+        casa: house as string || 'unknown',
+        evento: event as string || 'unknown',
+        subid: userRef as string || 'unknown',
+        valor: amount ? parseFloat(amount as string) : 0,
+        ip: req.ip || req.connection.remoteAddress || 'unknown',
+        raw: req.url,
+        status: 'PROCESSING'
+      };
+      
+      const logEntry = await db.insert(schema.postbackLogs).values(logData).returning();
+      
+      // Buscar afiliado
+      const affiliate = await db.select()
+        .from(schema.users)
+        .where(eq(schema.users.username, userRef as string))
+        .limit(1);
+      
+      if (!affiliate.length) {
+        await db.update(schema.postbackLogs)
+          .set({ status: 'ERROR_AFFILIATE_NOT_FOUND' })
+          .where(eq(schema.postbackLogs.id, logEntry[0].id));
+        return res.status(400).json({ error: "Afiliado não encontrado" });
+      }
+      
+      // Buscar casa de apostas
+      const houseRecord = await db.select()
+        .from(schema.bettingHouses)
+        .where(sql`LOWER(${schema.bettingHouses.name}) = ${(house as string).toLowerCase()}`)
+        .limit(1);
+      
+      if (!houseRecord.length) {
+        await db.update(schema.postbackLogs)
+          .set({ status: 'ERROR_HOUSE_NOT_FOUND' })
+          .where(eq(schema.postbackLogs.id, logEntry[0].id));
+        return res.status(400).json({ error: "Casa não encontrada" });
+      }
+      
+      // Calcular comissão baseada no evento
+      let commissionValue = 0;
+      let tipo = '';
+      const depositAmount = parseFloat(amount as string) || 0;
+      
+      switch (event) {
+        case 'registration':
+          commissionValue = 50; // CPA fixa
+          tipo = 'CPA';
+          break;
+        case 'deposit':
+        case 'first_deposit':
+          commissionValue = (depositAmount * 20) / 100; // RevShare 20%
+          tipo = 'RevShare';
+          break;
+        case 'revenue':
+        case 'profit':
+          commissionValue = (depositAmount * 15) / 100; // RevShare 15%
+          tipo = 'RevShare';
+          break;
+        default:
+          tipo = 'Click';
+          commissionValue = 0;
+      }
+      
+      // Registrar conversão
+      if (commissionValue > 0) {
+        await db.insert(schema.conversions).values({
+          userId: affiliate[0].id,
+          houseId: houseRecord[0].id,
+          type: event as string,
+          amount: depositAmount,
+          commission: commissionValue,
+          customerId: customer_id as string || null,
+          affiliateLinkId: null // Pode ser obtido se necessário
+        });
+        
+        // Criar pagamento pendente
+        await storage.createPayment({
+          userId: affiliate[0].id,
+          amount: commissionValue,
+          status: 'pending',
+          description: `${tipo} ${event} - ${house}`,
+          conversionId: null
+        });
+      }
+      
+      // Atualizar log como processado
+      await db.update(schema.postbackLogs)
+        .set({ status: 'SUCCESS' })
+        .where(eq(schema.postbackLogs.id, logEntry[0].id));
+      
+      res.json({ 
+        success: true, 
+        message: "Postback processado com sucesso",
+        commission: commissionValue,
+        type: tipo,
+        logId: logEntry[0].id
+      });
+      
+    } catch (error) {
+      console.error("Erro no postback:", error);
+      res.status(500).json({ error: "Erro interno no processamento" });
+    }
+  });
+
+  // ENDPOINT DE POSTBACK COM TOKEN DE SEGURANÇA
+  app.get("/api/postback/:token", async (req: Request, res: Response) => {
+    try {
+      const { token } = req.params;
+      const { event, ref, subid, amount, house, customer_id } = req.query;
+      const userRef = ref || subid;
+      
+      console.log(`🔐 Postback seguro recebido: token=${token}, event=${event}, ref=${userRef}`);
+      
+      // Verificar token de segurança da casa
+      const houseRecord = await db.select()
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.securityToken, token))
+        .limit(1);
+      
+      if (!houseRecord.length) {
+        return res.status(401).json({ error: "Token de segurança inválido" });
+      }
+      
+      // Continuar com o processamento normal...
+      const logData = {
+        casa: houseRecord[0].name,
+        evento: event as string || 'unknown',
+        subid: userRef as string || 'unknown',
+        valor: amount ? parseFloat(amount as string) : 0,
+        ip: req.ip || req.connection.remoteAddress || 'unknown',
+        raw: req.url,
+        status: 'PROCESSING'
+      };
+      
+      const logEntry = await db.insert(schema.postbackLogs).values(logData).returning();
+      
+      // Buscar afiliado
+      const affiliate = await db.select()
+        .from(schema.users)
+        .where(eq(schema.users.username, userRef as string))
+        .limit(1);
+      
+      if (!affiliate.length) {
+        await db.update(schema.postbackLogs)
+          .set({ status: 'ERROR_AFFILIATE_NOT_FOUND' })
+          .where(eq(schema.postbackLogs.id, logEntry[0].id));
+        return res.status(400).json({ error: "Afiliado não encontrado" });
+      }
+      
+      // Processar comissão (mesmo código anterior)
+      let commissionValue = 0;
+      let tipo = '';
+      const depositAmount = parseFloat(amount as string) || 0;
+      
+      switch (event) {
+        case 'registration':
+          commissionValue = 50;
+          tipo = 'CPA';
+          break;
+        case 'deposit':
+        case 'first_deposit':
+          commissionValue = (depositAmount * 20) / 100;
+          tipo = 'RevShare';
+          break;
+        default:
+          tipo = 'Click';
+      }
+      
+      if (commissionValue > 0) {
+        await db.insert(schema.conversions).values({
+          userId: affiliate[0].id,
+          houseId: houseRecord[0].id,
+          type: event as string,
+          amount: depositAmount,
+          commission: commissionValue,
+          customerId: customer_id as string || null,
+          affiliateLinkId: null
+        });
+        
+        await storage.createPayment({
+          userId: affiliate[0].id,
+          amount: commissionValue,
+          status: 'pending',
+          description: `${tipo} ${event} - ${houseRecord[0].name}`,
+          conversionId: null
+        });
+      }
+      
+      await db.update(schema.postbackLogs)
+        .set({ status: 'SUCCESS' })
+        .where(eq(schema.postbackLogs.id, logEntry[0].id));
+      
+      res.json({ 
+        success: true, 
+        message: "Postback seguro processado com sucesso",
+        commission: commissionValue,
+        type: tipo,
+        house: houseRecord[0].name
+      });
+      
+    } catch (error) {
+      console.error("Erro no postback seguro:", error);
       res.status(500).json({ error: "Erro interno no processamento" });
     }
   });
