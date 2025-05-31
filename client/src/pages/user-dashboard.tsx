@@ -42,7 +42,7 @@ export default function UserDashboard() {
   });
 
   // Estado de carregamento seguro
-  if (authLoading || statsLoading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-white text-xl">Carregando...</div>
@@ -50,7 +50,13 @@ export default function UserDashboard() {
     );
   }
 
-  // Verificação de erro
+  // Se não há usuário autenticado, redirecionar
+  if (!user) {
+    window.location.href = "/login";
+    return null;
+  }
+
+  // Verificação de erro apenas log, não bloqueia renderização
   if (statsError) {
     console.error("Stats error:", statsError);
   }
