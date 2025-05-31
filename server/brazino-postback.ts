@@ -29,7 +29,7 @@ export function setupBrazinoPostback(app: express.Application) {
       if (evento === 'register') {
         await db.execute(sql`
           INSERT INTO conversions (user_id, house_id, affiliate_link_id, type, amount, commission, customer_id, conversion_data, converted_at)
-          VALUES (${affiliateId}, 3, 1, 'registration', ${amount || 0}, 25.00, ${customer_id}, '{"event":"register","source":"brazino"}', NOW())
+          VALUES (${affiliateId}, 4, 1, 'registration', ${amount || 0}, 25.00, ${customer_id}, '{"event":"register","source":"brazino"}', NOW())
         `);
         
         console.log(`✅ Registro processado - Afiliado: ${subid}, Cliente: ${customer_id}`);
