@@ -1538,7 +1538,38 @@ export async function registerRoutes(app: any): Promise<Server> {
   app.get("/api/admin/betting-houses", requireAdmin, async (req, res) => {
     try {
       const houses = await storage.getAllBettingHouses();
-      res.json(houses);
+      
+      // Calcular estatísticas dinâmicas para cada casa
+      const housesWithStats = await Promise.all(houses.map(async (house) => {
+        // Contar afiliados únicos que têm links para esta casa
+        const affiliateCount = await db
+          .select({ count: sql<number>`count(distinct ${schema.affiliateLinks.userId})` })
+          .from(schema.affiliateLinks)
+          .where(eq(schema.affiliateLinks.houseId, house.id));
+        
+        // Calcular volume total de transações desta casa
+        const volumeResult = await db
+          .select({ total: sql<number>`coalesce(sum(${schema.conversions.amount}), 0)` })
+          .from(schema.conversions)
+          .where(eq(schema.conversions.houseId, house.id));
+        
+        // Calcular comissões pagas para esta casa
+        const commissionResult = await db
+          .select({ total: sql<number>`coalesce(sum(${schema.conversions.commission}), 0)` })
+          .from(schema.conversions)
+          .where(eq(schema.conversions.houseId, house.id));
+        
+        return {
+          ...house,
+          stats: {
+            affiliateCount: affiliateCount[0]?.count || 0,
+            totalVolume: volumeResult[0]?.total || 0,
+            totalCommission: commissionResult[0]?.total || 0
+          }
+        };
+      }));
+      
+      res.json(housesWithStats);
     } catch (error) {
       console.error("Get admin betting houses error:", error);
       res.status(500).json({ message: "Failed to get betting houses" });

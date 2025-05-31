@@ -561,7 +561,7 @@ export default function AdminHousesManagement({ onPageChange }: AdminHousesManag
                         <div className="text-2xl font-bold text-emerald-500">{house.commissionValue}</div>
                       </div>
                       <div className="text-xs bg-slate-600 text-slate-300 px-2 py-1 rounded">
-                        {house.commissionType === "revshare" ? "RS" : "CPA"}
+                        {house.commissionType || "CPA"}
                       </div>
                     </div>
                   </div>
