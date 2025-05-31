@@ -1275,7 +1275,42 @@ export async function registerRoutes(app: any): Promise<Server> {
 
   app.get("/api/stats/user", requireAuth, async (req: any, res) => {
     try {
-      const stats = await storage.getUserStats(req.session.user.id);
+      const userId = req.session.user.id;
+      
+      // Buscar conversões reais do banco de dados
+      const conversions = await db.select()
+        .from(schema.conversions)
+        .where(eq(schema.conversions.affiliateId, userId));
+      
+      console.log(`Conversion stats for user ${userId}:`, conversions.map(c => ({ 
+        type: c.evento, 
+        count: 1, 
+        totalCommission: c.comissao 
+      })));
+      
+      // Calcular estatísticas reais baseadas nas conversões
+      const totalClicks = conversions.filter(c => c.evento === 'click').length;
+      const totalRegistrations = conversions.filter(c => c.evento === 'registration').length;
+      const totalDeposits = conversions.filter(c => c.evento === 'deposit').length;
+      
+      // Calcular comissão total real
+      const totalCommission = conversions
+        .filter(c => c.comissao && parseFloat(c.comissao) > 0)
+        .reduce((sum, c) => sum + parseFloat(c.comissao), 0);
+      
+      // Taxa de conversão (registros/cliques * 100)
+      const conversionRate = totalClicks > 0 ? Math.round((totalRegistrations / totalClicks) * 100) : 0;
+      
+      const stats = {
+        totalClicks,
+        totalRegistrations,
+        totalDeposits,
+        totalCommission: totalCommission.toFixed(2),
+        conversionRate
+      };
+      
+      console.log(`Final stats for user ${userId}:`, stats);
+      
       res.json(stats);
     } catch (error) {
       console.error("Get user stats error:", error);
@@ -1517,6 +1552,88 @@ export async function registerRoutes(app: any): Promise<Server> {
     } catch (error) {
       console.error("Erro no relatório da casa:", error);
       res.status(500).json({ message: "Falha ao obter relatório da casa" });
+    }
+  });
+
+  // Admin stats route - Estatísticas dinâmicas para dashboard
+  app.get("/api/admin/stats", requireAdmin, async (req: any, res) => {
+    try {
+      // Buscar todas as conversões reais
+      const allConversions = await db.select()
+        .from(schema.conversions);
+      
+      // Buscar todas as casas de apostas
+      const houses = await db.select()
+        .from(schema.bettingHouses);
+      
+      // Buscar todos os afiliados
+      const affiliates = await db.select()
+        .from(schema.users)
+        .where(eq(schema.users.role, 'affiliate'));
+      
+      // Calcular estatísticas reais
+      const totalClicks = allConversions.filter(c => c.evento === 'click').length;
+      const totalRegistrations = allConversions.filter(c => c.evento === 'registration').length;
+      const totalDeposits = allConversions.filter(c => c.evento === 'deposit').length;
+      
+      // Volume total de depósitos
+      const totalVolume = allConversions
+        .filter(c => c.evento === 'deposit' && c.valor)
+        .reduce((sum, c) => sum + parseFloat(c.valor || '0'), 0);
+      
+      // Comissões pagas totais
+      const paidCommissions = allConversions
+        .filter(c => c.comissao && parseFloat(c.comissao) > 0)
+        .reduce((sum, c) => sum + parseFloat(c.comissao), 0);
+      
+      // Top 5 afiliados por conversões
+      const affiliateStats = affiliates.map(affiliate => {
+        const affiliateConversions = allConversions.filter(c => c.affiliateId === affiliate.id);
+        const conversions = affiliateConversions.length;
+        const commission = affiliateConversions
+          .filter(c => c.comissao && parseFloat(c.comissao) > 0)
+          .reduce((sum, c) => sum + parseFloat(c.comissao), 0);
+        
+        return {
+          id: affiliate.id,
+          name: affiliate.fullName || affiliate.username,
+          conversions,
+          commission
+        };
+      }).sort((a, b) => b.conversions - a.conversions).slice(0, 5);
+      
+      // Top 5 casas por conversões
+      const houseStats = houses.map(house => {
+        const houseConversions = allConversions.filter(c => c.casa === house.name);
+        const conversions = houseConversions.length;
+        const volume = houseConversions
+          .filter(c => c.evento === 'deposit' && c.valor)
+          .reduce((sum, c) => sum + parseFloat(c.valor || '0'), 0);
+        
+        return {
+          id: house.id,
+          name: house.name,
+          conversions,
+          volume
+        };
+      }).sort((a, b) => b.conversions - a.conversions).slice(0, 5);
+      
+      const stats = {
+        activeHouses: houses.filter(h => h.isActive).length,
+        totalVolume: totalVolume.toFixed(2),
+        paidCommissions: paidCommissions.toFixed(2),
+        topAffiliates: affiliateStats,
+        topHouses: houseStats,
+        totalClicks,
+        totalRegistrations,
+        totalDeposits,
+        totalAffiliates: affiliates.length
+      };
+      
+      res.json(stats);
+    } catch (error) {
+      console.error("Get admin stats error:", error);
+      res.status(500).json({ message: "Failed to get admin statistics" });
     }
   });
 
