@@ -888,10 +888,11 @@ export async function registerRoutes(app: any): Promise<Server> {
 
   // Sistema de postbacks dinâmico - baseado na sua imagem
   
-  // 1. Postback para Cliques
-  app.post("/api/postback/click", async (req, res) => {
+  // 1. Postback para Cliques (GET e POST)
+  const handleClickPostback = async (req: any, res: any) => {
     try {
-      const { house, subid, customer_id, ...otherParams } = req.body;
+      const params = req.method === 'GET' ? req.query : req.body;
+      const { house, subid, customer_id, ...otherParams } = params;
       
       if (!house || !subid) {
         return res.status(400).json({ message: "house e subid são obrigatórios" });
@@ -937,12 +938,16 @@ export async function registerRoutes(app: any): Promise<Server> {
       console.error("Erro no postback de clique:", error);
       res.status(500).json({ message: "Falha ao rastrear clique" });
     }
-  });
+  };
 
-  // 2. Postback para Registros
-  app.post("/api/postback/registration", async (req, res) => {
+  app.get("/api/postback/click", handleClickPostback);
+  app.post("/api/postback/click", handleClickPostback);
+
+  // 2. Postback para Registros (GET e POST)
+  const handleRegistrationPostback = async (req: any, res: any) => {
     try {
-      const { house, subid, customer_id, ...otherParams } = req.body;
+      const params = req.method === 'GET' ? req.query : req.body;
+      const { house, subid, customer_id, ...otherParams } = params;
       
       if (!house || !subid) {
         return res.status(400).json({ message: "house e subid são obrigatórios" });
@@ -988,7 +993,10 @@ export async function registerRoutes(app: any): Promise<Server> {
       console.error("Erro no postback de registro:", error);
       res.status(500).json({ message: "Falha ao rastrear registro" });
     }
-  });
+  };
+
+  app.get("/api/postback/registration", handleRegistrationPostback);
+  app.post("/api/postback/registration", handleRegistrationPostback);
 
   // 3. Postback para Primeiro Depósito
   app.get("/api/postback/deposit", async (req, res) => {
