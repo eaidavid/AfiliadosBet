@@ -34,12 +34,15 @@ export function setupBrazinoPostback(app: express.Application) {
       
       const house = houseResult.rows[0];
       const commissionType = house.commission_type;
-      const revshareRate = parseFloat(house.commission_value || '30') / 100; // 30% = 0.30
+      const cpaValue = house.cpa_value ? parseFloat(house.cpa_value) : 0;
+      const revshareRate = house.revshare_value ? parseFloat(house.revshare_value) / 100 : (parseFloat(house.commission_value || '30') / 100);
+      
+      console.log(`🏠 Casa Brazino - Tipo: ${commissionType}, CPA: ${cpaValue}, RevShare: ${revshareRate * 100}%`);
       
       // Processar evento de registro
       if (evento === 'register') {
-        // Para registro, usar valor fixo de CPA se configurado, senão usar RevShare mínimo
-        const commission = commissionType === 'CPA' && house.cpa_value ? parseFloat(house.cpa_value) : 25.00;
+        // Para registro, verificar se tem CPA configurado
+        const commission = (commissionType === 'CPA' && cpaValue > 0) ? cpaValue : 25.00;
         
         await db.execute(sql`
           INSERT INTO conversions (user_id, house_id, affiliate_link_id, type, amount, commission, customer_id, conversion_data, converted_at)

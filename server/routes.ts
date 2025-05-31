@@ -1604,6 +1604,78 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // Rotas para gerenciar postbacks registrados
+  app.get("/api/admin/registered-postbacks", requireAdmin, async (req, res) => {
+    try {
+      const postbacks = await db.select().from(schema.registeredPostbacks)
+        .orderBy(desc(schema.registeredPostbacks.createdAt));
+      res.json(postbacks);
+    } catch (error) {
+      console.error('Erro ao buscar postbacks registrados:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.post("/api/admin/registered-postbacks", requireAdmin, async (req, res) => {
+    try {
+      const { name, url, houseId, houseName, eventType, description } = req.body;
+      
+      const [postback] = await db.insert(schema.registeredPostbacks).values({
+        name,
+        url,
+        houseId,
+        houseName,
+        eventType,
+        description,
+        isActive: true
+      }).returning();
+      
+      res.json(postback);
+    } catch (error) {
+      console.error('Erro ao criar postback registrado:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.put("/api/admin/registered-postbacks/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { name, url, houseId, houseName, eventType, description, isActive } = req.body;
+      
+      const [postback] = await db.update(schema.registeredPostbacks)
+        .set({
+          name,
+          url,
+          houseId,
+          houseName,
+          eventType,
+          description,
+          isActive,
+          updatedAt: new Date()
+        })
+        .where(eq(schema.registeredPostbacks.id, parseInt(id)))
+        .returning();
+      
+      res.json(postback);
+    } catch (error) {
+      console.error('Erro ao atualizar postback registrado:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.delete("/api/admin/registered-postbacks/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      await db.delete(schema.registeredPostbacks).where(eq(schema.registeredPostbacks.id, parseInt(id)));
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Erro ao deletar postback registrado:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
   // Rota para admin visualizar todos os links
   app.get("/api/admin/affiliate-links", requireAdmin, async (req, res) => {
     try {

@@ -169,6 +169,26 @@ export const paymentsRelations = relations(payments, ({ one }) => ({
   }),
 }));
 
+export const registeredPostbacks = pgTable('registered_postbacks', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(), // Nome do postback (ex: "Brazino Register")
+  url: text('url').notNull(), // URL do postback
+  houseId: integer('house_id').references(() => bettingHouses.id),
+  houseName: text('house_name').notNull(), // Nome da casa
+  eventType: text('event_type').notNull(), // Tipo de evento (register, deposit, etc)
+  description: text('description'), // Descrição do postback
+  isActive: boolean('is_active').default(true),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const registeredPostbacksRelations = relations(registeredPostbacks, ({ one }) => ({
+  house: one(bettingHouses, {
+    fields: [registeredPostbacks.houseId],
+    references: [bettingHouses.id],
+  }),
+}));
+
 // Zod schemas for validation
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
