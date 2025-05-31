@@ -9,7 +9,7 @@ import LandingPage from "@/pages/landing-page";
 import SimpleLanding from "@/pages/simple-landing";
 import Register from "@/pages/register";
 import Login from "@/pages/login";
-import UserDashboardSimple from "@/pages/user-dashboard-simple";
+import UserDashboardComplete from "@/pages/user-dashboard-complete";
 import AdminDashboard from "@/pages/admin-dashboard";
 import NotFound from "@/pages/not-found";
 import AdminPanelToggle from "@/components/admin-panel-toggle";
@@ -32,7 +32,7 @@ function AuthenticatedHome() {
 
   return (
     <>
-      <UserDashboardSimple />
+      <UserDashboardComplete />
       <AdminPanelToggle />
     </>
   );
@@ -89,7 +89,7 @@ function AuthenticatedUserDashboard() {
 
   return (
     <>
-      <UserDashboardSimple />
+      <UserDashboardComplete />
       <AdminPanelToggle />
     </>
   );
