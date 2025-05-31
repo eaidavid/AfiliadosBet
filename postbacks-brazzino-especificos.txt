@@ -1,0 +1,51 @@
+POSTBACKS ESPECÍFICOS - CASA BRAZZINO
+====================================
+
+Casa ID: 11
+Nome: Brazino  
+Token: token_1748687655384_ooamhmi7y
+Comissão: RevShare 30%
+
+🔗 BASE URL ATUAL:
+https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev
+
+📋 POSTBACKS POR EVENTO:
+
+1. CLICK (Clique no Link)
+   https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev/api/postback/click?house=brazino&subid={SUBID}&customer_id={CUSTOMER_ID}
+
+2. REGISTRATION (Cadastro)
+   https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev/api/postback/registration?house=brazino&subid={SUBID}&customer_id={CUSTOMER_ID}
+
+3. DEPOSIT (Depósito)
+   https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev/api/postback/deposit?house=brazino&subid={SUBID}&customer_id={CUSTOMER_ID}&amount={AMOUNT}
+
+4. REVENUE (Receita/Aposta)
+   https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev/api/postback/revenue?house=brazino&subid={SUBID}&customer_id={CUSTOMER_ID}&amount={AMOUNT}
+
+5. WITHDRAWAL (Saque)
+   https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev/api/postback/withdrawal?house=brazino&subid={SUBID}&customer_id={CUSTOMER_ID}&amount={AMOUNT}
+
+6. RECURRING DEPOSIT (Depósito Recorrente)
+   https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev/api/postback/recurring-deposit?house=brazino&subid={SUBID}&customer_id={CUSTOMER_ID}&amount={AMOUNT}
+
+📝 PARÂMETROS OBRIGATÓRIOS:
+- house: brazino (fixo para esta casa)
+- subid: Username do afiliado
+- customer_id: ID único do cliente
+
+📝 PARÂMETROS OPCIONAIS:
+- amount: Valor em reais (obrigatório para eventos monetários)
+
+📊 EXEMPLOS DE USO:
+
+Click:
+https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev/api/postback/click?house=brazino&subid=eaidavid&customer_id=12345
+
+Registro:
+https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev/api/postback/registration?house=brazino&subid=eaidavid&customer_id=12345
+
+Depósito:
+https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev/api/postback/deposit?house=brazino&subid=eaidavid&customer_id=12345&amount=100
+
+✅ STATUS: ATIVOS E FUNCIONAIS
