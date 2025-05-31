@@ -66,15 +66,23 @@ export default function RegisteredPostbacks({ onPageChange }: RegisteredPostback
         isActive: data.isActive
       };
       
-      const response = await apiRequest("/api/admin/registered-postbacks", {
+      console.log("Enviando payload:", payload);
+      
+      const response = await fetch("/api/admin/registered-postbacks", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
+        credentials: "include",
         body: JSON.stringify(payload)
       });
       
-      return response;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP ${response.status}`);
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/registered-postbacks"] });
@@ -89,7 +97,7 @@ export default function RegisteredPostbacks({ onPageChange }: RegisteredPostback
       console.error("Erro ao criar postback:", error);
       toast({
         title: "Erro ao registrar",
-        description: "Ocorreu um erro ao registrar o postback. Tente novamente.",
+        description: `Erro: ${error.message}`,
         variant: "destructive"
       });
     }
