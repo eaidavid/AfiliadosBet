@@ -5,9 +5,11 @@ import { sql } from 'drizzle-orm';
 export function setupBrazinoPostback(app: express.Application) {
   
   // Sistema de postback dedicado para Brazino
-  app.get('/api/postback/brazino/:evento', async (req, res) => {
+  app.post('/api/postback/brazino/:evento', async (req, res) => {
+    // Adicionar headers para JSON
+    res.setHeader('Content-Type', 'application/json');
     const { evento } = req.params;
-    const { subid, customer_id, amount } = req.query;
+    const { subid, customer_id, amount } = req.body;
     
     console.log(`🎯 BRAZINO POSTBACK: ${evento}`);
     console.log(`📊 Dados: subid=${subid}, customer_id=${customer_id}, amount=${amount}`);
