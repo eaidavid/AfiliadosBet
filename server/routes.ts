@@ -126,7 +126,9 @@ export async function registerRoutes(app: any): Promise<Server> {
       let houses = [];
       
       // Para casa brazzino especificamente - hardcode temporário para resolver urgência
+      console.log(`🔍 Verificando se casa "${casa}" === "brazzino"`);
       if (casa === 'brazzino') {
+        console.log(`🎯 MATCH! Casa brazzino detectada - aplicando configuração direta`);
         houses = [{
           id: 3,
           name: 'brazzino',
@@ -136,6 +138,8 @@ export async function registerRoutes(app: any): Promise<Server> {
           enabledPostbacks: ['register', 'deposit', 'profit', 'payout']
         }];
         console.log(`✅ Casa brazzino encontrada - usando configuração direta`);
+      } else {
+        console.log(`❌ Casa "${casa}" não é brazzino`);
       }
       
       if (houses.length === 0) {

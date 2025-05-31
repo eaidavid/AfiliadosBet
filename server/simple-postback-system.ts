@@ -4,6 +4,12 @@ import { sql } from 'drizzle-orm';
 
 export function setupPostbackRoutes(app: express.Application) {
   
+  // Interceptar TODAS as requisições de postback para Brazino ANTES das rotas principais
+  app.use('/api/postback/brazzino', (req, res, next) => {
+    console.log('🚀 INTERCEPTANDO POSTBACK BRAZINO - Sistema simplificado ativo');
+    next();
+  });
+  
   // Rota de postback simplificada para Brazino
   app.get('/api/postback/brazzino/:evento', async (req, res) => {
     const { evento } = req.params;
