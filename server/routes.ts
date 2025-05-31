@@ -131,40 +131,50 @@ export async function registerRoutes(app: any): Promise<Server> {
       const house = houses[0];
       console.log(`✅ Casa encontrada: ${house.name} (ID: ${house.id})`);
       
-      // Implementar lógica correta de CPA e RevShare
+      // Calcular comissão baseada na configuração da casa
       let commissionAmount = 0;
-      const depositAmount = parseFloat(amount as string) || 0;
+      const eventAmount = parseFloat(amount as string) || 0;
       
-      console.log(`💰 Calculando comissão: Casa ${house.name} (${house.commissionType}), Evento: ${evento}, Valor: R$ ${depositAmount}`);
+      console.log(`💰 Calculando comissão: Casa ${house.name} (${house.commissionType}), Evento: ${evento}, Valor: R$ ${eventAmount}`);
       
-      // Lógica CPA: Registro + Depósito mínimo
-      if (house.commissionType === 'CPA' && evento === 'deposit') {
-        // Verificar se já existe registro para este cliente
-        const hasRegistration = await db.select()
-          .from(schema.conversions)
-          .where(and(
-            eq(schema.conversions.customerId, customer_id as string || ''),
-            eq(schema.conversions.type, 'registration'),
-            eq(schema.conversions.userId, 2) // ID do usuário eaidavid
-          ))
-          .limit(1);
+      // Debug para verificar os valores
+      console.log(`🔍 Debug: house.commissionType = "${house.commissionType}"`);
+      console.log(`🔍 Debug: evento = "${evento}"`);
+      console.log(`🔍 Debug: eventAmount = ${eventAmount}`);
+      
+      // Aplicar comissões baseadas no tipo da casa e evento
+      if (house.commissionType === 'RevShare') {
+        console.log(`✅ Entrando na lógica RevShare`);
+        const percentage = parseFloat(house.commissionValue || '30');
         
-        if (hasRegistration.length > 0 && depositAmount >= parseFloat(house.minDeposit || '0')) {
-          commissionAmount = parseFloat(house.commissionValue || '0');
-          console.log(`💰 CPA Válido: Registro encontrado + Depósito R$ ${depositAmount} >= Mínimo R$ ${house.minDeposit}`);
-        } else {
-          console.log(`⚠️ CPA Pendente: Registro (${hasRegistration.length > 0 ? 'OK' : 'FALTA'}) ou depósito insuficiente`);
+        // RevShare: percentual sobre valores monetários
+        if (['deposit', 'revenue', 'profit'].includes(evento) && eventAmount > 0) {
+          commissionAmount = (eventAmount * percentage) / 100;
+          console.log(`💰 RevShare sobre ${evento}: ${percentage}% de R$ ${eventAmount} = R$ ${commissionAmount}`);
         }
+        // Comissão fixa para registros
+        else if (evento === 'registration') {
+          commissionAmount = 50.00; // R$ 50 por registro
+          console.log(`💰 Comissão fixa por registro: R$ ${commissionAmount}`);
+        }
+        // Comissão para clicks
+        else if (evento === 'click') {
+          commissionAmount = 5.00; // R$ 5 por click
+          console.log(`💰 Comissão por click: R$ ${commissionAmount}`);
+        }
+        else {
+          console.log(`⚠️ Evento ${evento} não tem comissão configurada`);
+        }
+      } else if (house.commissionType === 'CPA') {
+        if (evento === 'deposit' && eventAmount >= parseFloat(house.minDeposit || '0')) {
+          commissionAmount = parseFloat(house.commissionValue || '0');
+          console.log(`💰 CPA válido: Depósito R$ ${eventAmount} >= Mínimo R$ ${house.minDeposit}, Comissão: R$ ${commissionAmount}`);
+        }
+      } else {
+        console.log(`⚠️ Tipo de comissão desconhecido: ${house.commissionType}`);
       }
       
-      // Lógica RevShare: Percentual sobre profit
-      else if (house.commissionType === 'RevShare' && evento === 'profit' && depositAmount > 0) {
-        const percentage = parseFloat(house.commissionValue || '0');
-        commissionAmount = (depositAmount * percentage) / 100;
-        console.log(`💰 RevShare: ${percentage}% de R$ ${depositAmount} = R$ ${commissionAmount}`);
-      }
-      
-      console.log(`💰 Comissão final: R$ ${commissionAmount} (Tipo: ${house.commissionType})`);
+      console.log(`💰 Comissão final: R$ ${commissionAmount.toFixed(2)} (Tipo: ${house.commissionType})`);
       
       // Registrar conversão
       try {
