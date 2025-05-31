@@ -40,7 +40,9 @@ export default function AdminHousesManagement({ onPageChange }: AdminHousesManag
 
   const { data: houses, isLoading } = useQuery<BettingHouseWithStats[]>({
     queryKey: ["/api/admin/betting-houses"],
-    staleTime: 0, // Forçar atualização dos dados
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   const form = useForm<InsertBettingHouse>({
