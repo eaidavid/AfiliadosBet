@@ -656,11 +656,12 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
 (async () => {
   try {
     console.log('starting up user application');
-    // Ativar sistema simplificado de postback para Brazino PRIMEIRO
+    // Registrar rotas de API PRIMEIRO (antes do frontend)
+    const server = await registerRoutes(app);
+    
+    // Ativar sistema simplificado de postback para Brazino
     setupPostbackRoutes(app);
     setupBrazinoPostback(app);
-    
-    const server = await registerRoutes(app);
     if (process.env.NODE_ENV === "development") {
       await setupVite(app, server);
     } else {
