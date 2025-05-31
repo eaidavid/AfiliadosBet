@@ -71,6 +71,9 @@ function requireAdmin(req: any, res: any, next: any) {
 export async function registerRoutes(app: any): Promise<Server> {
   const httpServer = createServer(app);
   
+  // Configurar sessão PRIMEIRO, antes de todas as rotas
+  app.use(getSession());
+  
   // Start server on correct port and host
   const PORT = process.env.PORT || 5000;
   httpServer.listen(PORT, '0.0.0.0', () => {
@@ -779,8 +782,6 @@ export async function registerRoutes(app: any): Promise<Server> {
       res.status(500).json({ error: "Erro interno no processamento" });
     }
   });
-
-  app.use(getSession());
 
   // Auth routes
   app.post("/api/auth/login", async (req, res) => {
