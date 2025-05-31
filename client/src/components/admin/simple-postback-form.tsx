@@ -81,9 +81,16 @@ export default function PostbackManagement() {
   };
 
   const handleDelete = async (id: number) => {
+    if (!confirm('Tem certeza que deseja remover este postback?')) {
+      return;
+    }
+
     try {
       const response = await fetch(`/api/admin/registered-postbacks/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         credentials: 'include'
       });
 
@@ -94,9 +101,10 @@ export default function PostbackManagement() {
         });
         queryClient.invalidateQueries({ queryKey: ["/api/admin/registered-postbacks"] });
       } else {
+        const error = await response.json();
         toast({
           title: "Erro",
-          description: "Erro ao remover postback",
+          description: error.message || "Erro ao remover postback",
           variant: "destructive"
         });
       }
@@ -276,6 +284,20 @@ export default function PostbackManagement() {
                   <Badge variant="secondary" className="ml-2">
                     {housePostbacks.length} postback{housePostbacks.length !== 1 ? 's' : ''}
                   </Badge>
+                  <div className="flex gap-1 ml-auto">
+                    {housePostbacks.some((p: any) => p.eventType === 'registration') && (
+                      <Badge className="bg-blue-600 text-white text-xs">Registro</Badge>
+                    )}
+                    {housePostbacks.some((p: any) => p.eventType === 'deposit') && (
+                      <Badge className="bg-green-600 text-white text-xs">Depósito</Badge>
+                    )}
+                    {housePostbacks.some((p: any) => p.eventType === 'revenue') && (
+                      <Badge className="bg-purple-600 text-white text-xs">Receita</Badge>
+                    )}
+                    {housePostbacks.some((p: any) => p.eventType === 'profit') && (
+                      <Badge className="bg-orange-600 text-white text-xs">Lucro</Badge>
+                    )}
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -319,6 +341,7 @@ export default function PostbackManagement() {
                             {postback.houseId && (
                               <span>ID Casa: {postback.houseId}</span>
                             )}
+                            <span>ID: #{postback.id}</span>
                           </div>
                         </div>
                         
