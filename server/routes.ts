@@ -121,9 +121,16 @@ export async function registerRoutes(app: any): Promise<Server> {
       console.log(`✅ Log criado com ID: ${logEntry[0].id}`);
       
       // Verificar se a casa existe (buscar por nome)
+      console.log(`🔍 Buscando casa: "${casa}"`);
+      
+      // Primeiro, listar todas as casas para debug
+      const allHouses = await db.select().from(schema.bettingHouses);
+      console.log(`📋 Todas as casas no banco:`, allHouses.map(h => h.name));
+      
       const houses = await db.select()
         .from(schema.bettingHouses)
         .where(eq(schema.bettingHouses.name, casa));
+      console.log(`📋 Casas encontradas com nome "${casa}":`, houses.length);
       
       if (houses.length === 0) {
         console.log(`❌ Casa não encontrada: ${casa}`);
