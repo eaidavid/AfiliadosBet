@@ -120,10 +120,10 @@ export async function registerRoutes(app: any): Promise<Server> {
       const logEntry = await db.insert(schema.postbackLogs).values(logData).returning();
       console.log(`✅ Log criado com ID: ${logEntry[0].id}`);
       
-      // Verificar se a casa existe
+      // Verificar se a casa existe (buscar por nome ou identifier)
       const houses = await db.select()
         .from(schema.bettingHouses)
-        .where(eq(schema.bettingHouses.identifier, casa));
+        .where(sql`LOWER(${schema.bettingHouses.name}) = ${casa.toLowerCase()} OR ${schema.bettingHouses.identifier} = ${casa}`);
       
       if (houses.length === 0) {
         console.log(`❌ Casa não encontrada: ${casa}`);
