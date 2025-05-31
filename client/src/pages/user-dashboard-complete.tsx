@@ -309,9 +309,7 @@ export default function UserDashboardComplete() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="flex">
         {!isMobile && (
-          <div className="w-64 min-h-screen bg-slate-900/50 border-r border-slate-800">
-            <UserSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
-          </div>
+          <UserSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
         )}
         
         <div className="flex-1">
