@@ -87,9 +87,13 @@ export function useLogin() {
       const response = await apiRequest("POST", "/api/auth/login", credentials);
       return response.json();
     },
-    onSuccess: () => {
-      // Recarregar a página para atualizar o estado de autenticação
-      window.location.reload();
+    onSuccess: (data) => {
+      // Redirecionar baseado no tipo de usuário
+      if (data.user?.role === 'admin') {
+        window.location.href = "/admin";
+      } else {
+        window.location.href = "/home";
+      }
     },
   });
 }
@@ -102,8 +106,14 @@ export function useRegister() {
       const response = await apiRequest("POST", "/api/auth/register", userData);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      // Redirecionar baseado no tipo de usuário após registro
+      if (data.user?.role === 'admin') {
+        window.location.href = "/admin";
+      } else {
+        window.location.href = "/home";
+      }
     },
   });
 }
