@@ -174,12 +174,16 @@ export class DatabaseStorage implements IStorage {
       customer_id: "customer_id"
     };
     
-    // Inserir sem especificar securityToken para usar o valor padrão do banco
+    // Gerar token de segurança único
+    const securityToken = `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Inserir com token de segurança gerado
     const [house] = await db
       .insert(bettingHouses)
       .values({
         ...houseData,
         identifier,
+        securityToken,
         parameterMapping: houseData.parameterMapping || defaultParameterMapping,
         enabledPostbacks: houseData.enabledPostbacks || []
       })
@@ -373,30 +377,66 @@ export class DatabaseStorage implements IStorage {
     activeHouses: number;
     totalVolume: number;
     paidCommissions: number;
+    topAffiliates: any[];
+    topHouses: any[];
   }> {
-    // Contar todos os usuários exceto admin para manter consistência
-    const allUsers = await db.select().from(users);
-    const totalAffiliates = allUsers.filter(user => user.role !== 'admin').length;
+    // Buscar todas as estatísticas de forma centralizada
+    const totalAffiliates = await db.select({ count: sql`count(*)` }).from(users).where(eq(users.role, 'affiliate'));
+    const totalHouses = await db.select({ count: sql`count(*)` }).from(bettingHouses).where(eq(bettingHouses.isActive, true));
+    const totalConversions = await db.select({ 
+      totalAmount: sql`coalesce(sum(CAST(${conversions.amount} AS DECIMAL)), 0)`,
+      totalCommission: sql`coalesce(sum(CAST(${conversions.commission} AS DECIMAL)), 0)`
+    }).from(conversions);
+    
+    // Top afiliados por comissão
+    const topAffiliates = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        fullName: users.fullName,
+        email: users.email,
+        totalCommission: sql`coalesce(sum(CAST(${conversions.commission} AS DECIMAL)), 0)`.as('totalCommission'),
+        totalConversions: sql`count(${conversions.id})`.as('totalConversions')
+      })
+      .from(users)
+      .leftJoin(conversions, eq(users.id, conversions.userId))
+      .where(eq(users.role, 'affiliate'))
+      .groupBy(users.id, users.username, users.fullName, users.email)
+      .orderBy(sql`coalesce(sum(CAST(${conversions.commission} AS DECIMAL)), 0) desc`)
+      .limit(5);
 
-    const [housesResult] = await db
-      .select({ count: count() })
+    // Top casas por volume
+    const topHouses = await db
+      .select({
+        id: bettingHouses.id,
+        name: bettingHouses.name,
+        totalVolume: sql`coalesce(sum(CAST(${conversions.amount} AS DECIMAL)), 0)`.as('totalVolume'),
+        totalConversions: sql`count(${conversions.id})`.as('totalConversions'),
+        affiliateCount: sql`count(distinct ${conversions.userId})`.as('affiliateCount')
+      })
       .from(bettingHouses)
-      .where(eq(bettingHouses.isActive, true));
-
-    const [volumeResult] = await db
-      .select({ total: sql<number>`sum(${conversions.amount})` })
-      .from(conversions);
-
-    const [commissionsResult] = await db
-      .select({ total: sql<number>`sum(${payments.amount})` })
-      .from(payments)
-      .where(eq(payments.status, 'completed'));
+      .leftJoin(conversions, eq(bettingHouses.id, conversions.houseId))
+      .where(eq(bettingHouses.isActive, true))
+      .groupBy(bettingHouses.id, bettingHouses.name)
+      .orderBy(sql`coalesce(sum(CAST(${conversions.amount} AS DECIMAL)), 0) desc`)
+      .limit(5);
 
     return {
-      totalAffiliates,
-      activeHouses: housesResult.count,
-      totalVolume: volumeResult?.total || 0,
-      paidCommissions: commissionsResult?.total || 0,
+      totalAffiliates: Number(totalAffiliates[0]?.count || 0),
+      activeHouses: Number(totalHouses[0]?.count || 0),
+      totalVolume: Number(totalConversions[0]?.totalAmount || 0),
+      paidCommissions: Number(totalConversions[0]?.totalCommission || 0),
+      topAffiliates: topAffiliates.map(aff => ({
+        ...aff,
+        totalCommission: Number(aff.totalCommission),
+        totalConversions: Number(aff.totalConversions)
+      })),
+      topHouses: topHouses.map(house => ({
+        ...house,
+        totalVolume: Number(house.totalVolume),
+        totalConversions: Number(house.totalConversions),
+        affiliateCount: Number(house.affiliateCount)
+      }))
     };
   }
 
