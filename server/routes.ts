@@ -572,20 +572,37 @@ export async function registerRoutes(app: any): Promise<Server> {
       
       const house = houseRecord[0];
       
-      // Calcular comissão baseada nas configurações definidas pelo admin
-      let commissionValue = 0;
-      let tipo = '';
+      // Calcular comissão usando nova lógica CPA e RevShare
+      const { CommissionCalculator } = await import('./commission-calculator');
       const depositAmount = parseFloat(amount as string) || 0;
       
-      if (event === 'registration' && house.commissionType === 'CPA') {
-        commissionValue = house.commissionValue; // CPA configurado pelo admin
-        tipo = 'CPA';
-        console.log(`💰 CPA calculado: R$ ${commissionValue} (configurado para ${house.name})`);
-      } else if (['deposit', 'revenue', 'profit'].includes(event as string) && house.commissionType === 'RevShare') {
-        commissionValue = (depositAmount * house.commissionValue) / 100; // RevShare configurado pelo admin
-        tipo = 'RevShare';
-        console.log(`💰 RevShare calculado: R$ ${commissionValue} (${house.commissionValue}% de R$ ${depositAmount})`);
-      }
+      const commissionResult = await CommissionCalculator.calculateCommission(
+        customer_id as string || `temp_${Date.now()}`,
+        affiliate[0].id,
+        house.name,
+        house,
+        event as string,
+        depositAmount
+      );
+      
+      const commissionValue = commissionResult.commission;
+      const tipo = commissionResult.type;
+      
+      console.log(`💰 ${commissionResult.reason}`);
+      console.log(`💰 Comissão final: R$ ${commissionValue} (${tipo})`);
+      
+      // Registrar evento primeiro (independente de comissão)
+      await db.insert(schema.conversions).values({
+        affiliateId: affiliate[0].id,
+        casa: house.name,
+        evento: event as string,
+        customerId: customer_id as string || null,
+        valor: depositAmount.toString(),
+        comissao: commissionValue.toString(),
+        commissionType: tipo,
+        isValid: commissionResult.valid,
+        criadoEm: new Date()
+      });
       
       // Criar pagamento se houver comissão
       if (commissionValue > 0) {
