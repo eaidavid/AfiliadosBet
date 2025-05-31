@@ -1709,6 +1709,191 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // Rota para relatórios do usuário
+  app.get("/api/user-reports", requireAuth, async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const { dateFrom, dateTo, selectedHouse, selectedEvent } = req.query;
+
+      console.log(`📊 Buscando relatórios para usuário: ${userId}`);
+
+      // Buscar conversões do usuário com filtros
+      let conversionsQuery = db.select({
+        id: schema.conversions.id,
+        casa: schema.conversions.casa,
+        evento: schema.conversions.evento,
+        valor: schema.conversions.valor,
+        comissao: schema.conversions.comissao,
+        criadoEm: schema.conversions.criadoEm
+      })
+      .from(schema.conversions)
+      .where(eq(schema.conversions.affiliateId, userId));
+
+      // Aplicar filtros se fornecidos
+      if (dateFrom) {
+        conversionsQuery = conversionsQuery.where(gte(schema.conversions.criadoEm, new Date(dateFrom as string)));
+      }
+      if (dateTo) {
+        conversionsQuery = conversionsQuery.where(lte(schema.conversions.criadoEm, new Date(dateTo as string)));
+      }
+      if (selectedHouse && selectedHouse !== 'all') {
+        conversionsQuery = conversionsQuery.where(eq(schema.conversions.casa, selectedHouse as string));
+      }
+      if (selectedEvent && selectedEvent !== 'all') {
+        conversionsQuery = conversionsQuery.where(eq(schema.conversions.evento, selectedEvent as string));
+      }
+
+      const conversions = await conversionsQuery.orderBy(desc(schema.conversions.criadoEm));
+
+      // Calcular estatísticas
+      const stats = {
+        totalClicks: conversions.filter(c => c.evento === 'click').length,
+        totalRegistrations: conversions.filter(c => c.evento === 'registration').length,
+        totalDeposits: conversions.filter(c => c.evento === 'deposit').length,
+        totalRevenue: conversions.filter(c => c.evento === 'revenue').length,
+        totalCommission: conversions.reduce((sum, c) => sum + parseFloat(c.comissao || '0'), 0).toFixed(2),
+        conversionRate: conversions.length > 0 ? Math.round((conversions.filter(c => c.evento === 'registration').length / conversions.filter(c => c.evento === 'click').length) * 100) || 0 : 0
+      };
+
+      // Formatar conversões para o frontend
+      const formattedConversions = conversions.map(c => ({
+        id: c.id,
+        casa: c.casa,
+        evento: c.evento,
+        valor: c.valor || '0',
+        comissao: c.comissao || '0',
+        criadoEm: c.criadoEm?.toISOString() || new Date().toISOString(),
+        status: 'success'
+      }));
+
+      res.json({
+        stats,
+        conversions: formattedConversions
+      });
+    } catch (error) {
+      console.error("Erro ao buscar relatórios do usuário:", error);
+      res.status(500).json({ message: "Erro interno do servidor" });
+    }
+  });
+
+  // Rota para buscar casas do usuário (para filtros)
+  app.get("/api/my-houses", requireAuth, async (req, res) => {
+    try {
+      const userId = req.user.id;
+      
+      // Buscar casas onde o usuário tem links ativos
+      const userHouses = await db.select({
+        id: schema.bettingHouses.id,
+        name: schema.bettingHouses.name,
+        identifier: schema.bettingHouses.identifier
+      })
+      .from(schema.bettingHouses)
+      .innerJoin(schema.affiliateLinks, eq(schema.bettingHouses.id, schema.affiliateLinks.houseId))
+      .where(and(
+        eq(schema.affiliateLinks.userId, userId),
+        eq(schema.affiliateLinks.isActive, true)
+      ));
+
+      res.json(userHouses);
+    } catch (error) {
+      console.error("Erro ao buscar casas do usuário:", error);
+      res.status(500).json({ message: "Erro interno do servidor" });
+    }
+  });
+
+  // Rota para relatórios administrativos
+  app.get("/api/admin-reports", requireAdmin, async (req, res) => {
+    try {
+      const { dateFrom, dateTo, selectedHouse, selectedEvent, selectedAffiliate } = req.query;
+
+      console.log(`📊 Admin buscando relatórios com filtros:`, { dateFrom, dateTo, selectedHouse, selectedEvent, selectedAffiliate });
+
+      // Buscar conversões com joins para obter dados completos
+      let conversionsQuery = db.select({
+        id: schema.conversions.id,
+        affiliate: schema.users.username,
+        casa: schema.conversions.casa,
+        evento: schema.conversions.evento,
+        valor: schema.conversions.valor,
+        comissao: schema.conversions.comissao,
+        criadoEm: schema.conversions.criadoEm
+      })
+      .from(schema.conversions)
+      .innerJoin(schema.users, eq(schema.conversions.affiliateId, schema.users.id));
+
+      // Aplicar filtros
+      if (dateFrom) {
+        conversionsQuery = conversionsQuery.where(gte(schema.conversions.criadoEm, new Date(dateFrom as string)));
+      }
+      if (dateTo) {
+        conversionsQuery = conversionsQuery.where(lte(schema.conversions.criadoEm, new Date(dateTo as string)));
+      }
+      if (selectedHouse && selectedHouse !== 'all') {
+        conversionsQuery = conversionsQuery.where(eq(schema.conversions.casa, selectedHouse as string));
+      }
+      if (selectedEvent && selectedEvent !== 'all') {
+        conversionsQuery = conversionsQuery.where(eq(schema.conversions.evento, selectedEvent as string));
+      }
+      if (selectedAffiliate && selectedAffiliate !== 'all') {
+        conversionsQuery = conversionsQuery.where(eq(schema.users.username, selectedAffiliate as string));
+      }
+
+      const conversions = await conversionsQuery.orderBy(desc(schema.conversions.criadoEm));
+
+      // Calcular estatísticas
+      const totalAffiliates = await db.select({ count: sql`count(distinct ${schema.users.id})` })
+        .from(schema.users)
+        .where(eq(schema.users.role, 'affiliate'));
+
+      const stats = {
+        totalAffiliates: totalAffiliates[0]?.count || 0,
+        totalConversions: conversions.length,
+        totalCommission: conversions.reduce((sum, c) => sum + parseFloat(c.comissao || '0'), 0).toFixed(2),
+        totalVolume: conversions.reduce((sum, c) => sum + parseFloat(c.valor || '0'), 0).toFixed(2)
+      };
+
+      // Formatar conversões para o frontend
+      const formattedConversions = conversions.map(c => ({
+        id: c.id,
+        affiliate: c.affiliate,
+        casa: c.casa,
+        evento: c.evento,
+        valor: c.valor || '0',
+        comissao: c.comissao || '0',
+        criadoEm: c.criadoEm?.toISOString() || new Date().toISOString(),
+        status: 'success'
+      }));
+
+      res.json({
+        stats,
+        conversions: formattedConversions
+      });
+    } catch (error) {
+      console.error("Erro ao buscar relatórios administrativos:", error);
+      res.status(500).json({ message: "Erro interno do servidor" });
+    }
+  });
+
+  // Rota para buscar afiliados (para filtros admin)
+  app.get("/api/admin/affiliates", requireAdmin, async (req, res) => {
+    try {
+      const affiliates = await db.select({
+        id: schema.users.id,
+        username: schema.users.username,
+        name: schema.users.name,
+        email: schema.users.email
+      })
+      .from(schema.users)
+      .where(eq(schema.users.role, 'affiliate'))
+      .orderBy(schema.users.username);
+
+      res.json(affiliates);
+    } catch (error) {
+      console.error("Erro ao buscar afiliados:", error);
+      res.status(500).json({ message: "Erro interno do servidor" });
+    }
+  });
+
   // Rotas para gerenciar postbacks registrados
   app.get("/api/admin/registered-postbacks", requireAdmin, async (req, res) => {
     try {

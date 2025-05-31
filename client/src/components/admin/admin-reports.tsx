@@ -6,10 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { CalendarDays, Filter, Download, Eye } from 'lucide-react';
+import { CalendarDays, Filter, Download, Eye, Users, Search } from 'lucide-react';
 
-interface ConversionData {
+interface AdminReportData {
   id: number;
+  affiliate: string;
   casa: string;
   evento: string;
   valor: string;
@@ -18,29 +19,32 @@ interface ConversionData {
   status: string;
 }
 
-interface ReportStats {
-  totalClicks: number;
-  totalRegistrations: number;
-  totalDeposits: number;
-  totalRevenue: number;
+interface AdminReportStats {
+  totalAffiliates: number;
+  totalConversions: number;
   totalCommission: string;
-  conversionRate: number;
+  totalVolume: string;
 }
 
-export default function UserReports() {
+export default function AdminReports() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [selectedHouse, setSelectedHouse] = useState('all');
   const [selectedEvent, setSelectedEvent] = useState('all');
+  const [selectedAffiliate, setSelectedAffiliate] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
   const { data: reportData, isLoading: reportLoading, refetch: refetchReport } = useQuery({
-    queryKey: ['/api/user-reports', dateFrom, dateTo, selectedHouse, selectedEvent],
+    queryKey: ['/api/admin-reports', dateFrom, dateTo, selectedHouse, selectedEvent, selectedAffiliate],
     enabled: true
   });
 
   const { data: housesData } = useQuery({
-    queryKey: ['/api/my-houses']
+    queryKey: ['/api/admin/betting-houses']
+  });
+
+  const { data: affiliatesData } = useQuery({
+    queryKey: ['/api/admin/affiliates']
   });
 
   const handleFilter = () => {
@@ -49,15 +53,15 @@ export default function UserReports() {
 
   const handleExport = () => {
     const csvContent = "data:text/csv;charset=utf-8," + 
-      "Data,Casa,Evento,Valor,Comissão,Status\n" +
-      (reportData?.conversions || []).map((row: ConversionData) => 
-        `${row.criadoEm},${row.casa},${row.evento},${row.valor},${row.comissao},${row.status}`
+      "Data,Afiliado,Casa,Evento,Valor,Comissão,Status\n" +
+      (reportData?.conversions || []).map((row: AdminReportData) => 
+        `${row.criadoEm},${row.affiliate},${row.casa},${row.evento},${row.valor},${row.comissao},${row.status}`
       ).join("\n");
     
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "relatorio-conversoes.csv");
+    link.setAttribute("download", "relatorio-admin-conversoes.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -94,8 +98,9 @@ export default function UserReports() {
     );
   };
 
-  const filteredData = (reportData?.conversions || []).filter((item: ConversionData) => {
-    const matchesSearch = item.casa.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  const filteredData = (reportData?.conversions || []).filter((item: AdminReportData) => {
+    const matchesSearch = item.affiliate.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.casa.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.evento.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSearch;
   });
@@ -114,19 +119,17 @@ export default function UserReports() {
     );
   }
 
-  const stats: ReportStats = reportData?.stats || {
-    totalClicks: 0,
-    totalRegistrations: 0,
-    totalDeposits: 0,
-    totalRevenue: 0,
+  const stats: AdminReportStats = reportData?.stats || {
+    totalAffiliates: 0,
+    totalConversions: 0,
     totalCommission: '0.00',
-    conversionRate: 0
+    totalVolume: '0.00'
   };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-white">Relatórios Detalhados</h1>
+        <h1 className="text-3xl font-bold text-white">Relatórios Administrativos</h1>
         <Button onClick={handleExport} className="bg-emerald-600 hover:bg-emerald-700">
           <Download className="w-4 h-4 mr-2" />
           Exportar CSV
@@ -137,28 +140,28 @@ export default function UserReports() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-slate-800 border-slate-700">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-slate-400">Total de Cliques</CardTitle>
+            <CardTitle className="text-sm text-slate-400">Total de Afiliados</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.totalClicks}</div>
+            <div className="text-2xl font-bold text-white">{stats.totalAffiliates}</div>
           </CardContent>
         </Card>
 
         <Card className="bg-slate-800 border-slate-700">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-slate-400">Cadastros</CardTitle>
+            <CardTitle className="text-sm text-slate-400">Total de Conversões</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.totalRegistrations}</div>
+            <div className="text-2xl font-bold text-white">{stats.totalConversions}</div>
           </CardContent>
         </Card>
 
         <Card className="bg-slate-800 border-slate-700">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-slate-400">Depósitos</CardTitle>
+            <CardTitle className="text-sm text-slate-400">Volume Total</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.totalDeposits}</div>
+            <div className="text-2xl font-bold text-white">R$ {stats.totalVolume}</div>
           </CardContent>
         </Card>
 
@@ -177,11 +180,11 @@ export default function UserReports() {
         <CardHeader>
           <CardTitle className="text-white flex items-center">
             <Filter className="w-5 h-5 mr-2" />
-            Filtros
+            Filtros Avançados
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
             <div>
               <label className="text-sm text-slate-400 mb-2 block">Data Inicial</label>
               <Input
@@ -200,6 +203,23 @@ export default function UserReports() {
                 onChange={(e) => setDateTo(e.target.value)}
                 className="bg-slate-900 border-slate-600 text-white"
               />
+            </div>
+
+            <div>
+              <label className="text-sm text-slate-400 mb-2 block">Afiliado</label>
+              <Select value={selectedAffiliate} onValueChange={setSelectedAffiliate}>
+                <SelectTrigger className="bg-slate-900 border-slate-600 text-white">
+                  <SelectValue placeholder="Selecionar afiliado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os Afiliados</SelectItem>
+                  {Array.isArray(affiliatesData) && affiliatesData.map((affiliate: any) => (
+                    <SelectItem key={affiliate.id} value={affiliate.username}>
+                      {affiliate.username} - {affiliate.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
@@ -238,7 +258,7 @@ export default function UserReports() {
             <div>
               <label className="text-sm text-slate-400 mb-2 block">Buscar</label>
               <Input
-                placeholder="Buscar por casa ou evento..."
+                placeholder="Buscar por afiliado, casa ou evento..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="bg-slate-900 border-slate-600 text-white"
@@ -257,8 +277,8 @@ export default function UserReports() {
       <Card className="bg-slate-800 border-slate-700">
         <CardHeader>
           <CardTitle className="text-white flex items-center">
-            <CalendarDays className="w-5 h-5 mr-2" />
-            Histórico de Conversões ({filteredData.length} registros)
+            <Users className="w-5 h-5 mr-2" />
+            Histórico de Conversões - Todos os Afiliados ({filteredData.length} registros)
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -267,6 +287,7 @@ export default function UserReports() {
               <TableHeader>
                 <TableRow className="border-slate-600">
                   <TableHead className="text-slate-300">Data</TableHead>
+                  <TableHead className="text-slate-300">Afiliado</TableHead>
                   <TableHead className="text-slate-300">Casa</TableHead>
                   <TableHead className="text-slate-300">Evento</TableHead>
                   <TableHead className="text-slate-300">Valor</TableHead>
@@ -277,15 +298,18 @@ export default function UserReports() {
               <TableBody>
                 {filteredData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center text-slate-400 py-8">
+                    <TableCell colSpan={7} className="text-center text-slate-400 py-8">
                       Nenhuma conversão encontrada
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredData.map((conversion: ConversionData) => (
+                  filteredData.map((conversion: AdminReportData) => (
                     <TableRow key={conversion.id} className="border-slate-700">
                       <TableCell className="text-slate-300">
                         {new Date(conversion.criadoEm).toLocaleDateString('pt-BR')}
+                      </TableCell>
+                      <TableCell className="text-slate-300 font-medium">
+                        {conversion.affiliate}
                       </TableCell>
                       <TableCell className="text-slate-300">{conversion.casa}</TableCell>
                       <TableCell>{getEventBadge(conversion.evento)}</TableCell>

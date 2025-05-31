@@ -32,7 +32,9 @@ export default function PostbackGenerator({ onPageChange }: PostbackGeneratorPro
     { value: 'deposit', label: 'Deposit (Depósito)', needsAmount: true },
     { value: 'revenue', label: 'Revenue (Receita)', needsAmount: true },
     { value: 'withdrawal', label: 'Withdrawal (Saque)', needsAmount: true },
-    { value: 'recurring-deposit', label: 'Recurring Deposit', needsAmount: true }
+    { value: 'recurring-deposit', label: 'Recurring Deposit', needsAmount: true },
+    { value: 'payout', label: 'Payout (Pagamento)', needsAmount: true },
+    { value: 'profit', label: 'Profit (Lucro)', needsAmount: true }
   ];
 
   const generatePostbackUrl = () => {
