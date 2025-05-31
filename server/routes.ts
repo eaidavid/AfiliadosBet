@@ -613,13 +613,32 @@ export async function registerRoutes(app: any): Promise<Server> {
   });
 
   // DELETE - Remover postback registrado
-  app.delete("/api/admin/registered-postbacks/:id", requireAuth, requireAdmin, async (req, res) => {
+  app.delete("/api/admin/registered-postbacks/:id", async (req, res) => {
     try {
+      console.log("=== DELETE POSTBACK ===");
+      console.log("Session:", req.session);
+      console.log("User:", req.session?.user);
+      
+      // Verificar autenticação manualmente
+      if (!req.session?.user) {
+        console.log("❌ Usuário não autenticado");
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      if (req.session.user.role !== 'admin') {
+        console.log("❌ Usuário não é admin");
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      console.log("✅ Admin autorizado para DELETE");
+
       const id = parseInt(req.params.id);
       
       if (isNaN(id)) {
         return res.status(400).json({ error: "ID inválido" });
       }
+
+      console.log(`Tentando remover postback ID: ${id}`);
 
       // Verificar se o postback existe
       const existingPostback = await db.select()
@@ -628,16 +647,20 @@ export async function registerRoutes(app: any): Promise<Server> {
         .limit(1);
 
       if (existingPostback.length === 0) {
+        console.log("❌ Postback não encontrado");
         return res.status(404).json({ error: "Postback não encontrado" });
       }
+
+      console.log("Postback encontrado, removendo...");
 
       // Remover o postback
       await db.delete(schema.registeredPostbacks)
         .where(eq(schema.registeredPostbacks.id, id));
 
+      console.log("✅ Postback removido com sucesso");
       res.json({ message: "Postback removido com sucesso" });
     } catch (error) {
-      console.error("Erro ao remover postback:", error);
+      console.error("❌ Erro ao remover postback:", error);
       res.status(500).json({ error: "Erro interno do servidor" });
     }
   });
