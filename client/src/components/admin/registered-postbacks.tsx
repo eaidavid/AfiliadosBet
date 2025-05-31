@@ -55,17 +55,32 @@ export default function RegisteredPostbacks({ onPageChange }: RegisteredPostback
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: typeof formData) => apiRequest("/api/admin/registered-postbacks", {
-      method: "POST",
-      body: JSON.stringify(data)
-    }),
-    onSuccess: () => {
+    mutationFn: (data: typeof formData) => {
+      console.log("Enviando dados do postback:", data);
+      return apiRequest("/api/admin/registered-postbacks", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      });
+    },
+    onSuccess: (result) => {
+      console.log("Postback criado com sucesso:", result);
       queryClient.invalidateQueries({ queryKey: ["/api/admin/registered-postbacks"] });
       setShowDialog(false);
       resetForm();
       toast({
         title: "Postback registrado",
         description: "O postback foi registrado com sucesso.",
+      });
+    },
+    onError: (error) => {
+      console.error("Erro ao criar postback:", error);
+      toast({
+        title: "Erro ao registrar",
+        description: "Ocorreu um erro ao registrar o postback. Tente novamente.",
+        variant: "destructive"
       });
     }
   });
@@ -116,8 +131,21 @@ export default function RegisteredPostbacks({ onPageChange }: RegisteredPostback
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log("Formulário submetido!");
+    console.log("Dados do formulário:", formData);
+    console.log("Estado das mutações:", {
+      createPending: createMutation.isPending,
+      updatePending: updateMutation.isPending
+    });
+    
     // Validar campos obrigatórios
     if (!formData.name || !formData.url || !formData.houseName || !formData.eventType) {
+      console.log("Erro de validação - campos faltando:", {
+        name: !formData.name,
+        url: !formData.url,
+        houseName: !formData.houseName,
+        eventType: !formData.eventType
+      });
       toast({
         title: "Erro de validação",
         description: "Preencha todos os campos obrigatórios.",
@@ -131,9 +159,13 @@ export default function RegisteredPostbacks({ onPageChange }: RegisteredPostback
       houseId: formData.houseId ? parseInt(formData.houseId) : null
     };
     
+    console.log("Dados a serem enviados:", submitData);
+    
     if (editingPostback) {
+      console.log("Atualizando postback existente");
       updateMutation.mutate({ id: editingPostback.id, data: submitData });
     } else {
+      console.log("Criando novo postback");
       createMutation.mutate(submitData);
     }
   };
