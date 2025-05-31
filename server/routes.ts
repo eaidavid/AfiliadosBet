@@ -611,6 +611,36 @@ export async function registerRoutes(app: any): Promise<Server> {
       res.status(500).json({ error: "Erro interno no processamento" });
     }
   });
+
+  // DELETE - Remover postback registrado
+  app.delete("/api/admin/registered-postbacks/:id", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "ID inválido" });
+      }
+
+      // Verificar se o postback existe
+      const existingPostback = await db.select()
+        .from(schema.registeredPostbacks)
+        .where(eq(schema.registeredPostbacks.id, id))
+        .limit(1);
+
+      if (existingPostback.length === 0) {
+        return res.status(404).json({ error: "Postback não encontrado" });
+      }
+
+      // Remover o postback
+      await db.delete(schema.registeredPostbacks)
+        .where(eq(schema.registeredPostbacks.id, id));
+
+      res.json({ message: "Postback removido com sucesso" });
+    } catch (error) {
+      console.error("Erro ao remover postback:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
   
   // Rota principal de postback GET /postback/:casa
   app.get("/postback/:casa", async (req, res) => {
