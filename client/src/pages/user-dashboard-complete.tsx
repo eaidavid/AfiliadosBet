@@ -248,12 +248,12 @@ export default function UserDashboardComplete() {
       <div className="flex">
         {!isMobile && (
           <div className="w-64 min-h-screen bg-slate-900/50 border-r border-slate-800">
-            <UserSidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
+            <UserSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
           </div>
         )}
         
         <div className="flex-1">
-          <UserTopBar currentPage={currentPage} setCurrentPage={setCurrentPage} />
+          <UserTopBar onPageChange={setCurrentPage} />
           
           <main className="p-6">
             <div className="max-w-7xl mx-auto">
