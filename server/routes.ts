@@ -118,8 +118,8 @@ export async function registerRoutes(app: any): Promise<Server> {
         // Registrar conversão imediatamente
         try {
           await db.execute(sql`
-            INSERT INTO conversions (user_id, house_id, event_type, commission_amount, conversion_data)
-            VALUES (2, 3, ${evento}, 25.00, ${JSON.stringify({ customer_id, event: evento, processed_at: new Date().toISOString() })})
+            INSERT INTO conversions (user_id, house_id, type, amount, commission, customer_id, conversion_data)
+            VALUES (2, 4, ${evento}, 0, 25.00, ${subid}, ${JSON.stringify({ customer_id, event: evento, processed_at: new Date().toISOString() })})
           `);
           
           // Atualizar status do log
