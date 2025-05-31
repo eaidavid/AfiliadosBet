@@ -1,33 +1,34 @@
-POSTBACKS ESPECÍFICOS - CASA BRAZZINO
-====================================
+POSTBACKS ESPECÍFICOS - CASA BRAZZINO (CORRIGIDOS E FUNCIONAIS)
+================================================================
 
 Casa ID: 11
 Nome: Brazino  
+Identificador: brazino
 Token: token_1748687655384_ooamhmi7y
 Comissão: RevShare 30%
 
 🔗 BASE URL ATUAL:
 https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev
 
-📋 POSTBACKS POR EVENTO:
+📋 POSTBACKS POR EVENTO (ESTRUTURA CORRIGIDA):
 
 1. CLICK (Clique no Link)
-   https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev/api/postback/click?house=brazino&subid={SUBID}&customer_id={CUSTOMER_ID}
+   https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev/api/postback/brazino/click?subid={SUBID}&customer_id={CUSTOMER_ID}
 
 2. REGISTRATION (Cadastro)
-   https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev/api/postback/registration?house=brazino&subid={SUBID}&customer_id={CUSTOMER_ID}
+   https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev/api/postback/brazino/registration?subid={SUBID}&customer_id={CUSTOMER_ID}
 
 3. DEPOSIT (Depósito)
-   https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev/api/postback/deposit?house=brazino&subid={SUBID}&customer_id={CUSTOMER_ID}&amount={AMOUNT}
+   https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev/api/postback/brazino/deposit?subid={SUBID}&customer_id={CUSTOMER_ID}&amount={AMOUNT}
 
 4. REVENUE (Receita/Aposta)
-   https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev/api/postback/revenue?house=brazino&subid={SUBID}&customer_id={CUSTOMER_ID}&amount={AMOUNT}
+   https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev/api/postback/brazino/revenue?subid={SUBID}&customer_id={CUSTOMER_ID}&amount={AMOUNT}
 
 5. WITHDRAWAL (Saque)
-   https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev/api/postback/withdrawal?house=brazino&subid={SUBID}&customer_id={CUSTOMER_ID}&amount={AMOUNT}
+   https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev/api/postback/brazino/withdrawal?subid={SUBID}&customer_id={CUSTOMER_ID}&amount={AMOUNT}
 
 6. RECURRING DEPOSIT (Depósito Recorrente)
-   https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev/api/postback/recurring-deposit?house=brazino&subid={SUBID}&customer_id={CUSTOMER_ID}&amount={AMOUNT}
+   https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev/api/postback/brazino/recurring-deposit?subid={SUBID}&customer_id={CUSTOMER_ID}&amount={AMOUNT}
 
 📝 PARÂMETROS OBRIGATÓRIOS:
 - house: brazino (fixo para esta casa)

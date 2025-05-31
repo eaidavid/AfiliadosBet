@@ -1,0 +1,221 @@
+DOCUMENTAÇÃO COMPLETA - SISTEMA DE POSTBACKS AFILIADOSBET
+============================================================
+
+## 1. COMO FUNCIONA O SISTEMA DE POSTBACKS
+
+### Estrutura das URLs
+O sistema aceita postbacks no formato:
+```
+https://seu-dominio.com/api/postback/{casa}/{evento}?subid={afiliado}&customer_id={cliente}&amount={valor}
+```
+
+### Exemplo Prático:
+```
+https://51b293d3-8139-4187-bcc5-d847d43fab92-00-1x2pofggd3h6e.kirk.replit.dev/api/postback/brazino/click?subid=eaidavid&customer_id=12345
+```
+
+### Eventos Suportados:
+1. **click** - Rastreia cliques nos links de afiliação
+2. **registration** - Registra novos cadastros
+3. **deposit** - Registra depósitos dos clientes
+4. **revenue** - Registra receita/apostas
+5. **withdrawal** - Registra saques
+6. **recurring-deposit** - Registra depósitos recorrentes
+
+### Parâmetros Obrigatórios:
+- **casa**: Identificador da casa de apostas (ex: brazino, bet365, etc)
+- **evento**: Tipo de evento (click, registration, deposit, etc)
+- **subid**: Username do afiliado responsável pela conversão
+- **customer_id**: ID único do cliente
+
+### Parâmetros Opcionais:
+- **amount**: Valor em reais (obrigatório para eventos monetários)
+
+## 2. GERENCIAMENTO NO PAINEL ADMIN
+
+### 2.1 Gerador de Postbacks
+Acesse: Painel Admin > Gerador de Postbacks
+
+Funcionalidades:
+- Seleção da casa de apostas
+- Escolha do tipo de evento
+- Preenchimento automático de parâmetros
+- Teste em tempo real
+- Cópia automática da URL
+
+### 2.2 Logs de Postbacks
+Acesse: Painel Admin > Logs de Postbacks
+
+Visualize:
+- Todos os postbacks recebidos
+- Status de processamento
+- Detalhes completos das conversões
+- Filtros por casa, afiliado e data
+
+### 2.3 Configuração de Casas
+Para adicionar uma nova casa:
+1. Acesse: Painel Admin > Casas de Apostas
+2. Clique em "Adicionar Nova Casa"
+3. Preencha os dados, incluindo:
+   - Nome da casa
+   - Identificador único (usado nos postbacks)
+   - URL base para afiliação
+   - Tipo de comissão (CPA/RevShare/Hybrid)
+   - Taxa de comissão
+
+## 3. GERENCIAMENTO NO CÓDIGO
+
+### 3.1 Estrutura de Arquivos
+- `server/routes.ts` - Rotas de postbacks e APIs
+- `server/storage.ts` - Operações de banco de dados
+- `shared/schema.ts` - Esquemas de banco de dados
+- `client/src/components/admin/postback-generator.tsx` - Interface do gerador
+
+### 3.2 Adicionando Novos Eventos
+Para adicionar um novo tipo de evento:
+
+1. **No frontend** (postback-generator.tsx):
+```javascript
+const eventTypes = [
+  { value: 'novo-evento', label: 'Novo Evento', needsAmount: true },
+  // ... outros eventos
+];
+```
+
+2. **No backend** (routes.ts):
+```javascript
+// Adicionar handler para o novo evento
+const handleNovoEventoPostback = async (req: any, res: any) => {
+  // Lógica específica do evento
+};
+
+app.get("/api/postback/novo-evento", handleNovoEventoPostback);
+app.post("/api/postback/novo-evento", handleNovoEventoPostback);
+```
+
+### 3.3 Configuração de Nova Casa
+Para adicionar uma casa programaticamente:
+
+```javascript
+const novaCasa = await storage.createBettingHouse({
+  name: "Nome da Casa",
+  identifier: "identificador-unico", // Usado nos postbacks
+  description: "Descrição da casa",
+  baseUrl: "https://casa.com/affiliate?ref=VALUE", // VALUE será substituído pelo username
+  logoUrl: "https://logo-url.com/logo.png",
+  commissionType: "RevShare", // ou CPA, Hybrid
+  commissionRate: 30,
+  isActive: true
+});
+```
+
+### 3.4 Testando Postbacks
+Use cURL para testar:
+
+```bash
+# Teste de clique
+curl "https://seu-dominio.com/api/postback/brazino/click?subid=eaidavid&customer_id=12345"
+
+# Teste de depósito
+curl "https://seu-dominio.com/api/postback/brazino/deposit?subid=eaidavid&customer_id=12345&amount=100"
+
+# Teste de registro
+curl "https://seu-dominio.com/api/postback/brazino/registration?subid=eaidavid&customer_id=12345"
+```
+
+## 4. CÁLCULO DE COMISSÕES
+
+### 4.1 Tipos Suportados:
+- **CPA**: Valor fixo por conversão
+- **RevShare**: Percentual da receita
+- **Hybrid**: Combinação de CPA + RevShare
+
+### 4.2 Lógica de Cálculo:
+```javascript
+// CPA: Comissão fixa
+commission = house.commissionRate; // Valor fixo
+
+// RevShare: Percentual do valor
+commission = (amount * house.commissionRate) / 100;
+
+// Hybrid: CPA + RevShare
+commission = house.commissionRate + ((amount * revShareRate) / 100);
+```
+
+## 5. INTEGRAÇÃO COM CASAS DE APOSTAS
+
+### 5.1 Configuração na Casa
+1. Acesse o painel de afiliados da casa
+2. Configure as URLs de postback:
+   - Click: `https://seu-dominio.com/api/postback/CASA/click?subid=[SUBID]&customer_id=[CUSTOMER_ID]`
+   - Registration: `https://seu-dominio.com/api/postback/CASA/registration?subid=[SUBID]&customer_id=[CUSTOMER_ID]`
+   - Deposit: `https://seu-dominio.com/api/postback/CASA/deposit?subid=[SUBID]&customer_id=[CUSTOMER_ID]&amount=[AMOUNT]`
+
+### 5.2 Variáveis Dinâmicas
+Substitua:
+- `CASA` pelo identificador da casa (ex: brazino)
+- `[SUBID]` pela variável de subID da casa
+- `[CUSTOMER_ID]` pela variável de ID do cliente
+- `[AMOUNT]` pela variável de valor
+
+## 6. MONITORAMENTO E LOGS
+
+### 6.1 Logs Automáticos
+O sistema registra automaticamente:
+- Timestamp do postback
+- IP de origem
+- Todos os parâmetros recebidos
+- Status de processamento
+- Erros e exceções
+
+### 6.2 Relatórios
+Acesse: Painel Admin > Relatórios
+- Performance por afiliado
+- Conversões por casa
+- Volume total de conversões
+- Comissões pagas e pendentes
+
+## 7. SEGURANÇA
+
+### 7.1 Validações Implementadas:
+- Verificação de afiliado ativo
+- Validação de casa de apostas
+- Sanitização de parâmetros
+- Logs de auditoria
+
+### 7.2 Tokens de Segurança:
+Cada casa possui um token único para validação adicional (implementação futura).
+
+## 8. TROUBLESHOOTING
+
+### 8.1 Problemas Comuns:
+- **Casa não encontrada**: Verificar identificador na tabela betting_houses
+- **Afiliado não encontrado**: Verificar username na tabela users
+- **Postback não processado**: Verificar logs na tabela postback_logs
+
+### 8.2 Comandos de Debug:
+```sql
+-- Verificar casas cadastradas
+SELECT id, name, identifier FROM betting_houses;
+
+-- Verificar afiliados ativos
+SELECT id, username, role, is_active FROM users WHERE role = 'affiliate';
+
+-- Verificar últimos postbacks
+SELECT * FROM postback_logs ORDER BY created_at DESC LIMIT 10;
+```
+
+## 9. BACKUP E MANUTENÇÃO
+
+### 9.1 Dados Críticos:
+- Tabela de conversões (conversions)
+- Logs de postbacks (postback_logs)
+- Links de afiliação (affiliate_links)
+
+### 9.2 Limpeza Periódica:
+- Logs antigos (>90 dias)
+- Postbacks com erro (>30 dias)
+- Links inativos (>180 dias)
+
+============================================================
+Sistema AfiliadosBet - Documentação Técnica Completa v1.0

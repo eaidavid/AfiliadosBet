@@ -44,11 +44,18 @@ export default function PostbackGenerator({ onPageChange }: PostbackGeneratorPro
     
     if (!house) return '';
 
-    let url = `${baseUrl}/api/postback/${eventType}?house=${house.name.toLowerCase()}`;
+    // Usar o identificador da casa ou nome em lowercase
+    const houseIdentifier = house.identifier || house.name.toLowerCase();
+    let url = `${baseUrl}/api/postback/${houseIdentifier}/${eventType}`;
     
-    if (subid) url += `&subid=${subid}`;
-    if (customerId) url += `&customer_id=${customerId}`;
-    if (amount && selectedEvent?.needsAmount) url += `&amount=${amount}`;
+    const params = [];
+    if (subid) params.push(`subid=${subid}`);
+    if (customerId) params.push(`customer_id=${customerId}`);
+    if (amount && selectedEvent?.needsAmount) params.push(`amount=${amount}`);
+    
+    if (params.length > 0) {
+      url += `?${params.join('&')}`;
+    }
 
     return url;
   };
@@ -212,14 +219,71 @@ export default function PostbackGenerator({ onPageChange }: PostbackGeneratorPro
 
       <Card className="bg-slate-800 border-slate-700">
         <CardHeader>
-          <CardTitle className="text-white">Instruções de Uso</CardTitle>
+          <CardTitle className="text-white">Exemplos de URLs por Casa</CardTitle>
         </CardHeader>
-        <CardContent className="text-slate-300 space-y-2">
-          <p><strong>1.</strong> Selecione a casa de apostas e o tipo de evento</p>
-          <p><strong>2.</strong> Preencha os parâmetros obrigatórios (SubID e Customer ID)</p>
-          <p><strong>3.</strong> Para eventos monetários, informe o valor</p>
-          <p><strong>4.</strong> Copie a URL gerada e configure na casa de apostas</p>
-          <p><strong>5.</strong> Teste o postback para verificar se está funcionando</p>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4">
+            {Array.isArray(houses) && (houses as any[]).map((house: any) => (
+              <div key={house.id} className="bg-slate-900 p-4 rounded-lg">
+                <h4 className="text-white font-semibold mb-2">{house.name}</h4>
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <span className="text-slate-400">Click:</span>
+                    <code className="ml-2 text-emerald-400">
+                      {baseUrl}/api/postback/{house.identifier || house.name.toLowerCase()}/click?subid=AFILIADO&customer_id=CLIENTE
+                    </code>
+                  </div>
+                  <div>
+                    <span className="text-slate-400">Registration:</span>
+                    <code className="ml-2 text-emerald-400">
+                      {baseUrl}/api/postback/{house.identifier || house.name.toLowerCase()}/registration?subid=AFILIADO&customer_id=CLIENTE
+                    </code>
+                  </div>
+                  <div>
+                    <span className="text-slate-400">Deposit:</span>
+                    <code className="ml-2 text-emerald-400">
+                      {baseUrl}/api/postback/{house.identifier || house.name.toLowerCase()}/deposit?subid=AFILIADO&customer_id=CLIENTE&amount=VALOR
+                    </code>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-slate-800 border-slate-700">
+        <CardHeader>
+          <CardTitle className="text-white">Instruções de Configuração</CardTitle>
+        </CardHeader>
+        <CardContent className="text-slate-300 space-y-3">
+          <div>
+            <h4 className="text-white font-semibold mb-2">1. Para Casas de Apostas:</h4>
+            <ul className="list-disc list-inside space-y-1 ml-4">
+              <li>Acesse o painel de afiliados da casa</li>
+              <li>Configure as URLs de postback usando os exemplos acima</li>
+              <li>Substitua AFILIADO pela variável de subID da casa</li>
+              <li>Substitua CLIENTE pela variável de customer ID</li>
+              <li>Substitua VALOR pela variável de valor/amount</li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 className="text-white font-semibold mb-2">2. Para Testes:</h4>
+            <ul className="list-disc list-inside space-y-1 ml-4">
+              <li>Use o gerador acima para criar URLs de teste</li>
+              <li>Preencha subid com um username de afiliado existente</li>
+              <li>Use o botão "Testar Postback" para verificar</li>
+              <li>Verifique os logs em "Logs de Postbacks"</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-white font-semibold mb-2">3. Estrutura da URL:</h4>
+            <div className="bg-slate-900 p-3 rounded text-emerald-400 font-mono">
+              /api/postback/[CASA]/[EVENTO]?subid=[AFILIADO]&customer_id=[CLIENTE]&amount=[VALOR]
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
