@@ -29,7 +29,7 @@ export function setupBrazinoPostback(app: express.Application) {
       if (evento === 'register') {
         await db.execute(sql`
           INSERT INTO conversions (user_id, house_id, affiliate_link_id, type, amount, commission, customer_id, conversion_data, converted_at)
-          VALUES (${affiliateId}, 4, 1, 'registration', ${amount || 0}, 25.00, ${customer_id}, '{"event":"register","source":"brazino"}', NOW())
+          VALUES (${affiliateId}, 4, 2, 'registration', ${amount || 0}, 25.00, ${customer_id}, '{"event":"register","source":"brazino"}', NOW())
         `);
         
         console.log(`✅ Registro processado - Afiliado: ${subid}, Cliente: ${customer_id}`);
@@ -47,7 +47,7 @@ export function setupBrazinoPostback(app: express.Application) {
         
         await db.execute(sql`
           INSERT INTO conversions (user_id, house_id, affiliate_link_id, type, amount, commission, customer_id, conversion_data, converted_at)
-          VALUES (${affiliateId}, 3, 1, 'deposit', ${depositAmount}, ${commission}, ${customer_id}, '{"event":"deposit","source":"brazino"}', NOW())
+          VALUES (${affiliateId}, 4, 2, 'deposit', ${depositAmount}, ${commission}, ${customer_id}, '{"event":"deposit","source":"brazino"}', NOW())
         `);
         
         console.log(`✅ Depósito processado - Valor: R$ ${depositAmount}, Comissão: R$ ${commission}`);
