@@ -123,7 +123,7 @@ export default function Reports({ onPageChange }: ReportsProps) {
               <div>
                 <p className="text-slate-400 text-sm font-medium">Comissão Total</p>
                 <p className="text-2xl font-bold text-emerald-400">
-                  R$ {stats?.totalCommission?.toFixed(2) || '0.00'}
+                  R$ {typeof stats?.totalCommission === 'number' ? stats.totalCommission.toFixed(2) : '0.00'}
                 </p>
               </div>
               <TrendingUp className="h-8 w-8 text-emerald-500" />

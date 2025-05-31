@@ -119,7 +119,7 @@ export default function UserSidebar({ currentPage, onPageChange }: UserSidebarPr
   return (
     <div
       className={`relative h-full bg-slate-900/50 backdrop-blur-sm border-r border-slate-700/50 transition-all duration-300 ${
-        isCollapsed ? "w-20" : "w-64"
+        isCollapsed ? "w-20" : "w-72"
       }`}
     >
       {/* Collapse Toggle Button */}

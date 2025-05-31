@@ -200,25 +200,34 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
-      
-      <div className={isMobile ? "w-full" : "md:ml-72"}>
-        <header className={`bg-slate-900 border-b border-slate-700 ${isMobile ? "px-4 py-3 pt-16" : "px-6 py-4"}`}>
-          <div className="flex items-center justify-between">
-            <h1 className={`font-bold text-white ${isMobile ? "text-xl" : "text-2xl"}`}>Painel Administrativo</h1>
-            <div className="flex items-center space-x-4">
-              <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-semibold">A</span>
-              </div>
-              <span className={`text-white ${isMobile ? "hidden" : "block"}`}>Admin</span>
-            </div>
-          </div>
-        </header>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="flex">
+        {!isMobile && (
+          <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
+        )}
         
-        <main className={isMobile ? "p-4" : "p-6"}>
-          {renderContent()}
-        </main>
+        <div className="flex-1">
+          {/* Mobile sidebar */}
+          {isMobile && (
+            <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
+          )}
+          
+          <header className={`bg-slate-900/50 backdrop-blur-sm border-b border-slate-700/50 ${isMobile ? "px-4 py-3" : "px-6 py-4"}`}>
+            <div className="flex items-center justify-between">
+              <h1 className={`font-bold text-white ${isMobile ? "text-xl ml-16" : "text-2xl"}`}>Painel Administrativo</h1>
+              <div className="flex items-center space-x-4">
+                <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-semibold">A</span>
+                </div>
+                <span className={`text-white ${isMobile ? "hidden" : "block"}`}>Admin</span>
+              </div>
+            </div>
+          </header>
+          
+          <main className={isMobile ? "p-4" : "p-6"}>
+            {renderContent()}
+          </main>
+        </div>
       </div>
     </div>
   );
