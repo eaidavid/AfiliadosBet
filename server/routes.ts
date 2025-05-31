@@ -1469,6 +1469,16 @@ export async function registerRoutes(app: any): Promise<Server> {
       res.status(500).json({ message: "Failed to update affiliate status" });
     }
   });
+  app.get("/api/admin/houses", requireAdmin, async (req, res) => {
+    try {
+      const houses = await storage.getAllBettingHouses();
+      res.json(houses);
+    } catch (error) {
+      console.error("Get admin houses error:", error);
+      res.status(500).json({ message: "Failed to get houses" });
+    }
+  });
+
   app.get("/api/admin/betting-houses", requireAdmin, async (req, res) => {
     try {
       const houses = await storage.getAllBettingHouses();

@@ -116,10 +116,25 @@ export default function RegisteredPostbacks({ onPageChange }: RegisteredPostback
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validar campos obrigatórios
+    if (!formData.name || !formData.url || !formData.houseName || !formData.eventType) {
+      toast({
+        title: "Erro de validação",
+        description: "Preencha todos os campos obrigatórios.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const submitData = {
+      ...formData,
+      houseId: formData.houseId ? parseInt(formData.houseId) : null
+    };
+    
     if (editingPostback) {
-      updateMutation.mutate({ id: editingPostback.id, data: formData });
+      updateMutation.mutate({ id: editingPostback.id, data: submitData });
     } else {
-      createMutation.mutate(formData);
+      createMutation.mutate(submitData);
     }
   };
 
