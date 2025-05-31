@@ -93,8 +93,7 @@ export default function AdminHousesManagement({ onPageChange }: AdminHousesManag
       queryClient.invalidateQueries({ queryKey: ["/api/admin/betting-houses"] });
       setIsAddModalOpen(false);
       form.reset();
-      // Reset selected events
-      setSelectedEvents(['registration', 'deposit']);
+      // Postback events configuration removed
     },
     onError: (error: any) => {
       console.error("Erro ao criar casa:", error);
@@ -453,92 +452,20 @@ export default function AdminHousesManagement({ onPageChange }: AdminHousesManag
                 </div>
               </div>
 
-              {/* Eventos Suportados */}
+              {/* Configuração de Postback */}
               <div className="bg-slate-700/30 rounded-xl p-4">
-                <h4 className="text-lg font-semibold text-white mb-3">Eventos de Postback</h4>
-                <p className="text-slate-400 text-sm mb-4">
-                  Selecione quais eventos esta casa irá enviar via postback
+                <h4 className="text-lg font-semibold text-white mb-3">Configuração de Postback</h4>
+                <p className="text-slate-400 text-sm">
+                  As configurações de postback são gerenciadas automaticamente no código do sistema. 
+                  Todas as casas são configuradas para receber registros, depósitos e conversões.
                 </p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {[
-                    { id: 'registration', label: 'Registro' },
-                    { id: 'deposit', label: 'Depósito' },
-                    { id: 'first_deposit', label: 'Primeiro Depósito' },
-                    { id: 'profit', label: 'Lucro' },
-                  ].map((event) => (
-                    <div key={event.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={event.id}
-                        checked={selectedEvents.includes(event.id)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            setSelectedEvents([...selectedEvents, event.id]);
-                          } else {
-                            setSelectedEvents(selectedEvents.filter(e => e !== event.id));
-                          }
-                        }}
-                        className="border-slate-600 data-[state=checked]:bg-emerald-500"
-                      />
-                      <label htmlFor={event.id} className="text-slate-300 text-sm">
-                        {event.label}
-                      </label>
-                    </div>
-                  ))}
+                <div className="mt-3 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                  <div className="text-emerald-400 text-sm font-medium">Eventos Automáticos:</div>
+                  <div className="text-emerald-300 text-xs mt-1">
+                    Registro • Primeiro Depósito • Depósitos • Lucros
+                  </div>
                 </div>
               </div>
-
-              {/* Preview das URLs de Postback */}
-              {form.watch("name") && (
-                <div className="bg-slate-700/30 rounded-xl p-4">
-                  <h4 className="text-lg font-semibold text-white mb-3">🎯 URLs de Postback</h4>
-                  <p className="text-slate-400 text-sm mb-4">
-                    URLs que você deve configurar na plataforma da casa de apostas
-                  </p>
-                  <div className="space-y-3">
-                    {selectedEvents.map((event) => {
-                      const houseSlug = form.watch("name").toLowerCase().replace(/[^a-z0-9]/g, '');
-                      const baseUrl = window.location.origin;
-                      const eventUrl = `${baseUrl}/postback/${houseSlug}/${event}/[TOKEN_SERA_GERADO]?subid={subid}${event.includes('deposit') || event === 'profit' ? '&amount={amount}' : ''}&customer_id={customer_id}`;
-                      
-                      return (
-                        <div key={event} className="bg-slate-800/50 rounded-lg p-3">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-emerald-400 font-semibold capitalize">
-                              {event.replace('_', ' ')}:
-                            </span>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => navigator.clipboard.writeText(eventUrl)}
-                              className="h-6 w-6 p-0 text-slate-400 hover:text-white"
-                            >
-                              <Copy className="h-3 w-3" />
-                            </Button>
-                          </div>
-                          <code className="text-slate-300 font-mono text-xs break-all block bg-slate-900/50 p-2 rounded">
-                            {eventUrl}
-                          </code>
-                        </div>
-                      );
-                    })}
-                    
-                    {selectedEvents.length === 0 && (
-                      <div className="text-slate-400 text-center py-4">
-                        Selecione os eventos para ver as URLs de postback
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                    <div className="text-blue-400 text-sm font-medium mb-1">📋 Instruções:</div>
-                    <div className="text-blue-300 text-xs space-y-1">
-                      <div>• Copie as URLs e configure na plataforma da casa</div>
-                      <div>• [TOKEN_SERA_GERADO] será substituído pelo token real após criação</div>
-                      <div>• {`{subid}`}, {`{amount}`}, {`{customer_id}`} são variáveis da casa</div>
-                    </div>
-                  </div>
-                </div>
-              )}
 
               <DialogFooter>
                 <Button
