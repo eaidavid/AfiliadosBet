@@ -83,6 +83,25 @@ export interface IStorage {
   updateUserStatus(id: number, isActive: boolean): Promise<void>;
   resetUserPassword(id: number): Promise<void>;
   deleteUser(id: number): Promise<void>;
+
+  // Postback operations
+  getPostbackUrl(houseId: number): Promise<string>;
+  generateSecurityToken(): string;
+  updateHousePostbackConfig(id: number, config: { enabledPostbacks: string[], parameterMapping: any }): Promise<BettingHouse>;
+  processPostbackEvent(data: {
+    subid: string;
+    event: string;
+    amount: number;
+    house: string;
+    customerId?: string;
+    rawData: string;
+    ip: string;
+  }): Promise<{ success: boolean; commission?: number; logId: number }>;
+  
+  // Statistics for postback events
+  getPostbackLogs(houseId?: number, limit?: number): Promise<any[]>;
+  getEventStats(userId: number): Promise<{ [event: string]: number }>;
+  getCommissionStats(userId: number): Promise<{ total: number; byType: { [type: string]: number } }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -522,6 +541,230 @@ export class DatabaseStorage implements IStorage {
     
     // Depois, excluir o usuário
     await db.delete(users).where(eq(users.id, id));
+  }
+
+  // IMPLEMENTAÇÃO DAS FUNÇÕES DE POSTBACK
+
+  async getPostbackUrl(houseId: number): Promise<string> {
+    const house = await this.getBettingHouseById(houseId);
+    if (!house) {
+      throw new Error("Casa de apostas não encontrada");
+    }
+
+    const baseUrl = process.env.BASE_URL || "https://yourapp.replit.app";
+    return `${baseUrl}/api/postback/${house.securityToken}`;
+  }
+
+  generateSecurityToken(): string {
+    return `${Date.now()}_${Math.random().toString(36).substring(2, 15)}_${Math.random().toString(36).substring(2, 15)}`;
+  }
+
+  async updateHousePostbackConfig(id: number, config: { enabledPostbacks: string[], parameterMapping: any }): Promise<BettingHouse> {
+    const [house] = await db
+      .update(bettingHouses)
+      .set({
+        enabledPostbacks: config.enabledPostbacks,
+        parameterMapping: config.parameterMapping,
+        updatedAt: new Date()
+      })
+      .where(eq(bettingHouses.id, id))
+      .returning();
+    return house;
+  }
+
+  async processPostbackEvent(data: {
+    subid: string;
+    event: string;
+    amount: number;
+    house: string;
+    customerId?: string;
+    rawData: string;
+    ip: string;
+  }): Promise<{ success: boolean; commission?: number; logId: number }> {
+    
+    // 1. Registrar log inicial do postback
+    const [logEntry] = await db.insert(schema.postbackLogs).values({
+      casa: data.house,
+      evento: data.event,
+      subid: data.subid,
+      valor: data.amount.toString(),
+      ip: data.ip,
+      raw: data.rawData,
+      status: 'PROCESSING'
+    }).returning();
+
+    try {
+      // 2. Buscar afiliado pelo subid (username)
+      const affiliate = await this.getUserByUsername(data.subid);
+      if (!affiliate) {
+        await db.update(schema.postbackLogs)
+          .set({ status: 'ERROR_AFFILIATE_NOT_FOUND' })
+          .where(eq(schema.postbackLogs.id, logEntry.id));
+        return { success: false, logId: logEntry.id };
+      }
+
+      // 3. Buscar casa de apostas
+      const [house] = await db.select()
+        .from(bettingHouses)
+        .where(sql`LOWER(${bettingHouses.name}) = ${data.house.toLowerCase()}`)
+        .limit(1);
+
+      if (!house) {
+        await db.update(schema.postbackLogs)
+          .set({ status: 'ERROR_HOUSE_NOT_FOUND' })
+          .where(eq(schema.postbackLogs.id, logEntry.id));
+        return { success: false, logId: logEntry.id };
+      }
+
+      // 4. Verificar se o evento está habilitado para esta casa
+      const enabledEvents = house.enabledPostbacks as string[] || [];
+      if (enabledEvents.length > 0 && !enabledEvents.includes(data.event)) {
+        await db.update(schema.postbackLogs)
+          .set({ status: 'ERROR_EVENT_DISABLED' })
+          .where(eq(schema.postbackLogs.id, logEntry.id));
+        return { success: false, logId: logEntry.id };
+      }
+
+      // 5. Registrar evento na tabela eventos
+      const [evento] = await db.insert(schema.eventos).values({
+        afiliadoId: affiliate.id,
+        casa: data.house,
+        evento: data.event,
+        valor: data.amount.toString()
+      }).returning();
+
+      // 6. Calcular comissão baseada na configuração
+      let commissionValue = 0;
+      let commissionType = '';
+
+      // Aplicar sua lógica: Casa paga 40%, você repassa 30%
+      const houseCommissionRate = 0.40; // 40% que a casa paga
+      const affiliateCommissionRate = 0.30; // 30% que você repassa
+
+      switch (data.event) {
+        case 'registration':
+          // Para CPA, você pode definir um valor fixo ou percentual
+          if (house.commissionType === 'cpa') {
+            commissionValue = parseFloat(house.commissionValue) * affiliateCommissionRate;
+            commissionType = 'CPA';
+          }
+          break;
+
+        case 'deposit':
+        case 'first_deposit':
+        case 'revenue':
+        case 'profit':
+          // Para RevShare, calcular sobre o valor
+          if (house.commissionType === 'revshare' && data.amount > 0) {
+            const houseCommission = data.amount * houseCommissionRate;
+            commissionValue = houseCommission * (affiliateCommissionRate / houseCommissionRate);
+            commissionType = 'RevShare';
+          }
+          break;
+
+        default:
+          // Eventos como 'click' normalmente não geram comissão
+          commissionType = 'Event';
+          break;
+      }
+
+      // 7. Salvar comissão se houver
+      if (commissionValue > 0) {
+        await db.insert(schema.comissoes).values({
+          afiliadoId: affiliate.id,
+          eventoId: evento.id,
+          tipo: commissionType,
+          valor: commissionValue.toString(),
+          affiliate: affiliate.username
+        });
+
+        // 8. Criar registro de conversão
+        await this.createConversion({
+          userId: affiliate.id,
+          houseId: house.id,
+          type: data.event,
+          amount: data.amount.toString(),
+          commission: commissionValue.toString(),
+          customerId: data.customerId || null,
+          affiliateLinkId: null,
+          conversionData: { rawPostback: data.rawData }
+        });
+
+        // 9. Criar pagamento pendente
+        await this.createPayment({
+          userId: affiliate.id,
+          amount: commissionValue,
+          status: 'pending',
+          description: `${commissionType} ${data.event} - ${data.house}`,
+          conversionId: evento.id
+        });
+      }
+
+      // 10. Atualizar log como processado com sucesso
+      await db.update(schema.postbackLogs)
+        .set({ status: 'SUCCESS' })
+        .where(eq(schema.postbackLogs.id, logEntry.id));
+
+      return { success: true, commission: commissionValue, logId: logEntry.id };
+
+    } catch (error) {
+      console.error("Erro ao processar postback:", error);
+      await db.update(schema.postbackLogs)
+        .set({ status: 'ERROR_PROCESSING' })
+        .where(eq(schema.postbackLogs.id, logEntry.id));
+      return { success: false, logId: logEntry.id };
+    }
+  }
+
+  async getPostbackLogs(houseId?: number, limit = 100): Promise<any[]> {
+    let query = db.select().from(schema.postbackLogs);
+    
+    if (houseId) {
+      const house = await this.getBettingHouseById(houseId);
+      if (house) {
+        query = query.where(eq(schema.postbackLogs.casa, house.name));
+      }
+    }
+    
+    return await query.orderBy(desc(schema.postbackLogs.criadoEm)).limit(limit);
+  }
+
+  async getEventStats(userId: number): Promise<{ [event: string]: number }> {
+    const events = await db.select({
+      evento: schema.eventos.evento,
+      count: count()
+    })
+    .from(schema.eventos)
+    .where(eq(schema.eventos.afiliadoId, userId))
+    .groupBy(schema.eventos.evento);
+
+    const stats: { [event: string]: number } = {};
+    events.forEach(event => {
+      stats[event.evento] = event.count;
+    });
+
+    return stats;
+  }
+
+  async getCommissionStats(userId: number): Promise<{ total: number; byType: { [type: string]: number } }> {
+    const commissions = await db.select({
+      tipo: schema.comissoes.tipo,
+      total: sql<number>`sum(CAST(${schema.comissoes.valor} AS DECIMAL))`
+    })
+    .from(schema.comissoes)
+    .where(eq(schema.comissoes.afiliadoId, userId))
+    .groupBy(schema.comissoes.tipo);
+
+    let total = 0;
+    const byType: { [type: string]: number } = {};
+
+    commissions.forEach(comm => {
+      const value = comm.total || 0;
+      byType[comm.tipo] = value;
+      total += value;
+    });
+
+    return { total, byType };
   }
 }
 
