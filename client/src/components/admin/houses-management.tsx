@@ -571,7 +571,7 @@ export default function AdminHousesManagement({ onPageChange }: AdminHousesManag
                       <div>
                         <div className="text-slate-400 text-sm mb-1">Volume</div>
                         <div className="text-2xl font-bold text-yellow-500">
-                          R$ {house.stats?.totalVolume?.toFixed(0) || "0"}
+                          R$ {Number(house.stats?.totalVolume || 0).toFixed(0)}
                         </div>
                       </div>
                       <TrendingUp className="h-8 w-8 text-yellow-500" />
