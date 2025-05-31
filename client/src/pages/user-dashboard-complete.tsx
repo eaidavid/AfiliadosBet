@@ -221,10 +221,72 @@ export default function UserDashboardComplete() {
           return <Profile />;
         default:
           return (
-            <div className="space-y-6">
+            <div className="space-y-4 lg:space-y-6">
               <WelcomeSection />
               {renderAccountStatus()}
-              {renderStatsCards()}
+              <div className="space-y-4 lg:space-y-6">
+                {renderStatsCards()}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                  <Card className="bg-slate-800/50 border-slate-700/50 backdrop-blur-sm">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg text-white">Casas Disponíveis</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {houses.length > 0 ? (
+                          houses.map((house) => (
+                            <div key={house.id} className="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg">
+                              <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center">
+                                <Building className="h-6 w-6 text-emerald-500" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-white font-medium">{house.name}</p>
+                                <p className="text-slate-400 text-sm">Ativa desde {house.logoUrl ? new Date().toLocaleDateString() : 'N/A'}</p>
+                              </div>
+                              <span className="px-2 py-1 bg-emerald-500/20 text-emerald-400 text-xs rounded-full">
+                                Não afiliado
+                              </span>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-8">
+                            <Building className="h-12 w-12 text-slate-600 mx-auto mb-3" />
+                            <p className="text-slate-400">Nenhuma casa disponível</p>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-slate-800/50 border-slate-700/50 backdrop-blur-sm">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg text-white">Meus Links</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {links.length > 0 ? (
+                          links.slice(0, 3).map((link) => (
+                            <div key={link.id} className="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg">
+                              <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                                <Link className="h-5 w-5 text-blue-500" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-white font-medium truncate">{link.alias || `Link ${link.id}`}</p>
+                                <p className="text-slate-400 text-xs truncate">{link.shortUrl}</p>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-8">
+                            <Link className="h-12 w-12 text-slate-600 mx-auto mb-3" />
+                            <p className="text-slate-400">Nenhum link criado</p>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
             </div>
           );
       }
@@ -255,8 +317,8 @@ export default function UserDashboardComplete() {
         <div className="flex-1">
           <UserTopBar onPageChange={setCurrentPage} />
           
-          <main className="p-6">
-            <div className="max-w-7xl mx-auto">
+          <main className="p-4 lg:p-6 overflow-x-hidden">
+            <div className="max-w-full">
               {renderCurrentPage()}
             </div>
           </main>

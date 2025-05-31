@@ -16,7 +16,6 @@ export default function UserSidebar({ currentPage, onPageChange }: UserSidebarPr
 
   const menuItems = [
     { id: "home", label: "Início", icon: Home },
-    { id: "dashboard", label: "Dashboard", icon: BarChart3 },
     { id: "houses", label: "Casas de Apostas", icon: Building },
     { id: "links", label: "Meus Links", icon: Link },
     { id: "payments", label: "Pagamentos", icon: Wallet },
