@@ -5,7 +5,7 @@ import { storage } from "./storage";
 import { db } from "./db";
 import { affiliateLinks } from "@shared/schema";
 import * as schema from "@shared/schema";
-import { eq, sql, desc } from "drizzle-orm";
+import { eq, sql, desc, and } from "drizzle-orm";
 import { postbackLogs } from "../shared/schema";
 import bcrypt from "bcrypt";
 import session from "express-session";
@@ -572,36 +572,78 @@ export async function registerRoutes(app: any): Promise<Server> {
       
       const house = houseRecord[0];
       
-      // Calcular comissão usando nova lógica CPA e RevShare
-      const { CommissionCalculator } = await import('./commission-calculator');
+      // Calcular comissão baseada no tipo da casa e evento
       const depositAmount = parseFloat(amount as string) || 0;
+      let commissionValue = 0;
+      let tipo = house.commissionType;
       
-      const commissionResult = await CommissionCalculator.calculateCommission(
-        customer_id as string || `temp_${Date.now()}`,
-        affiliate[0].id,
-        house.name,
-        house,
-        event as string,
-        depositAmount
-      );
+      console.log(`💰 Calculando comissão para casa: ${house.name} (${house.commissionType})`);
+      console.log(`💰 Evento: ${event}, Valor: R$ ${depositAmount}`);
       
-      const commissionValue = commissionResult.commission;
-      const tipo = commissionResult.type;
+      // Lógica CPA: Registro + Depósito mínimo
+      if (house.commissionType === 'CPA' && event === 'deposit') {
+        // Verificar se já existe registro para este cliente
+        const hasRegistration = await db.select()
+          .from(schema.conversions)
+          .where(and(
+            eq(schema.conversions.customerId, customer_id as string),
+            eq(schema.conversions.type, 'registration'),
+            eq(schema.conversions.userId, affiliate[0].id)
+          ))
+          .limit(1);
+        
+        if (hasRegistration.length > 0 && depositAmount >= parseFloat(house.minDeposit || '0')) {
+          commissionValue = parseFloat(house.commissionValue || '0');
+          console.log(`💰 CPA Válido: Registro encontrado + Depósito R$ ${depositAmount} >= Mínimo R$ ${house.minDeposit}`);
+        } else {
+          console.log(`⚠️ CPA Pendente: Registro (${hasRegistration.length > 0 ? 'OK' : 'FALTA'}) ou depósito insuficiente`);
+        }
+      }
       
-      console.log(`💰 ${commissionResult.reason}`);
-      console.log(`💰 Comissão final: R$ ${commissionValue} (${tipo})`);
+      // Lógica RevShare: Percentual sobre profit
+      else if (house.commissionType === 'RevShare' && event === 'profit' && depositAmount > 0) {
+        const percentage = parseFloat(house.commissionValue || '0');
+        commissionValue = (depositAmount * percentage) / 100;
+        console.log(`💰 RevShare: ${percentage}% de R$ ${depositAmount} = R$ ${commissionValue}`);
+      }
       
-      // Registrar evento primeiro (independente de comissão)
+      // Lógica Hybrid: CPA + RevShare
+      else if (house.commissionType === 'Hybrid') {
+        if (event === 'deposit') {
+          const hasRegistration = await db.select()
+            .from(schema.conversions)
+            .where(and(
+              eq(schema.conversions.customerId, customer_id as string),
+              eq(schema.conversions.type, 'registration'),
+              eq(schema.conversions.userId, affiliate[0].id)
+            ))
+            .limit(1);
+          
+          if (hasRegistration.length > 0 && depositAmount >= parseFloat(house.minDeposit || '0')) {
+            commissionValue += parseFloat(house.cpaValue || '0');
+          }
+        }
+        
+        if (event === 'profit' && depositAmount > 0) {
+          const revsharePercentage = parseFloat(house.revshareValue || '0');
+          commissionValue += (depositAmount * revsharePercentage) / 100;
+        }
+        
+        console.log(`💰 Hybrid: Total R$ ${commissionValue}`);
+      }
+      
+      console.log(`💰 Comissão final calculada: R$ ${commissionValue} (${tipo})`);
+      
+      // Registrar conversão com comissão
       await db.insert(schema.conversions).values({
-        affiliateId: affiliate[0].id,
-        casa: house.name,
-        evento: event as string,
+        userId: affiliate[0].id,
+        houseId: house.id,
+        type: event as string,
+        amount: depositAmount.toString(),
+        commission: commissionValue.toString(),
         customerId: customer_id as string || null,
-        valor: depositAmount.toString(),
-        comissao: commissionValue.toString(),
-        commissionType: tipo,
-        isValid: commissionResult.valid,
-        criadoEm: new Date()
+        conversionData: { house: house.name, event, amount: depositAmount },
+        convertedAt: new Date()
       });
       
       // Criar pagamento se houver comissão
@@ -1277,26 +1319,22 @@ export async function registerRoutes(app: any): Promise<Server> {
     try {
       const userId = req.session.user.id;
       
-      // Buscar conversões reais do banco de dados
+      // Buscar conversões reais do banco de dados usando a tabela correta
       const conversions = await db.select()
         .from(schema.conversions)
-        .where(eq(schema.conversions.affiliateId, userId));
+        .where(eq(schema.conversions.userId, userId));
       
-      console.log(`Conversion stats for user ${userId}:`, conversions.map(c => ({ 
-        type: c.evento, 
-        count: 1, 
-        totalCommission: c.comissao 
-      })));
+      console.log(`User ${userId} conversions found:`, conversions.length);
       
       // Calcular estatísticas reais baseadas nas conversões
-      const totalClicks = conversions.filter(c => c.evento === 'click').length;
-      const totalRegistrations = conversions.filter(c => c.evento === 'registration').length;
-      const totalDeposits = conversions.filter(c => c.evento === 'deposit').length;
+      const totalClicks = conversions.filter(c => c.type === 'click').length;
+      const totalRegistrations = conversions.filter(c => c.type === 'registration').length;
+      const totalDeposits = conversions.filter(c => c.type === 'deposit').length;
       
       // Calcular comissão total real
       const totalCommission = conversions
-        .filter(c => c.comissao && parseFloat(c.comissao) > 0)
-        .reduce((sum, c) => sum + parseFloat(c.comissao), 0);
+        .filter(c => c.commission && parseFloat(c.commission) > 0)
+        .reduce((sum, c) => sum + parseFloat(c.commission), 0);
       
       // Taxa de conversão (registros/cliques * 100)
       const conversionRate = totalClicks > 0 ? Math.round((totalRegistrations / totalClicks) * 100) : 0;
