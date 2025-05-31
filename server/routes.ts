@@ -111,37 +111,6 @@ export async function registerRoutes(app: any): Promise<Server> {
       const logEntry = await db.insert(schema.postbackLogs).values(logData).returning();
       console.log(`✅ Log criado com ID: ${logEntry[0].id}`);
       
-      // FORÇAR SUCESSO IMEDIATO PARA BRAZINO - SOLUÇÃO CRÍTICA
-      if (casa === 'brazzino' || casa === 'brazino') {
-        console.log(`🚀 SUCESSO IMEDIATO PARA BRAZINO - SISTEMA ATIVO`);
-        
-        // Registrar conversão imediatamente
-        try {
-          await db.execute(sql`
-            INSERT INTO conversions (user_id, house_id, type, amount, commission, customer_id, conversion_data)
-            VALUES (2, 4, ${evento}, 0, 25.00, ${subid}, ${JSON.stringify({ customer_id, event: evento, processed_at: new Date().toISOString() })})
-          `);
-          
-          // Atualizar status do log
-          await db.update(schema.postbackLogs)
-            .set({ status: 'SUCCESS_BRAZINO_DIRECT' })
-            .where(eq(schema.postbackLogs.id, logEntry[0].id));
-          
-          console.log(`✅ BRAZINO - Conversão registrada com sucesso para evento: ${evento}`);
-          
-          return res.json({ 
-            status: 'success', 
-            message: 'Postback processado com sucesso - Brazino',
-            event: evento,
-            commission: 25.00,
-            logId: logEntry[0].id
-          });
-        } catch (error) {
-          console.error(`❌ BRAZINO - Erro ao processar:`, error);
-          return res.status(500).json({ error: 'Erro interno ao processar Brazino' });
-        }
-      }
-      
       // Buscar casa pelo identificador no banco de dados
       console.log(`🔍 Buscando casa pelo identificador: "${casa}"`);
       
@@ -150,9 +119,6 @@ export async function registerRoutes(app: any): Promise<Server> {
         .limit(1);
       
       console.log(`🔍 Resultado da busca: ${houses.length} casa(s) encontrada(s)`);
-      if (houses.length > 0) {
-        console.log(`✅ Casa encontrada: ${houses[0].name} (ID: ${houses[0].id})`);
-      }
       
       if (houses.length === 0) {
         console.log(`❌ Casa não encontrada: ${casa}`);
@@ -163,6 +129,54 @@ export async function registerRoutes(app: any): Promise<Server> {
       }
       
       const house = houses[0];
+      console.log(`✅ Casa encontrada: ${house.name} (ID: ${house.id})`);
+      
+      // Calcular comissão baseada na configuração da casa
+      let commissionAmount = 0;
+      
+      if (house.commissionType === 'RevShare' && house.revshareValue) {
+        // Para RevShare, usar valor fixo de exemplo R$ 25,00
+        commissionAmount = 25.00;
+      } else if (house.commissionType === 'CPA' && house.cpaValue) {
+        commissionAmount = parseFloat(house.cpaValue.toString());
+      }
+      
+      console.log(`💰 Comissão calculada: R$ ${commissionAmount} (Tipo: ${house.commissionType})`);
+      
+      // Registrar conversão
+      try {
+        await db.execute(sql`
+          INSERT INTO conversions (user_id, house_id, type, amount, commission, customer_id, conversion_data)
+          VALUES (2, ${house.id}, ${evento}, ${amount || 0}, ${commissionAmount}, ${subid}, ${JSON.stringify({ 
+            customer_id: subid, 
+            event: evento, 
+            house_name: house.name,
+            processed_at: new Date().toISOString() 
+          })})
+        `);
+        
+        // Atualizar status do log
+        await db.update(schema.postbackLogs)
+          .set({ status: 'SUCCESS_CONVERSION_REGISTERED' })
+          .where(eq(schema.postbackLogs.id, logEntry[0].id));
+        
+        console.log(`✅ Conversão registrada com sucesso para ${house.name} - evento: ${evento}`);
+        
+        return res.json({ 
+          status: 'success', 
+          message: `Postback processado com sucesso - ${house.name}`,
+          event: evento,
+          commission: commissionAmount,
+          house: house.name,
+          logId: logEntry[0].id
+        });
+      } catch (error) {
+        console.error(`❌ Erro ao processar conversão para ${house.name}:`, error);
+        await db.update(schema.postbackLogs)
+          .set({ status: 'ERROR_CONVERSION_FAILED' })
+          .where(eq(schema.postbackLogs.id, logEntry[0].id));
+        return res.status(500).json({ error: `Erro interno ao processar ${house.name}` });
+      }
       console.log(`✅ Casa encontrada: ${house.name}`);
       
       // Verificar se o afiliado existe
