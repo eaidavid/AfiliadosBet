@@ -84,7 +84,10 @@ export function useAuth() {
 export function useLogin() {
   return useMutation({
     mutationFn: async (credentials: LoginData) => {
-      const response = await apiRequest("POST", "/api/auth/login", credentials);
+      const response = await apiRequest("POST", "/api/login", {
+        email: credentials.usernameOrEmail,
+        password: credentials.password
+      });
       return response.json();
     },
     onSuccess: (data) => {
@@ -103,7 +106,7 @@ export function useRegister() {
   
   return useMutation({
     mutationFn: async (userData: InsertUser) => {
-      const response = await apiRequest("POST", "/api/auth/register", userData);
+      const response = await apiRequest("POST", "/api/register", userData);
       return response.json();
     },
     onSuccess: (data) => {
