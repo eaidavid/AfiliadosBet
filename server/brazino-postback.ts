@@ -58,6 +58,42 @@ export function setupBrazinoPostback(app: express.Application) {
         });
       }
       
+      // Processar evento de lucro
+      if (evento === 'profit') {
+        const profitAmount = parseFloat(amount as string) || 0;
+        const commission = Math.round(profitAmount * 0.15); // 15% de comissão sobre lucro
+        
+        await db.execute(sql`
+          INSERT INTO conversions (user_id, house_id, affiliate_link_id, type, amount, commission, customer_id, conversion_data, converted_at)
+          VALUES (${affiliateId}, 4, 2, 'profit', ${profitAmount}, ${commission}, ${customer_id}, '{"event":"profit","source":"brazino"}', NOW())
+        `);
+        
+        console.log(`✅ Lucro processado - Valor: R$ ${profitAmount}, Comissão: R$ ${commission}`);
+        return res.json({ 
+          status: 'success', 
+          message: 'Lucro processado',
+          commission: commission
+        });
+      }
+      
+      // Processar evento de saque
+      if (evento === 'payout') {
+        const payoutAmount = parseFloat(amount as string) || 0;
+        const commission = Math.round(payoutAmount * 0.05); // 5% de comissão sobre saque
+        
+        await db.execute(sql`
+          INSERT INTO conversions (user_id, house_id, affiliate_link_id, type, amount, commission, customer_id, conversion_data, converted_at)
+          VALUES (${affiliateId}, 4, 2, 'payout', ${payoutAmount}, ${commission}, ${customer_id}, '{"event":"payout","source":"brazino"}', NOW())
+        `);
+        
+        console.log(`✅ Saque processado - Valor: R$ ${payoutAmount}, Comissão: R$ ${commission}`);
+        return res.json({ 
+          status: 'success', 
+          message: 'Saque processado',
+          commission: commission
+        });
+      }
+      
       return res.status(400).json({ error: 'Evento não suportado' });
       
     } catch (error) {
