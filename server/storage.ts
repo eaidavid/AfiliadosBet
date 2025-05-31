@@ -163,6 +163,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createBettingHouse(houseData: InsertBettingHouse): Promise<BettingHouse> {
+    console.log(`📋 Dados recebidos para criar casa:`, houseData);
+    console.log(`📊 Tipo de comissão recebido: ${houseData.commissionType}`);
+    console.log(`💰 Valor da comissão recebido: ${houseData.commissionValue}`);
+    
     // Gerar identificador único se não fornecido
     const identifier = houseData.identifier || 
       `${houseData.name.toLowerCase().replace(/[^a-z0-9]/g, '')}${Date.now()}`;
@@ -177,18 +181,24 @@ export class DatabaseStorage implements IStorage {
     // Gerar token de segurança único
     const securityToken = `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
+    // Preparar dados para inserção
+    const dataToInsert = {
+      ...houseData,
+      identifier,
+      securityToken,
+      parameterMapping: houseData.parameterMapping || defaultParameterMapping,
+      enabledPostbacks: houseData.enabledPostbacks || []
+    };
+    
+    console.log(`💾 Dados que serão inseridos no banco:`, dataToInsert);
+    
     // Inserir com token de segurança gerado
     const [house] = await db
       .insert(bettingHouses)
-      .values({
-        ...houseData,
-        identifier,
-        securityToken,
-        parameterMapping: houseData.parameterMapping || defaultParameterMapping,
-        enabledPostbacks: houseData.enabledPostbacks || []
-      })
+      .values(dataToInsert)
       .returning();
     
+    console.log(`✅ Casa criada no banco:`, house);
     console.log(`🔐 Token de segurança gerado automaticamente para ${house.name}: ${house.securityToken}`);
     return house;
   }
