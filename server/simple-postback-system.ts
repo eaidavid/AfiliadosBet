@@ -37,11 +37,11 @@ export function setupPostbackRoutes(app: express.Application) {
       
       const affiliateId = affiliateResult.rows[0].id;
       
-      // Registrar conversão baseada no evento
+      // Registrar conversão baseada no evento usando a coluna correta 'type'
       if (evento === 'register') {
         await db.execute(sql`
-          INSERT INTO conversions (user_id, house_id, event_type, commission_amount, conversion_data)
-          VALUES (${affiliateId}, 3, 'registration', 10, ${JSON.stringify({ customer_id, event: evento })})
+          INSERT INTO conversions (user_id, house_id, affiliate_link_id, type, amount, commission, customer_id, conversion_data)
+          VALUES (${affiliateId}, 3, 1, 'registration', ${amount || 0}, 25.00, ${customer_id}, ${JSON.stringify({ event: evento, processed_at: new Date().toISOString() })})
         `);
         
         console.log(`✅ Registro processado para afiliado ${subid}`);
@@ -57,8 +57,8 @@ export function setupPostbackRoutes(app: express.Application) {
         const commission = Math.round(depositAmount * 0.30); // 30% RevShare
         
         await db.execute(sql`
-          INSERT INTO conversions (user_id, house_id, event_type, commission_amount, conversion_data)
-          VALUES (${affiliateId}, 3, 'deposit', ${commission}, ${JSON.stringify({ customer_id, amount: depositAmount, event: evento })})
+          INSERT INTO conversions (user_id, house_id, affiliate_link_id, type, amount, commission, customer_id, conversion_data)
+          VALUES (${affiliateId}, 3, 1, 'deposit', ${depositAmount}, ${commission}, ${customer_id}, ${JSON.stringify({ event: evento, processed_at: new Date().toISOString() })})
         `);
         
         console.log(`✅ Depósito processado: R$ ${depositAmount}, comissão: R$ ${commission}`);
@@ -74,8 +74,8 @@ export function setupPostbackRoutes(app: express.Application) {
         const commission = Math.round(profitAmount * 0.30); // 30% RevShare
         
         await db.execute(sql`
-          INSERT INTO conversions (user_id, house_id, event_type, commission_amount, conversion_data)
-          VALUES (${affiliateId}, 3, 'profit', ${commission}, ${JSON.stringify({ customer_id, amount: profitAmount, event: evento })})
+          INSERT INTO conversions (user_id, house_id, affiliate_link_id, type, amount, commission, customer_id, conversion_data)
+          VALUES (${affiliateId}, 3, 1, 'profit', ${profitAmount}, ${commission}, ${customer_id}, ${JSON.stringify({ event: evento, processed_at: new Date().toISOString() })})
         `);
         
         console.log(`✅ Lucro processado: R$ ${profitAmount}, comissão: R$ ${commission}`);
@@ -88,8 +88,8 @@ export function setupPostbackRoutes(app: express.Application) {
       
       if (evento === 'payout') {
         await db.execute(sql`
-          INSERT INTO conversions (user_id, house_id, event_type, commission_amount, conversion_data)
-          VALUES (${affiliateId}, 3, 'payout', 0, ${JSON.stringify({ customer_id, event: evento })})
+          INSERT INTO conversions (user_id, house_id, affiliate_link_id, type, amount, commission, customer_id, conversion_data)
+          VALUES (${affiliateId}, 3, 1, 'payout', 0, 0, ${customer_id}, ${JSON.stringify({ event: evento, processed_at: new Date().toISOString() })})
         `);
         
         console.log(`✅ Payout processado para cliente ${customer_id}`);
