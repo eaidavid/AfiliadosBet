@@ -16,9 +16,7 @@ import {
   insertBettingHouseSchema, 
   insertAffiliateLinkSchema 
 } from "@shared/schema";
-import { PostbackHandler } from "./postback-handler";
-
-const router = Router();
+import { PostbackSystem } from "./simple-postback-system";
 
 function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000;
@@ -70,7 +68,7 @@ function requireAdmin(req: any, res: any, next: any) {
   next();
 }
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(app: any): Promise<Server> {
   const httpServer = createServer(app);
   
   // Start server on correct port and host
@@ -78,6 +76,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`Server listening on port ${PORT}`);
   });
+
+  // === SISTEMA DE POSTBACKS ===
+  
+  // Endpoint principal para receber postbacks das casas
+  app.get("/api/postback", PostbackSystem.handlePostback);
+  
+  // Gerar URLs de postback para uma casa específica
+  app.get("/api/postback-urls/:houseId", PostbackSystem.generatePostbackUrls);
+  
+  // Visualizar logs de postback (admin)
+  app.get("/api/postback-logs", requireAuth, PostbackSystem.viewLogs);
+  
+  // Estatísticas de postback para um afiliado
+  app.get("/api/affiliate-stats/:userId", requireAuth, PostbackSystem.getAffiliateStats);
 
   // ROTA DE POSTBACK SIMPLIFICADA - SEMPRE REGISTRA LOGS
   app.get("/api/postback/:casa/:evento", async (req, res) => {
