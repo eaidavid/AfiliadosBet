@@ -1628,22 +1628,42 @@ export async function registerRoutes(app: any): Promise<Server> {
 
   app.post("/api/admin/registered-postbacks", requireAdmin, async (req, res) => {
     try {
-      const { name, url, houseId, houseName, eventType, description } = req.body;
+      console.log('Dados recebidos na rota:', req.body);
+      const { name, url, houseId, houseName, eventType, description, isActive } = req.body;
       
-      const [postback] = await db.insert(schema.registeredPostbacks).values({
+      // Validar campos obrigatórios
+      if (!name || !url || !houseName || !eventType) {
+        console.log('Campos obrigatórios faltando:', { name, url, houseName, eventType });
+        return res.status(400).json({ 
+          error: 'Campos obrigatórios faltando',
+          missing: {
+            name: !name,
+            url: !url,
+            houseName: !houseName,
+            eventType: !eventType
+          }
+        });
+      }
+      
+      const postbackData = {
         name,
         url,
-        houseId,
+        houseId: houseId || null,
         houseName,
         eventType,
-        description,
-        isActive: true
-      }).returning();
+        description: description || null,
+        isActive: isActive !== undefined ? isActive : true
+      };
       
+      console.log('Dados a inserir:', postbackData);
+      
+      const [postback] = await db.insert(schema.registeredPostbacks).values(postbackData).returning();
+      
+      console.log('Postback criado com sucesso:', postback);
       res.json(postback);
     } catch (error) {
       console.error('Erro ao criar postback registrado:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      res.status(500).json({ error: 'Erro interno do servidor', details: error.message });
     }
   });
 
