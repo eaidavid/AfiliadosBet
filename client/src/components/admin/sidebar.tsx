@@ -122,7 +122,7 @@ export default function AdminSidebar({ currentPage, onPageChange }: AdminSidebar
   // Desktop Sidebar
   return (
     <div
-      className={`relative h-full bg-slate-900/50 backdrop-blur-sm border-r border-slate-700/50 transition-all duration-300 ${
+      className={`fixed inset-y-0 left-0 z-40 bg-slate-900/50 backdrop-blur-sm border-r border-slate-700/50 transition-all duration-300 ${
         isCollapsed ? "w-20" : "w-72"
       }`}
     >

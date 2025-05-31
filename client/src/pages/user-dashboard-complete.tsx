@@ -307,20 +307,24 @@ export default function UserDashboardComplete() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="flex">
-        {!isMobile && (
-          <UserSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
-        )}
+      {/* Mobile sidebar */}
+      {isMobile && (
+        <UserSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
+      )}
+      
+      {/* Desktop sidebar */}
+      {!isMobile && (
+        <UserSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
+      )}
+      
+      <div className={`${!isMobile ? "ml-72" : ""}`}>
+        <UserTopBar onPageChange={setCurrentPage} />
         
-        <div className="flex-1">
-          <UserTopBar onPageChange={setCurrentPage} />
-          
-          <main className="p-4 lg:p-6 overflow-x-hidden">
-            <div className="max-w-full">
-              {renderCurrentPage()}
-            </div>
-          </main>
-        </div>
+        <main className="p-4 lg:p-6 overflow-x-hidden">
+          <div className="max-w-full">
+            {renderCurrentPage()}
+          </div>
+        </main>
       </div>
     </div>
   );
