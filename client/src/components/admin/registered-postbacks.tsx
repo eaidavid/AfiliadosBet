@@ -339,8 +339,13 @@ export default function RegisteredPostbacks({ onPageChange }: RegisteredPostback
                   type="submit" 
                   className="bg-emerald-600 hover:bg-emerald-700"
                   disabled={createMutation.isPending || updateMutation.isPending}
+                  onClick={(e) => {
+                    console.log("Botão clicado!");
+                    e.preventDefault();
+                    handleSubmit(e);
+                  }}
                 >
-                  {editingPostback ? "Atualizar" : "Registrar"}
+                  {createMutation.isPending || updateMutation.isPending ? "Processando..." : (editingPostback ? "Atualizar" : "Registrar")}
                 </Button>
               </div>
             </form>
