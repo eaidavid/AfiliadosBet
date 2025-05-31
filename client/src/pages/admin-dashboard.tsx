@@ -5,6 +5,7 @@ import AffiliatesManagement from "@/components/admin/affiliates-management";
 import LinksManagement from "@/components/admin/links-management";
 import PostbackLogs from "@/components/admin/postback-logs";
 import SimplePostbackForm from "@/components/admin/simple-postback-form";
+import PostbackGenerator from "@/components/admin/postback-generator";
 import CommissionsManagement from "@/components/admin/commissions-management";
 import ReportsManagement from "@/components/admin/reports-management";
 import SettingsManagement from "@/components/admin/settings-management";
@@ -30,6 +31,8 @@ export default function AdminDashboard() {
         return <AffiliatesManagement onPageChange={setCurrentPage} />;
       case "links":
         return <LinksManagement onPageChange={setCurrentPage} />;
+      case "postback-generator":
+        return <PostbackGenerator onPageChange={setCurrentPage} />;
       case "postbacks":
         return <PostbackLogs onPageChange={setCurrentPage} />;
       case "registered-postbacks":

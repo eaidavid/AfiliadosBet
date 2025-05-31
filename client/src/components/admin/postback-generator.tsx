@@ -20,7 +20,7 @@ export default function PostbackGenerator({ onPageChange }: PostbackGeneratorPro
   const [amount, setAmount] = useState('');
   const { toast } = useToast();
 
-  const { data: houses } = useQuery({
+  const { data: houses = [] } = useQuery({
     queryKey: ["/api/admin/betting-houses"],
   });
 
@@ -39,7 +39,8 @@ export default function PostbackGenerator({ onPageChange }: PostbackGeneratorPro
     if (!selectedHouse || !eventType) return '';
 
     const selectedEvent = eventTypes.find(e => e.value === eventType);
-    const house = houses?.find(h => h.id.toString() === selectedHouse);
+    const housesArray = Array.isArray(houses) ? houses : [];
+    const house = housesArray.find((h: any) => h.id.toString() === selectedHouse);
     
     if (!house) return '';
 
@@ -104,7 +105,7 @@ export default function PostbackGenerator({ onPageChange }: PostbackGeneratorPro
                   <SelectValue placeholder="Selecione uma casa" />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-700 border-slate-600">
-                  {houses?.map((house) => (
+                  {Array.isArray(houses) && (houses as any[]).map((house: any) => (
                     <SelectItem 
                       key={house.id} 
                       value={house.id.toString()}
