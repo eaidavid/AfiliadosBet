@@ -9,6 +9,71 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Login endpoint
+app.post("/api/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    if (email === "admin@afiliadosbet.com" && password === "123456") {
+      return res.json({
+        user: {
+          id: 1,
+          email: "admin@afiliadosbet.com",
+          name: "Administrador",
+          role: "admin"
+        },
+        token: "admin-token-123"
+      });
+    }
+    
+    if (email === "user@afiliadosbet.com" && password === "123456") {
+      return res.json({
+        user: {
+          id: 2,
+          email: "user@afiliadosbet.com", 
+          name: "David Afiliado",
+          role: "user"
+        },
+        token: "user-token-456"
+      });
+    }
+    
+    return res.status(401).json({
+      error: "Credenciais inválidas"
+    });
+    
+  } catch (error) {
+    console.error("Erro no login:", error);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
+
+// Register endpoint
+app.post("/api/register", async (req, res) => {
+  try {
+    const { name, email, password, cpf, phone } = req.body;
+    
+    const newUser = {
+      id: Math.floor(Math.random() * 1000) + 100,
+      name,
+      email,
+      cpf,
+      phone,
+      role: "user",
+      status: "active"
+    };
+    
+    res.json({
+      user: newUser,
+      token: `user-token-${newUser.id}`
+    });
+    
+  } catch (error) {
+    console.error("Erro no registro:", error);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
+
 // Sistema de postback com cálculo correto de comissões
 app.get("/api/postback/:casa/:evento", async (req, res) => {
   try {
