@@ -149,8 +149,8 @@ export async function registerRoutes(app: any): Promise<Server> {
       
       let houses = [];
       
-      // Para casa brazzino especificamente - hardcode temporário para resolver urgência
-      console.log(`🔍 Verificando se casa "${casa}" === "brazzino"`);
+      // Para casas brazino e brazzino especificamente - hardcode temporário para resolver urgência
+      console.log(`🔍 Verificando se casa "${casa}" === "brazzino" ou "brazino"`);
       if (casa === 'brazzino') {
         console.log(`🎯 MATCH! Casa brazzino detectada - aplicando configuração direta`);
         houses = [{
@@ -162,8 +162,19 @@ export async function registerRoutes(app: any): Promise<Server> {
           enabledPostbacks: ['register', 'deposit', 'profit', 'payout']
         }];
         console.log(`✅ Casa brazzino encontrada - usando configuração direta`);
+      } else if (casa === 'brazino') {
+        console.log(`🎯 MATCH! Casa brazino detectada - aplicando configuração direta`);
+        houses = [{
+          id: 4,
+          name: 'Brazino',
+          identifier: 'brazino',
+          commissionType: 'RevShare',
+          revshareValue: 30,
+          enabledPostbacks: ['register', 'first_deposit', 'deposit', 'revenue', 'profit']
+        }];
+        console.log(`✅ Casa brazino encontrada - usando configuração direta`);
       } else {
-        console.log(`❌ Casa "${casa}" não é brazzino`);
+        console.log(`❌ Casa "${casa}" não é brazzino nem brazino`);
       }
       
       if (houses.length === 0) {
