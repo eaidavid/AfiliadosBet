@@ -1670,12 +1670,23 @@ export async function registerRoutes(app: any): Promise<Server> {
       .leftJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
       .orderBy(sql`${schema.conversions.convertedAt} DESC`);
 
-      // Estatísticas agregadas
+      console.log("🔍 Relatórios Gerais - Total de conversões encontradas:", conversions.length);
+      console.log("🔍 Tipos de conversões:", conversions.map(c => c.type));
+
+      // Estatísticas agregadas - usando a mesma lógica que funciona no getUserStats
       const totalClicks = conversions.filter(c => c.type === 'click').length;
       const totalRegistrations = conversions.filter(c => c.type === 'registration').length;
-      const totalDeposits = conversions.filter(c => c.type === 'deposit').length;
+      const totalDeposits = conversions.filter(c => c.type === 'deposit' || c.type === 'first_deposit' || c.type === 'recurring_deposit').length;
       const totalRecurringDeposits = conversions.filter(c => c.type === 'recurring_deposit').length;
       const totalProfits = conversions.filter(c => c.type === 'profit').length;
+      
+      console.log("📊 Estatísticas calculadas:", {
+        totalClicks,
+        totalRegistrations,
+        totalDeposits,
+        totalRecurringDeposits,
+        totalProfits
+      });
       
       const totalCommission = conversions
         .filter(c => c.commission && parseFloat(c.commission) > 0)
