@@ -147,28 +147,44 @@ export async function registerRoutes(app: any): Promise<Server> {
         console.log(`✅ Entrando na lógica RevShare`);
         const percentage = parseFloat(house.commissionValue || '30');
         
-        // RevShare: percentual sobre valores monetários
-        if (['deposit', 'revenue', 'profit'].includes(evento) && eventAmount > 0) {
+        // RevShare: APENAS sobre valores de profit (lucro líquido da casa)
+        if (evento === 'profit' && eventAmount > 0) {
           commissionAmount = (eventAmount * percentage) / 100;
-          console.log(`💰 RevShare sobre ${evento}: ${percentage}% de R$ ${eventAmount} = R$ ${commissionAmount}`);
-        }
-        // Comissão fixa para registros
-        else if (evento === 'registration') {
-          commissionAmount = 50.00; // R$ 50 por registro
-          console.log(`💰 Comissão fixa por registro: R$ ${commissionAmount}`);
-        }
-        // Comissão para clicks
-        else if (evento === 'click') {
-          commissionAmount = 5.00; // R$ 5 por click
-          console.log(`💰 Comissão por click: R$ ${commissionAmount}`);
+          console.log(`💰 RevShare sobre profit: ${percentage}% de R$ ${eventAmount} = R$ ${commissionAmount}`);
         }
         else {
-          console.log(`⚠️ Evento ${evento} não tem comissão configurada`);
+          console.log(`⚠️ RevShare só paga sobre profit. Evento ${evento} não gera comissão.`);
         }
       } else if (house.commissionType === 'CPA') {
-        if (evento === 'deposit' && eventAmount >= parseFloat(house.minDeposit || '0')) {
-          commissionAmount = parseFloat(house.commissionValue || '0');
-          console.log(`💰 CPA válido: Depósito R$ ${eventAmount} >= Mínimo R$ ${house.minDeposit}, Comissão: R$ ${commissionAmount}`);
+        console.log(`✅ Entrando na lógica CPA`);
+        
+        // CPA: Precisa ter TANTO registro QUANTO depósito para pagar
+        // Verificar se já existe registro para este customer_id
+        const existingRegistration = await db.select()
+          .from(schema.conversions)
+          .where(and(
+            eq(schema.conversions.houseId, house.id),
+            eq(schema.conversions.customerId, subid as string),
+            eq(schema.conversions.type, 'registration')
+          ))
+          .limit(1);
+        
+        if (evento === 'registration') {
+          // Apenas registrar o evento, não pagar ainda
+          console.log(`📝 Registro salvo para ${subid}. Aguardando depósito para pagar CPA.`);
+          commissionAmount = 0;
+        } else if (evento === 'deposit' && eventAmount >= parseFloat(house.minDeposit || '0')) {
+          // Verificar se tem registro prévio
+          if (existingRegistration.length > 0) {
+            commissionAmount = parseFloat(house.commissionValue || '0');
+            console.log(`💰 CPA válido: Registro + Depósito R$ ${eventAmount} >= Mínimo R$ ${house.minDeposit}, Comissão: R$ ${commissionAmount}`);
+          } else {
+            console.log(`⚠️ CPA não pago: Depósito sem registro prévio para ${subid}`);
+            commissionAmount = 0;
+          }
+        } else {
+          console.log(`⚠️ CPA: Evento ${evento} não gera comissão ou depósito insuficiente`);
+          commissionAmount = 0;
         }
       } else {
         console.log(`⚠️ Tipo de comissão desconhecido: ${house.commissionType}`);
