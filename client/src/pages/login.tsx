@@ -47,10 +47,10 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
+    <div className="mobile-safe bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4 no-bounce safe-area">
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-blue-600/5"></div>
       
-      <Card className="w-full max-w-md bg-slate-900/90 border-slate-700 backdrop-blur-sm">
+      <Card className="w-full max-w-md bg-slate-900/90 border-slate-700 backdrop-blur-sm touch-target">
         <CardHeader className="text-center space-y-4">
           <div className="w-16 h-16 mx-auto flex items-center justify-center">
             <img 
@@ -84,7 +84,7 @@ export default function Login() {
                 id="usernameOrEmail"
                 type="text"
                 placeholder="Digite seu email ou usuário"
-                className="bg-slate-800 border-slate-600 text-white placeholder-slate-400 focus:border-emerald-500"
+                className="bg-slate-800 border-slate-600 text-white placeholder-slate-400 focus:border-emerald-500 mobile-input touch-target"
                 {...form.register("usernameOrEmail")}
               />
               {form.formState.errors.usernameOrEmail && (
@@ -103,7 +103,7 @@ export default function Login() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Digite sua senha"
-                  className="bg-slate-800 border-slate-600 text-white placeholder-slate-400 focus:border-emerald-500 pr-10"
+                  className="bg-slate-800 border-slate-600 text-white placeholder-slate-400 focus:border-emerald-500 pr-10 mobile-input touch-target"
                   {...form.register("password")}
                 />
                 <Button
@@ -125,7 +125,7 @@ export default function Login() {
 
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700 text-white font-semibold"
+              className="w-full bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700 text-white font-semibold touch-target"
               disabled={login.isPending}
             >
               {login.isPending ? (
