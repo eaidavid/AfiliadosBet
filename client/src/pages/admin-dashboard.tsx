@@ -20,8 +20,8 @@ export default function AdminDashboard() {
   const [currentPage, setCurrentPage] = useState("dashboard");
   const isMobile = useIsMobile();
   
-  // Ativar atualização em tempo real via WebSocket
-  useRealtime();
+  // Atualização em tempo real temporariamente desabilitada para estabilidade
+  // useRealtime();
 
   const { data: adminStats = {} } = useQuery({
     queryKey: ["/api/admin/stats"],

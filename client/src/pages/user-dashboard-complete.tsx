@@ -22,8 +22,8 @@ export default function UserDashboardComplete() {
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
   
-  // Ativar atualização em tempo real via WebSocket
-  useRealtime();
+  // Atualização em tempo real temporariamente desabilitada para estabilidade
+  // useRealtime();
 
   // Sistema de atualização em tempo real
   useRealtimeData({

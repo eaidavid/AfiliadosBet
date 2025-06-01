@@ -8,6 +8,9 @@ export function useRealtime() {
 
   const connect = () => {
     try {
+      // Verificar se estamos no browser
+      if (typeof window === 'undefined') return;
+      
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       const wsUrl = `${protocol}//${window.location.host}/ws`;
       
