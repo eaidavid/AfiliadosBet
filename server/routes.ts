@@ -155,11 +155,10 @@ export async function registerRoutes(app: any): Promise<Server> {
         else {
           console.log(`⚠️ RevShare só paga sobre profit. Evento ${evento} não gera comissão.`);
         }
-      } else if (house.commissionType === 'CPA' || house.commissionType === 'Hybrid') {
-        console.log(`✅ Entrando na lógica CPA/Hybrid`);
+      } else if (house.commissionType === 'CPA') {
+        console.log(`✅ Entrando na lógica CPA`);
         
-        // CPA/Hybrid: Precisa ter TANTO registro QUANTO depósito para pagar
-        // Verificar se já existe registro para este customer_id
+        // CPA: Precisa ter TANTO registro QUANTO depósito para pagar
         const existingRegistration = await db.select()
           .from(schema.conversions)
           .where(and(
@@ -186,6 +185,39 @@ export async function registerRoutes(app: any): Promise<Server> {
           console.log(`⚠️ CPA: Evento ${evento} não gera comissão ou depósito insuficiente`);
           commissionAmount = 0;
         }
+      } else if (house.commissionType === 'Hybrid') {
+        console.log(`✅ Entrando na lógica Hybrid`);
+        
+        // Hybrid: CPA para registro+depósito E RevShare para profit
+        let cpaCommission = 0;
+        let revShareCommission = 0;
+        
+        if (evento === 'registration') {
+          console.log(`📝 Registro salvo para ${subid}. Aguardando depósito para pagar CPA.`);
+        } else if (evento === 'deposit' && eventAmount >= parseFloat(house.minDeposit || '0')) {
+          // Verificar se tem registro prévio para CPA
+          const existingRegistration = await db.select()
+            .from(schema.conversions)
+            .where(and(
+              eq(schema.conversions.houseId, house.id),
+              eq(schema.conversions.customerId, subid as string),
+              eq(schema.conversions.type, 'registration')
+            ))
+            .limit(1);
+          
+          if (existingRegistration.length > 0) {
+            cpaCommission = parseFloat(house.cpaValue || house.commissionValue || '0');
+            console.log(`💰 CPA Hybrid válido: R$ ${cpaCommission}`);
+          }
+        } else if (evento === 'profit' && eventAmount > 0) {
+          // RevShare para profit
+          const percentage = parseFloat(house.revshareValue || house.commissionValue || '30');
+          revShareCommission = (eventAmount * percentage) / 100;
+          console.log(`💰 RevShare Hybrid sobre profit: ${percentage}% de R$ ${eventAmount} = R$ ${revShareCommission}`);
+        }
+        
+        commissionAmount = cpaCommission + revShareCommission;
+        console.log(`💰 Total Hybrid: CPA R$ ${cpaCommission} + RevShare R$ ${revShareCommission} = R$ ${commissionAmount}`)
       } else {
         console.log(`⚠️ Tipo de comissão desconhecido: ${house.commissionType}`);
       }
@@ -214,13 +246,13 @@ export async function registerRoutes(app: any): Promise<Server> {
       if (affiliateUserId) {
         try {
           await db.execute(sql`
-            INSERT INTO conversions (user_id, house_id, type, amount, commission, customer_id, conversion_data)
+            INSERT INTO conversions (user_id, house_id, type, amount, commission, customer_id, conversion_data, status)
             VALUES (${affiliateUserId}, ${house.id}, ${evento}, ${amount || 0}, ${commissionAmount}, ${subid}, ${JSON.stringify({ 
               customer_id: subid, 
               event: evento, 
               house_name: house.name,
               processed_at: new Date().toISOString() 
-            })})
+            })}, 'pending')
         `);
         
         // Atualizar status do log
@@ -1867,9 +1899,13 @@ export async function registerRoutes(app: any): Promise<Server> {
         .filter(c => (c.type === 'deposit' || c.type === 'first_deposit' || c.type === 'recurring_deposit') && c.amount)
         .reduce((sum, c) => sum + parseFloat(c.amount || '0'), 0);
       
-      // Comissões pagas totais
+      // Comissões pendentes e pagas
+      const pendingCommissions = allConversions
+        .filter(c => c.commission && parseFloat(c.commission) > 0 && c.status === 'pending')
+        .reduce((sum, c) => sum + parseFloat(c.commission), 0);
+      
       const paidCommissions = allConversions
-        .filter(c => c.commission && parseFloat(c.commission) > 0)
+        .filter(c => c.commission && parseFloat(c.commission) > 0 && c.status === 'paid')
         .reduce((sum, c) => sum + parseFloat(c.commission), 0);
       
       console.log("📊 Estatísticas calculadas:", {
@@ -1919,6 +1955,8 @@ export async function registerRoutes(app: any): Promise<Server> {
         activeHouses: houses.filter(h => h.isActive).length,
         totalVolume: totalVolume.toFixed(2),
         paidCommissions: paidCommissions.toFixed(2),
+        pendingCommissions: pendingCommissions.toFixed(2),
+        totalCommissions: (paidCommissions + pendingCommissions).toFixed(2),
         topAffiliates: affiliateStats,
         topHouses: houseStats,
         totalClicks,
