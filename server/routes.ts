@@ -937,6 +937,135 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // Endpoint para buscar comissões por afiliado
+  app.get("/api/admin/affiliate-commissions", async (req, res) => {
+    try {
+      // Verificar acesso admin
+      if (!req.session?.user || req.session.user.role !== 'admin') {
+        return res.status(401).json({ error: "Acesso negado" });
+      }
+
+      console.log("🔍 Buscando comissões por afiliado");
+
+      // Buscar todos os afiliados
+      const affiliates = await db.select()
+        .from(schema.users)
+        .where(eq(schema.users.role, 'user'));
+
+      // Buscar todas as comissões
+      const allCommissions = await db.select()
+        .from(schema.comissoes);
+
+      // Buscar todos os pagamentos
+      const allPayments = await db.select()
+        .from(schema.payments);
+
+      const affiliateCommissions = affiliates.map(affiliate => {
+        // Buscar comissões do afiliado
+        const affiliateComms = allCommissions.filter(c => c.afiliadoId === affiliate.id);
+        
+        // Buscar pagamentos do afiliado
+        const affiliatePayments = allPayments.filter(p => p.userId === affiliate.id);
+        
+        // Calcular totais
+        const totalCommissions = affiliateComms.reduce((sum, c) => sum + parseFloat(c.valor), 0);
+        const paidAmount = affiliatePayments
+          .filter(p => p.status === 'paid')
+          .reduce((sum, p) => sum + parseFloat(p.amount), 0);
+        const pendingAmount = affiliatePayments
+          .filter(p => p.status === 'pending')
+          .reduce((sum, p) => sum + parseFloat(p.amount), 0);
+
+        return {
+          affiliateId: affiliate.id,
+          username: affiliate.username,
+          email: affiliate.email,
+          pix: affiliate.pix || 'Não informado',
+          totalCommissions,
+          pendingAmount,
+          paidAmount,
+          totalConversions: affiliateComms.length,
+          lastActivity: affiliateComms.length > 0 ? 
+            new Date(Math.max(...affiliateComms.map(c => new Date(c.criadoEm).getTime()))) : null
+        };
+      });
+
+      console.log(`✅ ${affiliateCommissions.length} afiliados com dados de comissão processados`);
+      res.json(affiliateCommissions);
+
+    } catch (error) {
+      console.error("Erro ao buscar comissões por afiliado:", error);
+      res.status(500).json({ error: "Erro interno" });
+    }
+  });
+
+  // Endpoint para buscar top casas com dados reais
+  app.get("/api/admin/top-houses", async (req, res) => {
+    try {
+      // Verificar acesso admin
+      if (!req.session?.user || req.session.user.role !== 'admin') {
+        return res.status(401).json({ error: "Acesso negado" });
+      }
+
+      console.log("🏆 Buscando top casas com dados reais");
+
+      // Buscar todas as casas
+      const houses = await db.select()
+        .from(schema.bettingHouses);
+
+      // Buscar todas as conversões
+      const allConversions = await db.select()
+        .from(schema.conversions);
+
+      // Buscar todos os cliques
+      const allClicks = await db.select()
+        .from(schema.clicks);
+
+      const houseStats = houses.map(house => {
+        // Conversões da casa
+        const houseConversions = allConversions.filter(c => c.houseId === house.id);
+        
+        // Cliques da casa
+        const houseClicks = allClicks.filter(c => c.houseId === house.id);
+        
+        // Calcular estatísticas
+        const totalClicks = houseClicks.length;
+        const totalConversions = houseConversions.length;
+        const conversionRate = totalClicks > 0 ? (totalConversions / totalClicks) * 100 : 0;
+        
+        // Calcular receita total
+        const totalRevenue = houseConversions.reduce((sum, conv) => {
+          if (conv.eventType === 'deposit') {
+            return sum + parseFloat(conv.value || '0');
+          }
+          return sum;
+        }, 0);
+
+        return {
+          id: house.id,
+          name: house.name,
+          totalClicks,
+          totalConversions,
+          conversionRate: parseFloat(conversionRate.toFixed(2)),
+          totalRevenue,
+          logo: house.logo || '/placeholder-logo.png'
+        };
+      });
+
+      // Ordenar por receita total (descendente) e pegar os top 5
+      const topHouses = houseStats
+        .sort((a, b) => b.totalRevenue - a.totalRevenue)
+        .slice(0, 5);
+
+      console.log(`✅ Top ${topHouses.length} casas processadas`);
+      res.json(topHouses);
+
+    } catch (error) {
+      console.error("Erro ao buscar top casas:", error);
+      res.status(500).json({ error: "Erro interno" });
+    }
+  });
+
   // Endpoint para processar pagamento de comissões
   app.post("/api/commissions/process-payment/:affiliateId", async (req, res) => {
     try {

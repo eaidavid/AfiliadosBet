@@ -48,35 +48,33 @@ export default function CommissionsManagement({ onPageChange }: CommissionsManag
   });
 
   // Query for commission summary by affiliate
-  const { data: affiliateCommissions = [] } = useQuery({
-    queryKey: ["/api/admin/reports/by-affiliate"],
+  const { data: affiliateCommissions = [], isLoading: commissionsLoading } = useQuery({
+    queryKey: ["/api/admin/affiliate-commissions"],
     retry: false,
   });
 
   // Calculate commission statistics
   const commissionStats = {
     totalCommissions: affiliateCommissions.reduce((sum: number, affiliate: any) => 
-      sum + parseFloat(affiliate.totalCommission || 0), 0),
-    pendingCommissions: safeCommissions
-      .filter((c: any) => c.status === 'pending')
-      .reduce((sum: number, c: any) => sum + parseFloat(c.valor || 0), 0),
-    paidCommissions: safeCommissions
-      .filter((c: any) => c.status === 'paid')
-      .reduce((sum: number, c: any) => sum + parseFloat(c.valor || 0), 0),
+      sum + parseFloat(affiliate.totalCommissions || 0), 0),
+    pendingCommissions: affiliateCommissions.reduce((sum: number, affiliate: any) => 
+      sum + parseFloat(affiliate.pendingAmount || 0), 0),
+    paidCommissions: affiliateCommissions.reduce((sum: number, affiliate: any) => 
+      sum + parseFloat(affiliate.paidAmount || 0), 0),
     totalAffiliates: affiliates.length,
   };
 
   const processPayment = useMutation({
-    mutationFn: async (commissionId: number) => {
-      const response = await apiRequest("POST", `/api/admin/commissions/${commissionId}/pay`, {});
+    mutationFn: async (affiliateId: number) => {
+      const response = await apiRequest("POST", `/api/commissions/process-payment/${affiliateId}`, {});
       return response.json();
     },
     onSuccess: () => {
       toast({
         title: "Sucesso!",
-        description: "Comissão processada com sucesso.",
+        description: "Pagamento processado com sucesso.",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/commissions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/affiliate-commissions"] });
     },
   });
 
@@ -277,50 +275,63 @@ export default function CommissionsManagement({ onPageChange }: CommissionsManag
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {affiliateCommissions.map((affiliate: any) => {
-                      const pendingAmount = safeCommissions
-                        .filter((c: any) => c.affiliateId === affiliate.affiliateId && c.status === 'pending')
-                        .reduce((sum: number, c: any) => sum + parseFloat(c.valor || 0), 0);
-                      
-                      const paidAmount = safeCommissions
-                        .filter((c: any) => c.affiliateId === affiliate.affiliateId && c.status === 'paid')
-                        .reduce((sum: number, c: any) => sum + parseFloat(c.valor || 0), 0);
+                    {commissionsLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center text-slate-400">
+                          Carregando comissões...
+                        </TableCell>
+                      </TableRow>
+                    ) : affiliateCommissions.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center text-slate-400">
+                          Nenhum afiliado com comissões encontrado
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      affiliateCommissions.map((affiliate: any) => {
+                        const totalAmount = parseFloat(affiliate.totalCommissions || 0);
+                        const pendingAmount = parseFloat(affiliate.pendingAmount || 0);
+                        const paidAmount = parseFloat(affiliate.paidAmount || 0);
 
-                      return (
-                        <TableRow key={affiliate.affiliateId} className="border-slate-700">
-                          <TableCell className="text-white font-medium">
-                            {affiliate.affiliateName}
-                          </TableCell>
-                          <TableCell className="text-emerald-400 font-medium">
-                            R$ {parseFloat(affiliate.totalCommission || 0).toFixed(2)}
-                          </TableCell>
-                          <TableCell className="text-yellow-400">
-                            R$ {pendingAmount.toFixed(2)}
-                          </TableCell>
-                          <TableCell className="text-green-400">
-                            R$ {paidAmount.toFixed(2)}
-                          </TableCell>
-                          <TableCell className="text-slate-300">
-                            {affiliate.totalConversions || 0}
-                          </TableCell>
-                          <TableCell>
-                            {pendingAmount > 0 && (
-                              <Button
-                                size="sm"
-                                onClick={() => processPayment.mutate(affiliate.affiliateId)}
-                                disabled={processPayment.isPending}
-                                className="bg-emerald-600 hover:bg-emerald-700"
-                              >
-                                {processPayment.isPending ? 'Processando...' : 'Marcar como Pago'}
-                              </Button>
-                            )}
-                            {pendingAmount === 0 && (
-                              <span className="text-slate-500 text-sm">Nenhuma comissão pendente</span>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
+                        return (
+                          <TableRow key={affiliate.affiliateId} className="border-slate-700">
+                            <TableCell>
+                              <div>
+                                <p className="font-medium text-white">{affiliate.username}</p>
+                                <p className="text-sm text-slate-400">{affiliate.email}</p>
+                                <p className="text-xs text-emerald-400">PIX: {affiliate.pix}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-emerald-400 font-medium">
+                              R$ {totalAmount.toFixed(2)}
+                            </TableCell>
+                            <TableCell className="text-yellow-400">
+                              R$ {pendingAmount.toFixed(2)}
+                            </TableCell>
+                            <TableCell className="text-green-400">
+                              R$ {paidAmount.toFixed(2)}
+                            </TableCell>
+                            <TableCell className="text-slate-300">
+                              {affiliate.totalConversions || 0}
+                            </TableCell>
+                            <TableCell>
+                              {pendingAmount > 0 ? (
+                                <Button
+                                  size="sm"
+                                  onClick={() => processPayment.mutate(affiliate.affiliateId)}
+                                  disabled={processPayment.isPending}
+                                  className="bg-emerald-600 hover:bg-emerald-700"
+                                >
+                                  {processPayment.isPending ? 'Processando...' : `Pagar R$ ${pendingAmount.toFixed(2)}`}
+                                </Button>
+                              ) : (
+                                <span className="text-slate-500 text-sm">Nenhuma comissão pendente</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
                   </TableBody>
                 </Table>
               </div>
