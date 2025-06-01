@@ -9,7 +9,9 @@ import Support from "@/components/user/support";
 import Profile from "@/components/user/profile";
 import { useAuth } from "@/hooks/use-auth";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useRealtime } from "@/hooks/use-realtime";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRealtimeData } from "@/hooks/use-realtime-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { MousePointer, UserPlus, CreditCard, DollarSign, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
@@ -19,21 +21,25 @@ export default function UserDashboardComplete() {
   const { user, isLoading: authLoading } = useAuth();
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
+  
+  // Ativar atualização em tempo real via WebSocket
+  useRealtime();
 
-  // Atualização automática com tratamento de erro
-  useEffect(() => {
-    const interval = setInterval(() => {
-      try {
-        queryClient.invalidateQueries({ queryKey: ["/api/betting-houses"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/my-links"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/stats/user"] });
-      } catch (error) {
-        console.log("Query invalidation error:", error);
-      }
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [queryClient]);
+  // Sistema de atualização em tempo real
+  useRealtimeData({
+    interval: 2000,
+    queryKeys: [
+      "/api/betting-houses",
+      "/api/my-links", 
+      "/api/stats/user",
+      "/api/user/stats",
+      "/api/user/conversions",
+      "/api/user/payment-config",
+      "/api/user/payments",
+      "/api/user/account-status"
+    ],
+    enabled: true
+  });
 
   const { data: stats = {}, isLoading: statsLoading, error: statsError } = useQuery({
     queryKey: ["/api/stats/user"],

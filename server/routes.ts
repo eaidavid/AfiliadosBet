@@ -2953,8 +2953,29 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
-  // WebSocket
+  // WebSocket para atualizações em tempo real
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  
+  // Função para broadcast de atualizações
+  const broadcastUpdate = (type: string, data?: any) => {
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({ type, data, timestamp: Date.now() }));
+      }
+    });
+  };
+
+  wss.on('connection', (ws) => {
+    console.log('🔗 Cliente conectado ao WebSocket');
+    
+    ws.on('close', () => {
+      console.log('🔌 Cliente desconectado do WebSocket');
+    });
+    
+    ws.on('error', (error) => {
+      console.log('❌ Erro WebSocket:', error);
+    });
+  });
   
   // === INTEGRAÇÃO BIDIRECIONAL ADMIN ⇄ USUÁRIO ===
   

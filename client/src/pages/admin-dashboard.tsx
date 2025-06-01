@@ -12,6 +12,7 @@ import SettingsManagement from "@/components/admin/settings-management";
 import AdminProfile from "@/components/admin/admin-profile";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
+import { useRealtime } from "@/hooks/use-realtime";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, Building, TrendingUp, DollarSign } from "lucide-react";
 
