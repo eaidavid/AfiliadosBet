@@ -3,38 +3,69 @@ import { setupVite, serveStatic } from "./vite";
 import { db } from "./db";
 import { eq, sql, desc } from "drizzle-orm";
 import * as schema from "../shared/schema";
+import session from "express-session";
 
 const app = express();
+
+// Setup sessões simples em memória
+app.use(session({
+  secret: process.env.SESSION_SECRET || "fallback-secret-for-dev",
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: false,
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  }
+}));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Endpoint para verificar autenticação
+app.get("/api/auth/me", async (req: any, res) => {
+  try {
+    if (req.session?.user) {
+      return res.json(req.session.user);
+    }
+    
+    return res.status(401).json({ message: "Not authenticated" });
+  } catch (error) {
+    console.error("Erro na verificação de autenticação:", error);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
+
 // Login endpoint
-app.post("/api/login", async (req, res) => {
+app.post("/api/login", async (req: any, res) => {
   try {
     const { email, password } = req.body;
     
+    let user = null;
+    
     if (email === "admin@afiliadosbet.com" && password === "123456") {
-      return res.json({
-        user: {
-          id: 1,
-          email: "admin@afiliadosbet.com",
-          name: "Administrador",
-          role: "admin"
-        },
-        token: "admin-token-123"
-      });
+      user = {
+        id: 1,
+        email: "admin@afiliadosbet.com",
+        name: "Administrador",
+        role: "admin"
+      };
+    } else if (email === "user@afiliadosbet.com" && password === "123456") {
+      user = {
+        id: 2,
+        email: "user@afiliadosbet.com", 
+        name: "David Afiliado",
+        role: "user"
+      };
     }
     
-    if (email === "user@afiliadosbet.com" && password === "123456") {
+    if (user) {
+      // Salvar usuário na sessão
+      req.session.user = user;
+      
       return res.json({
-        user: {
-          id: 2,
-          email: "user@afiliadosbet.com", 
-          name: "David Afiliado",
-          role: "user"
-        },
-        token: "user-token-456"
+        user,
+        token: `token-${user.id}`
       });
     }
     
@@ -48,8 +79,24 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
+// Logout endpoint
+app.post("/api/auth/logout", async (req: any, res) => {
+  try {
+    req.session.destroy((err: any) => {
+      if (err) {
+        console.error("Erro ao destruir sessão:", err);
+        return res.status(500).json({ error: "Erro ao fazer logout" });
+      }
+      res.json({ message: "Logout realizado com sucesso" });
+    });
+  } catch (error) {
+    console.error("Erro no logout:", error);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
+});
+
 // Register endpoint
-app.post("/api/register", async (req, res) => {
+app.post("/api/register", async (req: any, res) => {
   try {
     const { name, email, password, cpf, phone } = req.body;
     
@@ -62,6 +109,9 @@ app.post("/api/register", async (req, res) => {
       role: "user",
       status: "active"
     };
+    
+    // Salvar usuário na sessão
+    req.session.user = newUser;
     
     res.json({
       user: newUser,
