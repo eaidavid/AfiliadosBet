@@ -1011,11 +1011,17 @@ export async function registerRoutes(app: any): Promise<Server> {
       
       console.log("📝 Dados recebidos no cadastro:", req.body);
       
+      // Validar campos obrigatórios
+      if (!password || password.length < 6) {
+        return res.status(400).json({ error: "Senha é obrigatória e deve ter pelo menos 6 caracteres" });
+      }
+      
       // Criar usuário no banco de dados
       const newUserData = {
         username: username || `user${Date.now()}`,
         fullName: fullName || '',
         email: email || '',
+        password: password, // Incluir a senha
         cpf: cpf || '',
         birthDate: birthDate || '',
         phone: phone || '',
