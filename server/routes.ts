@@ -1005,6 +1005,33 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  app.post("/api/register", async (req, res) => {
+    try {
+      const { name, email, password, cpf, phone } = req.body;
+      
+      const newUser = {
+        id: Math.floor(Math.random() * 1000) + 100,
+        name,
+        email,
+        cpf,
+        phone,
+        role: "user",
+        status: "active"
+      };
+      
+      req.session.user = newUser;
+      
+      res.json({
+        user: newUser,
+        token: `user-token-${newUser.id}`
+      });
+      
+    } catch (error) {
+      console.error("Erro no registro:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   app.post("/api/auth/register", async (req, res) => {
     try {
       const result = insertUserSchema.safeParse(req.body);
