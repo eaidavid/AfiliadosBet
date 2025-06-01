@@ -1724,6 +1724,106 @@ export async function registerRoutes(app: any): Promise<Server> {
   });
 
   // Relatórios detalhados para admin
+  // Relatório detalhado por afiliado
+  app.get("/api/admin/reports/by-affiliate", requireAdmin, async (req: any, res) => {
+    try {
+      console.log("📊 Relatório por Afiliado - Iniciando busca");
+      
+      const affiliates = await db.select()
+        .from(schema.users)
+        .where(eq(schema.users.role, 'affiliate'));
+
+      const allConversions = await db.select()
+        .from(schema.conversions);
+
+      const affiliateReports = affiliates.map(affiliate => {
+        const affiliateConversions = allConversions.filter(c => c.userId === affiliate.id);
+        
+        const clicks = affiliateConversions.filter(c => c.type === 'click').length;
+        const registrations = affiliateConversions.filter(c => c.type === 'registration').length;
+        const deposits = affiliateConversions.filter(c => c.type === 'deposit' || c.type === 'first_deposit').length;
+        const profits = affiliateConversions.filter(c => c.type === 'profit').length;
+        
+        const totalCommission = affiliateConversions
+          .filter(c => c.commission && parseFloat(c.commission) > 0)
+          .reduce((sum, c) => sum + parseFloat(c.commission), 0);
+
+        const totalVolume = affiliateConversions
+          .filter(c => (c.type === 'deposit' || c.type === 'first_deposit') && c.amount)
+          .reduce((sum, c) => sum + parseFloat(c.amount || '0'), 0);
+
+        return {
+          affiliateId: affiliate.id,
+          affiliateName: affiliate.fullName || affiliate.username,
+          clicks,
+          registrations,
+          deposits,
+          profits,
+          totalCommission: totalCommission.toFixed(2),
+          totalVolume: totalVolume.toFixed(2),
+          conversionRate: clicks > 0 ? ((registrations / clicks) * 100).toFixed(2) : '0.00'
+        };
+      });
+
+      console.log(`✅ Relatório por afiliado gerado para ${affiliateReports.length} afiliados`);
+      res.json(affiliateReports);
+    } catch (error) {
+      console.error("❌ Erro no relatório por afiliado:", error);
+      res.status(500).json({ message: "Falha ao gerar relatório por afiliado" });
+    }
+  });
+
+  // Relatório detalhado por casa de aposta
+  app.get("/api/admin/reports/by-house", requireAdmin, async (req: any, res) => {
+    try {
+      console.log("📊 Relatório por Casa - Iniciando busca");
+      
+      const houses = await db.select()
+        .from(schema.bettingHouses);
+
+      const allConversions = await db.select()
+        .from(schema.conversions);
+
+      const houseReports = houses.map(house => {
+        const houseConversions = allConversions.filter(c => c.houseId === house.id);
+        
+        const clicks = houseConversions.filter(c => c.type === 'click').length;
+        const registrations = houseConversions.filter(c => c.type === 'registration').length;
+        const deposits = houseConversions.filter(c => c.type === 'deposit' || c.type === 'first_deposit').length;
+        const profits = houseConversions.filter(c => c.type === 'profit').length;
+        
+        const totalCommission = houseConversions
+          .filter(c => c.commission && parseFloat(c.commission) > 0)
+          .reduce((sum, c) => sum + parseFloat(c.commission), 0);
+
+        const totalVolume = houseConversions
+          .filter(c => (c.type === 'deposit' || c.type === 'first_deposit') && c.amount)
+          .reduce((sum, c) => sum + parseFloat(c.amount || '0'), 0);
+
+        const uniqueAffiliates = [...new Set(houseConversions.map(c => c.userId))].length;
+
+        return {
+          houseId: house.id,
+          houseName: house.name,
+          activeAffiliates: uniqueAffiliates,
+          clicks,
+          registrations,
+          deposits,
+          profits,
+          totalCommission: totalCommission.toFixed(2),
+          totalVolume: totalVolume.toFixed(2),
+          conversionRate: clicks > 0 ? ((registrations / clicks) * 100).toFixed(2) : '0.00'
+        };
+      });
+
+      console.log(`✅ Relatório por casa gerado para ${houseReports.length} casas`);
+      res.json(houseReports);
+    } catch (error) {
+      console.error("❌ Erro no relatório por casa:", error);
+      res.status(500).json({ message: "Falha ao gerar relatório por casa" });
+    }
+  });
+
   app.get("/api/admin/reports/general", requireAdmin, async (req, res) => {
     try {
       const conversions = await db.select({
@@ -1973,7 +2073,7 @@ export async function registerRoutes(app: any): Promise<Server> {
         };
       }).sort((a, b) => b.conversions - a.conversions).slice(0, 5);
       
-      // Top 5 casas por conversões - buscar pelo houseId
+      // Top 5 casas por comissões geradas - buscar pelo houseId
       const houseStats = houses.map(house => {
         const houseConversions = allConversions.filter(c => c.houseId === house.id);
         const conversions = houseConversions.length;
@@ -1981,13 +2081,19 @@ export async function registerRoutes(app: any): Promise<Server> {
           .filter(c => (c.type === 'deposit' || c.type === 'first_deposit' || c.type === 'recurring_deposit') && c.amount)
           .reduce((sum, c) => sum + parseFloat(c.amount || '0'), 0);
         
+        // Calcular comissões geradas por esta casa
+        const commission = houseConversions
+          .filter(c => c.commission && parseFloat(c.commission) > 0)
+          .reduce((sum, c) => sum + parseFloat(c.commission), 0);
+        
         return {
           id: house.id,
           name: house.name,
           conversions,
-          volume
+          volume,
+          commission
         };
-      }).sort((a, b) => b.conversions - a.conversions).slice(0, 5);
+      }).sort((a, b) => b.commission - a.commission).slice(0, 5);
       
       // Buscar afiliados reais usando a mesma lógica da página de gerenciamento
       const realAffiliates = await storage.getAllAffiliates();
@@ -2019,39 +2125,49 @@ export async function registerRoutes(app: any): Promise<Server> {
     try {
       console.log("🔍 Buscando comissões detalhadas para admin");
       
-      // Buscar todos os pagamentos com dados dos afiliados e casas
-      const commissionsData = await db.execute(sql`
-        SELECT 
-          p.id,
-          p.user_id,
-          p.amount,
-          p.status,
-          p.created_at as "createdAt",
-          p.paid_at as "paidAt",
-          u.username as "affiliateName",
-          u.full_name as "affiliateFullName",
-          u.email as "affiliateEmail",
-          c.type,
-          bh.name as "houseName"
-        FROM payments p
-        LEFT JOIN users u ON p.user_id = u.id
-        LEFT JOIN conversions c ON c.user_id = p.user_id AND c.commission > 0
-        LEFT JOIN betting_houses bh ON c.house_id = bh.id
-        WHERE u.role = 'affiliate'
-        ORDER BY p.created_at DESC
-      `);
-      
-      // Transformar dados para o formato esperado pelo frontend
-      const formattedCommissions = commissionsData.map((commission: any) => ({
-        id: commission.id,
-        affiliateName: commission.affiliateName || commission.affiliateFullName,
-        houseName: commission.houseName || 'N/A',
-        type: commission.type || 'CPA',
-        amount: parseFloat(commission.amount),
-        status: commission.status,
-        createdAt: commission.createdAt,
-        paidAt: commission.paidAt
-      }));
+      // Buscar todos os pagamentos com dados dos afiliados
+      const paymentsQuery = await db.select({
+        id: schema.payments.id,
+        userId: schema.payments.userId,
+        amount: schema.payments.amount,
+        status: schema.payments.status,
+        createdAt: schema.payments.createdAt,
+        paidAt: schema.payments.paidAt,
+        affiliateName: schema.users.username,
+        affiliateFullName: schema.users.fullName,
+      })
+      .from(schema.payments)
+      .leftJoin(schema.users, eq(schema.payments.userId, schema.users.id))
+      .where(eq(schema.users.role, 'affiliate'))
+      .orderBy(desc(schema.payments.createdAt));
+
+      // Para cada pagamento, buscar a conversão que gerou a comissão
+      const formattedCommissions = await Promise.all(
+        paymentsQuery.map(async (payment: any) => {
+          const conversion = await db.select({
+            type: schema.conversions.type,
+            houseName: schema.bettingHouses.name
+          })
+          .from(schema.conversions)
+          .leftJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
+          .where(and(
+            eq(schema.conversions.userId, payment.userId),
+            gt(schema.conversions.commission, '0')
+          ))
+          .limit(1);
+
+          return {
+            id: payment.id,
+            affiliateName: payment.affiliateName || payment.affiliateFullName,
+            houseName: conversion[0]?.houseName || 'N/A',
+            type: conversion[0]?.type || 'CPA',
+            amount: parseFloat(payment.amount),
+            status: payment.status,
+            createdAt: payment.createdAt,
+            paidAt: payment.paidAt
+          };
+        })
+      );
       
       console.log(`✅ ${formattedCommissions.length} registros de comissões encontrados`);
       res.json(formattedCommissions);
