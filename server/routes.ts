@@ -155,10 +155,10 @@ export async function registerRoutes(app: any): Promise<Server> {
         else {
           console.log(`⚠️ RevShare só paga sobre profit. Evento ${evento} não gera comissão.`);
         }
-      } else if (house.commissionType === 'CPA') {
-        console.log(`✅ Entrando na lógica CPA`);
+      } else if (house.commissionType === 'CPA' || house.commissionType === 'Hybrid') {
+        console.log(`✅ Entrando na lógica CPA/Hybrid`);
         
-        // CPA: Precisa ter TANTO registro QUANTO depósito para pagar
+        // CPA/Hybrid: Precisa ter TANTO registro QUANTO depósito para pagar
         // Verificar se já existe registro para este customer_id
         const existingRegistration = await db.select()
           .from(schema.conversions)
