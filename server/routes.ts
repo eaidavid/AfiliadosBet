@@ -306,8 +306,8 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
-  // POSTBACK ROUTE - Must be first to avoid being caught by other routes
-  app.get("/postback/:casa/:evento/:token", async (req, res) => {
+  // POSTBACK ROUTE - Rota principal unificada
+  app.get("/postback/:casa/:evento/:token", async (req: any, res: any) => {
     try {
       const { casa, evento, token } = req.params;
       const { subid, amount, customer_id } = req.query;
@@ -343,28 +343,11 @@ export async function registerRoutes(app: any): Promise<Server> {
         return res.status(404).json({ error: "Afiliado não encontrado" });
       }
       
-      // Criar log do postback
-      const logData = await db.insert(schema.postbackLogs).values({
-        casa,
-        evento,
-        subid: subid as string,
-        valor: amount ? parseFloat(amount as string) : 0,
-        ip,
-        raw: req.url,
-        status: 'SUCCESS'
-      }).returning();
-      
-      // Registrar evento
-      const eventoData = await db.insert(schema.eventos).values({
-        afiliadoId: affiliate[0].id,
-        casa,
-        evento,
-        valor: amount ? (amount as string) : null
-      }).returning();
-      
       // Calcular comissão baseada no tipo da casa
       let commissionValue = 0;
-      let tipo = house[0].commissionType;
+      const eventAmount = parseFloat(amount as string) || 0;
+      
+      console.log(`💰 Calculando comissão: Casa ${house[0].name} (${house[0].commissionType}), Evento: ${evento}, Valor: R$ ${eventAmount}`);
       
       if (house[0].commissionType === 'CPA') {
         // CPA: Precisa ter TANTO registro QUANTO depósito para pagar
@@ -372,36 +355,83 @@ export async function registerRoutes(app: any): Promise<Server> {
           .from(schema.conversions)
           .where(and(
             eq(schema.conversions.houseId, house[0].id),
-            eq(schema.conversions.customerId, subid as string),
+            eq(schema.conversions.customerId, (customer_id || subid) as string),
             eq(schema.conversions.type, 'registration')
           ))
           .limit(1);
         
         if (evento === 'registration') {
-          // Apenas registrar, não pagar ainda
+          console.log(`📝 Registro salvo para ${subid}. Aguardando depósito para pagar CPA.`);
           commissionValue = 0;
         } else if (evento === 'deposit' && existingRegistration.length > 0) {
-          const eventAmount = parseFloat(amount as string) || 0;
           if (eventAmount >= parseFloat(house[0].minDeposit || '0')) {
-            commissionValue = parseFloat(house[0].commissionValue);
+            commissionValue = parseFloat(house[0].commissionValue || '0');
+            console.log(`💰 CPA válido: Registro + Depósito R$ ${eventAmount} >= Mínimo R$ ${house[0].minDeposit}, Comissão: R$ ${commissionValue}`);
           }
         }
-      } else if (house[0].commissionType === 'RevShare' && evento === 'profit' && amount) {
-        // RevShare: APENAS sobre profit
-        const percentage = parseFloat(house[0].commissionValue) / 100;
-        commissionValue = parseFloat(amount as string) * percentage;
+      } else if (house[0].commissionType === 'RevShare') {
+        if (evento === 'profit' && eventAmount > 0) {
+          const percentage = parseFloat(house[0].commissionValue || '30');
+          commissionValue = (eventAmount * percentage) / 100;
+          console.log(`💰 RevShare sobre profit: ${percentage}% de R$ ${eventAmount} = R$ ${commissionValue}`);
+        }
+      } else if (house[0].commissionType === 'Hybrid') {
+        // Hybrid: CPA para registro+depósito E RevShare para profit
+        let cpaCommission = 0;
+        let revShareCommission = 0;
+        
+        if (evento === 'registration') {
+          console.log(`📝 Registro Hybrid salvo para ${subid}.`);
+        } else if (evento === 'deposit' && eventAmount >= parseFloat(house[0].minDeposit || '0')) {
+          const existingRegistration = await db.select()
+            .from(schema.conversions)
+            .where(and(
+              eq(schema.conversions.houseId, house[0].id),
+              eq(schema.conversions.customerId, (customer_id || subid) as string),
+              eq(schema.conversions.type, 'registration')
+            ))
+            .limit(1);
+          
+          if (existingRegistration.length > 0) {
+            cpaCommission = parseFloat(house[0].cpaValue || house[0].commissionValue || '0');
+            console.log(`💰 CPA Hybrid válido: R$ ${cpaCommission}`);
+          }
+        } else if (evento === 'profit' && eventAmount > 0) {
+          const percentage = parseFloat(house[0].revshareValue || house[0].commissionValue || '30');
+          revShareCommission = (eventAmount * percentage) / 100;
+          console.log(`💰 RevShare Hybrid sobre profit: ${percentage}% de R$ ${eventAmount} = R$ ${revShareCommission}`);
+        }
+        
+        commissionValue = cpaCommission + revShareCommission;
       }
       
-      // Salvar comissão se houver
+      // Registrar conversão
+      const conversionData = {
+        customer_id: customer_id || subid, 
+        event: evento, 
+        house_name: house[0].name,
+        processed_at: new Date().toISOString() 
+      };
+      
+      await db.insert(schema.conversions).values({
+        userId: affiliate[0].id,
+        houseId: house[0].id,
+        type: evento,
+        amount: eventAmount.toString(),
+        commission: commissionValue.toString(),
+        customerId: (customer_id || subid) as string,
+        conversionData: conversionData
+      });
+      
+      // Criar registro de pagamento pendente se houver comissão
       if (commissionValue > 0) {
-        await db.insert(schema.comissoes).values({
-          afiliadoId: affiliate[0].id,
-          eventoId: eventoData[0].id,
-          tipo,
-          valor: commissionValue.toString()
+        await db.insert(schema.payments).values({
+          userId: affiliate[0].id,
+          amount: commissionValue.toString(),
+          method: 'pix',
+          status: 'pending'
         });
-        
-        console.log(`💰 Comissão ${tipo}: R$ ${commissionValue} para ${affiliate[0].username} (${house[0].name})`);
+        console.log(`💰 Pagamento pendente criado: R$ ${commissionValue} para usuário ${affiliate[0].id}`);
       }
       
       console.log(`✅ Postback processado com sucesso`);
@@ -409,7 +439,7 @@ export async function registerRoutes(app: any): Promise<Server> {
         success: true, 
         message: "Postback processado com sucesso",
         commission: commissionValue,
-        type: tipo,
+        type: house[0].commissionType,
         affiliate: affiliate[0].username,
         house: house[0].name
       });
