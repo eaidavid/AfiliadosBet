@@ -1854,28 +1854,39 @@ export async function registerRoutes(app: any): Promise<Server> {
         .from(schema.users)
         .where(eq(schema.users.role, 'affiliate'));
       
-      // Calcular estatísticas reais
-      const totalClicks = allConversions.filter(c => c.evento === 'click').length;
-      const totalRegistrations = allConversions.filter(c => c.evento === 'registration').length;
-      const totalDeposits = allConversions.filter(c => c.evento === 'deposit').length;
+      console.log("📊 Admin Stats - Total conversões encontradas:", allConversions.length);
+      console.log("📊 Tipos de conversões:", allConversions.map(c => c.type));
+      
+      // Calcular estatísticas reais usando os campos corretos
+      const totalClicks = allConversions.filter(c => c.type === 'click').length;
+      const totalRegistrations = allConversions.filter(c => c.type === 'registration').length;
+      const totalDeposits = allConversions.filter(c => c.type === 'deposit' || c.type === 'first_deposit' || c.type === 'recurring_deposit').length;
       
       // Volume total de depósitos
       const totalVolume = allConversions
-        .filter(c => c.evento === 'deposit' && c.valor)
-        .reduce((sum, c) => sum + parseFloat(c.valor || '0'), 0);
+        .filter(c => (c.type === 'deposit' || c.type === 'first_deposit' || c.type === 'recurring_deposit') && c.amount)
+        .reduce((sum, c) => sum + parseFloat(c.amount || '0'), 0);
       
       // Comissões pagas totais
       const paidCommissions = allConversions
-        .filter(c => c.comissao && parseFloat(c.comissao) > 0)
-        .reduce((sum, c) => sum + parseFloat(c.comissao), 0);
+        .filter(c => c.commission && parseFloat(c.commission) > 0)
+        .reduce((sum, c) => sum + parseFloat(c.commission), 0);
+      
+      console.log("📊 Estatísticas calculadas:", {
+        totalClicks,
+        totalRegistrations,
+        totalDeposits,
+        totalVolume,
+        paidCommissions
+      });
       
       // Top 5 afiliados por conversões
       const affiliateStats = affiliates.map(affiliate => {
-        const affiliateConversions = allConversions.filter(c => c.affiliateId === affiliate.id);
+        const affiliateConversions = allConversions.filter(c => c.userId === affiliate.id);
         const conversions = affiliateConversions.length;
         const commission = affiliateConversions
-          .filter(c => c.comissao && parseFloat(c.comissao) > 0)
-          .reduce((sum, c) => sum + parseFloat(c.comissao), 0);
+          .filter(c => c.commission && parseFloat(c.commission) > 0)
+          .reduce((sum, c) => sum + parseFloat(c.commission), 0);
         
         return {
           id: affiliate.id,
@@ -1885,13 +1896,13 @@ export async function registerRoutes(app: any): Promise<Server> {
         };
       }).sort((a, b) => b.conversions - a.conversions).slice(0, 5);
       
-      // Top 5 casas por conversões
+      // Top 5 casas por conversões - buscar pelo houseId
       const houseStats = houses.map(house => {
-        const houseConversions = allConversions.filter(c => c.casa === house.name);
+        const houseConversions = allConversions.filter(c => c.houseId === house.id);
         const conversions = houseConversions.length;
         const volume = houseConversions
-          .filter(c => c.evento === 'deposit' && c.valor)
-          .reduce((sum, c) => sum + parseFloat(c.valor || '0'), 0);
+          .filter(c => (c.type === 'deposit' || c.type === 'first_deposit' || c.type === 'recurring_deposit') && c.amount)
+          .reduce((sum, c) => sum + parseFloat(c.amount || '0'), 0);
         
         return {
           id: house.id,
