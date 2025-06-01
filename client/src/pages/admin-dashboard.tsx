@@ -7,7 +7,7 @@ import PostbackLogs from "@/components/admin/postback-logs";
 import SimplePostbackForm from "@/components/admin/simple-postback-form";
 import PostbackGenerator from "@/components/admin/postback-generator";
 import CommissionsManagement from "@/components/admin/commissions-management";
-import ReportsManagement from "@/components/admin/reports-management";
+import ReportsManagement from "@/components/admin/reports-management-fixed";
 import SettingsManagement from "@/components/admin/settings-management";
 import AdminProfile from "@/components/admin/admin-profile";
 import { useIsMobile } from "@/hooks/use-mobile";
