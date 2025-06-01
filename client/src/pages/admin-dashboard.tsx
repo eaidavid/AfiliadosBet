@@ -19,6 +19,9 @@ import { Users, Building, TrendingUp, DollarSign } from "lucide-react";
 export default function AdminDashboard() {
   const [currentPage, setCurrentPage] = useState("dashboard");
   const isMobile = useIsMobile();
+  
+  // Ativar atualização em tempo real via WebSocket
+  useRealtime();
 
   const { data: adminStats = {} } = useQuery({
     queryKey: ["/api/admin/stats"],
