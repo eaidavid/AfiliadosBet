@@ -367,15 +367,32 @@ export async function registerRoutes(app: any): Promise<Server> {
       
       // Calcular comissão baseada no tipo da casa
       let commissionValue = 0;
-      let tipo = 'CPA';
+      let tipo = house[0].commissionType;
       
       if (house[0].commissionType === 'CPA') {
-        commissionValue = parseFloat(house[0].commissionValue);
-        tipo = 'CPA';
-      } else if (house[0].commissionType === 'RevShare' && amount) {
+        // CPA: Precisa ter TANTO registro QUANTO depósito para pagar
+        const existingRegistration = await db.select()
+          .from(schema.conversions)
+          .where(and(
+            eq(schema.conversions.houseId, house[0].id),
+            eq(schema.conversions.customerId, subid as string),
+            eq(schema.conversions.type, 'registration')
+          ))
+          .limit(1);
+        
+        if (evento === 'registration') {
+          // Apenas registrar, não pagar ainda
+          commissionValue = 0;
+        } else if (evento === 'deposit' && existingRegistration.length > 0) {
+          const eventAmount = parseFloat(amount as string) || 0;
+          if (eventAmount >= parseFloat(house[0].minDeposit || '0')) {
+            commissionValue = parseFloat(house[0].commissionValue);
+          }
+        }
+      } else if (house[0].commissionType === 'RevShare' && evento === 'profit' && amount) {
+        // RevShare: APENAS sobre profit
         const percentage = parseFloat(house[0].commissionValue) / 100;
         commissionValue = parseFloat(amount as string) * percentage;
-        tipo = 'RevShare';
       }
       
       // Salvar comissão se houver
