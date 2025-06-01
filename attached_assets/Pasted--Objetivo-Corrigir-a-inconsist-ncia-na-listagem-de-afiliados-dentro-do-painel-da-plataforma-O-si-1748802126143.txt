@@ -1,0 +1,60 @@
+🎯 Objetivo:
+Corrigir a inconsistência na listagem de afiliados dentro do painel da plataforma. O sistema está com falhas ao exibir os usuários afiliados, mesmo quando os cadastros e afiliações ocorrem corretamente.
+
+📍 Comportamento Esperado:
+Todos os usuários que se cadastram e que estão afiliados a alguma casa ativa (como Brazino) devem aparecer corretamente na aba “Gerenciar Afiliados”.
+
+Os dados exibidos na tabela devem estar em sincronia com:
+
+O total de afiliados no painel administrativo
+
+O total de afiliados na casa específica
+
+As ações e postbacks associados
+
+🧩 Comportamento Atual (Bug):
+A casa Brazino exibe 3 afiliados, mas:
+
+A aba de “Gerenciar Afiliados” mostra apenas 1 usuário listado.
+
+O painel administrativo mostra 1 afiliado total, gerando inconsistência com o card da casa.
+
+📁 Pontos Técnicos a Verificar:
+1. Query de Listagem de Afiliados
+ts
+Copiar
+Editar
+// Exemplo: server/controllers/affiliateController.ts (ou equivalente)
+SELECT * FROM afiliados WHERE status = 'ativo' AND ...;
+Certifique-se de que a query traz afiliados vinculados a casas ativas, mesmo que não tenham gerado volume ou eventos ainda.
+
+2. Relação entre Usuário ↔ Afiliação ↔ Casa
+Verifique se há uma tabela pivot (ex: afiliacoes, user_affiliate_houses, etc.) com user_id, house_id e status.
+
+Pode estar faltando um JOIN nessa tabela intermediária na consulta de listagem.
+
+3. Filtro indevido por status ou volume
+O sistema pode estar aplicando filtros como:
+
+volume > 0
+
+comissao > 0
+
+Isso pode excluir afiliados legítimos que ainda não geraram retorno.
+
+4. Sincronização e contagem
+O número de afiliados exibido nas cards (como "Afiliados: 3") pode estar vindo de uma contagem bruta na base (ex: COUNT(*)), enquanto a listagem faz outra lógica com filtro.
+
+Ambos precisam usar a mesma base de contagem.
+
+5. Cache ou revalidação
+Verifique se há algum cache ou uso de SWR, TanStack Query, etc., que pode estar exibindo dados desatualizados.
+
+✅ O que precisa ser feito:
+Padronizar a lógica de contagem e listagem de afiliados.
+
+Rever a query da aba “Gerenciar Afiliados” para garantir que todos os afiliados ativos vinculados a casas apareçam.
+
+Garantir que casas e painel estejam exibindo os mesmos números que a listagem real.
+
+(Opcional) Adicionar badge na lista mostrando quantas casas o afiliado está vinculado para reforçar visualmente.

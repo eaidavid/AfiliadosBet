@@ -1951,19 +1951,16 @@ export async function registerRoutes(app: any): Promise<Server> {
   });
 
   // Admin routes - Gestão completa de afiliados
-  app.get("/api/admin/affiliates", async (req, res) => {
+  app.get("/api/admin/affiliates", requireAdmin, async (req, res) => {
     try {
-      console.log("=== API ADMIN AFFILIATES ===");
-      console.log("Session:", req.session);
-      console.log("User:", req.session?.user);
+      console.log("🔍 Buscando todos os afiliados para admin");
       
       const affiliates = await storage.getAllAffiliates();
-      console.log("Affiliates encontrados:", affiliates.length);
-      console.log("Dados:", affiliates);
+      console.log(`✅ ${affiliates.length} afiliados encontrados`);
       
       res.json(affiliates);
     } catch (error) {
-      console.error("Erro ao buscar afiliados:", error);
+      console.error("❌ Erro ao buscar afiliados:", error);
       res.status(500).json({ message: "Erro interno do servidor" });
     }
   });

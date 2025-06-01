@@ -79,10 +79,12 @@ export interface IStorage {
   getTopHouses(limit?: number): Promise<Array<BettingHouse & { totalVolume: number; affiliateCount: number }>>;
   
   // Additional admin operations
-  getAllAffiliates(): Promise<Array<User & { affiliateHouses?: number }>>;
+  getAllAffiliates(): Promise<Array<User & { affiliateHouses?: number; totalConversions?: number; totalCommission?: number }>>;
+  getAffiliatesByHouseId(houseId: number): Promise<Array<User & { affiliateLink?: AffiliateLink }>>;
   updateUserStatus(id: number, isActive: boolean): Promise<void>;
   resetUserPassword(id: number): Promise<void>;
   deleteUser(id: number): Promise<void>;
+  validatePassword(password: string, hashedPassword: string): Promise<boolean>;
 
   // Postback operations
   getPostbackUrl(houseId: number): Promise<string>;
@@ -815,6 +817,115 @@ export class DatabaseStorage implements IStorage {
     });
 
     return { total, byType };
+  }
+
+  async validatePassword(password: string, hashedPassword: string): Promise<boolean> {
+    return bcrypt.compare(password, hashedPassword);
+  }
+
+  async getAllAffiliates(): Promise<Array<User & { affiliateHouses?: number; totalConversions?: number; totalCommission?: number }>> {
+    // Buscar todos os usuários que têm links de afiliação (distintos)
+    const affiliatesData = await db
+      .selectDistinct({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        fullName: users.fullName,
+        cpf: users.cpf,
+        phone: users.phone,
+        country: users.country,
+        role: users.role,
+        isActive: users.isActive,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt
+      })
+      .from(users)
+      .innerJoin(affiliateLinks, eq(users.id, affiliateLinks.userId))
+      .where(and(
+        eq(users.role, "user"),
+        eq(affiliateLinks.isActive, true)
+      ));
+
+    // Para cada afiliado, buscar estatísticas adicionais
+    const affiliatesWithStats = await Promise.all(
+      affiliatesData.map(async (affiliate) => {
+        // Contar casas afiliadas ativas
+        const houseCount = await db
+          .select({ count: count() })
+          .from(affiliateLinks)
+          .where(and(
+            eq(affiliateLinks.userId, affiliate.id),
+            eq(affiliateLinks.isActive, true)
+          ));
+
+        // Buscar conversões
+        const userConversions = await db
+          .select()
+          .from(conversions)
+          .where(eq(conversions.userId, affiliate.id));
+
+        const totalConversions = userConversions.length;
+        const totalCommission = userConversions.reduce((sum, conv) => 
+          sum + parseFloat(conv.commission || '0'), 0
+        );
+
+        return {
+          ...affiliate,
+          affiliateHouses: houseCount[0]?.count || 0,
+          totalConversions,
+          totalCommission
+        };
+      })
+    );
+
+    return affiliatesWithStats;
+  }
+
+  async getAffiliatesByHouseId(houseId: number): Promise<Array<User & { affiliateLink?: AffiliateLink }>> {
+    const affiliates = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        fullName: users.fullName,
+        cpf: users.cpf,
+        phone: users.phone,
+        status: users.status,
+        role: users.role,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+        linkId: affiliateLinks.id,
+        linkGeneratedUrl: affiliateLinks.generatedUrl,
+        linkIsActive: affiliateLinks.isActive,
+        linkCreatedAt: affiliateLinks.createdAt
+      })
+      .from(users)
+      .innerJoin(affiliateLinks, eq(users.id, affiliateLinks.userId))
+      .where(and(
+        eq(affiliateLinks.houseId, houseId),
+        eq(affiliateLinks.isActive, true)
+      ));
+
+    return affiliates.map(affiliate => ({
+      id: affiliate.id,
+      username: affiliate.username,
+      email: affiliate.email,
+      fullName: affiliate.fullName,
+      cpf: affiliate.cpf,
+      phone: affiliate.phone,
+      status: affiliate.status,
+      role: affiliate.role,
+      createdAt: affiliate.createdAt,
+      updatedAt: affiliate.updatedAt,
+      affiliateLink: {
+        id: affiliate.linkId,
+        userId: affiliate.id,
+        houseId: houseId,
+        generatedUrl: affiliate.linkGeneratedUrl,
+        isActive: affiliate.linkIsActive,
+        createdAt: affiliate.linkCreatedAt
+      }
+    }));
   }
 }
 
