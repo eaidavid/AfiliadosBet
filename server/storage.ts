@@ -353,7 +353,7 @@ export class DatabaseStorage implements IStorage {
       .select({
         type: conversions.type,
         count: count(),
-        totalCommission: sql<number>`sum(CAST(${conversions.commission} AS DECIMAL))`,
+        totalCommission: sql<string>`sum(CAST(${conversions.commission} AS DECIMAL))`,
       })
       .from(conversions)
       .where(eq(conversions.userId, userId))
@@ -369,7 +369,10 @@ export class DatabaseStorage implements IStorage {
       s.type === 'recurring_deposit'
     ).reduce((sum, stat) => sum + (stat.count || 0), 0);
     
-    const totalCommission = conversionStats.reduce((sum, stat) => sum + (stat.totalCommission || 0), 0);
+    const totalCommission = conversionStats.reduce((sum, stat) => {
+      const commission = parseFloat(stat.totalCommission?.toString() || '0');
+      return sum + commission;
+    }, 0);
     const conversionRate = totalClicks > 0 ? (registrations / totalClicks) * 100 : 0;
 
     const result = {

@@ -1066,6 +1066,69 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // Endpoint para salvar dados de pagamento do usuário
+  app.post("/api/user/payment-config", async (req, res) => {
+    try {
+      const userId = req.session?.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Usuário não autenticado" });
+      }
+
+      const { paymentType, holderName, cpf, pixKey, bankCode, agency, account } = req.body;
+
+      // Atualizar dados de pagamento PIX no perfil do usuário
+      if (paymentType === 'pix' && pixKey) {
+        await db.update(schema.users)
+          .set({ 
+            pix: pixKey,
+            fullName: holderName || req.session.user.fullName,
+            cpf: cpf || req.session.user.cpf
+          })
+          .where(eq(schema.users.id, userId));
+      }
+
+      // Aqui poderia ser implementada uma tabela separada para dados bancários
+      // Por ora, salvamos apenas PIX no campo pix do usuário
+
+      console.log(`✅ Dados de pagamento salvos para usuário ${userId}`);
+      res.json({ success: true, message: "Dados salvos com sucesso" });
+
+    } catch (error) {
+      console.error("Erro ao salvar dados de pagamento:", error);
+      res.status(500).json({ error: "Erro interno" });
+    }
+  });
+
+  // Endpoint para buscar configuração de pagamento do usuário
+  app.get("/api/user/payment-config", async (req, res) => {
+    try {
+      const userId = req.session?.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "Usuário não autenticado" });
+      }
+
+      const user = await db.select()
+        .from(schema.users)
+        .where(eq(schema.users.id, userId))
+        .limit(1);
+
+      if (!user.length) {
+        return res.status(404).json({ error: "Usuário não encontrado" });
+      }
+
+      res.json({
+        paymentType: "pix",
+        holderName: user[0].fullName || "",
+        cpf: user[0].cpf || "",
+        pixKey: user[0].pix || ""
+      });
+
+    } catch (error) {
+      console.error("Erro ao buscar configuração de pagamento:", error);
+      res.status(500).json({ error: "Erro interno" });
+    }
+  });
+
   // Endpoint para processar pagamento de comissões
   app.post("/api/commissions/process-payment/:affiliateId", async (req, res) => {
     try {
