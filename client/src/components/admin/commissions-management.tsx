@@ -29,6 +29,9 @@ export default function CommissionsManagement({ onPageChange }: CommissionsManag
     retry: false,
   });
 
+  // Ensure commissions is always an array
+  const safeCommissions = Array.isArray(commissions) ? commissions : [];
+
   const { data: statsData = {} } = useQuery({
     queryKey: ["/api/admin/stats"],
     retry: false,
@@ -256,7 +259,7 @@ export default function CommissionsManagement({ onPageChange }: CommissionsManag
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {commissions.map((commission: any) => (
+                    {safeCommissions.map((commission: any) => (
                       <TableRow key={commission.id} className="border-slate-700">
                         <TableCell className="text-white">
                           {new Date(commission.createdAt).toLocaleDateString('pt-BR')}

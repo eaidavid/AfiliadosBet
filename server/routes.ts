@@ -2019,33 +2019,45 @@ export async function registerRoutes(app: any): Promise<Server> {
     try {
       console.log("🔍 Buscando comissões detalhadas para admin");
       
-      // Buscar todos os pagamentos com dados dos afiliados
+      // Buscar todos os pagamentos com dados dos afiliados e casas
       const commissionsData = await db.execute(sql`
         SELECT 
-          p.id as payment_id,
+          p.id,
           p.user_id,
           p.amount,
           p.status,
-          p.created_at,
-          p.paid_at,
-          u.username,
-          u.full_name,
-          u.email,
-          COUNT(c.id) as total_conversions,
-          SUM(CASE WHEN c.commission > 0 THEN c.commission ELSE 0 END) as total_commissions
+          p.created_at as "createdAt",
+          p.paid_at as "paidAt",
+          u.username as "affiliateName",
+          u.full_name as "affiliateFullName",
+          u.email as "affiliateEmail",
+          c.type,
+          bh.name as "houseName"
         FROM payments p
         LEFT JOIN users u ON p.user_id = u.id
-        LEFT JOIN conversions c ON c.user_id = p.user_id
-        WHERE u.role = 'affiliate' OR u.role IS NULL
-        GROUP BY p.id, p.user_id, p.amount, p.status, p.created_at, p.paid_at, u.username, u.full_name, u.email
+        LEFT JOIN conversions c ON c.user_id = p.user_id AND c.commission > 0
+        LEFT JOIN betting_houses bh ON c.house_id = bh.id
+        WHERE u.role = 'affiliate'
         ORDER BY p.created_at DESC
       `);
       
-      console.log(`✅ ${commissionsData.length} registros de comissões encontrados`);
-      res.json(commissionsData);
+      // Transformar dados para o formato esperado pelo frontend
+      const formattedCommissions = commissionsData.map((commission: any) => ({
+        id: commission.id,
+        affiliateName: commission.affiliateName || commission.affiliateFullName,
+        houseName: commission.houseName || 'N/A',
+        type: commission.type || 'CPA',
+        amount: parseFloat(commission.amount),
+        status: commission.status,
+        createdAt: commission.createdAt,
+        paidAt: commission.paidAt
+      }));
+      
+      console.log(`✅ ${formattedCommissions.length} registros de comissões encontrados`);
+      res.json(formattedCommissions);
     } catch (error) {
       console.error("❌ Erro ao buscar comissões:", error);
-      res.status(500).json({ message: "Erro ao buscar comissões" });
+      res.status(500).json([]);
     }
   });
 
