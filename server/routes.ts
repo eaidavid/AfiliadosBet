@@ -1535,7 +1535,55 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
-  // Nova rota para buscar links de afiliação do usuário
+  // Rota unificada para afiliações do usuário (substitui tanto /api/my-links quanto /api/my-affiliations)
+  app.get("/api/my-affiliations", requireAuth, async (req: any, res) => {
+    try {
+      const userId = parseInt(req.session.user.id);
+      console.log("🔍 Buscando afiliações para usuário:", userId);
+      
+      const links = await storage.getAffiliateLinksByUserId(userId);
+      console.log("📋 Links encontrados:", links.length);
+      
+      // Buscar detalhes completos de cada afiliação
+      const affiliationsWithDetails = await Promise.all(
+        links.map(async (link) => {
+          try {
+            const house = await storage.getBettingHouseById(link.houseId);
+            return {
+              id: link.id,
+              userId: link.userId,
+              houseId: link.houseId,
+              personalizedUrl: link.generatedUrl,
+              isActive: link.isActive,
+              affiliatedAt: link.createdAt,
+              house: house ? {
+                id: house.id,
+                name: house.name,
+                description: house.description || `Casa de apostas ${house.name}`,
+                commissionRate: house.commissionValue || '5',
+                commissionType: house.commissionType || 'RevShare',
+                isActive: house.isActive
+              } : null
+            };
+          } catch (error) {
+            console.error("❌ Erro ao buscar casa:", error);
+            return null;
+          }
+        })
+      );
+      
+      // Filtrar resultados válidos
+      const validAffiliations = affiliationsWithDetails.filter(aff => aff !== null && aff.house !== null);
+      console.log("✅ Afiliações válidas encontradas:", validAffiliations.length);
+      
+      res.json(validAffiliations);
+    } catch (error) {
+      console.error("❌ Erro ao buscar afiliações:", error);
+      res.status(500).json({ message: "Erro ao buscar afiliações" });
+    }
+  });
+
+  // Manter compatibilidade com /api/my-links
   app.get("/api/my-links", requireAuth, async (req: any, res) => {
     try {
       const userId = parseInt(req.session.user.id);
