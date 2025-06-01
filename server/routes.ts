@@ -2048,45 +2048,7 @@ export async function registerRoutes(app: any): Promise<Server> {
       
       console.log("✅ Casa criada com sucesso, ID:", house.id);
       
-      // 🎯 CRIAR LINKS AUTOMATICAMENTE PARA TODOS OS AFILIADOS ATIVOS
-      try {
-        const activeAffiliates = await db
-          .select()
-          .from(schema.users)
-          .where(and(
-            eq(schema.users.role, 'affiliate'),
-            eq(schema.users.isActive, true)
-          ));
-        
-        console.log(`🎯 Criando links automáticos para ${activeAffiliates.length} afiliados ativos da casa ${house.name}`);
-        
-        let linksCreated = 0;
-        for (const affiliate of activeAffiliates) {
-          // Verificar se já existe link para este afiliado e casa
-          const existingLink = await storage.getAffiliateLinkByUserAndHouse(affiliate.id, house.id);
-          
-          if (!existingLink) {
-            // Gerar URL do afiliado baseada na URL base da casa
-            const affiliateUrl = house.baseUrl.replace('VALUE', affiliate.username);
-            
-            const linkData = {
-              userId: affiliate.id,
-              houseId: house.id,
-              generatedUrl: affiliateUrl,
-              isActive: true
-            };
-            
-            await storage.createAffiliateLink(linkData);
-            linksCreated++;
-            console.log(`✅ Link criado automaticamente: ${affiliate.username} -> ${house.name}`);
-          }
-        }
-        
-        console.log(`🎉 ${linksCreated} links automáticos criados para a casa ${house.name}`);
-      } catch (linkError) {
-        console.error("⚠️ Erro ao criar links automáticos:", linkError);
-        // Não falha a criação da casa se houver erro nos links
-      }
+      // Casa criada sem afiliações automáticas - usuários devem se afiliar manualmente
       
       res.json(house);
     } catch (error) {
