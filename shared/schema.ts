@@ -215,6 +215,12 @@ export const insertBettingHouseSchema = createInsertSchema(bettingHouses).omit({
   identifier: z.string().optional(),
   enabledPostbacks: z.array(z.string()).optional(),
   parameterMapping: z.record(z.string()).optional(),
+  commissionValue: z.string().optional(),
+  minDeposit: z.string().optional(),
+  logoUrl: z.string().optional(),
+  baseUrl: z.string().optional(),
+  primaryParam: z.string().optional(),
+  additionalParams: z.string().optional().nullable(),
 });
 
 export const insertAffiliateLinkSchema = createInsertSchema(affiliateLinks).omit({
