@@ -537,11 +537,11 @@ export class DatabaseStorage implements IStorage {
   async getAllAffiliates(): Promise<Array<User & { affiliateHouses?: number }>> {
     console.log("Iniciando busca de afiliados...");
     
-    // Buscar todos os usuários com role 'affiliate'
+    // Buscar todos os usuários que são afiliados (role 'affiliate' ou 'user')
     const result = await db
       .select()
       .from(users)
-      .where(eq(users.role, 'affiliate'));
+      .where(or(eq(users.role, 'affiliate'), eq(users.role, 'user')));
 
     console.log(`Encontrados ${result.length} afiliados no banco:`, result.map(u => u.username));
 
