@@ -58,7 +58,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Admin Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 md:gap-6">
               <Card className="bg-slate-800 border-slate-700 hover:bg-slate-750 transition-colors">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
@@ -133,8 +133,28 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <div className="flex items-center mt-3 md:mt-4">
-                    <span className="text-emerald-500 text-xs md:text-sm font-medium">+18.7%</span>
-                    <span className="text-slate-400 text-xs md:text-sm ml-2">vs mês anterior</span>
+                    <span className="text-emerald-500 text-xs md:text-sm font-medium">Pagas</span>
+                    <span className="text-slate-400 text-xs md:text-sm ml-2">pelo admin</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-slate-800 border-slate-700 hover:bg-slate-750 transition-colors">
+                <CardContent className="p-4 md:p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-slate-400 text-xs md:text-sm font-medium truncate">Comissões Pendentes</p>
+                      <p className="text-xl md:text-2xl font-bold text-orange-500 mt-1">
+                        R$ {adminStats?.pendingCommissions?.toLocaleString() || "0"}
+                      </p>
+                    </div>
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-orange-500/20 rounded-xl flex items-center justify-center ml-3">
+                      <DollarSign className="h-5 w-5 md:h-6 md:w-6 text-orange-500" />
+                    </div>
+                  </div>
+                  <div className="flex items-center mt-3 md:mt-4">
+                    <span className="text-orange-500 text-xs md:text-sm font-medium">Aguardando</span>
+                    <span className="text-slate-400 text-xs md:text-sm ml-2">aprovação</span>
                   </div>
                 </CardContent>
               </Card>
