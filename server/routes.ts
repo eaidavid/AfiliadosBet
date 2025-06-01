@@ -1908,14 +1908,16 @@ export async function registerRoutes(app: any): Promise<Server> {
         .filter(c => (c.type === 'deposit' || c.type === 'first_deposit' || c.type === 'recurring_deposit') && c.amount)
         .reduce((sum, c) => sum + parseFloat(c.amount || '0'), 0);
       
-      // Comissões pendentes e pagas
-      const pendingCommissions = allConversions
-        .filter(c => c.commission && parseFloat(c.commission) > 0 && c.status === 'pending')
-        .reduce((sum, c) => sum + parseFloat(c.commission), 0);
+      // Buscar dados reais de pagamentos da tabela payments
+      const allPayments = await db.select().from(schema.payments);
       
-      const paidCommissions = allConversions
-        .filter(c => c.commission && parseFloat(c.commission) > 0 && c.status === 'paid')
-        .reduce((sum, c) => sum + parseFloat(c.commission), 0);
+      const pendingCommissions = allPayments
+        .filter(p => p.status === 'pending')
+        .reduce((sum, p) => sum + parseFloat(p.amount), 0);
+      
+      const paidCommissions = allPayments
+        .filter(p => p.status === 'paid')
+        .reduce((sum, p) => sum + parseFloat(p.amount), 0);
       
       console.log("📊 Estatísticas calculadas:", {
         totalClicks,
@@ -1981,6 +1983,61 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+
+  // API para buscar comissões detalhadas por afiliado
+  app.get("/api/admin/commissions", requireAdmin, async (req, res) => {
+    try {
+      console.log("🔍 Buscando comissões detalhadas para admin");
+      
+      // Buscar todos os pagamentos com dados dos afiliados
+      const commissionsData = await db.execute(sql`
+        SELECT 
+          p.id as payment_id,
+          p.user_id,
+          p.amount,
+          p.status,
+          p.created_at,
+          p.paid_at,
+          u.username,
+          u.full_name,
+          u.email,
+          COUNT(c.id) as total_conversions,
+          SUM(CASE WHEN c.commission > 0 THEN c.commission ELSE 0 END) as total_commissions
+        FROM payments p
+        LEFT JOIN users u ON p.user_id = u.id
+        LEFT JOIN conversions c ON c.user_id = p.user_id
+        WHERE u.role = 'affiliate' OR u.role IS NULL
+        GROUP BY p.id, p.user_id, p.amount, p.status, p.created_at, p.paid_at, u.username, u.full_name, u.email
+        ORDER BY p.created_at DESC
+      `);
+      
+      console.log(`✅ ${commissionsData.length} registros de comissões encontrados`);
+      res.json(commissionsData);
+    } catch (error) {
+      console.error("❌ Erro ao buscar comissões:", error);
+      res.status(500).json({ message: "Erro ao buscar comissões" });
+    }
+  });
+
+  // API para marcar comissão como paga
+  app.post("/api/admin/commissions/:id/pay", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      console.log(`💰 Marcando pagamento ${id} como pago`);
+      
+      await db.execute(sql`
+        UPDATE payments 
+        SET status = 'paid', paid_at = NOW() 
+        WHERE id = ${id}
+      `);
+      
+      console.log(`✅ Pagamento ${id} marcado como pago`);
+      res.json({ message: "Pagamento processado com sucesso" });
+    } catch (error) {
+      console.error("❌ Erro ao processar pagamento:", error);
+      res.status(500).json({ message: "Erro ao processar pagamento" });
+    }
+  });
 
   // Admin routes - Gestão completa de afiliados
   app.get("/api/admin/affiliates", requireAdmin, async (req, res) => {
