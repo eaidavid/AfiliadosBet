@@ -47,6 +47,25 @@ export default function CommissionsManagement({ onPageChange }: CommissionsManag
     retry: false,
   });
 
+  // Query for commission summary by affiliate
+  const { data: affiliateCommissions = [] } = useQuery({
+    queryKey: ["/api/admin/reports/by-affiliate"],
+    retry: false,
+  });
+
+  // Calculate commission statistics
+  const commissionStats = {
+    totalCommissions: affiliateCommissions.reduce((sum: number, affiliate: any) => 
+      sum + parseFloat(affiliate.totalCommission || 0), 0),
+    pendingCommissions: safeCommissions
+      .filter((c: any) => c.status === 'pending')
+      .reduce((sum: number, c: any) => sum + parseFloat(c.valor || 0), 0),
+    paidCommissions: safeCommissions
+      .filter((c: any) => c.status === 'paid')
+      .reduce((sum: number, c: any) => sum + parseFloat(c.valor || 0), 0),
+    totalAffiliates: affiliates.length,
+  };
+
   const processPayment = useMutation({
     mutationFn: async (commissionId: number) => {
       const response = await apiRequest("POST", `/api/admin/commissions/${commissionId}/pay`, {});
@@ -118,28 +137,28 @@ export default function CommissionsManagement({ onPageChange }: CommissionsManag
             {[
               {
                 title: "Comissões Pendentes",
-                value: "R$ 0,00",
+                value: `R$ ${commissionStats.pendingCommissions.toFixed(2)}`,
                 icon: Calculator,
                 color: "text-yellow-400",
                 bgColor: "bg-yellow-500/10",
               },
               {
                 title: "Comissões Pagas",
-                value: `R$ ${parseFloat((statsData as any)?.paidCommissions || '0').toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+                value: `R$ ${commissionStats.paidCommissions.toFixed(2)}`,
                 icon: DollarSign,
                 color: "text-green-400",
                 bgColor: "bg-green-500/10",
               },
               {
                 title: "Total de Afiliados",
-                value: (statsData as any)?.totalAffiliates || 0,
+                value: commissionStats.totalAffiliates,
                 icon: Users,
                 color: "text-blue-400",
                 bgColor: "bg-blue-500/10",
               },
               {
-                title: "Volume Total",
-                value: `R$ ${parseFloat((statsData as any)?.totalVolume || '0').toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+                title: "Comissões Totais",
+                value: `R$ ${commissionStats.totalCommissions.toFixed(2)}`,
                 icon: TrendingUp,
                 color: "text-purple-400",
                 bgColor: "bg-purple-500/10",
@@ -239,9 +258,9 @@ export default function CommissionsManagement({ onPageChange }: CommissionsManag
         <TabsContent value="commissions">
           <Card className="bg-slate-800 border-slate-700">
             <CardHeader>
-              <CardTitle className="text-white">Lista de Comissões</CardTitle>
+              <CardTitle className="text-white">Comissões por Afiliado</CardTitle>
               <CardDescription className="text-slate-400">
-                Gerencie e processe pagamentos de comissões
+                Gerencie comissões totais, pendentes e pagas por afiliado
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -249,50 +268,59 @@ export default function CommissionsManagement({ onPageChange }: CommissionsManag
                 <Table>
                   <TableHeader>
                     <TableRow className="border-slate-700">
-                      <TableHead className="text-slate-300">Data</TableHead>
                       <TableHead className="text-slate-300">Afiliado</TableHead>
-                      <TableHead className="text-slate-300">Casa</TableHead>
-                      <TableHead className="text-slate-300">Tipo</TableHead>
-                      <TableHead className="text-slate-300">Valor</TableHead>
-                      <TableHead className="text-slate-300">Status</TableHead>
+                      <TableHead className="text-slate-300">Total de Comissões</TableHead>
+                      <TableHead className="text-slate-300">Pendentes</TableHead>
+                      <TableHead className="text-slate-300">Pagas</TableHead>
+                      <TableHead className="text-slate-300">Conversões</TableHead>
                       <TableHead className="text-slate-300">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {safeCommissions.map((commission: any) => (
-                      <TableRow key={commission.id} className="border-slate-700">
-                        <TableCell className="text-white">
-                          {new Date(commission.createdAt).toLocaleDateString('pt-BR')}
-                        </TableCell>
-                        <TableCell className="text-white">
-                          {commission.affiliateName}
-                        </TableCell>
-                        <TableCell className="text-slate-300">
-                          {commission.houseName}
-                        </TableCell>
-                        <TableCell className="text-slate-300">
-                          {commission.type}
-                        </TableCell>
-                        <TableCell className="text-green-400 font-medium">
-                          R$ {commission.amount.toFixed(2)}
-                        </TableCell>
-                        <TableCell>
-                          {getStatusBadge(commission.status)}
-                        </TableCell>
-                        <TableCell>
-                          {commission.status === 'pending' && (
-                            <Button
-                              size="sm"
-                              onClick={() => processPayment.mutate(commission.id)}
-                              disabled={processPayment.isPending}
-                              className="bg-emerald-600 hover:bg-emerald-700"
-                            >
-                              Pagar
-                            </Button>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {affiliateCommissions.map((affiliate: any) => {
+                      const pendingAmount = safeCommissions
+                        .filter((c: any) => c.affiliateId === affiliate.affiliateId && c.status === 'pending')
+                        .reduce((sum: number, c: any) => sum + parseFloat(c.valor || 0), 0);
+                      
+                      const paidAmount = safeCommissions
+                        .filter((c: any) => c.affiliateId === affiliate.affiliateId && c.status === 'paid')
+                        .reduce((sum: number, c: any) => sum + parseFloat(c.valor || 0), 0);
+
+                      return (
+                        <TableRow key={affiliate.affiliateId} className="border-slate-700">
+                          <TableCell className="text-white font-medium">
+                            {affiliate.affiliateName}
+                          </TableCell>
+                          <TableCell className="text-emerald-400 font-medium">
+                            R$ {parseFloat(affiliate.totalCommission || 0).toFixed(2)}
+                          </TableCell>
+                          <TableCell className="text-yellow-400">
+                            R$ {pendingAmount.toFixed(2)}
+                          </TableCell>
+                          <TableCell className="text-green-400">
+                            R$ {paidAmount.toFixed(2)}
+                          </TableCell>
+                          <TableCell className="text-slate-300">
+                            {affiliate.totalConversions || 0}
+                          </TableCell>
+                          <TableCell>
+                            {pendingAmount > 0 && (
+                              <Button
+                                size="sm"
+                                onClick={() => processPayment.mutate(affiliate.affiliateId)}
+                                disabled={processPayment.isPending}
+                                className="bg-emerald-600 hover:bg-emerald-700"
+                              >
+                                {processPayment.isPending ? 'Processando...' : 'Marcar como Pago'}
+                              </Button>
+                            )}
+                            {pendingAmount === 0 && (
+                              <span className="text-slate-500 text-sm">Nenhuma comissão pendente</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>
@@ -300,9 +328,73 @@ export default function CommissionsManagement({ onPageChange }: CommissionsManag
           </Card>
         </TabsContent>
 
+        {/* Estatísticas Tab */}
         <TabsContent value="statistics">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Card className="bg-slate-800 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white">Performance Mensal</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Comissões Geradas</span>
+                    <span className="text-white">R$ {commissionStats.totalCommissions.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Pendentes</span>
+                    <span className="text-yellow-400">R$ {commissionStats.pendingCommissions.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Pagas</span>
+                    <span className="text-green-400">R$ {commissionStats.paidCommissions.toFixed(2)}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-800 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white">Afiliados Ativos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Total</span>
+                    <span className="text-white">{commissionStats.totalAffiliates}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Com Comissões</span>
+                    <span className="text-blue-400">{affiliateCommissions.length}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-800 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white">Taxa de Conversão</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Média Geral</span>
+                    <span className="text-purple-400">
+                      {affiliateCommissions.length > 0 
+                        ? (affiliateCommissions.reduce((acc: number, aff: any) => 
+                            acc + parseFloat(aff.conversionRate || 0), 0) / affiliateCommissions.length).toFixed(2)
+                        : '0.00'}%
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
               <CardHeader>
                 <CardTitle className="text-white">Top Afiliados</CardTitle>
                 <CardDescription className="text-slate-400">
