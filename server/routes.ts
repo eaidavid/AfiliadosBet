@@ -246,14 +246,23 @@ export async function registerRoutes(app: any): Promise<Server> {
       if (affiliateUserId) {
         try {
           await db.execute(sql`
-            INSERT INTO conversions (user_id, house_id, type, amount, commission, customer_id, conversion_data, status)
+            INSERT INTO conversions (user_id, house_id, type, amount, commission, customer_id, conversion_data)
             VALUES (${affiliateUserId}, ${house.id}, ${evento}, ${amount || 0}, ${commissionAmount}, ${subid}, ${JSON.stringify({ 
               customer_id: subid, 
               event: evento, 
               house_name: house.name,
               processed_at: new Date().toISOString() 
-            })}, 'pending')
+            })})
         `);
+        
+        // Criar registro de pagamento pendente se houver comissão
+        if (commissionAmount > 0) {
+          await db.execute(sql`
+            INSERT INTO payments (user_id, amount, method, status)
+            VALUES (${affiliateUserId}, ${commissionAmount}, 'pix', 'pending')
+          `);
+          console.log(`💰 Pagamento pendente criado: R$ ${commissionAmount} para usuário ${affiliateUserId}`);
+        }
         
         // Atualizar status do log
         await db.update(schema.postbackLogs)
