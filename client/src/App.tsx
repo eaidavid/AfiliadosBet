@@ -19,7 +19,7 @@ function AuthenticatedHome() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce">
         <div className="text-emerald-500 text-xl">Carregando...</div>
       </div>
     );
@@ -31,10 +31,10 @@ function AuthenticatedHome() {
   }
 
   return (
-    <>
+    <div className="mobile-safe no-bounce">
       <UserDashboardComplete />
       <AdminPanelToggle />
-    </>
+    </div>
   );
 }
 
@@ -57,7 +57,7 @@ function AuthenticatedLogin() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce">
         <div className="text-emerald-500 text-xl">Carregando...</div>
       </div>
     );

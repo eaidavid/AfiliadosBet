@@ -81,9 +81,43 @@
     @apply border-border;
   }
   
+  html {
+    /* Prevenir zoom em inputs no iOS */
+    -webkit-text-size-adjust: 100%;
+    /* Prevenir seleção de texto indesejada */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    /* Altura total na viewport */
+    height: 100%;
+    overflow-x: hidden;
+  }
+  
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    /* Altura total na viewport */
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height para dispositivos móveis */
+    overflow-x: hidden;
+    /* Prevenir bounce scroll no iOS */
+    overscroll-behavior: none;
+    /* Webkit específico para iOS */
+    -webkit-overflow-scrolling: touch;
+    /* Cor de fundo fixa para evitar espaços brancos */
+    background-color: hsl(240 10% 3.9%);
+    /* Remover margin e padding padrão */
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Root container para aplicação */
+  #root {
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    background-color: hsl(240 10% 3.9%);
   }
 
   /* Custom scrollbar for dark theme */
@@ -297,6 +331,42 @@
 
   .section-spacing {
     @apply py-12 lg:py-20;
+  }
+  
+  /* Mobile responsividade melhorada */
+  .mobile-safe {
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    background-color: hsl(240 10% 3.9%);
+  }
+  
+  /* Prevenir zoom em inputs móveis */
+  .mobile-input {
+    font-size: 16px; /* Previne zoom no iOS */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+  
+  /* Toque otimizado */
+  .touch-target {
+    min-height: 44px; /* Tamanho mínimo recomendado para toque */
+    min-width: 44px;
+  }
+  
+  /* Anti-bounce para iOS */
+  .no-bounce {
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Viewport fit para dispositivos com notch */
+  .safe-area {
+    padding-top: env(safe-area-inset-top);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
   }
 
   /* Interactive elements */

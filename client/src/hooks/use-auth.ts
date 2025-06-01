@@ -82,6 +82,8 @@ export function useAuth() {
 }
 
 export function useLogin() {
+  const queryClient = useQueryClient();
+  
   return useMutation({
     mutationFn: async (credentials: LoginData) => {
       const response = await apiRequest("POST", "/api/login", {
@@ -91,12 +93,17 @@ export function useLogin() {
       return response.json();
     },
     onSuccess: (data) => {
-      // Redirecionar baseado no tipo de usuário
-      if (data.user?.role === 'admin') {
-        window.location.href = "/admin";
-      } else {
-        window.location.href = "/home";
-      }
+      // Invalidar cache para atualizar estado de autenticação
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      
+      // Aguardar um pouco antes de redirecionar para garantir que o estado seja atualizado
+      setTimeout(() => {
+        if (data.user?.role === 'admin') {
+          window.location.href = "/admin";
+        } else {
+          window.location.href = "/home";
+        }
+      }, 100);
     },
   });
 }
@@ -111,12 +118,15 @@ export function useRegister() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
-      // Redirecionar baseado no tipo de usuário após registro
-      if (data.user?.role === 'admin') {
-        window.location.href = "/admin";
-      } else {
-        window.location.href = "/home";
-      }
+      
+      // Aguardar um pouco antes de redirecionar para garantir que o estado seja atualizado
+      setTimeout(() => {
+        if (data.user?.role === 'admin') {
+          window.location.href = "/admin";
+        } else {
+          window.location.href = "/home";
+        }
+      }, 100);
     },
   });
 }
