@@ -4,7 +4,7 @@ import UserTopBar from "@/components/user/topbar";
 import BettingHousesSecure from "@/components/user/betting-houses-secure";
 import MyLinks from "@/components/user/my-links";
 import Payments from "@/components/user/payments";
-import Reports from "@/components/user/reports";
+import UserReports from "@/pages/user-reports";
 import Support from "@/components/user/support";
 import Profile from "@/components/user/profile";
 import { useAuth } from "@/hooks/use-auth";
