@@ -30,7 +30,7 @@ export default function CommissionsManagement({ onPageChange }: CommissionsManag
   });
 
   const { data: statsData = {} } = useQuery({
-    queryKey: ["/api/admin/commission-stats", filters],
+    queryKey: ["/api/admin/stats"],
     retry: false,
   });
 
@@ -115,28 +115,28 @@ export default function CommissionsManagement({ onPageChange }: CommissionsManag
             {[
               {
                 title: "Comissões Pendentes",
-                value: `R$ ${parseFloat(statsData.pendingCommissions || '0').toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+                value: "R$ 0,00",
                 icon: Calculator,
                 color: "text-yellow-400",
                 bgColor: "bg-yellow-500/10",
               },
               {
                 title: "Comissões Pagas",
-                value: `R$ ${parseFloat(statsData.paidCommissions || '0').toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+                value: `R$ ${parseFloat((statsData as any)?.paidCommissions || '0').toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
                 icon: DollarSign,
                 color: "text-green-400",
                 bgColor: "bg-green-500/10",
               },
               {
                 title: "Total de Afiliados",
-                value: statsData.totalAffiliates || 0,
+                value: (statsData as any)?.totalAffiliates || 0,
                 icon: Users,
                 color: "text-blue-400",
                 bgColor: "bg-blue-500/10",
               },
               {
                 title: "Volume Total",
-                value: `R$ ${parseFloat(statsData.totalVolume || '0').toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+                value: `R$ ${parseFloat((statsData as any)?.totalVolume || '0').toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
                 icon: TrendingUp,
                 color: "text-purple-400",
                 bgColor: "bg-purple-500/10",

@@ -1934,57 +1934,6 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
-  // Commission stats API for commissions management page
-  app.get("/api/admin/commission-stats", requireAdmin, async (req: any, res) => {
-    try {
-      const { period, affiliate, house, status } = req.query;
-      
-      // Buscar todas as conversões
-      const allConversions = await db.select()
-        .from(schema.conversions);
-      
-      // Filtrar conversões que geraram comissões
-      const conversionsWithCommissions = allConversions.filter(c => 
-        c.commission && parseFloat(c.commission) > 0
-      );
-      
-      // Calcular totais
-      const totalPendingCommissions = conversionsWithCommissions
-        .filter(c => c.status === 'pending')
-        .reduce((sum, c) => sum + parseFloat(c.commission), 0);
-      
-      const totalPaidCommissions = conversionsWithCommissions
-        .filter(c => c.status === 'paid')
-        .reduce((sum, c) => sum + parseFloat(c.commission), 0);
-      
-      const totalVolume = allConversions
-        .filter(c => (c.type === 'deposit' || c.type === 'first_deposit' || c.type === 'recurring_deposit') && c.amount)
-        .reduce((sum, c) => sum + parseFloat(c.amount || '0'), 0);
-      
-      const totalAffiliates = await db.select()
-        .from(schema.users)
-        .where(eq(schema.users.role, 'affiliate'));
-      
-      console.log("📊 Commission Stats calculadas:", {
-        pendingCommissions: totalPendingCommissions,
-        paidCommissions: totalPaidCommissions,
-        totalVolume,
-        totalAffiliates: totalAffiliates.length
-      });
-      
-      const stats = {
-        pendingCommissions: totalPendingCommissions.toFixed(2),
-        paidCommissions: totalPaidCommissions.toFixed(2),
-        totalVolume: totalVolume.toFixed(2),
-        totalAffiliates: totalAffiliates.length
-      };
-      
-      res.json(stats);
-    } catch (error) {
-      console.error("❌ Erro ao calcular estatísticas de comissões:", error);
-      res.status(500).json({ message: "Erro interno do servidor" });
-    }
-  });
 
   // Admin routes - Gestão completa de afiliados
   app.get("/api/admin/affiliates", requireAdmin, async (req, res) => {
