@@ -46,7 +46,7 @@ export default function AdminSidebar({ currentPage, onPageChange }: AdminSidebar
         {/* Mobile Menu Button */}
         <button
           onClick={() => setIsMobileOpen(true)}
-          className="fixed top-4 left-4 z-50 lg:hidden bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-xl p-3 text-white hover:bg-slate-700/90 transition-all duration-200"
+          className="fixed top-4 left-4 z-50 lg:hidden bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-xl p-3 text-white hover:bg-slate-700/90 transition-all duration-200 touch-target"
         >
           <Menu className="h-5 w-5" />
         </button>
@@ -91,7 +91,7 @@ export default function AdminSidebar({ currentPage, onPageChange }: AdminSidebar
                   <button
                     key={item.id}
                     onClick={() => handlePageChange(item.id)}
-                    className={`w-full flex items-center gap-4 px-6 py-4 text-left transition-all duration-200 ${
+                    className={`w-full flex items-center gap-4 px-6 py-4 text-left transition-all duration-200 touch-target ${
                       isActive
                         ? "bg-red-500/20 text-red-400 border-r-2 border-red-500"
                         : "text-slate-300 hover:text-white hover:bg-slate-800/50"
@@ -108,7 +108,7 @@ export default function AdminSidebar({ currentPage, onPageChange }: AdminSidebar
             <div className="p-6 border-t border-slate-700/50">
               <button
                 onClick={() => logout.mutate()}
-                className="w-full flex items-center gap-4 px-4 py-3 text-slate-300 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all duration-200"
+                className="w-full flex items-center gap-4 px-4 py-3 text-slate-300 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all duration-200 touch-target"
               >
                 <LogOut className="h-5 w-5" />
                 <span className="font-medium">Sair</span>
@@ -201,7 +201,7 @@ export default function AdminSidebar({ currentPage, onPageChange }: AdminSidebar
         <div className="p-4 border-t border-slate-700/50">
           <button
             onClick={() => logout.mutate()}
-            className={`w-full flex items-center gap-3 px-3 py-3 text-slate-300 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all duration-200 group ${
+            className={`w-full flex items-center gap-3 px-3 py-3 text-slate-300 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all duration-200 group touch-target ${
               isCollapsed ? "justify-center" : ""
             }`}
             title={isCollapsed ? "Sair" : undefined}
