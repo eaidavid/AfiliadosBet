@@ -8,6 +8,18 @@ import session from "express-session";
 
 const app = express();
 
+// Setup sessões simples em memória
+app.use(session({
+  secret: process.env.SESSION_SECRET || "fallback-secret-for-dev",
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: false,
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  }
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
