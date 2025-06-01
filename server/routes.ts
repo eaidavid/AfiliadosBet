@@ -192,16 +192,35 @@ export async function registerRoutes(app: any): Promise<Server> {
       
       console.log(`💰 Comissão final: R$ ${commissionAmount.toFixed(2)} (Tipo: ${house.commissionType})`);
       
-      // Registrar conversão
+      // Buscar o usuário afiliado pelo subid
+      let affiliateUserId = null;
       try {
-        await db.execute(sql`
-          INSERT INTO conversions (user_id, house_id, type, amount, commission, customer_id, conversion_data)
-          VALUES (2, ${house.id}, ${evento}, ${amount || 0}, ${commissionAmount}, ${subid}, ${JSON.stringify({ 
-            customer_id: subid, 
-            event: evento, 
-            house_name: house.name,
-            processed_at: new Date().toISOString() 
-          })})
+        const affiliateUser = await db.select()
+          .from(schema.users)
+          .where(eq(schema.users.username, subid as string))
+          .limit(1);
+        
+        if (affiliateUser.length > 0) {
+          affiliateUserId = affiliateUser[0].id;
+          console.log(`👤 Afiliado encontrado: ${affiliateUser[0].username} (ID: ${affiliateUserId})`);
+        } else {
+          console.log(`⚠️ Afiliado não encontrado para subid: ${subid}`);
+        }
+      } catch (error) {
+        console.log(`❌ Erro ao buscar afiliado: ${error}`);
+      }
+      
+      // Registrar conversão apenas se o afiliado for encontrado
+      if (affiliateUserId) {
+        try {
+          await db.execute(sql`
+            INSERT INTO conversions (user_id, house_id, type, amount, commission, customer_id, conversion_data)
+            VALUES (${affiliateUserId}, ${house.id}, ${evento}, ${amount || 0}, ${commissionAmount}, ${subid}, ${JSON.stringify({ 
+              customer_id: subid, 
+              event: evento, 
+              house_name: house.name,
+              processed_at: new Date().toISOString() 
+            })})
         `);
         
         // Atualizar status do log
@@ -226,86 +245,23 @@ export async function registerRoutes(app: any): Promise<Server> {
           .where(eq(schema.postbackLogs.id, logEntry[0].id));
         return res.status(500).json({ error: `Erro interno ao processar ${house.name}` });
       }
-      console.log(`✅ Casa encontrada: ${house.name}`);
-      
-      // Verificar se o afiliado existe
-      const affiliates = await db.select()
-        .from(schema.users)
-        .where(eq(schema.users.username, subid as string));
-      
-      if (affiliates.length === 0) {
-        console.log(`❌ Afiliado não encontrado: ${subid}`);
+      } else {
+        // Afiliado não encontrado
+        console.log(`⚠️ Afiliado não encontrado para subid: ${subid}`);
         await db.update(schema.postbackLogs)
           .set({ status: 'ERROR_AFFILIATE_NOT_FOUND' })
           .where(eq(schema.postbackLogs.id, logEntry[0].id));
-        return res.status(404).json({ error: "Afiliado não encontrado", logId: logEntry[0].id });
-      }
-      
-      const affiliate = affiliates[0];
-      console.log(`✅ Afiliado encontrado: ${affiliate.username}`);
-      
-      // Registrar evento
-      console.log(`📊 Registrando evento...`);
-      const eventoData = await db.insert(schema.eventos).values({
-        afiliadoId: affiliate.id,
-        casa: house.identifier,
-        evento,
-        valor: amount ? (amount as string) : null
-      }).returning();
-      console.log(`✅ Evento registrado com ID: ${eventoData[0].id}`);
-      
-      // Calcular comissão
-      let commissionValue = 0;
-      let tipo = 'CPA';
-      
-      if (house.commissionType === 'CPA' && (evento === 'registration' || evento === 'first_deposit')) {
-        commissionValue = parseFloat(house.commissionValue);
-        tipo = 'CPA';
-      } else if (house.commissionType === 'RevShare' && amount && (evento === 'deposit' || evento === 'profit')) {
-        const percentage = parseFloat(house.commissionValue) / 100;
-        commissionValue = parseFloat(amount as string) * percentage;
-        tipo = 'RevShare';
-      }
-      
-      // Salvar comissão se houver
-      if (commissionValue > 0) {
-        console.log(`💰 Calculando comissão ${tipo}: R$ ${commissionValue}`);
-        await db.insert(schema.comissoes).values({
-          afiliadoId: affiliate.id,
-          eventoId: eventoData[0].id,
-          tipo,
-          valor: commissionValue.toString()
+        
+        return res.status(400).json({ 
+          status: 'error',
+          message: `Afiliado não encontrado: ${subid}`,
+          logId: logEntry[0].id
         });
-        console.log(`✅ Comissão salva: R$ ${commissionValue} para ${affiliate.username}`);
       }
-      
-      // Atualizar log como sucesso
-      await db.update(schema.postbackLogs)
-        .set({ status: 'SUCCESS' })
-        .where(eq(schema.postbackLogs.id, logEntry[0].id));
-      
-      const processTime = Date.now() - startTime;
-      console.log(`🎉 Postback processado com sucesso em ${processTime}ms`);
-      console.log(`=== FIM DO POSTBACK ===`);
-      
-      res.json({ 
-        success: true, 
-        message: "Postback processado com sucesso",
-        commission: commissionValue,
-        type: tipo,
-        affiliate: affiliate.username,
-        house: house.name,
-        event: evento,
-        logId: logEntry[0].id,
-        processTime: `${processTime}ms`
-      });
       
     } catch (error) {
-      console.error("❌ ERRO CRÍTICO no postback:", error);
-      res.status(500).json({ 
-        error: "Erro interno no processamento", 
-        details: error instanceof Error ? error.message : 'Unknown error'
-      });
+      console.error("❌ Erro geral no processamento do postback:", error);
+      return res.status(500).json({ error: "Erro interno do servidor" });
     }
   });
 
