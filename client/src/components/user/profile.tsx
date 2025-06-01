@@ -198,14 +198,7 @@ export default function Profile({ onPageChange }: ProfileProps) {
                   />
                 </div>
 
-                <div>
-                  <Label htmlFor="whatsapp" className="text-white">WhatsApp</Label>
-                  <Input
-                    {...profileForm.register("whatsapp")}
-                    className="bg-slate-700 border-slate-600 text-white"
-                    placeholder="(11) 99999-9999"
-                  />
-                </div>
+
 
                 <div>
                   <Label htmlFor="birthDate" className="text-white">Data de Nascimento</Label>
