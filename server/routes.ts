@@ -1007,23 +1007,35 @@ export async function registerRoutes(app: any): Promise<Server> {
 
   app.post("/api/register", async (req, res) => {
     try {
-      const { name, email, password, cpf, phone } = req.body;
+      const { username, fullName, email, password, cpf, birthDate, phone, city, state, country } = req.body;
       
-      const newUser = {
-        id: Math.floor(Math.random() * 1000) + 100,
-        name,
-        email,
-        cpf,
-        phone,
-        role: "user",
-        status: "active"
+      console.log("📝 Dados recebidos no cadastro:", req.body);
+      
+      // Criar usuário no banco de dados
+      const newUserData = {
+        username: username || `user${Date.now()}`,
+        fullName: fullName || '',
+        email: email || '',
+        cpf: cpf || '',
+        birthDate: birthDate || '',
+        phone: phone || '',
+        city: city || '',
+        state: state || '',
+        country: country || 'BR',
+        role: "user" as const,
+        status: "active" as const
       };
       
-      req.session.user = newUser;
+      const createdUser = await storage.createUser(newUserData);
+      
+      // Salvar na sessão
+      req.session.user = createdUser;
+      
+      console.log("✅ Usuário criado com sucesso:", createdUser);
       
       res.json({
-        user: newUser,
-        token: `user-token-${newUser.id}`
+        user: createdUser,
+        token: `user-token-${createdUser.id}`
       });
       
     } catch (error) {

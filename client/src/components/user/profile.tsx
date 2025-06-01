@@ -13,12 +13,15 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 
 const profileSchema = z.object({
-  phone: z.string().optional(),
-  whatsapp: z.string().optional(),
-  birthDate: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  country: z.string().optional(),
+  username: z.string().min(1, "Usuário é obrigatório"),
+  fullName: z.string().min(1, "Nome completo é obrigatório"),
+  email: z.string().email("Email inválido"),
+  cpf: z.string().min(1, "CPF é obrigatório"),
+  phone: z.string().min(1, "Telefone é obrigatório"),
+  birthDate: z.string().min(1, "Data de nascimento é obrigatória"),
+  city: z.string().min(1, "Cidade é obrigatória"),
+  state: z.string().min(1, "Estado é obrigatório"),
+  country: z.string().min(1, "País é obrigatório"),
 });
 
 const passwordSchema = z.object({
@@ -45,8 +48,11 @@ export default function Profile({ onPageChange }: ProfileProps) {
   const profileForm = useForm<ProfileData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
+      username: user?.username || "",
+      fullName: user?.fullName || "",
+      email: user?.email || "",
+      cpf: user?.cpf || "",
       phone: user?.phone || "",
-      whatsapp: user?.whatsapp || "",
       birthDate: user?.birthDate || "",
       city: user?.city || "",
       state: user?.state || "",
@@ -142,6 +148,15 @@ export default function Profile({ onPageChange }: ProfileProps) {
             <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4">
               {/* Read-only fields */}
               <div className="space-y-4">
+                <div>
+                  <Label className="text-slate-300">Usuário (SubID)</Label>
+                  <Input
+                    value={user?.username || ""}
+                    disabled
+                    className="bg-slate-700 border-slate-600 text-slate-400"
+                  />
+                </div>
+
                 <div>
                   <Label className="text-slate-300">Nome Completo</Label>
                   <Input
