@@ -911,6 +911,47 @@ export async function registerRoutes(app: any): Promise<Server> {
   });
 
   // Auth routes
+  app.post("/api/login", async (req, res) => {
+    try {
+      console.log("=== LOGIN DEBUG ===");
+      console.log("Request body:", req.body);
+      console.log("Body type:", typeof req.body);
+      console.log("Body keys:", Object.keys(req.body || {}));
+      
+      const { email, password } = req.body;
+      
+      // Autenticação simples para admin e usuário de teste
+      let user = null;
+      
+      if (email === "admin@afiliadosbet.com" && password === "123456") {
+        user = {
+          id: 1,
+          email: "admin@afiliadosbet.com",
+          name: "Administrador",
+          role: "admin"
+        };
+      } else if (email === "user@afiliadosbet.com" && password === "123456") {
+        user = {
+          id: 2,
+          email: "user@afiliadosbet.com", 
+          name: "David Afiliado",
+          role: "user"
+        };
+      }
+      
+      if (user) {
+        req.session.user = user;
+        return res.json({ user, token: `token-${user.id}` });
+      }
+      
+      return res.status(401).json({ error: "Credenciais inválidas" });
+      
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
   app.post("/api/auth/login", async (req, res) => {
     try {
       console.log("=== LOGIN DEBUG ===");
@@ -934,6 +975,33 @@ export async function registerRoutes(app: any): Promise<Server> {
     } catch (error) {
       console.error("Login error:", error);
       res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  app.get("/api/auth/me", async (req, res) => {
+    try {
+      if (req.session?.user) {
+        return res.json(req.session.user);
+      }
+      return res.status(401).json({ message: "Not authenticated" });
+    } catch (error) {
+      console.error("Erro na verificação de autenticação:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  app.post("/api/auth/logout", async (req, res) => {
+    try {
+      req.session.destroy((err: any) => {
+        if (err) {
+          console.error("Erro ao destruir sessão:", err);
+          return res.status(500).json({ error: "Erro ao fazer logout" });
+        }
+        res.json({ message: "Logout realizado com sucesso" });
+      });
+    } catch (error) {
+      console.error("Erro no logout:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
     }
   });
 
