@@ -102,7 +102,7 @@ export default function UserSidebar({ currentPage, onPageChange }: UserSidebarPr
             {/* Mobile Logout */}
             <div className="p-6 border-t border-slate-700/50">
               <button
-                onClick={logout}
+                onClick={() => logout.mutate()}
                 className="w-full flex items-center gap-4 px-4 py-3 text-slate-300 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all duration-200"
               >
                 <LogOut className="h-5 w-5" />
@@ -193,7 +193,7 @@ export default function UserSidebar({ currentPage, onPageChange }: UserSidebarPr
         {/* Logout Button */}
         <div className="p-4 border-t border-slate-700/50">
           <button
-            onClick={logout}
+            onClick={() => logout.mutate()}
             className={`w-full flex items-center gap-3 px-3 py-3 text-slate-300 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all duration-200 group ${
               isCollapsed ? "justify-center" : ""
             }`}

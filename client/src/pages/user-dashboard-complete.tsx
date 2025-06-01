@@ -306,22 +306,16 @@ export default function UserDashboardComplete() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Mobile sidebar */}
-      {isMobile && (
-        <UserSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
-      )}
+    <div className="mobile-safe bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 no-bounce">
+      {/* Sidebar para todas as telas */}
+      <UserSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
       
-      {/* Desktop sidebar */}
-      {!isMobile && (
-        <UserSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
-      )}
-      
-      <div className={`${!isMobile ? "ml-72" : ""}`}>
+      {/* Área principal com responsividade melhorada */}
+      <div className={`transition-all duration-300 ${!isMobile ? "ml-72" : ""}`}>
         <UserTopBar onPageChange={setCurrentPage} />
         
-        <main className="p-4 lg:p-6 overflow-x-hidden">
-          <div className="max-w-full">
+        <main className={`safe-area overflow-x-hidden ${isMobile ? "pt-16 px-4 pb-4" : "p-6"}`}>
+          <div className="w-full max-w-none">
             {renderCurrentPage()}
           </div>
         </main>
