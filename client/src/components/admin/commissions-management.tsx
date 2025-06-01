@@ -81,9 +81,6 @@ export default function CommissionsManagement({ onPageChange }: CommissionsManag
     );
   };
 
-  const totalPending = commissions.filter((c: any) => c.status === 'pending').reduce((sum: number, c: any) => sum + c.amount, 0);
-  const totalPaid = commissions.filter((c: any) => c.status === 'paid').reduce((sum: number, c: any) => sum + c.amount, 0);
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -118,28 +115,28 @@ export default function CommissionsManagement({ onPageChange }: CommissionsManag
             {[
               {
                 title: "Comissões Pendentes",
-                value: `R$ ${totalPending.toFixed(2)}`,
+                value: `R$ ${parseFloat(statsData.pendingCommissions || '0').toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
                 icon: Calculator,
                 color: "text-yellow-400",
                 bgColor: "bg-yellow-500/10",
               },
               {
                 title: "Comissões Pagas",
-                value: `R$ ${totalPaid.toFixed(2)}`,
+                value: `R$ ${parseFloat(statsData.paidCommissions || '0').toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
                 icon: DollarSign,
                 color: "text-green-400",
                 bgColor: "bg-green-500/10",
               },
               {
                 title: "Total de Afiliados",
-                value: affiliates.length,
+                value: statsData.totalAffiliates || 0,
                 icon: Users,
                 color: "text-blue-400",
                 bgColor: "bg-blue-500/10",
               },
               {
                 title: "Volume Total",
-                value: `R$ ${(totalPending + totalPaid).toFixed(2)}`,
+                value: `R$ ${parseFloat(statsData.totalVolume || '0').toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
                 icon: TrendingUp,
                 color: "text-purple-400",
                 bgColor: "bg-purple-500/10",
