@@ -920,35 +920,58 @@ export async function registerRoutes(app: any): Promise<Server> {
       
       const { email, password } = req.body;
       
-      // Autenticação simples para admin e usuário de teste
-      let user = null;
-      
-      if (email === "admin@afiliadosbet.com" && password === "123456") {
-        user = {
-          id: 1,
-          email: "admin@afiliadosbet.com",
-          name: "Administrador",
-          role: "admin"
-        };
-      } else if (email === "user@afiliadosbet.com" && password === "123456") {
-        user = {
-          id: 2,
-          email: "user@afiliadosbet.com", 
-          name: "David Afiliado",
-          role: "user"
-        };
+      // Validar campos obrigatórios
+      if (!email || !password) {
+        return res.status(400).json({ error: "Email e senha são obrigatórios" });
       }
       
-      if (user) {
-        req.session.user = user;
-        return res.json({ user, token: `token-${user.id}` });
+      // Autenticação com admin fixo
+      if (email === "admin@afiliadosbet.com" && password === "123456") {
+        const adminUser = {
+          id: 1,
+          email: "admin@afiliadosbet.com",
+          username: "admin",
+          fullName: "Administrador",
+          role: "admin"
+        };
+        req.session.user = adminUser;
+        return res.json({ user: adminUser, token: `token-${adminUser.id}` });
+      }
+      
+      // Autenticação com banco de dados para usuários reais
+      try {
+        const userData = { email, password };
+        const authenticatedUser = await storage.authenticateUser(userData);
+        
+        if (authenticatedUser) {
+          console.log("✅ Usuário autenticado:", authenticatedUser.username);
+          req.session.user = authenticatedUser;
+          return res.json({ user: authenticatedUser, token: `token-${authenticatedUser.id}` });
+        }
+      } catch (authError) {
+        console.log("❌ Erro na autenticação:", authError.message);
+      }
+      
+      // Tentar autenticação por username (caso o usuário digite username em vez de email)
+      try {
+        const userByUsername = await storage.getUserByUsername(email);
+        if (userByUsername) {
+          const isValidPassword = await storage.validatePassword(password, userByUsername.password);
+          if (isValidPassword) {
+            console.log("✅ Usuário autenticado por username:", userByUsername.username);
+            req.session.user = userByUsername;
+            return res.json({ user: userByUsername, token: `token-${userByUsername.id}` });
+          }
+        }
+      } catch (usernameError) {
+        console.log("❌ Erro na autenticação por username:", usernameError.message);
       }
       
       return res.status(401).json({ error: "Credenciais inválidas" });
       
     } catch (error) {
       console.error("Login error:", error);
-      res.status(500).json({ message: "Login failed" });
+      res.status(500).json({ message: "Erro interno do servidor" });
     }
   });
 
