@@ -1016,12 +1016,26 @@ export async function registerRoutes(app: any): Promise<Server> {
         return res.status(400).json({ error: "Senha é obrigatória e deve ter pelo menos 6 caracteres" });
       }
       
+      if (!username || username.length < 3) {
+        return res.status(400).json({ error: "Usuário é obrigatório e deve ter pelo menos 3 caracteres" });
+      }
+      
+      // Verificar se username ou email já existem
+      try {
+        const existingUser = await storage.getUserByUsername(username);
+        if (existingUser) {
+          return res.status(400).json({ error: "Este nome de usuário já está em uso" });
+        }
+      } catch (error) {
+        // Se não encontrou o usuário, está tudo bem
+      }
+      
       // Criar usuário no banco de dados
       const newUserData = {
-        username: username || `user${Date.now()}`,
+        username: username,
         fullName: fullName || '',
         email: email || '',
-        password: password, // Incluir a senha
+        password: password,
         cpf: cpf || '',
         birthDate: birthDate || '',
         phone: phone || '',
@@ -1046,6 +1060,17 @@ export async function registerRoutes(app: any): Promise<Server> {
       
     } catch (error) {
       console.error("Erro no registro:", error);
+      
+      // Verificar se é erro de duplicação
+      if (error.code === '23505') {
+        if (error.constraint === 'users_username_unique') {
+          return res.status(400).json({ error: "Este nome de usuário já está em uso" });
+        }
+        if (error.constraint === 'users_email_unique') {
+          return res.status(400).json({ error: "Este email já está cadastrado" });
+        }
+      }
+      
       res.status(500).json({ error: "Erro interno do servidor" });
     }
   });
