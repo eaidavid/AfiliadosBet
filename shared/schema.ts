@@ -195,9 +195,14 @@ export const insertUserSchema = createInsertSchema(users).omit({
   createdAt: true,
   updatedAt: true,
 }).extend({
-  confirmPassword: z.string().min(8),
+  confirmPassword: z.string().min(8, "A confirmação deve ter pelo menos 8 caracteres"),
+  username: z.string().min(7, "O usuário deve ter pelo menos 7 caracteres"),
+  password: z.string().min(8, "A senha deve ter pelo menos 8 caracteres"),
+  email: z.string().email("Digite um email válido"),
+  fullName: z.string().min(2, "Nome completo é obrigatório"),
+  cpf: z.string().min(11, "CPF deve ter 11 dígitos").max(14, "CPF inválido"),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
+  message: "As senhas não coincidem",
   path: ["confirmPassword"],
 });
 

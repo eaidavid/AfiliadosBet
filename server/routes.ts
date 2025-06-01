@@ -1092,6 +1092,9 @@ export async function registerRoutes(app: any): Promise<Server> {
         if (error.constraint === 'users_email_unique') {
           return res.status(400).json({ error: "Este email já está cadastrado" });
         }
+        if (error.constraint === 'users_cpf_unique') {
+          return res.status(400).json({ error: "Este CPF já está cadastrado" });
+        }
       }
       
       res.status(500).json({ error: "Erro interno do servidor" });
