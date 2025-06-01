@@ -1,5 +1,6 @@
 import { useState } from "react";
 import AdminSidebar from "@/components/admin/sidebar";
+import AdminTopBar from "@/components/admin/topbar";
 import AdminHousesManagement from "@/components/admin/houses-management";
 import AffiliatesManagement from "@/components/admin/affiliates-management";
 import LinksManagement from "@/components/admin/links-management";
@@ -141,7 +142,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Top performers */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+            <div className={`grid gap-4 md:gap-6 ${isMobile ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2"}`}>
               <Card className="bg-slate-800 border-slate-700">
                 <CardContent className="p-4 md:p-6">
                   <h3 className="text-base md:text-lg font-semibold text-white mb-4">Top Afiliados</h3>
@@ -203,32 +204,18 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Mobile sidebar */}
-      {isMobile && (
-        <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
-      )}
+    <div className="mobile-safe bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 no-bounce">
+      {/* Sidebar para todas as telas */}
+      <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
       
-      {/* Desktop sidebar */}
-      {!isMobile && (
-        <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
-      )}
-      
-      <div className={`${!isMobile ? "ml-72" : ""}`}>
-        <header className={`bg-slate-900/50 backdrop-blur-sm border-b border-slate-700/50 ${isMobile ? "px-4 py-3" : "px-6 py-4"}`}>
-          <div className="flex items-center justify-between">
-            <h1 className={`font-bold text-white ${isMobile ? "text-xl ml-16" : "text-2xl"}`}>Painel Administrativo</h1>
-            <div className="flex items-center space-x-4">
-              <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-semibold">A</span>
-              </div>
-              <span className={`text-white ${isMobile ? "hidden" : "block"}`}>Admin</span>
-            </div>
-          </div>
-        </header>
+      {/* Área principal com responsividade melhorada */}
+      <div className={`transition-all duration-300 ${!isMobile ? "ml-72" : ""}`}>
+        <AdminTopBar onPageChange={setCurrentPage} />
         
-        <main className={isMobile ? "p-4" : "p-6"}>
-          {renderContent()}
+        <main className={`safe-area overflow-x-hidden ${isMobile ? "px-4 pb-4" : "p-6"}`}>
+          <div className="w-full max-w-none">
+            {renderContent()}
+          </div>
         </main>
       </div>
     </div>
