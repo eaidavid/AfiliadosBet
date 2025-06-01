@@ -503,7 +503,7 @@ export class DatabaseStorage implements IStorage {
         createdAt: bettingHouses.createdAt,
         updatedAt: bettingHouses.updatedAt,
         totalVolume: sql<number>`sum(${conversions.amount})`,
-        affiliateCount: sql<number>`count(distinct ${affiliateLinks.userId})`,
+        affiliateCount: sql<number>`count(distinct case when ${affiliateLinks.isActive} = true then ${affiliateLinks.userId} end)`,
       })
       .from(bettingHouses)
       .leftJoin(conversions, eq(bettingHouses.id, conversions.houseId))

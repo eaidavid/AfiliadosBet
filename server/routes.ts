@@ -1931,6 +1931,9 @@ export async function registerRoutes(app: any): Promise<Server> {
         };
       }).sort((a, b) => b.conversions - a.conversions).slice(0, 5);
       
+      // Buscar afiliados reais usando a mesma lógica da página de gerenciamento
+      const realAffiliates = await storage.getAllAffiliates();
+      
       const stats = {
         activeHouses: houses.filter(h => h.isActive).length,
         totalVolume: totalVolume.toFixed(2),
@@ -1940,7 +1943,7 @@ export async function registerRoutes(app: any): Promise<Server> {
         totalClicks,
         totalRegistrations,
         totalDeposits,
-        totalAffiliates: affiliates.length
+        totalAffiliates: realAffiliates.length
       };
       
       res.json(stats);

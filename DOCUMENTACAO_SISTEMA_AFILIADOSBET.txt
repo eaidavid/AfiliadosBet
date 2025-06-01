@@ -1,0 +1,665 @@
+===============================================================================
+                    DOCUMENTAÇÃO COMPLETA - SISTEMA AFILIADOSBET
+===============================================================================
+
+ÍNDICE:
+1. VISÃO GERAL DO SISTEMA
+2. ARQUITETURA TÉCNICA
+3. SISTEMA DE AUTENTICAÇÃO
+4. PAINEL ADMINISTRATIVO
+5. PAINEL DO USUÁRIO
+6. SISTEMA DE AFILIAÇÃO
+7. SISTEMA DE POSTBACKS
+8. SISTEMA DE COMISSÕES
+9. RELATÓRIOS E ESTATÍSTICAS
+10. API ENDPOINTS
+11. BANCO DE DADOS
+12. SEGURANÇA
+13. DEPLOYMENT
+
+===============================================================================
+1. VISÃO GERAL DO SISTEMA
+===============================================================================
+
+O AfiliadosBet é uma plataforma completa de marketing de afiliados para casas de apostas que permite:
+
+• Gestão de afiliados e casas de apostas
+• Rastreamento de conversões e comissões
+• Sistema de postbacks automatizado
+• Relatórios detalhados de performance
+• Painel administrativo completo
+• Painel do usuário para afiliados
+
+OBJETIVOS PRINCIPAIS:
+- Conectar afiliados com casas de apostas
+- Automatizar o processo de rastreamento de conversões
+- Calcular comissões automaticamente
+- Fornecer relatórios em tempo real
+- Gerenciar pagamentos de comissões
+
+===============================================================================
+2. ARQUITETURA TÉCNICA
+===============================================================================
+
+FRONTEND:
+- React.js com TypeScript
+- Tailwind CSS para estilização
+- shadcn/ui para componentes
+- TanStack Query para gerenciamento de estado
+- Wouter para roteamento
+- React Hook Form para formulários
+
+BACKEND:
+- Node.js com Express
+- TypeScript
+- Drizzle ORM
+- PostgreSQL como banco de dados
+- Sessões com express-session
+- bcrypt para hash de senhas
+
+INFRAESTRUTURA:
+- Replit para hospedagem
+- PostgreSQL gerenciado
+- Servidor único rodando frontend e backend
+- Porta 4000 para aplicação principal
+
+===============================================================================
+3. SISTEMA DE AUTENTICAÇÃO
+===============================================================================
+
+TIPOS DE USUÁRIOS:
+1. Administrador
+   - Acesso completo ao sistema
+   - Gestão de casas de apostas
+   - Gestão de afiliados
+   - Visualização de relatórios
+
+2. Usuário/Afiliado
+   - Cadastro de perfil
+   - Geração de links de afiliação
+   - Visualização de estatísticas pessoais
+   - Histórico de conversões
+
+PROCESSO DE REGISTRO:
+1. Usuário acessa /register
+2. Preenche dados obrigatórios:
+   - Username (único, alfanumérico)
+   - Nome completo
+   - Email
+   - CPF
+   - Data de nascimento
+   - Senha (mínimo 6 caracteres)
+3. Sistema valida unicidade do username
+4. Senha é criptografada com bcrypt
+5. Usuário é criado com role "user"
+6. Sessão é iniciada automaticamente
+
+PROCESSO DE LOGIN:
+1. Usuário acessa /login
+2. Insere email/username e senha
+3. Sistema verifica credenciais no banco
+4. Cria sessão com dados do usuário
+5. Redireciona para painel apropriado
+
+CREDENCIAIS ADMINISTRATIVAS:
+- Email: admin@afiliadosbet.com
+- Senha: 123456
+
+LOGOUT:
+- Destrói sessão do usuário
+- Redireciona para página de login
+
+===============================================================================
+4. PAINEL ADMINISTRATIVO
+===============================================================================
+
+ACESSO: /admin (requer autenticação de admin)
+
+FUNCIONALIDADES PRINCIPAIS:
+
+4.1 DASHBOARD PRINCIPAL
+- Total de afiliados ativos
+- Total de casas de apostas
+- Volume total processado
+- Comissões pagas
+- Gráficos de performance
+- Top 5 afiliados por conversões
+- Top 5 casas por volume
+
+4.2 GESTÃO DE CASAS DE APOSTAS (/admin/houses)
+- Listar todas as casas cadastradas
+- Adicionar nova casa:
+  * Nome da casa
+  * URL base
+  * Descrição
+  * Logo (URL)
+  * Tipo de comissão (CPA/RevShare)
+  * Valor da comissão
+  * Parâmetros de rastreamento
+  * Postbacks habilitados
+- Editar casas existentes
+- Ativar/desativar casas
+- Configurar postbacks por casa
+- Visualizar afiliados por casa
+
+4.3 GESTÃO DE AFILIADOS (/admin/affiliates)
+- Listar todos os afiliados
+- Visualizar dados completos:
+  * Informações pessoais
+  * Número de casas afiliadas
+  * Total de conversões
+  * Comissões ganhas
+  * Status da conta
+- Bloquear/desbloquear afiliados
+- Forçar geração de links
+- Resetar senhas
+- Deletar contas
+
+4.4 RELATÓRIOS (/admin/reports)
+- Relatórios gerais do sistema
+- Relatórios por afiliado específico
+- Relatórios por casa de apostas
+- Filtros por período
+- Exportação de dados
+- Métricas de conversão
+
+4.5 SISTEMA DE POSTBACKS (/admin/postbacks)
+- Configurar postbacks por casa
+- Visualizar logs de postbacks
+- Status de processamento
+- Debugging de problemas
+- Reprocessar postbacks com erro
+
+4.6 GESTÃO DE PAGAMENTOS
+- Visualizar comissões pendentes
+- Marcar pagamentos como processados
+- Histórico de pagamentos
+- Relatórios financeiros
+
+===============================================================================
+5. PAINEL DO USUÁRIO
+===============================================================================
+
+ACESSO: /home (requer autenticação de usuário)
+
+FUNCIONALIDADES PRINCIPAIS:
+
+5.1 DASHBOARD (/home)
+- Estatísticas pessoais:
+  * Total de cliques
+  * Total de registros
+  * Total de depósitos
+  * Comissões ganhas
+  * Taxa de conversão
+- Gráfico de performance
+- Resumo das afiliações ativas
+
+5.2 PERFIL DO USUÁRIO (/profile)
+- Visualizar dados pessoais
+- Editar informações:
+  * Nome completo
+  * Email
+  * Telefone
+  * Endereço
+  * Dados bancários
+- Alterar senha
+- Configurações da conta
+
+5.3 CASAS DISPONÍVEIS (/houses)
+- Listar casas ativas para afiliação
+- Informações detalhadas:
+  * Nome e descrição
+  * Tipo de comissão
+  * Taxa de comissão
+  * Métodos de pagamento
+- Botão para se afiliar
+- Status da afiliação
+
+5.4 MEUS LINKS (/my-links)
+- Visualizar todas as afiliações ativas
+- Links personalizados gerados
+- Copiar links para compartilhamento
+- Estatísticas por casa:
+  * Cliques
+  * Conversões
+  * Comissões
+- Status dos links (ativo/inativo)
+
+5.5 RELATÓRIOS PESSOAIS (/reports)
+- Histórico de conversões
+- Detalhamento por período
+- Breakdown por casa de apostas
+- Comissões pendentes e pagas
+- Gráficos de performance
+
+===============================================================================
+6. SISTEMA DE AFILIAÇÃO
+===============================================================================
+
+PROCESSO DE AFILIAÇÃO:
+1. Usuário visualiza casas disponíveis
+2. Clica em "Afiliar-se" na casa desejada
+3. Sistema verifica se já existe afiliação
+4. Gera link personalizado com subid único
+5. Link é salvo no banco de dados
+6. Usuário pode copiar e compartilhar o link
+
+ESTRUTURA DO LINK:
+https://casa-apostas.com/promo/click/ID?subid=USERNAME
+
+COMPONENTES DO LINK:
+- URL base da casa de apostas
+- Identificador único do programa
+- Subid = username do afiliado
+- Parâmetros adicionais conforme configuração
+
+RASTREAMENTO:
+- Cada clique é registrado
+- Sistema identifica conversões via postbacks
+- Comissões são calculadas automaticamente
+- Relatórios são atualizados em tempo real
+
+===============================================================================
+7. SISTEMA DE POSTBACKS
+===============================================================================
+
+FINALIDADE:
+Receber notificações das casas de apostas sobre conversões realizadas pelos afiliados.
+
+ENDPOINTS DE POSTBACK:
+GET /postback/:casa/:evento
+- casa: identificador da casa de apostas
+- evento: tipo de conversão (registration, deposit, etc.)
+
+PARÂMETROS ACEITOS:
+- subid: identificador do afiliado
+- amount: valor da transação
+- customer_id: ID do cliente na casa
+- custom_param: parâmetros adicionais
+
+EVENTOS SUPORTADOS:
+1. registration: Novo registro de usuário
+2. deposit: Depósito realizado
+3. first_deposit: Primeiro depósito
+4. recurring_deposit: Depósitos recorrentes
+
+PROCESSAMENTO:
+1. Postback é recebido e registrado
+2. Sistema valida parâmetros obrigatórios
+3. Identifica afiliado pelo subid
+4. Verifica se casa está ativa
+5. Calcula comissão baseada na configuração
+6. Registra conversão no banco
+7. Atualiza estatísticas
+8. Retorna confirmação
+
+LOGS E DEBUGGING:
+- Todos os postbacks são logados
+- Status de processamento registrado
+- Erros são categorizados
+- Interface admin para visualização
+
+===============================================================================
+8. SISTEMA DE COMISSÕES
+===============================================================================
+
+TIPOS DE COMISSÃO:
+1. CPA (Cost Per Acquisition)
+   - Valor fixo por conversão
+   - Pago uma única vez por cliente
+
+2. RevShare (Revenue Share)
+   - Percentual do valor transacionado
+   - Pago continuamente
+
+CÁLCULO DE COMISSÕES:
+- Casa paga 40% de comissão bruta
+- Sistema repassa 30% ao afiliado
+- 10% fica como margem da plataforma
+
+EXEMPLO CPA:
+- Casa configura CPA de R$ 100
+- Afiliado recebe R$ 30 por conversão
+- Plataforma fica com R$ 10
+
+EXEMPLO REVSHARE:
+- Casa configura 40% RevShare
+- Depósito de R$ 1000
+- Casa paga R$ 400
+- Afiliado recebe R$ 300
+- Plataforma fica com R$ 100
+
+PAGAMENTOS:
+- Comissões são acumuladas
+- Pagamentos processados manualmente
+- Histórico de pagamentos registrado
+- Relatórios financeiros disponíveis
+
+===============================================================================
+9. RELATÓRIOS E ESTATÍSTICAS
+===============================================================================
+
+MÉTRICAS PRINCIPAIS:
+- Total de cliques
+- Total de registros
+- Total de depósitos
+- Taxa de conversão (registro/clique)
+- Valor médio de depósito
+- Lifetime value do cliente
+- Comissões ganhas
+
+RELATÓRIOS ADMINISTRATIVOS:
+1. Dashboard geral com visão consolidada
+2. Performance por afiliado
+3. Performance por casa de apostas
+4. Relatório financeiro de comissões
+5. Análise de tendências temporais
+6. Top performers
+
+RELATÓRIOS DE USUÁRIO:
+1. Dashboard pessoal
+2. Histórico de conversões
+3. Comissões pendentes e pagas
+4. Performance por casa afiliada
+5. Análise de cliques vs conversões
+
+FILTROS DISPONÍVEIS:
+- Período customizado
+- Casa de apostas específica
+- Tipo de evento
+- Status da conversão
+- Afiliado específico (admin)
+
+===============================================================================
+10. API ENDPOINTS
+===============================================================================
+
+AUTENTICAÇÃO:
+POST /api/login - Login de usuários
+POST /api/register - Registro de novos usuários
+POST /api/logout - Logout
+
+USUÁRIO:
+GET /api/user/profile - Dados do perfil
+PUT /api/user/profile - Atualizar perfil
+GET /api/user/stats - Estatísticas pessoais
+GET /api/my-affiliations - Afiliações ativas
+GET /api/my-links - Links de afiliação (compatibilidade)
+
+CASAS DE APOSTAS:
+GET /api/houses - Listar casas ativas
+GET /api/available-houses - Casas disponíveis para afiliação
+POST /api/affiliate/:houseId - Criar afiliação
+
+ADMIN - CASAS:
+GET /api/admin/houses - Listar todas as casas
+POST /api/admin/houses - Criar nova casa
+PUT /api/admin/houses/:id - Atualizar casa
+DELETE /api/admin/houses/:id - Deletar casa
+GET /api/admin/houses/:id/affiliates - Afiliados por casa
+
+ADMIN - AFILIADOS:
+GET /api/admin/affiliates - Listar todos os afiliados
+PUT /api/admin/affiliates/:id/status - Ativar/desativar
+POST /api/admin/users/:id/generate-link - Forçar geração de link
+
+ADMIN - RELATÓRIOS:
+GET /api/admin/stats - Estatísticas gerais
+GET /api/admin/reports/general - Relatório geral
+GET /api/admin/reports/affiliate/:id - Relatório por afiliado
+
+POSTBACKS:
+GET /postback/:casa/:evento - Receber postbacks
+GET /api/admin/postback-logs - Logs de postbacks
+
+===============================================================================
+11. BANCO DE DADOS
+===============================================================================
+
+TABELAS PRINCIPAIS:
+
+users:
+- id (primary key)
+- username (unique)
+- email
+- fullName
+- cpf
+- birthDate
+- phone
+- city, state, country
+- password (hash bcrypt)
+- role (admin/user)
+- isActive
+- createdAt, updatedAt
+
+betting_houses:
+- id (primary key)
+- name
+- description
+- logoUrl
+- baseUrl
+- primaryParam
+- commissionType (cpa/revshare)
+- commissionValue
+- cpaValue, revshareValue
+- securityToken
+- identifier
+- enabledPostbacks
+- parameterMapping
+- isActive
+- createdAt, updatedAt
+
+affiliate_links:
+- id (primary key)
+- userId (foreign key)
+- houseId (foreign key)
+- generatedUrl
+- isActive
+- createdAt
+
+conversions:
+- id (primary key)
+- userId (foreign key)
+- houseId (foreign key)
+- type (registration/deposit/etc)
+- amount
+- commission
+- customerId
+- conversionData
+- convertedAt
+
+postback_logs:
+- id (primary key)
+- casa
+- evento
+- subid
+- valor
+- ip
+- raw
+- status
+- criadoEm
+
+payments:
+- id (primary key)
+- userId (foreign key)
+- amount
+- status
+- method
+- transactionId
+- createdAt, processedAt
+
+click_tracking:
+- id (primary key)
+- userId (foreign key)
+- houseId (foreign key)
+- ipAddress
+- userAgent
+- referrer
+- clickedAt
+
+RELACIONAMENTOS:
+- users -> affiliate_links (1:N)
+- betting_houses -> affiliate_links (1:N)
+- users -> conversions (1:N)
+- betting_houses -> conversions (1:N)
+- users -> payments (1:N)
+
+===============================================================================
+12. SEGURANÇA
+===============================================================================
+
+AUTENTICAÇÃO E AUTORIZAÇÃO:
+- Senhas criptografadas com bcrypt
+- Sessões server-side com express-session
+- Middleware de autenticação (requireAuth)
+- Middleware de autorização admin (requireAdmin)
+- Validação de role em todas as rotas protegidas
+
+VALIDAÇÃO DE DADOS:
+- Schemas Zod para validação de entrada
+- Sanitização de parâmetros de URL
+- Validação de IDs alfanuméricos
+- Prevenção de SQL injection via ORM
+- Escape de dados em queries
+
+PROTEÇÃO DE ROTAS:
+- Rotas admin protegidas por middleware
+- Verificação de sessão em todas as operações
+- Logs de acesso e operações sensíveis
+- Rate limiting implícito via Replit
+
+SEGURANÇA DE DADOS:
+- Dados sensíveis não expostos em logs
+- Tokens de segurança para postbacks
+- Validação de origem dos postbacks
+- Histórico de alterações registrado
+
+===============================================================================
+13. DEPLOYMENT E PRODUÇÃO
+===============================================================================
+
+AMBIENTE DE DESENVOLVIMENTO:
+- Replit como plataforma
+- Hot reload automático
+- Debugging integrado
+- Logs em tempo real
+
+VARIÁVEIS DE AMBIENTE:
+- DATABASE_URL: URL do PostgreSQL
+- NODE_ENV: ambiente (development/production)
+- BASE_URL: URL base da aplicação
+- SESSION_SECRET: secret para sessões
+
+SCRIPTS DISPONÍVEIS:
+- npm run dev: Inicia desenvolvimento
+- npm run build: Build para produção
+- npm run start: Inicia produção
+- npm run db:push: Aplica mudanças no schema
+
+MONITORAMENTO:
+- Logs de aplicação via console
+- Logs de erro automatizados
+- Tracking de performance via queries
+- Logs de postbacks para debugging
+
+BACKUP E RECUPERAÇÃO:
+- Backup automático do PostgreSQL
+- Versionamento de código via Git
+- Rollback disponível via Replit
+
+ESCALABILIDADE:
+- Arquitetura preparada para múltiplas instâncias
+- Banco de dados gerenciado e escalável
+- Session store compatível com clustering
+- Cache de queries implementado
+
+===============================================================================
+FLUXO COMPLETO DO USUÁRIO
+===============================================================================
+
+1. REGISTRO E CONFIGURAÇÃO INICIAL:
+   - Usuário acessa /register
+   - Preenche dados obrigatórios
+   - Sistema valida e cria conta
+   - Login automático após registro
+   - Redirecionamento para dashboard
+
+2. EXPLORAÇÃO E AFILIAÇÃO:
+   - Usuário visualiza casas disponíveis em /houses
+   - Analisa comissões e condições
+   - Clica em "Afiliar-se" na casa desejada
+   - Sistema gera link personalizado
+   - Link disponível em /my-links
+
+3. PROMOÇÃO E COMPARTILHAMENTO:
+   - Usuário copia link de afiliação
+   - Compartilha em redes sociais, sites, etc.
+   - Cliques são rastreados automaticamente
+   - Leads são direcionados para casa de apostas
+
+4. CONVERSÕES E COMISSÕES:
+   - Cliente se registra na casa via link
+   - Casa envia postback para sistema
+   - Sistema registra conversão
+   - Comissão é calculada e creditada
+   - Estatísticas são atualizadas
+
+5. ACOMPANHAMENTO E RELATÓRIOS:
+   - Usuário monitora performance em /home
+   - Acessa relatórios detalhados em /reports
+   - Acompanha comissões pendentes
+   - Otimiza estratégias baseado em dados
+
+6. PAGAMENTOS:
+   - Comissões são acumuladas mensalmente
+   - Admin processa pagamentos
+   - Usuário recebe notificação
+   - Histórico fica disponível no painel
+
+===============================================================================
+RECURSOS TÉCNICOS AVANÇADOS
+===============================================================================
+
+CACHE E PERFORMANCE:
+- TanStack Query para cache do frontend
+- Invalidação automática de cache após mutations
+- Queries otimizadas com joins
+- Paginação em listagens grandes
+
+TRATAMENTO DE ERROS:
+- Try-catch em todas as operações críticas
+- Logs detalhados de erros
+- Mensagens de erro user-friendly
+- Fallbacks para operações falhas
+
+VALIDAÇÃO ROBUSTA:
+- Zod schemas para entrada de dados
+- Validação client-side e server-side
+- Sanitização de dados de usuário
+- Prevenção de ataques de injeção
+
+AUDITORIA:
+- Logs de todas as operações importantes
+- Histórico de alterações em dados críticos
+- Tracking de ações administrativas
+- Compliance com regulamentações
+
+===============================================================================
+CONTATOS E SUPORTE
+===============================================================================
+
+DESENVOLVIDO POR: Sistema AfiliadosBet
+TECNOLOGIA: React + Node.js + PostgreSQL
+HOSPEDAGEM: Replit
+VERSÃO: 1.0.0
+DATA DA DOCUMENTAÇÃO: Junho 2025
+
+PARA SUPORTE TÉCNICO:
+- Logs disponíveis no painel admin
+- Debugging via console do navegador
+- Acesso direto ao banco via admin
+- Rollback disponível via Replit
+
+===============================================================================
+FIM DA DOCUMENTAÇÃO
+===============================================================================
