@@ -937,6 +937,43 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // Endpoint para processar pagamento de comissões
+  app.post("/api/commissions/process-payment/:affiliateId", async (req, res) => {
+    try {
+      const affiliateId = parseInt(req.params.affiliateId);
+      
+      // Buscar todas as comissões pendentes do afiliado
+      const pendingCommissions = await db.select()
+        .from(schema.comissoes)
+        .where(eq(schema.comissoes.afiliadoId, affiliateId));
+      
+      if (pendingCommissions.length === 0) {
+        return res.status(404).json({ error: "Nenhuma comissão pendente encontrada" });
+      }
+      
+      // Calcular total de comissões pendentes
+      const totalPending = pendingCommissions.reduce((sum, commission) => {
+        return sum + parseFloat(commission.valor);
+      }, 0);
+      
+      // Marcar pagamentos como pagos
+      await storage.markPaymentsAsPaid(affiliateId);
+      
+      console.log(`💰 Pagamento processado: R$ ${totalPending.toFixed(2)} para afiliado ${affiliateId}`);
+      
+      res.json({ 
+        success: true, 
+        message: "Pagamento processado com sucesso",
+        amount: totalPending,
+        commissionsCount: pendingCommissions.length
+      });
+      
+    } catch (error) {
+      console.error("Erro ao processar pagamento:", error);
+      res.status(500).json({ error: "Erro interno no processamento do pagamento" });
+    }
+  });
+
   // Auth routes
   app.post("/api/login", async (req, res) => {
     try {
