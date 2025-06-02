@@ -10,7 +10,7 @@ import SimpleLanding from "@/pages/simple-landing";
 import Register from "@/pages/register";
 import Login from "@/pages/login";
 import UserDashboardComplete from "@/pages/user-dashboard-complete";
-import UserReports from "@/pages/user-reports";
+import UserReports from "@/pages/user-reports-fixed";
 import AdminDashboard from "@/pages/admin-dashboard";
 import NotFound from "@/pages/not-found";
 import AdminPanelToggle from "@/components/admin-panel-toggle";
