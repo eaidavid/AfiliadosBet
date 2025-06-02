@@ -15,7 +15,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: false,
+    secure: process.env.NODE_ENV === 'production',
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
   }
 }));
@@ -38,7 +38,7 @@ app.use(express.urlencoded({ extended: true }));
     serveStatic(app);
   }
 
-  const PORT = parseInt(process.env.PORT || "5000", 10);
+  const PORT = parseInt(process.env.PORT || "3000", 10);
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server listening on port ${PORT}`);
     console.log("Application ready to receive requests");

@@ -74,11 +74,7 @@ export async function registerRoutes(app: any): Promise<Server> {
   // Configurar sessão PRIMEIRO, antes de todas as rotas
   app.use(getSession());
   
-  // Start server on correct port and host
-  const PORT = process.env.PORT || 5000;
-  httpServer.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server listening on port ${PORT}`);
-  });
+  // Server will be started by index.ts - no need to start here
 
   // === SISTEMA DE POSTBACKS ===
 
