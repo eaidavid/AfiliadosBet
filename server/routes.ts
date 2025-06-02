@@ -2052,6 +2052,93 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // Endpoint para dados específicos de um afiliado individual
+  app.get("/api/admin/affiliate/:id/details", requireAdmin, async (req: any, res) => {
+    try {
+      const affiliateId = parseInt(req.params.id);
+      console.log(`📊 Buscando detalhes do afiliado ID: ${affiliateId}`);
+      
+      // Buscar dados do afiliado
+      const affiliate = await db.select()
+        .from(schema.users)
+        .where(eq(schema.users.id, affiliateId))
+        .limit(1);
+
+      if (!affiliate.length) {
+        return res.status(404).json({ error: "Afiliado não encontrado" });
+      }
+
+      // Buscar conversões do afiliado
+      const conversions = await db.select()
+        .from(schema.conversions)
+        .where(eq(schema.conversions.userId, affiliateId));
+
+      // Buscar links do afiliado
+      const links = await db.select({
+        id: schema.affiliateLinks.id,
+        houseId: schema.affiliateLinks.houseId,
+        generatedUrl: schema.affiliateLinks.generatedUrl,
+        isActive: schema.affiliateLinks.isActive,
+        createdAt: schema.affiliateLinks.createdAt,
+        houseName: schema.bettingHouses.name
+      })
+      .from(schema.affiliateLinks)
+      .leftJoin(schema.bettingHouses, eq(schema.affiliateLinks.houseId, schema.bettingHouses.id))
+      .where(eq(schema.affiliateLinks.userId, affiliateId));
+
+      // Calcular estatísticas
+      const stats = conversions.reduce((acc, conv) => {
+        switch(conv.type) {
+          case 'click':
+            acc.totalClicks++;
+            break;
+          case 'registration':
+            acc.totalRegistrations++;
+            break;
+          case 'deposit':
+          case 'first_deposit':
+            acc.totalDeposits++;
+            acc.totalVolume += parseFloat(conv.amount || '0');
+            break;
+        }
+        if (conv.commission && parseFloat(conv.commission) > 0) {
+          acc.totalCommission += parseFloat(conv.commission);
+        }
+        return acc;
+      }, {
+        totalClicks: 0,
+        totalRegistrations: 0,
+        totalDeposits: 0,
+        totalCommission: 0,
+        totalVolume: 0
+      });
+
+      const conversionRate = stats.totalClicks > 0 ? 
+        ((stats.totalRegistrations / stats.totalClicks) * 100) : 0;
+
+      console.log(`✅ Detalhes do afiliado ${affiliateId} encontrados:`, {
+        conversions: conversions.length,
+        links: links.length,
+        stats
+      });
+
+      res.json({
+        affiliate: affiliate[0],
+        stats: {
+          ...stats,
+          totalCommission: stats.totalCommission.toFixed(2),
+          totalVolume: stats.totalVolume.toFixed(2),
+          conversionRate: conversionRate.toFixed(2)
+        },
+        conversions,
+        links
+      });
+    } catch (error) {
+      console.error("❌ Erro ao buscar detalhes do afiliado:", error);
+      res.status(500).json({ message: "Falha ao buscar detalhes do afiliado" });
+    }
+  });
+
   // Relatórios detalhados para admin
   // Relatório detalhado por afiliado
   app.get("/api/admin/reports/by-affiliate", requireAdmin, async (req: any, res) => {

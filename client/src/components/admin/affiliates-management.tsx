@@ -48,28 +48,35 @@ function AffiliateDetailsModal({ affiliate, isOpen, onClose }: {
   isOpen: boolean; 
   onClose: () => void; 
 }) {
-  const { data: affiliateStats = {} } = useQuery({
-    queryKey: ["/api/admin/affiliate-stats", affiliate?.id],
-    enabled: !!affiliate?.id && isOpen,
-  });
-
-  const { data: affiliateConversions = [] } = useQuery({
-    queryKey: ["/api/admin/affiliate-conversions", affiliate?.id],
-    enabled: !!affiliate?.id && isOpen,
-  });
-
-  const { data: affiliateLinks = [] } = useQuery({
-    queryKey: ["/api/affiliate-links", affiliate?.id],
+  const { data: affiliateDetails = {}, isLoading: detailsLoading } = useQuery({
+    queryKey: ["/api/admin/affiliate", affiliate?.id, "details"],
     enabled: !!affiliate?.id && isOpen,
   });
 
   if (!affiliate) return null;
+
+  // Extrair dados do endpoint consolidado
+  const stats = affiliateDetails?.stats || {};
+  const conversions = affiliateDetails?.conversions || [];
+  const links = affiliateDetails?.links || [];
 
   const formatCurrency = (value: number) => 
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
   const formatDate = (date: string) => 
     new Date(date).toLocaleDateString('pt-BR');
+
+  if (detailsLoading) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-slate-800 border-slate-700">
+          <div className="flex items-center justify-center p-8">
+            <div className="text-white">Carregando dados...</div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
