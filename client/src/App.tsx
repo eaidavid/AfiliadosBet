@@ -9,8 +9,8 @@ import LandingPage from "@/pages/landing-page";
 import SimpleLanding from "@/pages/simple-landing";
 import Register from "@/pages/register";
 import Login from "@/pages/login";
-import UserDashboardComplete from "@/pages/user-dashboard-complete";
-import AdminDashboard from "@/pages/admin-dashboard";
+import Dashboard from "@/pages/dashboard";
+import AdminDashboardSimple from "@/pages/admin-dashboard-simple";
 import NotFound from "@/pages/not-found";
 import AdminPanelToggle from "@/components/admin-panel-toggle";
 
@@ -32,8 +32,7 @@ function AuthenticatedHome() {
 
   return (
     <div className="mobile-safe no-bounce">
-      <UserDashboardComplete />
-      <AdminPanelToggle />
+      <Dashboard />
     </div>
   );
 }
@@ -95,8 +94,7 @@ function AuthenticatedUserDashboard() {
 
   return (
     <div className="mobile-safe no-bounce">
-      <UserDashboardComplete />
-      <AdminPanelToggle />
+      <Dashboard />
     </div>
   );
 }
@@ -120,8 +118,7 @@ function AuthenticatedAdminDashboard() {
 
   return (
     <div className="mobile-safe no-bounce">
-      <AdminDashboard />
-      <AdminPanelToggle />
+      <AdminDashboardSimple />
     </div>
   );
 }
