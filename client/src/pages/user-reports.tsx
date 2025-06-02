@@ -1,261 +1,439 @@
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, TrendingUp, DollarSign, Users, Calendar } from "lucide-react";
-import { format } from "date-fns";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CalendarDays, TrendingUp, DollarSign, Users, Building2, Eye, MousePointer, UserPlus, Wallet } from "lucide-react";
+import { cn } from "@/lib/utils";
+import UserSidebar from "@/components/user/sidebar";
 
-interface UserReportsProps {
-  onPageChange?: (page: string) => void;
+// Função helper para formatação de moeda
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(value);
+};
+
+interface ConversionData {
+  id: number;
+  evento: string;
+  casa: string;
+  valor: string;
+  status: string;
+  criadoEm: string;
+  subid: string;
 }
 
-export default function UserReports({ onPageChange }: UserReportsProps) {
-  const [selectedHouse, setSelectedHouse] = useState("all");
-  const [selectedEvent, setSelectedEvent] = useState("all");
+interface ConversionStats {
+  totalClicks: number;
+  totalRegistrations: number;
+  totalDeposits: number;
+  totalCommission: string;
+  conversionRate: number;
+}
 
-  // Fetch user stats
-  const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ["/api/user/stats"],
-    retry: false,
-  });
+interface HouseData {
+  id: number;
+  name: string;
+  logo: string;
+  isActive: boolean;
+}
 
-  // Fetch user conversions with detailed data
+interface LinkData {
+  id: number;
+  generatedUrl: string;
+  houseId: number;
+  houseName: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export default function UserReports() {
+  const { user } = useAuth();
+
   const { data: conversions = [], isLoading: conversionsLoading } = useQuery({
-    queryKey: ["/api/user/conversions"],
-    retry: false,
+    queryKey: ['/api/user/conversions'],
+    enabled: !!user,
   });
 
-  // Fetch betting houses for filter
-  const { data: houses = [] } = useQuery({
-    queryKey: ["/api/betting-houses"],
-    retry: false,
+  const { data: stats = {}, isLoading: statsLoading } = useQuery({
+    queryKey: ['/api/user/stats'],
+    enabled: !!user,
   });
 
-  // Calculate commission stats from real conversions
-  const commissionStats = {
-    pendingCommissions: conversions
-      .filter((c: any) => c.status === 'pending')
-      .reduce((sum: number, c: any) => sum + parseFloat(c.commission || '0'), 0),
-    paidCommissions: conversions
-      .filter((c: any) => c.status === 'paid')
-      .reduce((sum: number, c: any) => sum + parseFloat(c.commission || '0'), 0),
-    totalCommissions: conversions
-      .reduce((sum: number, c: any) => sum + parseFloat(c.commission || '0'), 0),
-  };
-
-  // Filter conversions based on selected criteria
-  const filteredConversions = conversions.filter((conversion: any) => {
-    if (selectedHouse !== "all" && conversion.house !== selectedHouse) return false;
-    if (selectedEvent !== "all" && conversion.type !== selectedEvent) return false;
-    return true;
+  const { data: houses = [], isLoading: housesLoading } = useQuery({
+    queryKey: ['/api/houses'],
+    enabled: !!user,
   });
 
-  if (statsLoading || conversionsLoading) {
+  const { data: links = [], isLoading: linksLoading } = useQuery({
+    queryKey: ['/api/user/links'],
+    enabled: !!user,
+  });
+
+  const isLoading = conversionsLoading || statsLoading || housesLoading || linksLoading;
+
+  // Calcular estatísticas dos últimos 30 dias
+  const last30Days = new Date();
+  last30Days.setDate(last30Days.getDate() - 30);
+
+  const recentConversions = (conversions as ConversionData[]).filter(conv => 
+    new Date(conv.criadoEm) >= last30Days
+  );
+
+  const conversionsByType = recentConversions.reduce((acc: Record<string, number>, conv) => {
+    acc[conv.evento] = (acc[conv.evento] || 0) + 1;
+    return acc;
+  }, {});
+
+  const conversionsByHouse = recentConversions.reduce((acc: Record<string, number>, conv) => {
+    acc[conv.casa] = (acc[conv.casa] || 0) + 1;
+    return acc;
+  }, {});
+
+  const totalCommissionLast30Days = recentConversions.reduce((total, conv) => {
+    return total + parseFloat(conv.valor || '0');
+  }, 0);
+
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-8 bg-muted rounded mb-6"></div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-32 bg-muted rounded"></div>
-              ))}
-            </div>
-          </div>
+      <div className="flex min-h-screen bg-slate-950">
+        <UserSidebar currentPage="reports" onPageChange={() => {}} />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-emerald-500 text-xl">Carregando relatórios...</div>
         </div>
       </div>
     );
   }
 
+  const typedStats = stats as ConversionStats;
+  const typedHouses = houses as HouseData[];
+  const typedLinks = links as LinkData[];
+
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Relatórios Detalhados
-          </h1>
-          <p className="text-muted-foreground">
-            Acompanhe suas conversões e comissões em tempo real
-          </p>
-        </div>
+    <div className="flex min-h-screen bg-slate-950">
+      <UserSidebar currentPage="reports" onPageChange={() => {}} />
+      <div className="flex-1 p-6 overflow-auto">
+        <div className="space-y-6">
+          {/* Header */}
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">Relatórios</h1>
+            <p className="text-slate-400">Análise detalhada do seu desempenho como afiliado</p>
+          </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total de Comissões</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+          {/* Cards de estatísticas gerais */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="bg-slate-900 border-slate-800">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-slate-400 flex items-center gap-2">
+                  <MousePointer className="h-4 w-4" />
+                  Total de Cliques
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-white">
+                  {typedStats.totalClicks || 0}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-900 border-slate-800">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-slate-400 flex items-center gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  Registros
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-white">
+                  {typedStats.totalRegistrations || 0}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-900 border-slate-800">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-slate-400 flex items-center gap-2">
+                  <Wallet className="h-4 w-4" />
+                  Depósitos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-white">
+                  {typedStats.totalDeposits || 0}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-900 border-slate-800">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-slate-400 flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  Comissões Totais
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-emerald-500">
+                  {formatCurrency(parseFloat(typedStats.totalCommission || '0'))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Resumo dos últimos 30 dias */}
+          <Card className="bg-slate-900 border-slate-800">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <CalendarDays className="h-5 w-5" />
+                Desempenho dos Últimos 30 Dias
+              </CardTitle>
+              <CardDescription className="text-slate-400">
+                Análise do período mais recente
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">R$ {commissionStats.totalCommissions.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">
-                Todas as comissões acumuladas
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Comissões Pendentes</CardTitle>
-              <TrendingUp className="h-4 w-4 text-yellow-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">
-                R$ {commissionStats.pendingCommissions.toFixed(2)}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <div className="text-sm text-slate-400">Conversões</div>
+                  <div className="text-xl font-bold text-white">{recentConversions.length}</div>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm text-slate-400">Comissões</div>
+                  <div className="text-xl font-bold text-emerald-500">
+                    {formatCurrency(totalCommissionLast30Days)}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm text-slate-400">Taxa de Conversão</div>
+                  <div className="text-xl font-bold text-white">
+                    {typedStats.conversionRate ? `${typedStats.conversionRate.toFixed(2)}%` : '0%'}
+                  </div>
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Aguardando pagamento
-              </p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Comissões Pagas</CardTitle>
-              <BarChart3 className="h-4 w-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                R$ {commissionStats.paidCommissions.toFixed(2)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Já recebidas
-              </p>
-            </CardContent>
-          </Card>
+          <Tabs defaultValue="conversions" className="space-y-6">
+            <TabsList className="bg-slate-900 border-slate-800">
+              <TabsTrigger value="conversions" className="data-[state=active]:bg-emerald-600">
+                Conversões
+              </TabsTrigger>
+              <TabsTrigger value="houses" className="data-[state=active]:bg-emerald-600">
+                Casas de Apostas
+              </TabsTrigger>
+              <TabsTrigger value="links" className="data-[state=active]:bg-emerald-600">
+                Meus Links
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="data-[state=active]:bg-emerald-600">
+                Análise
+              </TabsTrigger>
+            </TabsList>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total de Conversões</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{conversions.length}</div>
-              <p className="text-xs text-muted-foreground">
-                Conversões registradas
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+            <TabsContent value="conversions">
+              <Card className="bg-slate-900 border-slate-800">
+                <CardHeader>
+                  <CardTitle className="text-white">Histórico de Conversões</CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Todas as suas conversões registradas
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {conversions && (conversions as ConversionData[]).length > 0 ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-slate-800">
+                          <TableHead className="text-slate-300">Data</TableHead>
+                          <TableHead className="text-slate-300">Casa</TableHead>
+                          <TableHead className="text-slate-300">Tipo</TableHead>
+                          <TableHead className="text-slate-300">Valor</TableHead>
+                          <TableHead className="text-slate-300">Status</TableHead>
+                          <TableHead className="text-slate-300">Subid</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {(conversions as ConversionData[]).map((conversion) => (
+                          <TableRow key={conversion.id} className="border-slate-800">
+                            <TableCell className="text-slate-300">
+                              {new Date(conversion.criadoEm).toLocaleDateString('pt-BR')}
+                            </TableCell>
+                            <TableCell className="text-white">{conversion.casa}</TableCell>
+                            <TableCell>
+                              <Badge variant={
+                                conversion.evento === 'registration' ? 'secondary' :
+                                conversion.evento === 'deposit' ? 'default' : 'destructive'
+                              }>
+                                {conversion.evento === 'registration' ? 'Registro' :
+                                 conversion.evento === 'deposit' ? 'Depósito' : 
+                                 conversion.evento === 'profit' ? 'Lucro' : conversion.evento}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-emerald-500">
+                              {formatCurrency(parseFloat(conversion.valor || '0'))}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={conversion.status === 'approved' ? 'default' : 'secondary'}>
+                                {conversion.status === 'approved' ? 'Aprovado' : 'Pendente'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-slate-300">{conversion.subid}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <div className="text-center py-8 text-slate-400">
+                      Nenhuma conversão registrada ainda
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-        {/* Filters */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Filtros</CardTitle>
-            <CardDescription>
-              Filtre os dados por casa de apostas e tipo de evento
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
-                <label className="text-sm font-medium mb-2 block">Casa de Apostas</label>
-                <Select value={selectedHouse} onValueChange={setSelectedHouse}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecionar casa" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas as Casas</SelectItem>
-                    {houses.map((house: any) => (
-                      <SelectItem key={house.id} value={house.name}>
-                        {house.name}
-                      </SelectItem>
+            <TabsContent value="houses">
+              <Card className="bg-slate-900 border-slate-800">
+                <CardHeader>
+                  <CardTitle className="text-white">Casas de Apostas Disponíveis</CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Plataformas disponíveis para afiliação
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {typedHouses.map((house) => (
+                      <Card key={house.id} className="bg-slate-800 border-slate-700">
+                        <CardContent className="p-4">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center">
+                              <Building2 className="h-5 w-5 text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-medium text-white">{house.name}</div>
+                              <div className="flex items-center gap-2 mt-1">
+                                <Badge variant={house.isActive ? 'default' : 'secondary'}>
+                                  {house.isActive ? 'Ativa' : 'Inativa'}
+                                </Badge>
+                                {conversionsByHouse[house.name] && (
+                                  <span className="text-xs text-slate-400">
+                                    {conversionsByHouse[house.name]} conversões
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-              <div className="flex-1">
-                <label className="text-sm font-medium mb-2 block">Tipo de Evento</label>
-                <Select value={selectedEvent} onValueChange={setSelectedEvent}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecionar evento" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos os Eventos</SelectItem>
-                    <SelectItem value="registration">Cadastro</SelectItem>
-                    <SelectItem value="deposit">Depósito</SelectItem>
-                    <SelectItem value="profit">Lucro</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            <TabsContent value="links">
+              <Card className="bg-slate-900 border-slate-800">
+                <CardHeader>
+                  <CardTitle className="text-white">Meus Links de Afiliado</CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Links gerados para suas campanhas
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {typedLinks.length > 0 ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-slate-800">
+                          <TableHead className="text-slate-300">Casa</TableHead>
+                          <TableHead className="text-slate-300">Link</TableHead>
+                          <TableHead className="text-slate-300">Status</TableHead>
+                          <TableHead className="text-slate-300">Criado em</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {typedLinks.map((link) => (
+                          <TableRow key={link.id} className="border-slate-800">
+                            <TableCell className="text-white">{link.houseName}</TableCell>
+                            <TableCell className="text-slate-300 max-w-xs truncate">
+                              {link.generatedUrl}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={link.isActive ? 'default' : 'secondary'}>
+                                {link.isActive ? 'Ativo' : 'Inativo'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-slate-300">
+                              {new Date(link.createdAt).toLocaleDateString('pt-BR')}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <div className="text-center py-8 text-slate-400">
+                      Nenhum link gerado ainda. Visite a seção "Links" para criar seus primeiros links.
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-        {/* Conversions Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Conversões Detalhadas</CardTitle>
-            <CardDescription>
-              Lista completa de todas as suas conversões e comissões
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {filteredConversions.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">
-                  Nenhuma conversão encontrada com os filtros aplicados.
-                </p>
+            <TabsContent value="analytics">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card className="bg-slate-900 border-slate-800">
+                  <CardHeader>
+                    <CardTitle className="text-white">Conversões por Tipo</CardTitle>
+                    <CardDescription className="text-slate-400">
+                      Últimos 30 dias
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {Object.entries(conversionsByType).map(([type, count]) => (
+                        <div key={type} className="flex items-center justify-between">
+                          <span className="text-slate-300 capitalize">
+                            {type === 'registration' ? 'Registros' :
+                             type === 'deposit' ? 'Depósitos' :
+                             type === 'profit' ? 'Lucros' : type}
+                          </span>
+                          <span className="text-white font-medium">{count}</span>
+                        </div>
+                      ))}
+                      {Object.keys(conversionsByType).length === 0 && (
+                        <div className="text-center py-4 text-slate-400">
+                          Nenhuma conversão nos últimos 30 dias
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-slate-900 border-slate-800">
+                  <CardHeader>
+                    <CardTitle className="text-white">Conversões por Casa</CardTitle>
+                    <CardDescription className="text-slate-400">
+                      Últimos 30 dias
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {Object.entries(conversionsByHouse).map(([house, count]) => (
+                        <div key={house} className="flex items-center justify-between">
+                          <span className="text-slate-300">{house}</span>
+                          <span className="text-white font-medium">{count}</span>
+                        </div>
+                      ))}
+                      {Object.keys(conversionsByHouse).length === 0 && (
+                        <div className="text-center py-4 text-slate-400">
+                          Nenhuma conversão nos últimos 30 dias
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Data</TableHead>
-                      <TableHead>Casa de Apostas</TableHead>
-                      <TableHead>Tipo de Evento</TableHead>
-                      <TableHead>Valor</TableHead>
-                      <TableHead>Comissão</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredConversions.map((conversion: any, index: number) => (
-                      <TableRow key={index}>
-                        <TableCell>
-                          {conversion.convertedAt ? 
-                            format(new Date(conversion.convertedAt), "dd/MM/yyyy HH:mm") :
-                            format(new Date(), "dd/MM/yyyy HH:mm")
-                          }
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {conversion.house || 'Casa não informada'}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={
-                            conversion.type === 'registration' ? 'secondary' :
-                            conversion.type === 'deposit' ? 'default' :
-                            conversion.type === 'profit' ? 'destructive' : 'outline'
-                          }>
-                            {conversion.type === 'registration' ? 'Cadastro' :
-                             conversion.type === 'deposit' ? 'Depósito' :
-                             conversion.type === 'profit' ? 'Lucro' : conversion.type}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          R$ {parseFloat(conversion.value || '0').toFixed(2)}
-                        </TableCell>
-                        <TableCell className="font-semibold">
-                          R$ {parseFloat(conversion.commission || '0').toFixed(2)}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={conversion.status === 'paid' ? 'default' : 'secondary'}>
-                            {conversion.status === 'paid' ? 'Pago' : 'Pendente'}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </div>
   );
