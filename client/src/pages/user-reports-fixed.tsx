@@ -154,7 +154,7 @@ export default function UserReports() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
-                  {stats.totalClicks || 0}
+                  {stats?.totalClicks || 0}
                 </div>
               </CardContent>
             </Card>
@@ -168,7 +168,7 @@ export default function UserReports() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
-                  {stats.totalRegistrations || 0}
+                  {stats?.totalRegistrations || 0}
                 </div>
               </CardContent>
             </Card>
@@ -182,7 +182,7 @@ export default function UserReports() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
-                  {stats.totalDeposits || 0}
+                  {stats?.totalDeposits || 0}
                 </div>
               </CardContent>
             </Card>
@@ -196,7 +196,7 @@ export default function UserReports() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-emerald-500">
-                  {formatCurrency(stats.totalCommission || '0')}
+                  {formatCurrency(stats?.totalCommission || '0')}
                 </div>
               </CardContent>
             </Card>
@@ -228,7 +228,7 @@ export default function UserReports() {
                 <div className="space-y-2">
                   <div className="text-sm text-slate-400">Taxa de Conversão</div>
                   <div className="text-xl font-bold text-white">
-                    {stats.conversionRate ? `${stats.conversionRate.toFixed(2)}%` : '0%'}
+                    {stats?.conversionRate ? `${stats.conversionRate.toFixed(2)}%` : '0%'}
                   </div>
                 </div>
               </div>
