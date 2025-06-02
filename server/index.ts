@@ -38,7 +38,7 @@ app.use(express.urlencoded({ extended: true }));
     serveStatic(app);
   }
 
-  const PORT = parseInt(process.env.PORT || "4000", 10);
+  const PORT = parseInt(process.env.PORT || "5000", 10);
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server listening on port ${PORT}`);
     console.log("Application ready to receive requests");
