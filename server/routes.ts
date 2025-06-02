@@ -1267,6 +1267,34 @@ export async function registerRoutes(app: any): Promise<Server> {
   });
 
   // Auth routes
+  // Status de autenticação
+  app.get("/api/auth/status", async (req, res) => {
+    try {
+      if (req.session?.user) {
+        res.json({
+          authenticated: true,
+          user: {
+            id: req.session.user.id,
+            username: req.session.user.username,
+            email: req.session.user.email,
+            role: req.session.user.role
+          }
+        });
+      } else {
+        res.json({
+          authenticated: false,
+          user: null
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao verificar status de autenticação:", error);
+      res.json({
+        authenticated: false,
+        user: null
+      });
+    }
+  });
+
   app.post("/api/login", async (req, res) => {
     try {
       console.log("=== LOGIN DEBUG ===");
