@@ -220,7 +220,7 @@ export default function UserDashboardComplete() {
         case "payments":
           return <Payments />;
         case "reports":
-          return <Reports />;
+          return <UserReports />;
         case "support":
           return <Support />;
         case "profile":

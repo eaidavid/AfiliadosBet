@@ -133,7 +133,7 @@ export default function BettingHousesSecure() {
     );
   }
 
-  const activeHouses = houses.filter((house: BettingHouse) => house.isActive);
+  const activeHouses = (houses || []).filter((house: BettingHouse) => house.isActive);
 
   if (activeHouses.length === 0) {
     return (
