@@ -1,7 +1,7 @@
 import { useState } from "react";
 import AdminSidebar from "@/components/admin/sidebar";
 import AdminHousesManagement from "@/components/admin/houses-management";
-import AffiliatesManagement from "@/components/admin/affiliates-management";
+import AffiliatesManagementFixed from "@/components/admin/affiliates-management-fixed";
 import LinksManagement from "@/components/admin/links-management";
 import PostbackLogs from "@/components/admin/postback-logs";
 import SimplePostbackForm from "@/components/admin/simple-postback-form";
@@ -32,7 +32,7 @@ export default function AdminDashboard() {
       case "houses":
         return <AdminHousesManagement onPageChange={setCurrentPage} />;
       case "affiliates":
-        return <AffiliatesManagement onPageChange={setCurrentPage} />;
+        return <AffiliatesManagementFixed onPageChange={setCurrentPage} />;
       case "links":
         return <LinksManagement onPageChange={setCurrentPage} />;
       case "postback-generator":
