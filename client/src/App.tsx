@@ -64,7 +64,7 @@ function AuthenticatedLogin() {
   }
 
   if (isAuthenticated) {
-    window.location.href = isAdmin ? "/admin" : "/home";
+    window.location.href = isAdmin ? "/admin" : "/dashboard";
     return null;
   }
 
