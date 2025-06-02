@@ -35,23 +35,24 @@ export default function AdminReports() {
     retry: false,
   });
 
-  // Calculate commission stats from all conversions
+  // Calculate commission stats from all conversions with null safety
+  const safeConversions = Array.isArray(allConversions) ? allConversions : [];
   const commissionStats = {
-    totalCommissions: allConversions
-      .reduce((sum: number, c: any) => sum + parseFloat(c.commission || '0'), 0),
-    pendingCommissions: allConversions
-      .filter((c: any) => c.status === 'pending')
-      .reduce((sum: number, c: any) => sum + parseFloat(c.commission || '0'), 0),
-    paidCommissions: allConversions
-      .filter((c: any) => c.status === 'paid')
-      .reduce((sum: number, c: any) => sum + parseFloat(c.commission || '0'), 0),
-    totalConversions: allConversions.length,
+    totalCommissions: safeConversions
+      .reduce((sum: number, c: any) => sum + parseFloat(c?.commission || '0'), 0),
+    pendingCommissions: safeConversions
+      .filter((c: any) => c?.status === 'pending')
+      .reduce((sum: number, c: any) => sum + parseFloat(c?.commission || '0'), 0),
+    paidCommissions: safeConversions
+      .filter((c: any) => c?.status === 'paid')
+      .reduce((sum: number, c: any) => sum + parseFloat(c?.commission || '0'), 0),
+    totalConversions: safeConversions.length,
   };
 
-  // Filter conversions based on selected criteria
-  const filteredConversions = allConversions.filter((conversion: any) => {
-    if (selectedAffiliate !== "all" && conversion.affiliate !== selectedAffiliate) return false;
-    if (selectedHouse !== "all" && conversion.house !== selectedHouse) return false;
+  // Filter conversions based on selected criteria with null safety
+  const filteredConversions = safeConversions.filter((conversion: any) => {
+    if (selectedAffiliate !== "all" && conversion?.affiliate !== selectedAffiliate) return false;
+    if (selectedHouse !== "all" && conversion?.casa !== selectedHouse) return false;
     return true;
   });
 

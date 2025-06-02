@@ -53,22 +53,22 @@ interface LinkData {
 export default function UserReports() {
   const { user } = useAuth();
 
-  const { data: conversions = [], isLoading: conversionsLoading, error: conversionsError } = useQuery({
+  const { data: conversions = [], isLoading: conversionsLoading } = useQuery({
     queryKey: ['/api/user/conversions'],
     enabled: !!user,
   });
 
-  const { data: stats = {}, isLoading: statsLoading, error: statsError } = useQuery({
+  const { data: stats = {}, isLoading: statsLoading } = useQuery({
     queryKey: ['/api/user/stats'],
     enabled: !!user,
   });
 
-  const { data: houses = [], isLoading: housesLoading, error: housesError } = useQuery({
+  const { data: houses = [], isLoading: housesLoading } = useQuery({
     queryKey: ['/api/houses'],
     enabled: !!user,
   });
 
-  const { data: links = [], isLoading: linksLoading, error: linksError } = useQuery({
+  const { data: links = [], isLoading: linksLoading } = useQuery({
     queryKey: ['/api/user/links'],
     enabled: !!user,
   });

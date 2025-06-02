@@ -10,7 +10,7 @@ import SimpleLanding from "@/pages/simple-landing";
 import Register from "@/pages/register";
 import Login from "@/pages/login";
 import UserDashboardComplete from "@/pages/user-dashboard-complete";
-import UserReportsSimple from "@/pages/user-reports-simple";
+import UserReports from "@/pages/user-reports";
 import AdminDashboard from "@/pages/admin-dashboard";
 import NotFound from "@/pages/not-found";
 import AdminPanelToggle from "@/components/admin-panel-toggle";
@@ -63,7 +63,7 @@ function AuthenticatedUserReports() {
 
   return (
     <div className="mobile-safe no-bounce">
-      <UserReportsSimple />
+      <UserReports />
       <AdminPanelToggle />
     </div>
   );
