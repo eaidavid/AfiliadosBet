@@ -32,7 +32,8 @@ app.use(express.urlencoded({ extended: true }));
   await registerRoutes(app);
 
   if (process.env.NODE_ENV === "development") {
-    await setupVite(app);
+    const httpServer = require('http').createServer(app);
+    await setupVite(app, httpServer);
   } else {
     serveStatic(app);
   }
