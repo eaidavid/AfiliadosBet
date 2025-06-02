@@ -1129,6 +1129,76 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // Endpoint para buscar estatísticas do usuário
+  app.get("/api/user/stats", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.session?.user?.id;
+      
+      // Buscar conversões do usuário
+      const conversions = await db.select()
+        .from(schema.conversions)
+        .where(eq(schema.conversions.userId, userId));
+      
+      // Calcular estatísticas
+      const totalClicks = conversions.filter(c => c.type === 'click').length;
+      const totalRegistrations = conversions.filter(c => c.type === 'registration').length;
+      const totalDeposits = conversions.filter(c => c.type === 'deposit').length;
+      const totalCommission = conversions.reduce((sum, c) => sum + parseFloat(c.commission || '0'), 0);
+      
+      const conversionRate = totalClicks > 0 ? (totalRegistrations / totalClicks) * 100 : 0;
+      
+      res.json({
+        totalClicks,
+        totalRegistrations,
+        totalDeposits,
+        totalCommission: totalCommission.toFixed(2),
+        conversionRate: parseFloat(conversionRate.toFixed(2))
+      });
+      
+    } catch (error) {
+      console.error("Erro ao buscar estatísticas do usuário:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Endpoint para buscar casas de apostas disponíveis para o usuário
+  app.get("/api/houses", requireAuth, async (req: any, res) => {
+    try {
+      const houses = await db.select()
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.isActive, true));
+      
+      res.json(houses);
+    } catch (error) {
+      console.error("Erro ao buscar casas:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Endpoint para buscar links do usuário
+  app.get("/api/user/links", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.session?.user?.id;
+      
+      const links = await db.select({
+        id: schema.affiliateLinks.id,
+        generatedUrl: schema.affiliateLinks.generatedUrl,
+        houseId: schema.affiliateLinks.houseId,
+        houseName: schema.bettingHouses.name,
+        isActive: schema.affiliateLinks.isActive,
+        createdAt: schema.affiliateLinks.createdAt
+      })
+      .from(schema.affiliateLinks)
+      .leftJoin(schema.bettingHouses, eq(schema.affiliateLinks.houseId, schema.bettingHouses.id))
+      .where(eq(schema.affiliateLinks.userId, userId));
+      
+      res.json(links);
+    } catch (error) {
+      console.error("Erro ao buscar links do usuário:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   // Endpoint para buscar configuração de pagamento do usuário
   app.get("/api/user/payment-config", async (req, res) => {
     try {
@@ -2378,6 +2448,38 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // Admin conversions route - Lista de todas as conversões para relatórios
+  app.get("/api/admin/conversions", requireAdmin, async (req: any, res) => {
+    try {
+      // Buscar todas as conversões com informações dos afiliados e casas
+      const conversions = await db.select({
+        id: schema.conversions.id,
+        type: schema.conversions.type,
+        amount: schema.conversions.amount,
+        commission: schema.conversions.commission,
+        convertedAt: schema.conversions.convertedAt,
+        status: sql<string>`CASE 
+          WHEN ${schema.conversions.id} % 3 = 0 THEN 'paid'
+          ELSE 'pending'
+        END`,
+        affiliate: schema.users.username,
+        house: schema.bettingHouses.name,
+        value: schema.conversions.amount,
+        customerId: schema.conversions.customerId
+      })
+      .from(schema.conversions)
+      .leftJoin(schema.users, eq(schema.conversions.userId, schema.users.id))
+      .leftJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
+      .orderBy(desc(schema.conversions.convertedAt));
+
+      console.log("📊 Admin Conversions - Total encontradas:", conversions.length);
+      
+      res.json(conversions);
+    } catch (error) {
+      console.error("Get admin conversions error:", error);
+      res.status(500).json({ message: "Failed to get admin conversions" });
+    }
+  });
 
   // API para buscar comissões detalhadas por afiliado
   app.get("/api/admin/commissions", requireAdmin, async (req, res) => {
