@@ -33,10 +33,12 @@ function AuthenticatedHome() {
   }
 
   return (
-    <div className="mobile-safe no-bounce">
-      <UserDashboardComplete />
-      <AdminPanelToggle />
-    </div>
+    <ErrorBoundary>
+      <div className="mobile-safe no-bounce">
+        <UserDashboardComplete />
+        <AdminPanelToggle />
+      </div>
+    </ErrorBoundary>
   );
 }
 
@@ -63,10 +65,12 @@ function AuthenticatedUserReports() {
   }
 
   return (
-    <div className="mobile-safe no-bounce">
-      <UserReports />
-      <AdminPanelToggle />
-    </div>
+    <ErrorBoundary>
+      <div className="mobile-safe no-bounce">
+        <UserReports />
+        <AdminPanelToggle />
+      </div>
+    </ErrorBoundary>
   );
 }
 
@@ -136,10 +140,12 @@ function AuthenticatedUserDashboard() {
   }
 
   return (
-    <div className="mobile-safe no-bounce">
-      <UserDashboardComplete />
-      <AdminPanelToggle />
-    </div>
+    <ErrorBoundary>
+      <div className="mobile-safe no-bounce">
+        <UserDashboardComplete />
+        <AdminPanelToggle />
+      </div>
+    </ErrorBoundary>
   );
 }
 
@@ -166,10 +172,12 @@ function AuthenticatedAdminDashboard() {
   }
 
   return (
-    <div className="mobile-safe no-bounce">
-      <AdminDashboard />
-      <AdminPanelToggle />
-    </div>
+    <ErrorBoundary>
+      <div className="mobile-safe no-bounce">
+        <AdminDashboardFixed />
+        <AdminPanelToggle />
+      </div>
+    </ErrorBoundary>
   );
 }
 
