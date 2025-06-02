@@ -10,6 +10,7 @@ import CommissionsManagement from "@/components/admin/commissions-management";
 import ReportsManagementReal from "@/components/admin/reports-management-real";
 import SettingsManagement from "@/components/admin/settings-management";
 import AdminProfile from "@/components/admin/admin-profile";
+import AdminRouteGuard from "@/components/auth/admin-route-guard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
 import { useRealtime } from "@/hooks/use-realtime";
@@ -227,34 +228,36 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Mobile sidebar */}
-      {isMobile && (
-        <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
-      )}
-      
-      {/* Desktop sidebar */}
-      {!isMobile && (
-        <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
-      )}
-      
-      <div className={`${!isMobile ? "ml-72" : ""}`}>
-        <header className={`bg-slate-900/50 backdrop-blur-sm border-b border-slate-700/50 ${isMobile ? "px-4 py-3" : "px-6 py-4"}`}>
-          <div className="flex items-center justify-between">
-            <h1 className={`font-bold text-white ${isMobile ? "text-xl ml-16" : "text-2xl"}`}>Painel Administrativo</h1>
-            <div className="flex items-center space-x-4">
-              <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-semibold">A</span>
-              </div>
-              <span className={`text-white ${isMobile ? "hidden" : "block"}`}>Admin</span>
-            </div>
-          </div>
-        </header>
+    <AdminRouteGuard>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        {/* Mobile sidebar */}
+        {isMobile && (
+          <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
+        )}
         
-        <main className={isMobile ? "p-4" : "p-6"}>
-          {renderContent()}
-        </main>
+        {/* Desktop sidebar */}
+        {!isMobile && (
+          <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
+        )}
+        
+        <div className={`${!isMobile ? "ml-72" : ""}`}>
+          <header className={`bg-slate-900/50 backdrop-blur-sm border-b border-slate-700/50 ${isMobile ? "px-4 py-3" : "px-6 py-4"}`}>
+            <div className="flex items-center justify-between">
+              <h1 className={`font-bold text-white ${isMobile ? "text-xl ml-16" : "text-2xl"}`}>Painel Administrativo</h1>
+              <div className="flex items-center space-x-4">
+                <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-semibold">A</span>
+                </div>
+                <span className={`text-white ${isMobile ? "hidden" : "block"}`}>Admin</span>
+              </div>
+            </div>
+          </header>
+          
+          <main className={isMobile ? "p-4" : "p-6"}>
+            {renderContent()}
+          </main>
+        </div>
       </div>
-    </div>
+    </AdminRouteGuard>
   );
 }
