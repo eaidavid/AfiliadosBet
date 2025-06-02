@@ -4,7 +4,7 @@ import UserTopBar from "@/components/user/topbar";
 import BettingHousesSecure from "@/components/user/betting-houses-secure";
 import MyLinks from "@/components/user/my-links";
 import Payments from "@/components/user/payments";
-import UserReports from "@/components/user/user-reports-panel";
+import UserReportsStable from "@/components/user/user-reports-stable";
 import Support from "@/components/user/support";
 import Profile from "@/components/user/profile";
 import { useAuth } from "@/hooks/use-auth";
@@ -220,7 +220,7 @@ export default function UserDashboardComplete() {
         case "payments":
           return <Payments />;
         case "reports":
-          return <UserReports />;
+          return <UserReportsStable />;
         case "support":
           return <Support />;
         case "profile":

@@ -53,15 +53,18 @@ export default function CommissionsManagement({ onPageChange }: CommissionsManag
     retry: false,
   });
 
-  // Calculate commission statistics
+  // Ensure affiliateCommissions is always an array
+  const safeAffiliateCommissions = Array.isArray(affiliateCommissions) ? affiliateCommissions : [];
+
+  // Calculate commission statistics with null safety
   const commissionStats = {
-    totalCommissions: affiliateCommissions.reduce((sum: number, affiliate: any) => 
-      sum + parseFloat(affiliate.totalCommissions || 0), 0),
-    pendingCommissions: affiliateCommissions.reduce((sum: number, affiliate: any) => 
-      sum + parseFloat(affiliate.pendingAmount || 0), 0),
-    paidCommissions: affiliateCommissions.reduce((sum: number, affiliate: any) => 
-      sum + parseFloat(affiliate.paidAmount || 0), 0),
-    totalAffiliates: affiliates.length,
+    totalCommissions: safeAffiliateCommissions.reduce((sum: number, affiliate: any) => 
+      sum + parseFloat(affiliate?.totalCommissions || '0'), 0),
+    pendingCommissions: safeAffiliateCommissions.reduce((sum: number, affiliate: any) => 
+      sum + parseFloat(affiliate?.pendingAmount || '0'), 0),
+    paidCommissions: safeAffiliateCommissions.reduce((sum: number, affiliate: any) => 
+      sum + parseFloat(affiliate?.paidAmount || '0'), 0),
+    totalAffiliates: Array.isArray(affiliates) ? affiliates.length : 0,
   };
 
   const processPayment = useMutation({
@@ -281,14 +284,14 @@ export default function CommissionsManagement({ onPageChange }: CommissionsManag
                           Carregando comissões...
                         </TableCell>
                       </TableRow>
-                    ) : affiliateCommissions.length === 0 ? (
+                    ) : safeAffiliateCommissions.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center text-slate-400">
                           Nenhum afiliado com comissões encontrado
                         </TableCell>
                       </TableRow>
                     ) : (
-                      affiliateCommissions.map((affiliate: any) => {
+                      safeAffiliateCommissions.map((affiliate: any) => {
                         const totalAmount = parseFloat(affiliate.totalCommissions || 0);
                         const pendingAmount = parseFloat(affiliate.pendingAmount || 0);
                         const paidAmount = parseFloat(affiliate.paidAmount || 0);
