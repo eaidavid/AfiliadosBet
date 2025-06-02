@@ -54,6 +54,7 @@ function Router() {
 
 function AuthenticatedLogin() {
   const { isAuthenticated, isLoading, isAdmin } = useAuth();
+  const [location, setLocation] = useLocation();
 
   if (isLoading) {
     return (
@@ -64,7 +65,11 @@ function AuthenticatedLogin() {
   }
 
   if (isAuthenticated) {
-    window.location.href = isAdmin ? "/admin" : "/dashboard";
+    // Use wouter navigation instead of window.location
+    const targetPath = isAdmin ? "/admin" : "/dashboard";
+    if (location !== targetPath) {
+      setLocation(targetPath);
+    }
     return null;
   }
 

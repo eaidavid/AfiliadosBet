@@ -96,13 +96,9 @@ export function useLogin() {
       // Invalidar cache para atualizar estado de autenticação
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
       
-      // Redirecionar baseado no role do usuário
+      // Force page reload to ensure proper authentication state
       setTimeout(() => {
-        if (data.user?.role === 'admin') {
-          window.location.href = "/admin";
-        } else {
-          window.location.href = "/dashboard";
-        }
+        window.location.reload();
       }, 100);
     },
   });
