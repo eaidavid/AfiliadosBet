@@ -32,13 +32,12 @@ app.use(express.urlencoded({ extended: true }));
   await registerRoutes(app);
 
   if (process.env.NODE_ENV === "development") {
-    const httpServer = require('http').createServer(app);
-    await setupVite(app, httpServer);
+    await setupVite(app);
   } else {
     serveStatic(app);
   }
 
-  const PORT = parseInt(process.env.PORT || "3000", 10);
+  const PORT = parseInt(process.env.PORT || "5000", 10);
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server listening on port ${PORT}`);
     console.log("Application ready to receive requests");

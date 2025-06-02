@@ -32,7 +32,7 @@ export default function Login() {
       if (isAdmin) {
         setLocation("/admin");
       } else {
-        setLocation("/home");
+        setLocation("/dashboard");
       }
     }
   }, [isAuthenticated, isAdmin, setLocation]);

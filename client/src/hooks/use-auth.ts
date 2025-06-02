@@ -96,12 +96,12 @@ export function useLogin() {
       // Invalidar cache para atualizar estado de autenticação
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
       
-      // Aguardar um pouco antes de redirecionar para garantir que o estado seja atualizado
+      // Redirecionar baseado no role do usuário
       setTimeout(() => {
         if (data.user?.role === 'admin') {
           window.location.href = "/admin";
         } else {
-          window.location.href = "/home";
+          window.location.href = "/dashboard";
         }
       }, 100);
     },
@@ -124,7 +124,7 @@ export function useRegister() {
         if (data.user?.role === 'admin') {
           window.location.href = "/admin";
         } else {
-          window.location.href = "/home";
+          window.location.href = "/dashboard";
         }
       }, 100);
     },
