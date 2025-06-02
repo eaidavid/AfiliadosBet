@@ -96,10 +96,20 @@ export function useLogin() {
       // Invalidar cache para atualizar estado de autenticação
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
       
-      // Force page reload to ensure proper authentication state
+      // Store auth state in localStorage for deploy reliability
+      if (data.user) {
+        localStorage.setItem('auth_user', JSON.stringify(data.user));
+        localStorage.setItem('auth_timestamp', Date.now().toString());
+      }
+      
+      // Force navigation based on user role
       setTimeout(() => {
-        window.location.reload();
-      }, 100);
+        if (data.user?.role === 'admin') {
+          window.location.href = "/admin";
+        } else {
+          window.location.href = "/dashboard";
+        }
+      }, 200);
     },
   });
 }

@@ -78,6 +78,7 @@ function AuthenticatedLogin() {
 
 function AuthenticatedUserDashboard() {
   const { isAuthenticated, isLoading } = useAuth();
+  const [location, setLocation] = useLocation();
 
   if (isLoading) {
     return (
@@ -88,7 +89,7 @@ function AuthenticatedUserDashboard() {
   }
 
   if (!isAuthenticated) {
-    window.location.href = "/";
+    setLocation("/login");
     return null;
   }
 
@@ -102,6 +103,7 @@ function AuthenticatedUserDashboard() {
 
 function AuthenticatedAdminDashboard() {
   const { isAuthenticated, isLoading, isAdmin } = useAuth();
+  const [location, setLocation] = useLocation();
 
   if (isLoading) {
     return (
@@ -112,7 +114,7 @@ function AuthenticatedAdminDashboard() {
   }
 
   if (!isAuthenticated || !isAdmin) {
-    window.location.href = "/";
+    setLocation("/login");
     return null;
   }
 
