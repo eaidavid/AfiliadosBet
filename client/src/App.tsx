@@ -9,8 +9,8 @@ import LandingPage from "@/pages/landing-page";
 import SimpleLanding from "@/pages/simple-landing";
 import Register from "@/pages/register";
 import Login from "@/pages/login";
-import UserDashboardComplete from "@/pages/user-dashboard-complete";
-import AdminDashboard from "@/pages/admin-dashboard";
+import DashboardSimple from "@/pages/dashboard-simple";
+import AdminDashboardSimple from "@/pages/admin-dashboard-simple";
 import NotFound from "@/pages/not-found";
 import AdminPanelToggle from "@/components/admin-panel-toggle";
 
@@ -95,7 +95,7 @@ function AuthenticatedUserDashboard() {
 
   return (
     <div className="mobile-safe no-bounce">
-      <UserDashboardComplete />
+      <DashboardSimple />
       <AdminPanelToggle />
     </div>
   );
@@ -120,7 +120,7 @@ function AuthenticatedAdminDashboard() {
 
   return (
     <div className="mobile-safe no-bounce">
-      <AdminDashboard />
+      <AdminDashboardSimple />
       <AdminPanelToggle />
     </div>
   );
