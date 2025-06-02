@@ -79,9 +79,9 @@ export default function UserReports() {
   const last30Days = new Date();
   last30Days.setDate(last30Days.getDate() - 30);
 
-  const recentConversions = (conversions as ConversionData[]).filter(conv => 
+  const recentConversions = (conversions as ConversionData[])?.filter(conv => 
     new Date(conv.criadoEm) >= last30Days
-  );
+  ) || [];
 
   const conversionsByType = recentConversions.reduce((acc: Record<string, number>, conv) => {
     acc[conv.evento] = (acc[conv.evento] || 0) + 1;
