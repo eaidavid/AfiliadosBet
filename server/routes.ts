@@ -2071,7 +2071,7 @@ export async function registerRoutes(app: any): Promise<Server> {
       // Buscar conversões do afiliado
       const conversions = await db.select()
         .from(schema.conversions)
-        .where(eq(schema.conversions.userId, affiliateId));
+        .where(eq(schema.conversions.user_id, affiliateId));
 
       // Buscar links do afiliado
       const links = await db.select({
@@ -2084,7 +2084,7 @@ export async function registerRoutes(app: any): Promise<Server> {
       })
       .from(schema.affiliateLinks)
       .leftJoin(schema.bettingHouses, eq(schema.affiliateLinks.houseId, schema.bettingHouses.id))
-      .where(eq(schema.affiliateLinks.userId, affiliateId));
+      .where(eq(schema.affiliateLinks.user_id, affiliateId));
 
       // Calcular estatísticas
       const stats = conversions.reduce((acc, conv) => {
