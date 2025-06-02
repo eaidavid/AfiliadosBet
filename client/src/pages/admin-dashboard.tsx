@@ -7,7 +7,7 @@ import PostbackLogs from "@/components/admin/postback-logs";
 import SimplePostbackForm from "@/components/admin/simple-postback-form";
 import PostbackGenerator from "@/components/admin/postback-generator";
 import CommissionsManagement from "@/components/admin/commissions-management";
-import AdminReports from "./admin-reports-fixed";
+import ReportsManagementReal from "@/components/admin/reports-management-real";
 import SettingsManagement from "@/components/admin/settings-management";
 import AdminProfile from "@/components/admin/admin-profile";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -44,7 +44,7 @@ export default function AdminDashboard() {
       case "commissions":
         return <CommissionsManagement onPageChange={setCurrentPage} />;
       case "reports":
-        return <AdminReports />;
+        return <ReportsManagementReal onPageChange={setCurrentPage} />;
       case "settings":
         return <SettingsManagement onPageChange={setCurrentPage} />;
       case "profile":
