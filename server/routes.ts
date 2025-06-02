@@ -2056,7 +2056,7 @@ export async function registerRoutes(app: any): Promise<Server> {
   app.get("/api/admin/affiliate/:id/details", requireAdmin, async (req: any, res) => {
     try {
       const affiliateId = parseInt(req.params.id);
-      console.log(`📊 Buscando detalhes do afiliado ID: ${affiliateId}`);
+      console.log(`📊 [DETAILS] Buscando detalhes do afiliado ID: ${affiliateId}`);
       
       // Buscar dados do afiliado
       const affiliate = await db.select()
@@ -2064,14 +2064,20 @@ export async function registerRoutes(app: any): Promise<Server> {
         .where(eq(schema.users.id, affiliateId))
         .limit(1);
 
+      console.log(`📊 [DETAILS] Afiliado encontrado:`, affiliate.length > 0 ? affiliate[0].username : 'Nenhum');
+
       if (!affiliate.length) {
+        console.log(`❌ [DETAILS] Afiliado ID ${affiliateId} não encontrado`);
         return res.status(404).json({ error: "Afiliado não encontrado" });
       }
 
       // Buscar conversões do afiliado
+      console.log(`📊 [DETAILS] Buscando conversões para user_id: ${affiliateId}`);
       const conversions = await db.select()
         .from(schema.conversions)
         .where(eq(schema.conversions.user_id, affiliateId));
+      
+      console.log(`📊 [DETAILS] Conversões encontradas: ${conversions.length}`, conversions);
 
       // Buscar links do afiliado
       const links = await db.select({
