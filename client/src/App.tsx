@@ -56,6 +56,15 @@ function AuthenticatedLogin() {
   const { isAuthenticated, isLoading, isAdmin } = useAuth();
   const [location, setLocation] = useLocation();
 
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      const targetPath = isAdmin ? "/admin" : "/dashboard";
+      if (location !== targetPath) {
+        setLocation(targetPath);
+      }
+    }
+  }, [isAuthenticated, isLoading, isAdmin, location, setLocation]);
+
   if (isLoading) {
     return (
       <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce">
@@ -65,11 +74,6 @@ function AuthenticatedLogin() {
   }
 
   if (isAuthenticated) {
-    // Use wouter navigation instead of window.location
-    const targetPath = isAdmin ? "/admin" : "/dashboard";
-    if (location !== targetPath) {
-      setLocation(targetPath);
-    }
     return null;
   }
 
@@ -80,6 +84,12 @@ function AuthenticatedUserDashboard() {
   const { isAuthenticated, isLoading } = useAuth();
   const [location, setLocation] = useLocation();
 
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      setLocation("/login");
+    }
+  }, [isAuthenticated, isLoading, setLocation]);
+
   if (isLoading) {
     return (
       <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce">
@@ -89,7 +99,6 @@ function AuthenticatedUserDashboard() {
   }
 
   if (!isAuthenticated) {
-    setLocation("/login");
     return null;
   }
 
@@ -105,6 +114,12 @@ function AuthenticatedAdminDashboard() {
   const { isAuthenticated, isLoading, isAdmin } = useAuth();
   const [location, setLocation] = useLocation();
 
+  useEffect(() => {
+    if (!isLoading && (!isAuthenticated || !isAdmin)) {
+      setLocation("/login");
+    }
+  }, [isAuthenticated, isLoading, isAdmin, setLocation]);
+
   if (isLoading) {
     return (
       <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce">
@@ -114,7 +129,6 @@ function AuthenticatedAdminDashboard() {
   }
 
   if (!isAuthenticated || !isAdmin) {
-    setLocation("/login");
     return null;
   }
 
