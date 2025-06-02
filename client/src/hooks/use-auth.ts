@@ -13,6 +13,23 @@ export function useAuth() {
     
     const checkAuth = async () => {
       try {
+        // First check localStorage for cached auth state
+        const cachedUser = localStorage.getItem('auth_user');
+        const timestamp = localStorage.getItem('auth_timestamp');
+        
+        if (cachedUser && timestamp) {
+          const age = Date.now() - parseInt(timestamp);
+          // Use cached data if less than 5 minutes old
+          if (age < 5 * 60 * 1000) {
+            const userData = JSON.parse(cachedUser);
+            if (isMounted) {
+              setUser(userData);
+              setIsLoading(false);
+              return;
+            }
+          }
+        }
+
         const response = await fetch("/api/auth/me", {
           credentials: "include"
         });
@@ -22,17 +39,26 @@ export function useAuth() {
           if (isMounted) {
             setUser(userData);
             setError(null);
+            // Cache the auth state
+            localStorage.setItem('auth_user', JSON.stringify(userData));
+            localStorage.setItem('auth_timestamp', Date.now().toString());
           }
         } else {
           if (isMounted) {
             setUser(null);
-            setError(null); // 401 não é um erro real
+            setError(null);
+            // Clear cached auth state
+            localStorage.removeItem('auth_user');
+            localStorage.removeItem('auth_timestamp');
           }
         }
       } catch (err) {
         if (isMounted) {
           setUser(null);
           setError(err instanceof Error ? err : new Error("Auth check failed"));
+          // Clear cached auth state on error
+          localStorage.removeItem('auth_user');
+          localStorage.removeItem('auth_timestamp');
         }
       } finally {
         if (isMounted) {
