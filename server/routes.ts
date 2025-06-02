@@ -2451,6 +2451,8 @@ export async function registerRoutes(app: any): Promise<Server> {
   // Admin conversions route - Lista de todas as conversões para relatórios
   app.get("/api/admin/conversions", requireAdmin, async (req: any, res) => {
     try {
+      console.log("📊 Buscando conversões reais para relatórios admin");
+      
       // Buscar todas as conversões com informações dos afiliados e casas
       const conversions = await db.select({
         id: schema.conversions.id,
@@ -2458,23 +2460,39 @@ export async function registerRoutes(app: any): Promise<Server> {
         amount: schema.conversions.amount,
         commission: schema.conversions.commission,
         convertedAt: schema.conversions.convertedAt,
-        status: sql<string>`CASE 
-          WHEN ${schema.conversions.id} % 3 = 0 THEN 'paid'
-          ELSE 'pending'
-        END`,
         affiliate: schema.users.username,
         house: schema.bettingHouses.name,
         value: schema.conversions.amount,
-        customerId: schema.conversions.customerId
+        customerId: schema.conversions.customerId,
+        userId: schema.conversions.userId,
+        houseId: schema.conversions.houseId
       })
       .from(schema.conversions)
       .leftJoin(schema.users, eq(schema.conversions.userId, schema.users.id))
       .leftJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
       .orderBy(desc(schema.conversions.convertedAt));
 
-      console.log("📊 Admin Conversions - Total encontradas:", conversions.length);
+      // Buscar pagamentos para definir status real das comissões
+      const payments = await db.select()
+        .from(schema.payments);
+
+      // Mapear conversões com status real baseado nos pagamentos
+      const conversionsWithRealStatus = conversions.map(conv => {
+        const relatedPayment = payments.find(p => 
+          p.userId === conv.userId && 
+          parseFloat(p.amount) === parseFloat(conv.commission || '0')
+        );
+        
+        return {
+          ...conv,
+          status: relatedPayment ? relatedPayment.status : 'pending'
+        };
+      });
+
+      console.log(`📊 Admin Conversions - ${conversionsWithRealStatus.length} conversões encontradas`);
+      console.log("📊 Tipos encontrados:", [...new Set(conversionsWithRealStatus.map(c => c.type))]);
       
-      res.json(conversions);
+      res.json(conversionsWithRealStatus);
     } catch (error) {
       console.error("Get admin conversions error:", error);
       res.status(500).json({ message: "Failed to get admin conversions" });
@@ -2486,7 +2504,7 @@ export async function registerRoutes(app: any): Promise<Server> {
     try {
       console.log("🔍 Buscando comissões detalhadas para admin");
       
-      // Buscar todos os pagamentos com dados dos afiliados
+      // Buscar todos os pagamentos com dados completos dos afiliados
       const paymentsQuery = await db.select({
         id: schema.payments.id,
         userId: schema.payments.userId,
@@ -2494,8 +2512,11 @@ export async function registerRoutes(app: any): Promise<Server> {
         status: schema.payments.status,
         createdAt: schema.payments.createdAt,
         paidAt: schema.payments.paidAt,
+        description: schema.payments.description,
         affiliateName: schema.users.username,
         affiliateFullName: schema.users.fullName,
+        affiliateEmail: schema.users.email,
+        affiliatePix: schema.users.pix
       })
       .from(schema.payments)
       .leftJoin(schema.users, eq(schema.payments.userId, schema.users.id))
@@ -2519,18 +2540,27 @@ export async function registerRoutes(app: any): Promise<Server> {
 
           return {
             id: payment.id,
+            userId: payment.userId,
             affiliateName: payment.affiliateName || payment.affiliateFullName,
+            affiliateEmail: payment.affiliateEmail,
+            affiliatePix: payment.affiliatePix || 'Não informado',
             houseName: conversion[0]?.houseName || 'N/A',
             type: conversion[0]?.type || 'CPA',
             amount: parseFloat(payment.amount),
             status: payment.status,
             createdAt: payment.createdAt,
-            paidAt: payment.paidAt
+            paidAt: payment.paidAt,
+            description: payment.description
           };
         })
       );
       
       console.log(`✅ ${formattedCommissions.length} registros de comissões encontrados`);
+      console.log("📋 Amostra de dados PIX:", formattedCommissions.slice(0, 2).map(c => ({
+        affiliate: c.affiliateName,
+        pix: c.affiliatePix
+      })));
+      
       res.json(formattedCommissions);
     } catch (error) {
       console.error("❌ Erro ao buscar comissões:", error);
