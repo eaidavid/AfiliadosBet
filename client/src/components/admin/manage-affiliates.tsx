@@ -92,19 +92,36 @@ export default function ManageAffiliates({ onPageChange }: ManageAffiliatesProps
   const [detailsTab, setDetailsTab] = useState("personal");
 
   // Query para listar afiliados
-  const { data: affiliates = [], isLoading } = useQuery({
+  const { data: affiliatesData, isLoading, error } = useQuery({
     queryKey: ["/api/admin/affiliates", searchTerm, statusFilter, houseFilter, dateFilter],
     queryFn: async () => {
-      const params = new URLSearchParams();
-      if (searchTerm) params.append("search", searchTerm);
-      if (statusFilter !== "all") params.append("status", statusFilter);
-      if (houseFilter !== "all") params.append("house", houseFilter);
-      if (dateFilter) params.append("date", dateFilter);
-      
-      const response = await fetch(`/api/admin/affiliates?${params}`);
-      return response.json();
+      try {
+        const params = new URLSearchParams();
+        if (searchTerm) params.append("search", searchTerm);
+        if (statusFilter !== "all") params.append("status", statusFilter);
+        if (houseFilter !== "all") params.append("house", houseFilter);
+        if (dateFilter) params.append("date", dateFilter);
+        
+        const response = await fetch(`/api/admin/affiliates?${params}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        // Garantir que sempre retornamos um array
+        return Array.isArray(data) ? data : [];
+      } catch (error) {
+        console.error('Erro ao carregar afiliados:', error);
+        return [];
+      }
     },
+    retry: 2,
+    retryDelay: 1000,
   });
+
+  const affiliates = affiliatesData || [];
 
   // Query para casas de apostas (para filtro)
   const { data: houses = [] } = useQuery({

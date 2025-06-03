@@ -5,7 +5,7 @@ import { storage } from "./storage";
 import { db } from "./db";
 import { affiliateLinks } from "@shared/schema";
 import * as schema from "@shared/schema";
-import { eq, sql, desc, and } from "drizzle-orm";
+import { eq, sql, desc, and, or, ilike, gte, lt, inArray } from "drizzle-orm";
 import { postbackLogs } from "../shared/schema";
 import bcrypt from "bcrypt";
 import session from "express-session";
@@ -1156,22 +1156,22 @@ export async function registerRoutes(app: any): Promise<Server> {
       
       console.log('🔍 Listando afiliados com filtros:', { search, status, house, date });
       
-      let whereConditions = [eq(schema.users.role, 'user')];
+      let baseCondition = eq(schema.users.role, 'user');
+      let whereCondition = baseCondition;
       
       if (search) {
-        whereConditions.push(
-          or(
-            ilike(schema.users.username, `%${search}%`),
-            ilike(schema.users.email, `%${search}%`),
-            ilike(schema.users.fullName, `%${search}%`)
-          )
+        const searchCondition = or(
+          ilike(schema.users.username, `%${search}%`),
+          ilike(schema.users.email, `%${search}%`),
+          ilike(schema.users.fullName, `%${search}%`)
         );
+        whereCondition = and(whereCondition, searchCondition);
       }
       
       if (status === 'active') {
-        whereConditions.push(eq(schema.users.isActive, true));
+        whereCondition = and(whereCondition, eq(schema.users.isActive, true));
       } else if (status === 'inactive') {
-        whereConditions.push(eq(schema.users.isActive, false));
+        whereCondition = and(whereCondition, eq(schema.users.isActive, false));
       }
       
       if (date) {
@@ -1179,12 +1179,11 @@ export async function registerRoutes(app: any): Promise<Server> {
         const nextDay = new Date(targetDate);
         nextDay.setDate(nextDay.getDate() + 1);
         
-        whereConditions.push(
-          and(
-            gte(schema.users.createdAt, targetDate),
-            lt(schema.users.createdAt, nextDay)
-          )
+        const dateCondition = and(
+          gte(schema.users.createdAt, targetDate),
+          lt(schema.users.createdAt, nextDay)
         );
+        whereCondition = and(whereCondition, dateCondition);
       }
       
       const users = await db
@@ -1198,7 +1197,7 @@ export async function registerRoutes(app: any): Promise<Server> {
           lastAccess: schema.users.lastAccess,
         })
         .from(schema.users)
-        .where(and(...whereConditions))
+        .where(whereCondition)
         .orderBy(desc(schema.users.createdAt));
       
       // Para cada usuário, buscar estatísticas
