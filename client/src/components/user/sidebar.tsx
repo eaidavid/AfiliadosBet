@@ -20,7 +20,6 @@ export default function UserSidebar({ currentPage, onPageChange }: UserSidebarPr
     { id: "houses", label: "Casas de Apostas", icon: Building },
     { id: "links", label: "Meus Links", icon: Link },
     { id: "payments", label: "Pagamentos", icon: Wallet },
-    { id: "reports", label: "Relatórios", icon: PieChart },
     { id: "support", label: "Suporte", icon: Headphones },
     { id: "profile", label: "Meu Perfil", icon: User },
   ];
