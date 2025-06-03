@@ -4,7 +4,6 @@ import UserTopBar from "@/components/user/topbar";
 import BettingHousesSecure from "@/components/user/betting-houses-secure";
 import MyLinks from "@/components/user/my-links";
 import Payments from "@/components/user/payments";
-import Reports from "@/components/user/reports";
 import Support from "@/components/user/support";
 import Profile from "@/components/user/profile";
 import { useAuth } from "@/hooks/use-auth";
@@ -98,14 +97,10 @@ export default function UserDashboard() {
         return <MyLinks onPageChange={setCurrentPage} />;
       case "payments":
         return <Payments onPageChange={setCurrentPage} />;
-      case "reports":
-        return <Reports onPageChange={setCurrentPage} />;
       case "support":
         return <Support onPageChange={setCurrentPage} />;
       case "profile":
         return <Profile onPageChange={setCurrentPage} />;
-      case "dashboard":
-        return <Reports onPageChange={setCurrentPage} />;
       default:
         return (
           <div className="space-y-6">

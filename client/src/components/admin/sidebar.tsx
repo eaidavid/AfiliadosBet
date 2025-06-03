@@ -17,14 +17,11 @@ export default function AdminSidebar({ currentPage, onPageChange }: AdminSidebar
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
-    { id: "affiliates", label: "Afiliados", icon: Users },
     { id: "houses", label: "Casas de Apostas", icon: Building },
     { id: "links", label: "Links", icon: Link2 },
     { id: "postback-generator", label: "Gerador de Postbacks", icon: Webhook },
     { id: "postbacks", label: "Logs de Postbacks", icon: Webhook },
     { id: "registered-postbacks", label: "Postbacks Registrados", icon: Webhook },
-    { id: "commissions", label: "Comissões", icon: DollarSign },
-    { id: "reports", label: "Relatórios", icon: PieChart },
     { id: "settings", label: "Configurações", icon: Settings },
   ];
 
