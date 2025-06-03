@@ -10,6 +10,7 @@ import { postbackLogs } from "../shared/schema";
 import bcrypt from "bcrypt";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
+import { Client } from "pg";
 import { 
   insertUserSchema, 
   loginSchema, 
@@ -1470,26 +1471,36 @@ export async function registerRoutes(app: any): Promise<Server> {
     try {
       console.log('🔍 Listando todos os usuários');
       
-      const users = await db
-        .select({
-          id: schema.users.id,
-          username: schema.users.username,
-          email: schema.users.email,
-          fullName: schema.users.fullName,
-          role: schema.users.role,
-          isActive: schema.users.isActive,
-          createdAt: schema.users.createdAt,
-          cpf: schema.users.cpf,
-          phone: schema.users.phone,
-          birthDate: schema.users.birthDate,
-          city: schema.users.city,
-          state: schema.users.state,
-          country: schema.users.country,
-          lastAccess: schema.users.lastAccess,
-        })
-        .from(schema.users)
-        .orderBy(desc(schema.users.createdAt));
+      // Usar cliente PostgreSQL nativo
+      const client = new Client({
+        connectionString: process.env.DATABASE_URL
+      });
       
+      await client.connect();
+      
+      const result = await client.query(`
+        SELECT 
+          id,
+          username,
+          email,
+          full_name as "fullName",
+          role,
+          is_active as "isActive",
+          created_at as "createdAt",
+          cpf,
+          phone,
+          birth_date as "birthDate",
+          city,
+          state,
+          country,
+          last_access as "lastAccess"
+        FROM users 
+        ORDER BY created_at DESC
+      `);
+      
+      await client.end();
+      
+      const users = result.rows;
       console.log(`✅ Encontrados ${users.length} usuários`);
       res.json(users);
       
@@ -1505,17 +1516,32 @@ export async function registerRoutes(app: any): Promise<Server> {
       const userId = parseInt(req.params.id);
       console.log(`🔍 Buscando usuário ID: ${userId}`);
       
-      const [user] = await db
-        .select()
-        .from(schema.users)
-        .where(eq(schema.users.id, userId));
+      const result = await db.execute(sql`
+        SELECT 
+          id,
+          username,
+          email,
+          full_name as "fullName",
+          role,
+          is_active as "isActive",
+          created_at as "createdAt",
+          cpf,
+          phone,
+          birth_date as "birthDate",
+          city,
+          state,
+          country,
+          last_access as "lastAccess"
+        FROM users 
+        WHERE id = ${userId}
+      `);
       
-      if (!user) {
+      if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Usuário não encontrado' });
       }
       
       console.log('✅ Usuário encontrado');
-      res.json(user);
+      res.json(result.rows[0]);
       
     } catch (error) {
       console.error('❌ Erro ao buscar usuário:', error);
@@ -1529,11 +1555,12 @@ export async function registerRoutes(app: any): Promise<Server> {
       const userId = parseInt(req.params.id);
       console.log(`📊 Buscando estatísticas do usuário ${userId}`);
       
-      // Buscar conversões do usuário
-      const conversions = await db
-        .select()
-        .from(schema.conversions)
-        .where(eq(schema.conversions.userId, userId));
+      // Buscar conversões do usuário usando SQL direto
+      const result = await db.execute(sql`
+        SELECT type, commission FROM conversions WHERE user_id = ${userId}
+      `);
+      
+      const conversions = result.rows;
       
       // Calcular estatísticas
       const totalClicks = conversions.filter(c => c.type === 'click').length;
