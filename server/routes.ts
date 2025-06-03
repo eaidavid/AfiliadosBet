@@ -1270,7 +1270,14 @@ export async function registerRoutes(app: any): Promise<Server> {
   // Status de autenticação
   app.get("/api/auth/status", async (req, res) => {
     try {
+      console.log("Verificando admin access:", {
+        hasSession: !!req.session,
+        hasUser: !!req.session?.user,
+        userRole: req.session?.user?.role
+      });
+
       if (req.session?.user) {
+        console.log("Admin access autorizado");
         res.json({
           authenticated: true,
           user: {
@@ -1281,6 +1288,7 @@ export async function registerRoutes(app: any): Promise<Server> {
           }
         });
       } else {
+        console.log("Sem sessão/usuário");
         res.json({
           authenticated: false,
           user: null
