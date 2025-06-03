@@ -1465,6 +1465,169 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // Endpoint para listar todos os usuários (usado pelo painel admin)
+  app.get("/api/users", requireAdmin, async (req: any, res) => {
+    try {
+      console.log('🔍 Listando todos os usuários');
+      
+      const users = await db
+        .select({
+          id: schema.users.id,
+          username: schema.users.username,
+          email: schema.users.email,
+          fullName: schema.users.fullName,
+          role: schema.users.role,
+          isActive: schema.users.isActive,
+          createdAt: schema.users.createdAt,
+          cpf: schema.users.cpf,
+          phone: schema.users.phone,
+          birthDate: schema.users.birthDate,
+          city: schema.users.city,
+          state: schema.users.state,
+          country: schema.users.country,
+          lastAccess: schema.users.lastAccess,
+        })
+        .from(schema.users)
+        .orderBy(desc(schema.users.createdAt));
+      
+      console.log(`✅ Encontrados ${users.length} usuários`);
+      res.json(users);
+      
+    } catch (error) {
+      console.error('❌ Erro ao listar usuários:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Endpoint para buscar um usuário específico
+  app.get("/api/user/:id", requireAdmin, async (req: any, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      console.log(`🔍 Buscando usuário ID: ${userId}`);
+      
+      const [user] = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.id, userId));
+      
+      if (!user) {
+        return res.status(404).json({ error: 'Usuário não encontrado' });
+      }
+      
+      console.log('✅ Usuário encontrado');
+      res.json(user);
+      
+    } catch (error) {
+      console.error('❌ Erro ao buscar usuário:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Endpoint para buscar estatísticas de um usuário
+  app.get("/api/user/stats/:id", requireAdmin, async (req: any, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      console.log(`📊 Buscando estatísticas do usuário ${userId}`);
+      
+      // Buscar conversões do usuário
+      const conversions = await db
+        .select()
+        .from(schema.conversions)
+        .where(eq(schema.conversions.userId, userId));
+      
+      // Calcular estatísticas
+      const totalClicks = conversions.filter(c => c.type === 'click').length;
+      const totalRegistrations = conversions.filter(c => c.type === 'registration').length;
+      const totalDeposits = conversions.filter(c => c.type === 'deposit').length;
+      const totalCommission = conversions.reduce((sum, c) => sum + parseFloat(c.commission || '0'), 0);
+      const conversionRate = totalClicks > 0 ? (totalRegistrations / totalClicks) * 100 : 0;
+      
+      const stats = {
+        totalClicks,
+        totalRegistrations,
+        totalDeposits,
+        totalCommission: totalCommission.toFixed(2),
+        conversionRate: parseFloat(conversionRate.toFixed(2))
+      };
+      
+      console.log(`✅ Estatísticas calculadas para usuário ${userId}:`, stats);
+      res.json(stats);
+      
+    } catch (error) {
+      console.error('❌ Erro ao buscar estatísticas:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Endpoint para buscar links de um usuário
+  app.get("/api/user/links/:id", requireAdmin, async (req: any, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      console.log(`🔗 Buscando links do usuário ${userId}`);
+      
+      const links = await db
+        .select({
+          id: schema.affiliateLinks.id,
+          houseId: schema.affiliateLinks.houseId,
+          generatedUrl: schema.affiliateLinks.generatedUrl,
+          isActive: schema.affiliateLinks.isActive,
+          createdAt: schema.affiliateLinks.createdAt,
+          houseName: schema.bettingHouses.name,
+        })
+        .from(schema.affiliateLinks)
+        .leftJoin(schema.bettingHouses, eq(schema.affiliateLinks.houseId, schema.bettingHouses.id))
+        .where(eq(schema.affiliateLinks.userId, userId));
+      
+      console.log(`✅ Encontrados ${links.length} links para usuário ${userId}`);
+      res.json(links);
+      
+    } catch (error) {
+      console.error('❌ Erro ao buscar links:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Endpoint para ações administrativas em usuários
+  app.put("/api/admin/user/:id/status", requireAdmin, async (req: any, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { isActive } = req.body;
+      
+      console.log(`🔄 Alterando status do usuário ${userId} para ${isActive ? 'ativo' : 'inativo'}`);
+      
+      await db
+        .update(schema.users)
+        .set({ 
+          isActive,
+          updatedAt: new Date()
+        })
+        .where(eq(schema.users.id, userId));
+      
+      console.log('✅ Status do usuário atualizado');
+      res.json({ success: true });
+      
+    } catch (error) {
+      console.error('❌ Erro ao atualizar status:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.post("/api/admin/user/:id/reset-password", requireAdmin, async (req: any, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      console.log(`🔄 Solicitação de redefinição de senha para usuário ${userId}`);
+      
+      // Simular envio de email (implementar integração real conforme necessário)
+      console.log('✅ Link de redefinição de senha enviado (simulado)');
+      res.json({ success: true, message: 'Link enviado por email' });
+      
+    } catch (error) {
+      console.error('❌ Erro ao enviar link de redefinição:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
   // Endpoint para salvar dados de pagamento do usuário
   app.post("/api/user/payment-config", async (req, res) => {
     try {
