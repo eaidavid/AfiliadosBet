@@ -2169,7 +2169,7 @@ export async function registerRoutes(app: any): Promise<Server> {
       
       const affiliates = await db.select()
         .from(schema.users)
-        .where(eq(schema.users.role, 'affiliate'));
+        .where(eq(schema.users.role, 'user'));
 
       const allConversions = await db.select()
         .from(schema.conversions);
@@ -2193,13 +2193,18 @@ export async function registerRoutes(app: any): Promise<Server> {
         return {
           affiliateId: affiliate.id,
           affiliateName: affiliate.fullName || affiliate.username,
+          username: affiliate.username,
+          email: affiliate.email,
+          cpf: affiliate.cpf,
+          phone: affiliate.phone,
           clicks,
           registrations,
           deposits,
           profits,
           totalCommission: totalCommission.toFixed(2),
           totalVolume: totalVolume.toFixed(2),
-          conversionRate: clicks > 0 ? ((registrations / clicks) * 100).toFixed(2) : '0.00'
+          conversionRate: clicks > 0 ? ((registrations / clicks) * 100).toFixed(2) : '0.00',
+          isActive: affiliate.isActive
         };
       });
 
@@ -2461,7 +2466,7 @@ export async function registerRoutes(app: any): Promise<Server> {
       // Buscar todos os afiliados
       const affiliates = await db.select()
         .from(schema.users)
-        .where(eq(schema.users.role, 'affiliate'));
+        .where(eq(schema.users.role, 'user'));
       
       console.log("📊 Admin Stats - Total conversões encontradas:", allConversions.length);
       console.log("📊 Tipos de conversões:", allConversions.map(c => c.type));
@@ -2629,7 +2634,7 @@ export async function registerRoutes(app: any): Promise<Server> {
       })
       .from(schema.payments)
       .leftJoin(schema.users, eq(schema.payments.userId, schema.users.id))
-      .where(eq(schema.users.role, 'affiliate'))
+      .where(eq(schema.users.role, 'user'))
       .orderBy(desc(schema.payments.createdAt));
 
       // Para cada pagamento, buscar a conversão que gerou a comissão
