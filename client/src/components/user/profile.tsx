@@ -146,7 +146,7 @@ export default function Profile({ onPageChange }: ProfileProps) {
           </CardHeader>
           <CardContent>
             <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4">
-              {/* Read-only fields */}
+              {/* Read-only field */}
               <div className="space-y-4">
                 <div>
                   <Label className="text-slate-300">Usuário (SubID)</Label>
@@ -155,33 +155,7 @@ export default function Profile({ onPageChange }: ProfileProps) {
                     disabled
                     className="bg-slate-700 border-slate-600 text-slate-400"
                   />
-                </div>
-
-                <div>
-                  <Label className="text-slate-300">Nome Completo</Label>
-                  <Input
-                    value={user?.fullName || ""}
-                    disabled
-                    className="bg-slate-700 border-slate-600 text-slate-400"
-                  />
-                </div>
-                
-                <div>
-                  <Label className="text-slate-300">CPF</Label>
-                  <Input
-                    value={user?.cpf || ""}
-                    disabled
-                    className="bg-slate-700 border-slate-600 text-slate-400"
-                  />
-                </div>
-                
-                <div>
-                  <Label className="text-slate-300">Email</Label>
-                  <Input
-                    value={user?.email || ""}
-                    disabled
-                    className="bg-slate-700 border-slate-600 text-slate-400"
-                  />
+                  <p className="text-xs text-slate-500 mt-1">O usuário não pode ser alterado após o cadastro</p>
                 </div>
               </div>
 
@@ -190,6 +164,34 @@ export default function Profile({ onPageChange }: ProfileProps) {
               {/* Editable fields */}
               <div className="space-y-4">
                 <div>
+                  <Label htmlFor="fullName" className="text-white">Nome Completo</Label>
+                  <Input
+                    {...profileForm.register("fullName")}
+                    className="bg-slate-700 border-slate-600 text-white"
+                    placeholder="Seu nome completo"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="email" className="text-white">Email</Label>
+                  <Input
+                    {...profileForm.register("email")}
+                    type="email"
+                    className="bg-slate-700 border-slate-600 text-white"
+                    placeholder="seu@email.com"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="cpf" className="text-white">CPF</Label>
+                  <Input
+                    {...profileForm.register("cpf")}
+                    className="bg-slate-700 border-slate-600 text-white"
+                    placeholder="000.000.000-00"
+                  />
+                </div>
+
+                <div>
                   <Label htmlFor="phone" className="text-white">Telefone</Label>
                   <Input
                     {...profileForm.register("phone")}
@@ -197,8 +199,6 @@ export default function Profile({ onPageChange }: ProfileProps) {
                     placeholder="(11) 99999-9999"
                   />
                 </div>
-
-
 
                 <div>
                   <Label htmlFor="birthDate" className="text-white">Data de Nascimento</Label>
