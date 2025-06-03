@@ -18,6 +18,7 @@ export default function AdminSidebar({ currentPage, onPageChange }: AdminSidebar
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
     { id: "houses", label: "Casas de Apostas", icon: Building },
+    { id: "manage", label: "Gerenciar", icon: Users },
     { id: "links", label: "Links", icon: Link2 },
     { id: "postback-generator", label: "Gerador de Postbacks", icon: Webhook },
     { id: "postbacks", label: "Logs de Postbacks", icon: Webhook },

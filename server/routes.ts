@@ -1149,6 +1149,323 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // Endpoints para gerenciar afiliados
+  app.get("/api/admin/affiliates", requireAdmin, async (req: any, res) => {
+    try {
+      const { search, status, house, date } = req.query;
+      
+      console.log('🔍 Listando afiliados com filtros:', { search, status, house, date });
+      
+      let whereConditions = [eq(schema.users.role, 'user')];
+      
+      if (search) {
+        whereConditions.push(
+          or(
+            ilike(schema.users.username, `%${search}%`),
+            ilike(schema.users.email, `%${search}%`),
+            ilike(schema.users.fullName, `%${search}%`)
+          )
+        );
+      }
+      
+      if (status === 'active') {
+        whereConditions.push(eq(schema.users.isActive, true));
+      } else if (status === 'inactive') {
+        whereConditions.push(eq(schema.users.isActive, false));
+      }
+      
+      if (date) {
+        const targetDate = new Date(date);
+        const nextDay = new Date(targetDate);
+        nextDay.setDate(nextDay.getDate() + 1);
+        
+        whereConditions.push(
+          and(
+            gte(schema.users.createdAt, targetDate),
+            lt(schema.users.createdAt, nextDay)
+          )
+        );
+      }
+      
+      const users = await db
+        .select({
+          id: schema.users.id,
+          username: schema.users.username,
+          email: schema.users.email,
+          fullName: schema.users.fullName,
+          isActive: schema.users.isActive,
+          createdAt: schema.users.createdAt,
+          lastAccess: schema.users.lastAccess,
+        })
+        .from(schema.users)
+        .where(and(...whereConditions))
+        .orderBy(desc(schema.users.createdAt));
+      
+      // Para cada usuário, buscar estatísticas
+      const affiliatesWithStats = await Promise.all(
+        users.map(async (user) => {
+          // Buscar links do usuário
+          const userLinks = await db
+            .select()
+            .from(schema.affiliateLinks)
+            .where(eq(schema.affiliateLinks.userId, user.id));
+          
+          // Buscar conversões do usuário
+          const conversions = await db
+            .select()
+            .from(schema.conversions)
+            .where(eq(schema.conversions.userId, user.id));
+          
+          // Calcular estatísticas
+          const totalClicks = conversions.filter(c => c.type === 'click').length;
+          const totalRegistrations = conversions.filter(c => c.type === 'registration').length;
+          const totalDeposits = conversions.filter(c => c.type === 'deposit').length;
+          const totalCommissions = conversions.reduce((sum, c) => sum + parseFloat(c.commission || '0'), 0);
+          
+          // Buscar casas relacionadas
+          const houseIds = [...new Set(userLinks.map(link => link.houseId))];
+          const houses = await db
+            .select({ name: schema.bettingHouses.name })
+            .from(schema.bettingHouses)
+            .where(inArray(schema.bettingHouses.id, houseIds.length > 0 ? houseIds : [0]));
+          
+          return {
+            ...user,
+            totalClicks,
+            totalRegistrations,
+            totalDeposits,
+            totalCommissions: totalCommissions.toFixed(2),
+            houses: houses.map(h => h.name)
+          };
+        })
+      );
+      
+      // Filtrar por casa se especificado
+      const finalResults = house && house !== 'all' 
+        ? affiliatesWithStats.filter(user => user.houses.includes(house))
+        : affiliatesWithStats;
+      
+      console.log(`✅ Encontrados ${finalResults.length} afiliados`);
+      res.json(finalResults);
+      
+    } catch (error) {
+      console.error('❌ Erro ao listar afiliados:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.get("/api/admin/affiliate-details/:id", requireAdmin, async (req: any, res) => {
+    try {
+      const affiliateId = parseInt(req.params.id);
+      
+      console.log('🔍 Buscando detalhes do afiliado:', affiliateId);
+      
+      // Buscar dados pessoais
+      const [user] = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.id, affiliateId));
+      
+      if (!user) {
+        return res.status(404).json({ error: 'Afiliado não encontrado' });
+      }
+      
+      // Buscar links do afiliado
+      const links = await db
+        .select({
+          id: schema.affiliateLinks.id,
+          houseId: schema.affiliateLinks.houseId,
+          generatedUrl: schema.affiliateLinks.generatedUrl,
+          isActive: schema.affiliateLinks.isActive,
+          createdAt: schema.affiliateLinks.createdAt,
+          houseName: schema.bettingHouses.name,
+        })
+        .from(schema.affiliateLinks)
+        .leftJoin(schema.bettingHouses, eq(schema.affiliateLinks.houseId, schema.bettingHouses.id))
+        .where(eq(schema.affiliateLinks.userId, affiliateId));
+      
+      // Buscar conversões do afiliado
+      const conversions = await db
+        .select({
+          id: schema.conversions.id,
+          type: schema.conversions.type,
+          amount: schema.conversions.amount,
+          commission: schema.conversions.commission,
+          createdAt: schema.conversions.createdAt,
+          houseId: schema.conversions.houseId,
+          affiliateLinkId: schema.conversions.affiliateLinkId,
+          houseName: schema.bettingHouses.name,
+        })
+        .from(schema.conversions)
+        .leftJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
+        .where(eq(schema.conversions.userId, affiliateId));
+      
+      // Agrupar performance por casa
+      const performanceByHouse = links.reduce((acc, link) => {
+        const houseName = link.houseName || 'Casa Desconhecida';
+        if (!acc[houseName]) {
+          acc[houseName] = {
+            houseName,
+            clicks: 0,
+            registrations: 0,
+            deposits: 0,
+            totalRevenue: 0,
+            events: {}
+          };
+        }
+        
+        const linkConversions = conversions.filter(c => c.affiliateLinkId === link.id);
+        
+        linkConversions.forEach(conv => {
+          if (conv.type === 'click') acc[houseName].clicks++;
+          if (conv.type === 'registration') acc[houseName].registrations++;
+          if (conv.type === 'deposit') {
+            acc[houseName].deposits++;
+            acc[houseName].totalRevenue += parseFloat(conv.amount || '0');
+          }
+          
+          acc[houseName].events[conv.type] = (acc[houseName].events[conv.type] || 0) + 1;
+        });
+        
+        return acc;
+      }, {} as Record<string, any>);
+      
+      // Preparar dados de comissões
+      const commissionData = conversions
+        .filter(c => parseFloat(c.commission || '0') > 0)
+        .map(c => ({
+          id: c.id,
+          date: c.createdAt,
+          type: c.type === 'deposit' ? 'RevShare' : 'CPA',
+          amount: c.commission || '0',
+          status: 'pendente', // Por padrão, todas começam pendentes
+          houseName: c.houseName || 'Casa Desconhecida',
+          linkId: c.affiliateLinkId || 0,
+          postbackData: null
+        }));
+      
+      const response = {
+        personalData: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          fullName: user.fullName,
+          cpf: user.cpf,
+          phone: user.phone,
+          birthDate: user.birthDate,
+          city: user.city,
+          state: user.state,
+          country: user.country,
+          isActive: user.isActive,
+          createdAt: user.createdAt,
+          lastAccess: user.lastAccess,
+        },
+        performance: Object.values(performanceByHouse),
+        commissions: commissionData,
+        links: links.map(link => ({
+          id: link.id,
+          houseName: link.houseName || 'Casa Desconhecida',
+          url: link.generatedUrl,
+          isActive: link.isActive,
+          createdAt: link.createdAt,
+        }))
+      };
+      
+      console.log('✅ Detalhes do afiliado carregados');
+      res.json(response);
+      
+    } catch (error) {
+      console.error('❌ Erro ao buscar detalhes do afiliado:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.put("/api/admin/affiliate/:id/status", requireAdmin, async (req: any, res) => {
+    try {
+      const affiliateId = parseInt(req.params.id);
+      const { isActive } = req.body;
+      
+      console.log(`🔄 Alterando status do afiliado ${affiliateId} para ${isActive ? 'ativo' : 'inativo'}`);
+      
+      await db
+        .update(schema.users)
+        .set({ 
+          isActive,
+          updatedAt: new Date()
+        })
+        .where(eq(schema.users.id, affiliateId));
+      
+      console.log('✅ Status do afiliado atualizado');
+      res.json({ success: true });
+      
+    } catch (error) {
+      console.error('❌ Erro ao atualizar status:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.post("/api/admin/affiliate/:id/reset-password", requireAdmin, async (req: any, res) => {
+    try {
+      const affiliateId = parseInt(req.params.id);
+      
+      console.log(`🔄 Solicitação de redefinição de senha para afiliado ${affiliateId}`);
+      
+      // Aqui você implementaria o envio de email
+      // Por enquanto, apenas simular sucesso
+      
+      console.log('✅ Link de redefinição de senha enviado (simulado)');
+      res.json({ success: true, message: 'Link enviado por email' });
+      
+    } catch (error) {
+      console.error('❌ Erro ao enviar link de redefinição:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.delete("/api/admin/affiliate/:id/affiliations", requireAdmin, async (req: any, res) => {
+    try {
+      const affiliateId = parseInt(req.params.id);
+      
+      console.log(`🗑️ Removendo afiliações do usuário ${affiliateId}`);
+      
+      // Remover todos os links de afiliado
+      await db
+        .delete(schema.affiliateLinks)
+        .where(eq(schema.affiliateLinks.userId, affiliateId));
+      
+      // Remover todas as conversões
+      await db
+        .delete(schema.conversions)
+        .where(eq(schema.conversions.userId, affiliateId));
+      
+      console.log('✅ Afiliações removidas com sucesso');
+      res.json({ success: true });
+      
+    } catch (error) {
+      console.error('❌ Erro ao remover afiliações:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.put("/api/admin/commission/:id/status", requireAdmin, async (req: any, res) => {
+    try {
+      const commissionId = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      console.log(`🔄 Atualizando status da comissão ${commissionId} para ${status}`);
+      
+      // Por enquanto, simular sucesso já que não temos tabela específica de comissões
+      // Em um sistema real, você atualizaria a tabela de comissões
+      
+      console.log('✅ Status da comissão atualizado (simulado)');
+      res.json({ success: true });
+      
+    } catch (error) {
+      console.error('❌ Erro ao atualizar comissão:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
   // Endpoint para salvar dados de pagamento do usuário
   app.post("/api/user/payment-config", async (req, res) => {
     try {

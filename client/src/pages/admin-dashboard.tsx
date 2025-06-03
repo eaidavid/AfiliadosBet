@@ -7,6 +7,7 @@ import SimplePostbackForm from "@/components/admin/simple-postback-form";
 import PostbackGenerator from "@/components/admin/postback-generator";
 import SettingsManagement from "@/components/admin/settings-management";
 import AdminProfile from "@/components/admin/admin-profile";
+import ManageAffiliates from "@/components/admin/manage-affiliates";
 import AdminRouteGuard from "@/components/auth/admin-route-guard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
@@ -29,6 +30,8 @@ export default function AdminDashboard() {
     switch (currentPage) {
       case "houses":
         return <AdminHousesManagement onPageChange={setCurrentPage} />;
+      case "manage":
+        return <ManageAffiliates onPageChange={setCurrentPage} />;
       case "links":
         return <LinksManagement onPageChange={setCurrentPage} />;
       case "postback-generator":

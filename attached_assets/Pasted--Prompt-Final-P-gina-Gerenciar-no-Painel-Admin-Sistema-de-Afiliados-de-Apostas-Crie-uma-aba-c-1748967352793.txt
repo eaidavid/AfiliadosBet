@@ -1,0 +1,148 @@
+🧠 Prompt Final: Página “Gerenciar” no Painel Admin (Sistema de Afiliados de Apostas)
+Crie uma aba chamada “Gerenciar” no painel administrativo de um sistema de afiliados de apostas. Esta página serve para administrar os afiliados cadastrados no sistema. Cada afiliado pode ter diferentes casas de apostas afiliadas, diferentes tipos de comissões (CPA, RevShare, bônus, etc.), e diferentes dados pessoais.
+
+A interface deve ser totalmente dinâmica — ou seja, trabalhar com os dados que existem no banco, e não com campos pré-fixados. O sistema deve funcionar corretamente mesmo que afiliados tenham campos personalizados, eventos únicos, e casas com postbacks diferentes.
+
+✅ Estrutura da Página Principal (Lista de Afiliados)
+Exibir uma tabela listando todos os afiliados do sistema, com os seguintes dados:
+
+Nome de usuário
+
+E-mail
+
+Status da conta (ativo/inativo)
+
+Data de cadastro
+
+Total de conversões (cliques / registros / depósitos)
+
+Total de comissões (somatório total)
+
+Ações: botão “Ver detalhes”
+
+Filtros dinâmicos:
+
+Por status (ativo/inativo)
+
+Por nome ou e-mail
+
+Por casa de aposta (mostrar afiliados vinculados a determinada casa)
+
+Por intervalo de datas (cadastro ou atividade)
+
+📂 Tela de Detalhes do Afiliado
+Ao clicar em “Ver detalhes”, abrir uma página com sub-abas dinâmicas:
+
+🧍 Sub-Aba 1: Dados Pessoais (dinâmicos)
+Exibir todos os dados pessoais existentes no banco de dados, como:
+
+Nome de usuário
+
+E-mail
+
+CPF / país / telefone / Discord / Telegram / etc.
+
+Os campos devem ser exibidos como chave: valor, sem serem fixos.
+
+Incluir:
+
+Data de cadastro
+
+Último acesso
+
+IP de criação
+
+Casas afiliadas (com link do afiliado gerado para cada casa)
+
+Botões:
+
+Ativar/Desativar conta
+
+Redefinir senha (via link enviado por e-mail)
+
+Limpar afiliações (por segurança)
+
+📊 Sub-Aba 2: Desempenho Geral (dinâmico por casa e evento)
+Mostrar os dados de desempenho por casa de aposta afiliada, como:
+
+Cliques
+
+Registros
+
+Depósitos
+
+Lucro gerado
+
+Lucro total por casa
+
+Tipos de eventos não devem ser fixos. O sistema deve identificar os eventos existentes no banco e exibir automaticamente.
+
+Gráficos e tabelas devem se atualizar conforme os dados do afiliado.
+
+💰 Sub-Aba 3: Comissões
+🧾 1. Resumo Geral
+Total de comissões (acumuladas)
+
+Total pago
+
+Total pendente
+
+Total a pagar
+
+📋 2. Histórico Detalhado
+Tabela com:
+
+Data do evento
+
+Tipo de comissão (CPA, RevShare, bônus etc.)
+
+Valor
+
+Status (pendente, a pagar, pago, etc.)
+
+Casa de aposta
+
+Link afiliado usado
+
+Botão “Ver postback origem” (exibe os dados recebidos via postback)
+
+🛠 3. Ações Administrativas
+Marcar como pago
+
+Marcar como pendente
+
+Aprovar pagamento
+
+Botão “Gerar pagamento” (integração futura com PIX/API)
+
+Exportar em CSV ou Excel
+
+⚙️ Lógica Backend
+Use ORM (como Drizzle) com consultas dinâmicas que leem os dados conforme as colunas existentes no banco.
+
+Nunca use campos fixos.
+
+Verifique se o usuário tem casas afiliadas, quais eventos ele recebeu, quais tipos de comissão existem e exiba conforme isso.
+
+Validar se o postback foi corretamente salvo antes de exibir os dados.
+
+Toda ação crítica deve ter log de auditoria (quem fez, quando, IP).
+
+🔐 Segurança
+Confirmação de ação para: apagar, pagar comissão, redefinir senha.
+
+Logs de todas ações administrativas.
+
+Apenas admins podem acessar essa aba.
+
+Caso dados inconsistentes sejam detectados (ex: comissão sem casa relacionada), exibir alerta.
+
+✅ Requisitos Finais
+Interface moderna, responsiva, com tema escuro.
+
+Tudo deve funcionar com base nos dados reais armazenados no banco.
+
+Preparado para casas com múltiplos tipos de postbacks.
+
+Preparado para usuários com dados variados.
+
