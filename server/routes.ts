@@ -2175,6 +2175,15 @@ export async function registerRoutes(app: any): Promise<Server> {
         stats
       });
 
+      // Buscar informações de pagamento
+      const paymentInfo = await db.select()
+        .from(schema.payments)
+        .where(eq(schema.payments.userId, affiliateId))
+        .orderBy(desc(schema.payments.createdAt))
+        .limit(1);
+
+      const conversionRate = 0; // Será calculado quando tivermos dados de cliques
+
       res.json({
         affiliate: affiliate[0],
         stats: {
@@ -2184,7 +2193,8 @@ export async function registerRoutes(app: any): Promise<Server> {
           conversionRate: conversionRate.toFixed(2)
         },
         conversions,
-        links
+        links,
+        paymentInfo: paymentInfo[0] || null
       });
     } catch (error) {
       console.error("❌ Erro ao buscar detalhes do afiliado:", error);

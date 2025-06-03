@@ -60,6 +60,7 @@ function AffiliateDetailsModal({ affiliate, isOpen, onClose }: {
   const stats = affiliateDetails?.stats || {};
   const conversions = affiliateDetails?.conversions || [];
   const links = affiliateDetails?.links || [];
+  const paymentInfo = affiliateDetails?.paymentInfo;
 
   const formatCurrency = (value: string | number) => {
     const numValue = typeof value === 'string' ? parseFloat(value) : value;
