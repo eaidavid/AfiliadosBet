@@ -2099,13 +2099,49 @@ export async function registerRoutes(app: any): Promise<Server> {
         return res.status(404).json({ error: "Afiliado não encontrado" });
       }
 
-      // Buscar conversões do afiliado
-      console.log(`📊 [DETAILS] Buscando conversões para user_id: ${affiliateId}`);
-      const conversions = await db.select()
-        .from(schema.conversions)
-        .where(eq(schema.conversions.user_id, affiliateId));
+      // Buscar conversões reais do afiliado
+      const affiliateData = affiliate[0];
+      const username = affiliateData.username;
       
-      console.log(`📊 [DETAILS] Conversões encontradas: ${conversions.length}`, conversions);
+      console.log(`📊 [DETAILS] Buscando conversões para username: ${username}`);
+      
+      // Buscar comissões da tabela comissoes
+      const comissoes = await db.select()
+        .from(schema.comissoes)
+        .where(eq(schema.comissoes.affiliate, username));
+      
+      console.log(`📊 [DETAILS] Comissões encontradas: ${comissoes.length}`, comissoes);
+
+      // Buscar eventos da tabela eventos  
+      const eventos = await db.select()
+        .from(schema.eventos)
+        .where(eq(schema.eventos.afiliado_id, affiliateId));
+
+      console.log(`📊 [DETAILS] Eventos encontrados: ${eventos.length}`, eventos);
+
+      // Converter dados das comissões para formato de conversões
+      const conversions = [
+        ...comissoes.map((comissao: any) => ({
+          id: comissao.id,
+          type: comissao.tipo,
+          amount: parseFloat(comissao.valor) || 0,
+          commission: parseFloat(comissao.valor) || 0,
+          converted_at: comissao.criado_em,
+          house_id: 1,
+          customer_id: `cliente_${comissao.id}`
+        })),
+        ...eventos.map((evento: any) => ({
+          id: `evento_${evento.id}`,
+          type: evento.evento,
+          amount: parseFloat(evento.valor) || 0,
+          commission: parseFloat(evento.valor) * 0.1,
+          converted_at: evento.criado_em,
+          house_id: evento.casa || 1,
+          customer_id: `evento_${evento.id}`
+        }))
+      ];
+      
+      console.log(`📊 [DETAILS] Total conversões processadas: ${conversions.length}`, conversions);
 
       // Buscar links do afiliado
       const links = await db.select({
