@@ -1912,8 +1912,8 @@ export async function registerRoutes(app: any): Promise<Server> {
         return res.status(404).json({ message: "Usuário não encontrado" });
       }
       
-      // Gerar URL único baseado no template da casa + username do usuário
-      const generatedUrl = house.baseUrl.replace("VALUE", user.username);
+      // Gerar URL único baseado no template da casa + subid do usuário
+      const generatedUrl = house.baseUrl.replace("VALUE", user.subid);
       
       // Criar link de afiliação
       const affiliateLink = await storage.createAffiliateLink({
