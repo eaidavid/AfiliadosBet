@@ -2099,81 +2099,15 @@ export async function registerRoutes(app: any): Promise<Server> {
         return res.status(404).json({ error: "Afiliado não encontrado" });
       }
 
-      // Buscar conversões reais do afiliado
-      const affiliateData = affiliate[0];
-      const username = affiliateData.username;
-      
-      console.log(`📊 [DETAILS] Buscando conversões para username: ${username}`);
-      
-      // Buscar comissões da tabela comissoes
-      const comissoes = await db.select()
-        .from(schema.comissoes)
-        .where(eq(schema.comissoes.affiliate, username));
-      
-      console.log(`📊 [DETAILS] Comissões encontradas: ${comissoes.length}`, comissoes);
-
-      // Buscar eventos da tabela eventos  
-      const eventos = await db.select()
-        .from(schema.eventos)
-        .where(eq(schema.eventos.afiliadoId, affiliateId));
-
-      console.log(`📊 [DETAILS] Eventos encontrados: ${eventos.length}`, eventos);
-
-      // Converter dados das comissões para formato de conversões
-      const conversions = [
-        ...comissoes.map((comissao: any) => ({
-          id: comissao.id,
-          type: comissao.tipo,
-          amount: parseFloat(comissao.valor) || 0,
-          commission: parseFloat(comissao.valor) || 0,
-          converted_at: comissao.criado_em,
-          house_id: 1,
-          customer_id: `cliente_${comissao.id}`
-        })),
-        ...eventos.map((evento: any) => ({
-          id: `evento_${evento.id}`,
-          type: evento.evento,
-          amount: parseFloat(evento.valor) || 0,
-          commission: parseFloat(evento.valor) * 0.1,
-          converted_at: evento.criado_em,
-          house_id: evento.casa || 1,
-          customer_id: `evento_${evento.id}`
-        }))
-      ];
-      
-      console.log(`📊 [DETAILS] Total conversões processadas: ${conversions.length}`, conversions);
+      // Buscar conversões da tabela conversions
+      const conversions = await db.select()
+        .from(schema.conversions)
+        .where(eq(schema.conversions.userId, affiliateId));
 
       // Buscar links do afiliado
-      const links = await db.select({
-        id: schema.affiliateLinks.id,
-        houseId: schema.affiliateLinks.houseId,
-        generatedUrl: schema.affiliateLinks.generatedUrl,
-        isActive: schema.affiliateLinks.isActive,
-        createdAt: schema.affiliateLinks.createdAt,
-        houseName: schema.bettingHouses.name
-      })
-      .from(schema.affiliateLinks)
-      .leftJoin(schema.bettingHouses, eq(schema.affiliateLinks.houseId, schema.bettingHouses.id))
-      .where(eq(schema.affiliateLinks.user_id, affiliateId));
-
-      // Calcular estatísticas reais baseadas nos dados
-      const totalCommission = comissoes.reduce((sum: number, c: any) => sum + (parseFloat(c.valor) || 0), 0);
-      const totalVolume = eventos.reduce((sum: number, e: any) => sum + (parseFloat(e.valor) || 0), 0);
-      
-      const stats = {
-        totalClicks: 0, // Pode ser calculado com base em logs de acesso
-        totalRegistrations: conversions.filter((c: any) => c.type === 'registration').length,
-        totalDeposits: conversions.filter((c: any) => ['deposit', 'first_deposit'].includes(c.type)).length,
-        totalCommission,
-        totalVolume,
-        conversionRate: 0 // Será calculado quando tivermos dados de cliques
-      };
-
-      console.log(`✅ Detalhes do afiliado ${affiliateId} encontrados:`, {
-        conversions: conversions.length,
-        links: links.length,
-        stats
-      });
+      const links = await db.select()
+        .from(schema.affiliateLinks)
+        .where(eq(schema.affiliateLinks.userId, affiliateId));
 
       // Buscar informações de pagamento
       const paymentInfo = await db.select()
@@ -2182,7 +2116,24 @@ export async function registerRoutes(app: any): Promise<Server> {
         .orderBy(desc(schema.payments.createdAt))
         .limit(1);
 
-      const conversionRate = 0; // Será calculado quando tivermos dados de cliques
+      // Calcular estatísticas reais
+      const totalCommission = conversions.reduce((sum: any, c: any) => sum + (parseFloat(c.commission) || 0), 0);
+      const totalVolume = conversions.reduce((sum: any, c: any) => sum + (parseFloat(c.amount) || 0), 0);
+      
+      const stats = {
+        totalClicks: 0,
+        totalRegistrations: conversions.filter((c: any) => c.type === 'registration').length,
+        totalDeposits: conversions.filter((c: any) => ['deposit', 'first_deposit'].includes(c.type)).length,
+        totalCommission,
+        totalVolume,
+        conversionRate: 0
+      };
+
+      console.log(`✅ Detalhes do afiliado ${affiliateId} encontrados:`, {
+        conversions: conversions.length,
+        links: links.length,
+        stats
+      });
 
       res.json({
         affiliate: affiliate[0],
@@ -2190,7 +2141,7 @@ export async function registerRoutes(app: any): Promise<Server> {
           ...stats,
           totalCommission: stats.totalCommission.toFixed(2),
           totalVolume: stats.totalVolume.toFixed(2),
-          conversionRate: conversionRate.toFixed(2)
+          conversionRate: "0.00"
         },
         conversions,
         links,
