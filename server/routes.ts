@@ -1469,38 +1469,31 @@ export async function registerRoutes(app: any): Promise<Server> {
   // Endpoint para listar todos os usuários (usado pelo painel admin)
   app.get("/api/users", requireAdmin, async (req: any, res) => {
     try {
-      console.log('🔍 Listando todos os usuários');
+      console.log('🔍 Listando todos os usuários - versão simplificada');
       
-      // Usar cliente PostgreSQL nativo
+      // Usar cliente PostgreSQL nativo com query mais básica
       const client = new Client({
         connectionString: process.env.DATABASE_URL
       });
       
       await client.connect();
       
-      const result = await client.query(`
-        SELECT 
-          id,
-          username,
-          email,
-          full_name as "fullName",
-          role,
-          is_active as "isActive",
-          created_at as "createdAt",
-          cpf,
-          phone,
-          birth_date as "birthDate",
-          city,
-          state,
-          country,
-          last_access as "lastAccess"
-        FROM users 
-        ORDER BY created_at DESC
-      `);
+      // Query mínima primeiro para testar
+      const result = await client.query('SELECT id, username, email, full_name, role FROM users ORDER BY id DESC');
       
       await client.end();
       
-      const users = result.rows;
+      // Mapear os dados para camelCase no código
+      const users = result.rows.map(user => ({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        fullName: user.full_name,
+        role: user.role,
+        isActive: user.is_active || true,
+        createdAt: user.created_at || new Date().toISOString()
+      }));
+      
       console.log(`✅ Encontrados ${users.length} usuários`);
       res.json(users);
       
@@ -1516,25 +1509,27 @@ export async function registerRoutes(app: any): Promise<Server> {
       const userId = parseInt(req.params.id);
       console.log(`🔍 Buscando usuário ID: ${userId}`);
       
-      const result = await db.execute(sql`
-        SELECT 
+      const client = new Client({
+        connectionString: process.env.DATABASE_URL
+      });
+      
+      await client.connect();
+      
+      const result = await client.query(
+        `SELECT 
           id,
           username,
           email,
           full_name as "fullName",
           role,
           is_active as "isActive",
-          created_at as "createdAt",
-          cpf,
-          phone,
-          birth_date as "birthDate",
-          city,
-          state,
-          country,
-          last_access as "lastAccess"
+          created_at as "createdAt"
         FROM users 
-        WHERE id = ${userId}
-      `);
+        WHERE id = $1`,
+        [userId]
+      );
+      
+      await client.end();
       
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Usuário não encontrado' });
