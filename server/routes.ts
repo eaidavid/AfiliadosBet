@@ -2115,7 +2115,7 @@ export async function registerRoutes(app: any): Promise<Server> {
       // Buscar eventos da tabela eventos  
       const eventos = await db.select()
         .from(schema.eventos)
-        .where(eq(schema.eventos.afiliado_id, affiliateId));
+        .where(eq(schema.eventos.afiliadoId, affiliateId));
 
       console.log(`📊 [DETAILS] Eventos encontrados: ${eventos.length}`, eventos);
 
