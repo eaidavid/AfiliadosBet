@@ -1062,6 +1062,93 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // Endpoint para atualizar perfil do usuário
+  app.put("/api/user/profile", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.session.user.id;
+      const { username, fullName, email, cpf, phone, birthDate, city, state, country } = req.body;
+      
+      console.log(`🔄 Atualizando perfil do usuário ${userId}`);
+      
+      // Atualizar dados do usuário
+      const [updatedUser] = await db
+        .update(schema.users)
+        .set({
+          username,
+          fullName,
+          email,
+          cpf,
+          phone,
+          birthDate,
+          city,
+          state,
+          country,
+          updatedAt: new Date(),
+        })
+        .where(eq(schema.users.id, userId))
+        .returning();
+      
+      console.log(`✅ Perfil atualizado com sucesso para usuário ${userId}`);
+      res.json({ 
+        success: true, 
+        message: "Perfil atualizado com sucesso",
+        user: updatedUser 
+      });
+    } catch (error) {
+      console.error("❌ Erro ao atualizar perfil:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Endpoint para atualizar senha do usuário
+  app.put("/api/user/password", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.session.user.id;
+      const { currentPassword, newPassword } = req.body;
+      
+      console.log(`🔄 Atualizando senha do usuário ${userId}`);
+      
+      // Buscar usuário atual
+      const [user] = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.id, userId));
+      
+      if (!user) {
+        return res.status(404).json({ error: "Usuário não encontrado" });
+      }
+      
+      // Verificar senha atual
+      const bcrypt = await import('bcrypt');
+      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+      
+      if (!isCurrentPasswordValid) {
+        return res.status(400).json({ error: "Senha atual incorreta" });
+      }
+      
+      // Criptografar nova senha
+      const hashedNewPassword = await bcrypt.hash(newPassword, 12);
+      
+      // Atualizar senha
+      await db
+        .update(schema.users)
+        .set({
+          password: hashedNewPassword,
+          updatedAt: new Date(),
+        })
+        .where(eq(schema.users.id, userId));
+      
+      console.log(`✅ Senha atualizada com sucesso para usuário ${userId}`);
+      res.json({ 
+        success: true, 
+        message: "Senha atualizada com sucesso" 
+      });
+    } catch (error) {
+      console.error("❌ Erro ao atualizar senha:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   // Endpoint para salvar dados de pagamento do usuário
   app.post("/api/user/payment-config", async (req, res) => {
     try {

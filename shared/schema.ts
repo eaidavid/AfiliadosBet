@@ -196,7 +196,9 @@ export const insertUserSchema = createInsertSchema(users).omit({
   updatedAt: true,
 }).extend({
   confirmPassword: z.string().min(8, "A confirmação deve ter pelo menos 8 caracteres"),
-  username: z.string().min(7, "O usuário deve ter pelo menos 7 caracteres"),
+  username: z.string()
+    .min(7, "O usuário deve ter pelo menos 7 caracteres")
+    .regex(/^[a-zA-Z0-9]+$/, "O usuário deve conter apenas letras e números, sem espaços ou caracteres especiais"),
   password: z.string().min(8, "A senha deve ter pelo menos 8 caracteres"),
   email: z.string().email("Digite um email válido"),
   fullName: z.string().min(2, "Nome completo é obrigatório"),
