@@ -16,10 +16,11 @@ export default function AdminRouteGuard({ children }: AdminRouteGuardProps) {
   });
 
   useEffect(() => {
-    if (!isLoading && authStatus) {
-      if (!authStatus.authenticated || authStatus.user?.role !== 'admin') {
+    if (!isLoading && authStatus !== undefined) {
+      if (!authStatus?.authenticated || authStatus?.user?.role !== 'admin') {
         console.log("Redirecionando para login - não autenticado ou não é admin");
-        setLocation("/login");
+        const timer = setTimeout(() => setLocation("/login"), 100);
+        return () => clearTimeout(timer);
       }
     }
   }, [authStatus, isLoading, setLocation]);

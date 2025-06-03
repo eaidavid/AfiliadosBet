@@ -12,11 +12,11 @@ const app = express();
 app.use(session({
   secret: process.env.SESSION_SECRET || "fallback-secret-for-dev",
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    secure: false, // Permitir cookies em desenvolvimento
+    maxAge: 24 * 60 * 60 * 1000 // 24 horas
   }
 }));
 
