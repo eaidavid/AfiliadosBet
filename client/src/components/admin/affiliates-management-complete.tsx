@@ -539,25 +539,7 @@ export default function AffiliatesManagementComplete({ onPageChange }: Affiliate
     },
   });
 
-  const resetPassword = useMutation({
-    mutationFn: async (id: number) => {
-      const response = await apiRequest("POST", `/api/admin/affiliates/${id}/reset-password`);
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Senha redefinida!",
-        description: "Nova senha enviada por email.",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Erro",
-        description: "Erro ao redefinir senha.",
-        variant: "destructive",
-      });
-    },
-  });
+
 
   const deleteAffiliate = useMutation({
     mutationFn: async (id: number) => {
@@ -942,27 +924,7 @@ export default function AffiliatesManagementComplete({ onPageChange }: Affiliate
                           {affiliate.is_active ? <ShieldOff className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
                         </Button>
 
-                        {/* Reset Password */}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => resetPassword.mutate(affiliate.id)}
-                          className="text-yellow-400 hover:text-yellow-300"
-                          title="Redefinir senha"
-                        >
-                          <RotateCcw className="h-4 w-4" />
-                        </Button>
 
-                        {/* Editar */}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onPageChange?.(`edit-affiliate-${affiliate.id}`)}
-                          className="text-orange-400 hover:text-orange-300"
-                          title="Editar afiliado"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
 
                         {/* Deletar */}
                         <Button

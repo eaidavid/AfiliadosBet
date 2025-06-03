@@ -2156,35 +2156,18 @@ export async function registerRoutes(app: any): Promise<Server> {
       .leftJoin(schema.bettingHouses, eq(schema.affiliateLinks.houseId, schema.bettingHouses.id))
       .where(eq(schema.affiliateLinks.user_id, affiliateId));
 
-      // Calcular estatísticas
-      const stats = conversions.reduce((acc, conv) => {
-        switch(conv.type) {
-          case 'click':
-            acc.totalClicks++;
-            break;
-          case 'registration':
-            acc.totalRegistrations++;
-            break;
-          case 'deposit':
-          case 'first_deposit':
-            acc.totalDeposits++;
-            acc.totalVolume += parseFloat(conv.amount || '0');
-            break;
-        }
-        if (conv.commission && parseFloat(conv.commission) > 0) {
-          acc.totalCommission += parseFloat(conv.commission);
-        }
-        return acc;
-      }, {
-        totalClicks: 0,
-        totalRegistrations: 0,
-        totalDeposits: 0,
-        totalCommission: 0,
-        totalVolume: 0
-      });
-
-      const conversionRate = stats.totalClicks > 0 ? 
-        ((stats.totalRegistrations / stats.totalClicks) * 100) : 0;
+      // Calcular estatísticas reais baseadas nos dados
+      const totalCommission = comissoes.reduce((sum: number, c: any) => sum + (parseFloat(c.valor) || 0), 0);
+      const totalVolume = eventos.reduce((sum: number, e: any) => sum + (parseFloat(e.valor) || 0), 0);
+      
+      const stats = {
+        totalClicks: 0, // Pode ser calculado com base em logs de acesso
+        totalRegistrations: conversions.filter((c: any) => c.type === 'registration').length,
+        totalDeposits: conversions.filter((c: any) => ['deposit', 'first_deposit'].includes(c.type)).length,
+        totalCommission,
+        totalVolume,
+        conversionRate: 0 // Será calculado quando tivermos dados de cliques
+      };
 
       console.log(`✅ Detalhes do afiliado ${affiliateId} encontrados:`, {
         conversions: conversions.length,
