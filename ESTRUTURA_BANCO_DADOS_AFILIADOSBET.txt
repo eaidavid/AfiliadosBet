@@ -1,0 +1,240 @@
+================================================================================
+                    ESTRUTURA COMPLETA DO BANCO DE DADOS - AFILIADOSBET
+================================================================================
+
+RESUMO GERAL:
+- 11 tabelas principais
+- 5 usuários afiliados cadastrados (IDs: 8, 9, 10, 11, 12)
+- Sistema completo de rastreamento e comissões
+- Integração com casas de apostas via postbacks
+
+================================================================================
+1. TABELA: USERS (Usuários/Afiliados)
+================================================================================
+Descrição: Armazena dados dos afiliados e administradores
+
+Colunas:
+- id: INTEGER (PK, auto-incremento)
+- username: TEXT (obrigatório)
+- email: TEXT (obrigatório)
+- password: TEXT (obrigatório)
+- full_name: TEXT (obrigatório)
+- cpf: TEXT (obrigatório)
+- birth_date: TEXT (obrigatório)
+- phone: TEXT (opcional)
+- city: TEXT (opcional)
+- state: TEXT (opcional)
+- country: TEXT (padrão: 'BR')
+- role: TEXT (padrão: 'affiliate')
+- is_active: BOOLEAN (padrão: true)
+- created_at: TIMESTAMP (padrão: now())
+- updated_at: TIMESTAMP (padrão: now())
+
+Dados Existentes: 5 afiliados + 1 admin
+
+================================================================================
+2. TABELA: BETTING_HOUSES (Casas de Apostas)
+================================================================================
+Descrição: Configura as casas de apostas disponíveis para afiliação
+
+Colunas:
+- id: INTEGER (PK, auto-incremento)
+- name: TEXT (obrigatório)
+- description: TEXT (opcional)
+- logo_url: TEXT (opcional)
+- base_url: TEXT (obrigatório)
+- primary_param: TEXT (obrigatório)
+- additional_params: JSONB (opcional)
+- commission_type: TEXT (obrigatório)
+- commission_value: TEXT (obrigatório)
+- cpa_value: TEXT (opcional)
+- revshare_value: TEXT (opcional)
+- min_deposit: TEXT (opcional)
+- payment_methods: TEXT (opcional)
+- is_active: BOOLEAN (padrão: true)
+- identifier: TEXT (obrigatório)
+- enabled_postbacks: JSONB (padrão: '[]')
+- security_token: TEXT (obrigatório)
+- parameter_mapping: JSONB (padrão: '{}')
+- created_at: TIMESTAMP (padrão: now())
+- updated_at: TIMESTAMP (padrão: now())
+
+================================================================================
+3. TABELA: AFFILIATE_LINKS (Links de Afiliados)
+================================================================================
+Descrição: Armazena os links únicos gerados para cada afiliado
+
+Colunas:
+- id: INTEGER (PK, auto-incremento)
+- user_id: INTEGER (FK para users, obrigatório)
+- house_id: INTEGER (FK para betting_houses, obrigatório)
+- generated_url: TEXT (obrigatório)
+- is_active: BOOLEAN (padrão: true)
+- created_at: TIMESTAMP (padrão: now())
+
+================================================================================
+4. TABELA: CONVERSIONS (Conversões/Comissões)
+================================================================================
+Descrição: Registra todas as conversões e comissões dos afiliados
+
+Colunas:
+- id: INTEGER (PK, auto-incremento)
+- user_id: INTEGER (FK para users, obrigatório)
+- house_id: INTEGER (FK para betting_houses, obrigatório)
+- affiliate_link_id: INTEGER (FK para affiliate_links, opcional)
+- type: TEXT (obrigatório: 'click', 'registration', 'deposit', 'profit')
+- amount: NUMERIC (padrão: 0)
+- commission: NUMERIC (padrão: 0)
+- customer_id: TEXT (opcional)
+- conversion_data: JSONB (opcional)
+- converted_at: TIMESTAMP (padrão: now())
+
+Dados Existentes: 8 conversões registradas
+
+================================================================================
+5. TABELA: CLICK_TRACKING (Rastreamento de Cliques)
+================================================================================
+Descrição: Rastreia todos os cliques nos links de afiliados
+
+Colunas:
+- id: INTEGER (PK, auto-incremento)
+- link_id: INTEGER (FK para affiliate_links, obrigatório)
+- user_id: INTEGER (FK para users, obrigatório)
+- house_id: INTEGER (FK para betting_houses, obrigatório)
+- ip_address: TEXT (opcional)
+- user_agent: TEXT (opcional)
+- clicked_at: TIMESTAMP (padrão: now())
+
+================================================================================
+6. TABELA: POSTBACK_LOGS (Logs de Postbacks)
+================================================================================
+Descrição: Registra todos os postbacks recebidos das casas de apostas
+
+Colunas:
+- id: INTEGER (PK, auto-incremento)
+- casa: VARCHAR (obrigatório)
+- subid: VARCHAR (obrigatório)
+- evento: VARCHAR (obrigatório)
+- valor: NUMERIC (padrão: 0)
+- ip: VARCHAR (opcional)
+- raw: TEXT (opcional)
+- status: VARCHAR (obrigatório)
+- criado_em: TIMESTAMP (padrão: now())
+
+================================================================================
+7. TABELA: REGISTERED_POSTBACKS (Postbacks Registrados)
+================================================================================
+Descrição: Configura os postbacks disponíveis para cada casa de apostas
+
+Colunas:
+- id: INTEGER (PK, auto-incremento)
+- name: TEXT (obrigatório)
+- url: TEXT (obrigatório)
+- house_id: INTEGER (FK para betting_houses, opcional)
+- house_name: TEXT (obrigatório)
+- event_type: TEXT (obrigatório)
+- description: TEXT (opcional)
+- is_active: BOOLEAN (padrão: true)
+- created_at: TIMESTAMP (padrão: now())
+- updated_at: TIMESTAMP (padrão: now())
+
+================================================================================
+8. TABELA: PAYMENTS (Pagamentos)
+================================================================================
+Descrição: Gerencia os pagamentos de comissões aos afiliados
+
+Colunas:
+- id: INTEGER (PK, auto-incremento)
+- user_id: INTEGER (FK para users, obrigatório)
+- amount: NUMERIC (obrigatório)
+- method: TEXT (obrigatório)
+- pix_key: TEXT (opcional)
+- status: TEXT (padrão: 'pending')
+- transaction_id: TEXT (opcional)
+- paid_at: TIMESTAMP (opcional)
+- created_at: TIMESTAMP (padrão: now())
+
+================================================================================
+9. TABELA: COMISSOES (Sistema Legado)
+================================================================================
+Descrição: Sistema antigo de comissões (mantido para compatibilidade)
+
+Colunas:
+- id: INTEGER (PK, auto-incremento)
+- afiliado_id: INTEGER (obrigatório)
+- evento_id: INTEGER (obrigatório)
+- tipo: VARCHAR (obrigatório)
+- valor: NUMERIC (obrigatório)
+- affiliate: VARCHAR (obrigatório)
+- criado_em: TIMESTAMP (padrão: now())
+
+================================================================================
+10. TABELA: EVENTOS (Sistema Legado)
+================================================================================
+Descrição: Eventos antigos (mantido para compatibilidade)
+
+Colunas:
+- id: INTEGER (PK, auto-incremento)
+- afiliado_id: INTEGER (obrigatório)
+- casa: VARCHAR (obrigatório)
+- evento: VARCHAR (obrigatório)
+- valor: NUMERIC (padrão: 0)
+- criado_em: TIMESTAMP (padrão: now())
+
+================================================================================
+11. TABELA: SESSIONS (Sessões de Usuário)
+================================================================================
+Descrição: Gerencia as sessões de login dos usuários
+
+Colunas:
+- sid: VARCHAR (PK)
+- sess: JSONB (obrigatório)
+- expire: TIMESTAMP (obrigatório)
+
+================================================================================
+RELACIONAMENTOS PRINCIPAIS:
+================================================================================
+
+1. users -> affiliate_links (1:N)
+2. betting_houses -> affiliate_links (1:N)
+3. users -> conversions (1:N)
+4. betting_houses -> conversions (1:N)
+5. affiliate_links -> conversions (1:N)
+6. affiliate_links -> click_tracking (1:N)
+7. users -> payments (1:N)
+8. betting_houses -> registered_postbacks (1:N)
+
+================================================================================
+USUÁRIOS CADASTRADOS ATUALMENTE:
+================================================================================
+
+ID: 8  | Username: davidalves        | Email: david.alves@email.com
+ID: 9  | Username: mariasilva         | Email: maria.silva@email.com
+ID: 10 | Username: davidalves@gmail.com | Email: opadavidalves@gmail.com
+ID: 11 | Username: eaidavid          | Email: eai.davidalves@gmail.com
+ID: 12 | Username: Eaidavidd         | Email: david.a.pessoal@gmail.com
+
+================================================================================
+ESTATÍSTICAS DO SISTEMA:
+================================================================================
+
+- Total de usuários: 6 (1 admin + 5 afiliados)
+- Total de conversões: 8 registradas
+- Sistema de postbacks: Ativo e configurado
+- Autenticação: Funcionando (sessões em PostgreSQL)
+- API endpoints: /api/users corrigido e funcionando
+
+================================================================================
+OBSERVAÇÕES TÉCNICAS:
+================================================================================
+
+1. O sistema usa nomenclatura mista (snake_case no banco, camelCase no frontend)
+2. Existem duas estruturas de comissões (nova: conversions, legada: comissoes)
+3. Sistema de postbacks integrado para receber dados das casas de apostas
+4. Autenticação baseada em sessões armazenadas no PostgreSQL
+5. Todos os timestamps usam timezone local (sem timezone)
+6. Campos JSONB para dados flexíveis (parâmetros, mapeamentos, etc.)
+
+================================================================================
+ÚLTIMA ATUALIZAÇÃO: 04/06/2025
+================================================================================
