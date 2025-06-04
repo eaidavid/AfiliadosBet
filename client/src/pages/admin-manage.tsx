@@ -142,11 +142,12 @@ export default function AdminManage() {
 
   // Statistics calculations
   const stats = useMemo(() => {
-    const total = affiliates.length;
-    const ativos = affiliates.filter((a: Affiliate) => a.status).length;
+    const affiliateList = Array.isArray(affiliates) ? affiliates : [];
+    const total = affiliateList.length;
+    const ativos = affiliateList.filter((a: Affiliate) => a.status).length;
     const inativos = total - ativos;
-    const ultimoCadastro = affiliates.length > 0 
-      ? new Date(Math.max(...affiliates.map((a: Affiliate) => new Date(a.data_criacao).getTime())))
+    const ultimoCadastro = affiliateList.length > 0 
+      ? new Date(Math.max(...affiliateList.map((a: Affiliate) => new Date(a.data_criacao).getTime())))
       : null;
 
     return { total, ativos, inativos, ultimoCadastro };
@@ -154,7 +155,8 @@ export default function AdminManage() {
 
   // Filtered affiliates
   const filteredAffiliates = useMemo(() => {
-    return affiliates.filter((affiliate: Affiliate) => {
+    const affiliateList = Array.isArray(affiliates) ? affiliates : [];
+    return affiliateList.filter((affiliate: Affiliate) => {
       const matchesSubid = searchSubid === "" || 
         affiliate.subid.toLowerCase().includes(searchSubid.toLowerCase());
       
@@ -460,7 +462,7 @@ export default function AdminManage() {
                       </SelectTrigger>
                       <SelectContent className="bg-slate-700 border-slate-600">
                         <SelectItem value="all">Todas as casas</SelectItem>
-                        {bettingHouses.map((house: BettingHouse) => (
+                        {Array.isArray(bettingHouses) && bettingHouses.map((house: BettingHouse) => (
                           <SelectItem key={house.id} value={house.id.toString()}>
                             {house.name}
                           </SelectItem>
