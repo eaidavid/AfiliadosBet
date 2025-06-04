@@ -334,6 +334,7 @@ export const postbacks = pgTable("postbacks", {
   url: text("url").notNull(),
   token: text("token").notNull(), // Token único para esta casa e evento
   active: boolean("active").default(true),
+  isAutomatic: boolean("is_automatic").default(false), // Se foi gerado automaticamente
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => [

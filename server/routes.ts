@@ -1256,37 +1256,53 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
-  // Function to generate unique postback routes for a betting house
-  async function generatePostbacksForHouse(houseId: number, houseIdentifier: string, req: any) {
+  // Function to generate secure token
+  function generateSecureToken(houseIdentifier: string, eventType: string): string {
+    const timestamp = Date.now();
+    const randomPart = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
+    return `token_${timestamp}_${houseIdentifier}_${eventType}_${randomPart}`;
+  }
+
+  // Function to generate automatic postback routes for a betting house
+  async function generateAutomaticPostbacks(houseId: number, houseIdentifier: string, req: any) {
     const eventTypes = ['click', 'register', 'deposit', 'revenue'];
-    const baseUrl = `${req.protocol}://${req.get('host')}/postback/${houseIdentifier}`;
+    const baseUrl = `${req.protocol}://${req.get('host')}/postback`;
     
-    // Check if postbacks already exist for this house to prevent duplicates
+    // Check if automatic postbacks already exist for this house to prevent duplicates
     const existingPostbacks = await db.select()
       .from(schema.postbacks)
-      .where(eq(schema.postbacks.houseId, houseId));
+      .where(and(
+        eq(schema.postbacks.houseId, houseId),
+        eq(schema.postbacks.isAutomatic, true)
+      ));
     
     if (existingPostbacks.length > 0) {
-      console.log(`Postbacks already exist for house ${houseId}, skipping generation`);
-      return;
+      console.log(`Automatic postbacks already exist for house ${houseId}, skipping generation`);
+      return existingPostbacks;
     }
     
+    const generatedPostbacks = [];
+    
     for (const eventType of eventTypes) {
-      const uniqueToken = `${houseIdentifier}_${eventType}_${Date.now()}_${Math.random().toString(36).substring(2)}`;
-      const postbackUrl = `${baseUrl}/${eventType}?token=${uniqueToken}&subid={SUBID}&customer_id={CUSTOMER_ID}&amount={AMOUNT}`;
+      const secureToken = generateSecureToken(houseIdentifier, eventType);
+      const postbackUrl = `${baseUrl}/${eventType}?token=${secureToken}&subid={SUBID}&customer_id={CUSTOMER_ID}&amount={AMOUNT}`;
       
-      await db.insert(schema.postbacks).values({
+      const [newPostback] = await db.insert(schema.postbacks).values({
         houseId,
         eventType,
         url: postbackUrl,
-        token: uniqueToken,
+        token: secureToken,
         active: true,
+        isAutomatic: true,
         createdAt: new Date(),
         updatedAt: new Date()
-      });
+      }).returning();
       
-      console.log(`Generated postback for ${houseIdentifier}: ${eventType} -> ${postbackUrl}`);
+      generatedPostbacks.push(newPostback);
+      console.log(`Generated automatic postback for ${houseIdentifier}: ${eventType} -> ${postbackUrl}`);
     }
+    
+    return generatedPostbacks;
   }
 
   // === COMPREHENSIVE BETTING HOUSES MANAGEMENT API ===
@@ -1417,7 +1433,7 @@ export async function registerRoutes(app: any): Promise<Server> {
       }).returning();
 
       // Automatically generate unique postback routes for this house
-      await generatePostbacksForHouse(newHouse.id, newHouse.identifier, req);
+      await generateAutomaticPostbacks(newHouse.id, newHouse.identifier, req);
 
       res.json(newHouse);
     } catch (error) {
@@ -1669,6 +1685,7 @@ export async function registerRoutes(app: any): Promise<Server> {
           url,
           token: uniqueToken,
           active: active ?? true,
+          isAutomatic: false, // Manual postback
           createdAt: new Date(),
           updatedAt: new Date()
         })

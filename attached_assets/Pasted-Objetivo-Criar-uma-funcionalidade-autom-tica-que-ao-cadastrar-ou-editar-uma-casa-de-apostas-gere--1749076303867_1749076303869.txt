@@ -1,0 +1,108 @@
+Objetivo:
+Criar uma funcionalidade automática que, ao cadastrar ou editar uma casa de apostas, gere e exiba automaticamente os postbacks padrão para os eventos: click, register, deposit, revenue, com URLs dinâmicas baseadas em um token exclusivo da casa. O token não deve ser alterável manualmente. Também será necessário visualizar, copiar, auditar e gerenciar esses postbacks na interface do sistema.
+
+1. Ao Criar uma Casa de Apostas:
+Gere automaticamente um token seguro e único (UUID ou semelhante).
+
+Salve este token no banco e não permita edição posterior.
+
+Imediatamente após a criação da casa, crie automaticamente 4 postbacks padrões:
+
+/postback/click?token={token}
+
+/postback/register?token={token}
+
+/postback/deposit?token={token}
+
+/postback/revenue?token={token}
+
+Armazene cada postback vinculado à casa (por ID ou token).
+
+Permitir visualização prévia dos postbacks gerados na tela de criação (antes de clicar em "Criar Casa").
+
+2. Ao Editar uma Casa:
+Exiba os mesmos 4 postbacks gerados inicialmente.
+
+Permita apenas copiar os links.
+
+Impeça alteração do token e dos postbacks já existentes.
+
+Permita adicionar postbacks extras (customizados), com controle de evento, status e URL.
+
+Interface igual à criação: com campos visíveis para o token e todos os postbacks habilitados ou não (checkboxes de Click, Registro, Depósito, Lucro).
+
+3. Modal de Postbacks (Ações da Casa):
+Exibir todos os postbacks configurados automaticamente e manualmente.
+
+Cada postback deve ter:
+
+Tipo de evento
+
+Status (Ativo/Inativo)
+
+URL gerada com token (copiável)
+
+Botão "+ Adicionar Postback" para novos personalizados.
+
+Interface deve permitir copiar cada URL.
+
+Indicar claramente se foi "gerado automaticamente" ou "adicionado manualmente".
+
+4. Estrutura das Rotas de Postback (Servidor):
+Use o padrão:
+
+bash
+Copiar
+Editar
+/postback/{evento}?token={token}
+Eventos possíveis: click, register, deposit, revenue
+
+Com base no token, identifique a casa associada.
+
+Valide o token e evento antes de processar.
+
+Armazene todos os hits de postback em um log/auditoria para consultas futuras:
+
+Casa associada
+
+Tipo de evento
+
+Timestamp
+
+Dados do request
+
+IP/origem
+
+5. Requisitos Técnicos Importantes:
+Gere token de forma segura, inalterável.
+
+Os postbacks devem ser únicos por casa, mas com padrão igual para todas.
+
+A interface deve ter:
+
+Visualização por evento
+
+Botão “Copiar link”
+
+Botão “Ativar/Inativar”
+
+Indicação de origem (automático/manual)
+
+6. UX/UI:
+As telas de criação e edição devem exibir os postbacks com links prontos.
+
+O usuário deve poder copiar e mandar para o parceiro facilmente.
+
+Todos os postbacks devem estar organizados por tipo.
+
+O modal de postbacks deve funcionar tanto para visualização quanto para gerenciamento.
+
+🧠 Dicas Adicionais para a IA ou Dev:
+Crie uma função utilitária que recebe o tipo de evento e o token e monta a URL.
+
+Tenha uma tabela postbacks com os campos: id, casa_id, evento, url, status, automatico, criado_em.
+
+Valide que o mesmo evento não seja criado duas vezes para a mesma casa automaticamente.
+
+Prefira tokens no formato token_{timestamp}_{stringAleatoria}.
+
