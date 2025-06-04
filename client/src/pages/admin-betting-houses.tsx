@@ -142,27 +142,41 @@ export default function AdminBettingHouses() {
     console.error("Error loading betting houses:", error);
   }
 
-  // Filtering logic
-  const filteredHouses = (houses || []).filter((house) => {
-    if (!house) return false;
+  // Filtering logic with comprehensive null safety
+  const filteredHouses = React.useMemo(() => {
+    if (!Array.isArray(safeHouses)) return [];
     
-    const matchesSearch = house.name?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false;
-    
-    const matchesStatus = statusFilter === "all" || 
-      (statusFilter === "active" && house.isActive) ||
-      (statusFilter === "inactive" && !house.isActive);
-    
-    const matchesCommission = commissionFilter === "all" ||
-      (commissionFilter === "cpa" && house.commissionType?.includes("CPA")) ||
-      (commissionFilter === "revshare" && house.commissionType?.includes("RevShare")) ||
-      (commissionFilter === "both" && house.commissionType === "CPA+RevShare");
-    
-    const matchesPostback = postbackFilter === "all" ||
-      (postbackFilter === "configured" && house.enabledPostbacks && Array.isArray(house.enabledPostbacks) && house.enabledPostbacks.length > 0) ||
-      (postbackFilter === "not-configured" && (!house.enabledPostbacks || !Array.isArray(house.enabledPostbacks) || house.enabledPostbacks.length === 0));
-    
-    return matchesSearch && matchesStatus && matchesCommission && matchesPostback;
-  });
+    return safeHouses.filter((house) => {
+      // Garantir que house existe e tem as propriedades necessárias
+      if (!house || typeof house !== 'object') return false;
+      
+      // Verificação de busca com proteção completa
+      const houseName = house.name || '';
+      const searchLower = (searchTerm || '').toLowerCase();
+      const matchesSearch = houseName.toLowerCase().includes(searchLower);
+      
+      // Verificação de status com valores padrão
+      const houseStatus = house.isActive === true;
+      const matchesStatus = statusFilter === "all" || 
+        (statusFilter === "active" && houseStatus) ||
+        (statusFilter === "inactive" && !houseStatus);
+      
+      // Verificação de comissão com proteção completa
+      const houseCommission = house.commissionType || '';
+      const matchesCommission = commissionFilter === "all" ||
+        (commissionFilter === "cpa" && houseCommission.includes("CPA")) ||
+        (commissionFilter === "revshare" && houseCommission.includes("RevShare")) ||
+        (commissionFilter === "both" && houseCommission === "CPA+RevShare");
+      
+      // Verificação de postback com proteção completa de array
+      const housePostbacks = Array.isArray(house.enabledPostbacks) ? house.enabledPostbacks : [];
+      const matchesPostback = postbackFilter === "all" ||
+        (postbackFilter === "configured" && housePostbacks.length > 0) ||
+        (postbackFilter === "not-configured" && housePostbacks.length === 0);
+      
+      return matchesSearch && matchesStatus && matchesCommission && matchesPostback;
+    });
+  }, [safeHouses, searchTerm, statusFilter, commissionFilter, postbackFilter]);
 
   // Mutations
   const createHouseMutation = useMutation({
@@ -308,17 +322,22 @@ export default function AdminBettingHouses() {
     }
   };
 
-  // Show loading state
-  if (isLoading) {
+  // Show loading state with comprehensive error boundary
+  if (isLoading || !Array.isArray(houses)) {
     return (
       <div className="min-h-screen bg-slate-900">
         <AdminSidebar currentPage="betting-houses" onPageChange={() => {}} />
         <div className="lg:ml-64 transition-all duration-300 ease-in-out min-h-screen flex items-center justify-center">
-          <div className="text-white text-xl">Carregando casas de apostas...</div>
+          <div className="text-white text-xl">
+            {isLoading ? "Carregando casas de apostas..." : "Inicializando sistema..."}
+          </div>
         </div>
       </div>
     );
   }
+
+  // Safety check para garantir que nunca teremos dados inválidos
+  const safeHouses = Array.isArray(houses) ? houses.filter(h => h && typeof h === 'object' && h.id) : [];
 
   return (
     <div className="min-h-screen bg-slate-900">
