@@ -326,15 +326,13 @@ export default function AdminBettingHouses() {
     }
   };
 
-  // Show loading state with comprehensive error boundary
-  if (isLoading || !Array.isArray(houses)) {
+  // Show loading state only when actually loading
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-900">
         <AdminSidebar currentPage="betting-houses" onPageChange={() => {}} />
         <div className="lg:ml-64 transition-all duration-300 ease-in-out min-h-screen flex items-center justify-center">
-          <div className="text-white text-xl">
-            {isLoading ? "Carregando casas de apostas..." : "Inicializando sistema..."}
-          </div>
+          <div className="text-white text-xl">Carregando casas de apostas...</div>
         </div>
       </div>
     );
