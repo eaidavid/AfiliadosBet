@@ -1,0 +1,74 @@
+📍PROBLEMA ATUAL:
+
+Ao criar ou editar uma casa:
+
+A casa não está sendo salva corretamente no banco.
+
+A mensagem de sucesso aparece, mas os dados não refletem na interface.
+
+Os postbacks não são gerados automaticamente ao criar a casa.
+
+O modal de "Visualizar Postbacks" mostra "Carregando..." indefinidamente.
+
+Cada casa deve ter suas próprias rotas de postback, com token exclusivo.
+
+🎯 OBJETIVOS DE CORREÇÃO:
+
+✅ 1. Criação de Casa:
+Ao criar a casa, o sistema deve:
+
+Criar o registro no banco com todos os campos: nome, descrição, logo, link base, parâmetros, tipo de comissão etc.
+
+Gerar automaticamente os links de postback para essa casa, nos formatos:
+
+/postback/click?token=...
+
+/postback/register?token=...
+
+/postback/deposit?token=...
+
+/postback/revenue?token=...
+
+Salvar esses links relacionados à casa.
+
+Garantir que o token gerado seja único e seguro (por exemplo, uuid ou crypto.randomUUID()).
+
+Exibir os links de postback no modal logo após criação.
+
+✅ 2. Edição de Casa:
+Ao editar a casa:
+
+Não deve regenerar os postbacks.
+
+Apenas exibir os já existentes no formulário (sem editar).
+
+Garantir que, se o token já existe, ele não seja substituído.
+
+Se algum campo for atualizado (como nome ou link base), a atualização deve funcionar normalmente sem afetar o token ou os postbacks.
+
+✅ 3. Modal de Postbacks:
+O modal de postbacks deve:
+
+Carregar os postbacks corretos da casa (por token ou ID da casa).
+
+Exibir os links gerados (com token).
+
+Não mostrar "Carregando..." indefinidamente.
+
+Tratar estados de loading e erro corretamente.
+
+⚠️ CONSIDERAÇÕES IMPORTANTES:
+
+O sistema está usando banco em memória (provavelmente SQLite), então evite usar métodos assíncronos mal tratados ou chamadas que exigem persistência não implementada.
+
+Garanta que os dados da casa estejam disponíveis antes de tentar renderizar o modal de postbacks.
+
+Ao editar, o formulário não deve tentar acessar um token que ainda não foi carregado.
+
+📌 RESUMO DO FLUXO CORRETO ESPERADO:
+
+Ação	Esperado
+Criar Casa	Salvar dados + gerar postbacks únicos + mostrar no modal
+Editar Casa	Atualizar campos sem afetar token + mostrar postbacks existentes
+Ver Postbacks	Mostrar URLs com token por evento
+

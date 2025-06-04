@@ -1380,6 +1380,17 @@ export async function registerRoutes(app: any): Promise<Server> {
         return res.status(400).json({ error: "Identificador já existe" });
       }
 
+      // Determine commission value based on type
+      let commissionValue = null;
+      if (commissionType === 'CPA' && cpaValue) {
+        commissionValue = cpaValue.toString();
+      } else if (commissionType === 'RevShare' && revshareValue) {
+        commissionValue = revshareValue.toString();
+      } else if (commissionType === 'CPA+RevShare') {
+        // For hybrid, use CPA value as primary
+        commissionValue = cpaValue ? cpaValue.toString() : (revshareValue ? revshareValue.toString() : null);
+      }
+
       const [newHouse] = await db.insert(schema.bettingHouses).values({
         name,
         description,
@@ -1389,6 +1400,7 @@ export async function registerRoutes(app: any): Promise<Server> {
           JSON.parse(additionalParams) : 
           (additionalParams || null),
         commissionType,
+        commissionValue,
         cpaValue: cpaValue ? cpaValue.toString() : null,
         revshareValue: revshareValue ? revshareValue.toString() : null,
         minDeposit: minDeposit ? minDeposit.toString() : null,
@@ -1452,6 +1464,17 @@ export async function registerRoutes(app: any): Promise<Server> {
         }
       }
 
+      // Determine commission value based on type for updates
+      let commissionValue = null;
+      if (commissionType === 'CPA' && cpaValue) {
+        commissionValue = cpaValue.toString();
+      } else if (commissionType === 'RevShare' && revshareValue) {
+        commissionValue = revshareValue.toString();
+      } else if (commissionType === 'CPA+RevShare') {
+        // For hybrid, use CPA value as primary
+        commissionValue = cpaValue ? cpaValue.toString() : (revshareValue ? revshareValue.toString() : null);
+      }
+
       const [updatedHouse] = await db.update(schema.bettingHouses)
         .set({
           name,
@@ -1462,6 +1485,7 @@ export async function registerRoutes(app: any): Promise<Server> {
             JSON.parse(additionalParams) : 
             (additionalParams || null),
           commissionType,
+          commissionValue,
           cpaValue: cpaValue ? cpaValue.toString() : null,
           revshareValue: revshareValue ? revshareValue.toString() : null,
           minDeposit: minDeposit ? minDeposit.toString() : null,
