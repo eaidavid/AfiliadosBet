@@ -225,13 +225,16 @@ export default function LandingPage() {
         <nav className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
-              <div className="flex items-center space-x-3">
-                <img src={logoPath} alt="AfiliadosBet - Sistema de Afiliados" className="h-8 w-8" />
-                <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              {/* Logo Section - Responsivo */}
+              <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
+                <img src={logoPath} alt="AfiliadosBet - Sistema de Afiliados" className="h-6 w-6 sm:h-8 sm:w-8" />
+                <span className="text-base sm:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent truncate">
                   AfiliadosBet
                 </span>
               </div>
-              <div className="hidden md:flex items-center space-x-6">
+
+              {/* Menu Desktop */}
+              <div className="hidden lg:flex items-center space-x-6">
                 <a href="#recursos" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                   Recursos
                 </a>
@@ -245,12 +248,25 @@ export default function LandingPage() {
                   FAQ
                 </a>
               </div>
-              <div className="flex items-center space-x-4">
-                <Button variant="ghost" onClick={() => setLocation("/login")} className="hidden sm:inline-flex text-white hover:text-gray-900 hover:bg-white">
+
+              {/* Botões - Mobile e Desktop */}
+              <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
+                {/* Botão Entrar - Sempre visível mas responsivo */}
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setLocation("/login")} 
+                  className="text-white hover:text-gray-900 hover:bg-white text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2 h-8 sm:h-10"
+                >
                   Entrar
                 </Button>
-                <Button onClick={() => setLocation("/register")} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                  Cadastrar Grátis
+                
+                {/* Botão Cadastrar - Responsivo */}
+                <Button 
+                  onClick={() => setLocation("/register")} 
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2 h-8 sm:h-10 whitespace-nowrap"
+                >
+                  <span className="hidden sm:inline">Cadastrar Grátis</span>
+                  <span className="sm:hidden">Cadastrar</span>
                 </Button>
               </div>
             </div>
