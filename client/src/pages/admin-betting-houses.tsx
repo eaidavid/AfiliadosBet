@@ -453,6 +453,44 @@ export default function AdminBettingHouses() {
                           )}
                         />
 
+                        {/* Automatic Postback Preview */}
+                        {previewPostbacks.length > 0 && (
+                          <div className="space-y-3">
+                            <h4 className="text-sm font-medium text-purple-400 flex items-center gap-2">
+                              <Webhook className="h-4 w-4" />
+                              Postbacks Automáticos (Serão Criados)
+                            </h4>
+                            <div className="space-y-2">
+                              {previewPostbacks.map((postback, index) => (
+                                <div key={index} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg border border-purple-500/20">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                                    <div>
+                                      <p className="text-sm font-medium text-white capitalize">{postback.eventType}</p>
+                                      <p className="text-xs text-slate-400 font-mono">{postback.url}</p>
+                                    </div>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(postback.url);
+                                      toast({ title: "URL copiada!", description: "URL do postback copiada para a área de transferência." });
+                                    }}
+                                    className="h-8 w-8 p-0 hover:bg-purple-600"
+                                  >
+                                    <Copy className="h-3 w-3 text-purple-400" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                            <p className="text-xs text-slate-500">
+                              Estes postbacks serão criados automaticamente com tokens únicos e seguros quando a casa for salva.
+                            </p>
+                          </div>
+                        )}
+
                         <FormField
                           control={form.control}
                           name="logoUrl"

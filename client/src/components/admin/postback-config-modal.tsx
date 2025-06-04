@@ -235,69 +235,117 @@ export default function PostbackConfigModal({ isOpen, onClose, houseId }: Postba
                         {postbackData.postbacks.map((postback) => (
                           <TableRow key={postback.id} className="border-slate-700 hover:bg-slate-800/50">
                             <TableCell className="text-white">
-                            <Badge className={`${eventTypeColors[postback.eventType as keyof typeof eventTypeColors]} text-white`}>
-                              {eventTypeLabels[postback.eventType as keyof typeof eventTypeLabels]}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="max-w-md text-slate-300">
-                            {editingPostback?.id === postback.id ? (
-                              <div className="flex gap-2">
-                                <Input
-                                  defaultValue={postback.url}
-                                  className="bg-slate-700 border-slate-600 text-white"
-                                  onBlur={(e) => {
-                                    if (e.target.value !== postback.url) {
-                                      handleUpdatePostback(postback, e.target.value);
-                                    }
-                                  }}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                      handleUpdatePostback(postback, e.currentTarget.value);
-                                    }
-                                    if (e.key === 'Escape') {
-                                      setEditingPostback(null);
-                                    }
-                                  }}
-                                  autoFocus
+                              <div className="flex flex-col gap-2">
+                                <Badge className={`${eventTypeColors[postback.eventType as keyof typeof eventTypeColors]} text-white w-fit`}>
+                                  {eventTypeLabels[postback.eventType as keyof typeof eventTypeLabels]}
+                                </Badge>
+                                <div className="flex items-center gap-2">
+                                  {postback.isAutomatic ? (
+                                    <Badge variant="outline" className="text-xs flex items-center gap-1 border-blue-500/30 text-blue-400">
+                                      <Bot className="w-3 h-3" />
+                                      Automático
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="outline" className="text-xs flex items-center gap-1 border-gray-500/30 text-gray-400">
+                                      <User className="w-3 h-3" />
+                                      Manual
+                                    </Badge>
+                                  )}
+                                  {postback.active ? (
+                                    <Badge variant="default" className="text-xs flex items-center gap-1 bg-green-600">
+                                      <CheckCircle className="w-3 h-3" />
+                                      Ativo
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                                      <Clock className="w-3 h-3" />
+                                      Inativo
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="max-w-md text-slate-300">
+                              {editingPostback?.id === postback.id && !postback.isAutomatic ? (
+                                <div className="flex gap-2">
+                                  <Input
+                                    defaultValue={postback.url}
+                                    className="bg-slate-700 border-slate-600 text-white"
+                                    onBlur={(e) => {
+                                      if (e.target.value !== postback.url) {
+                                        handleUpdatePostback(postback, e.target.value);
+                                      }
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        handleUpdatePostback(postback, e.currentTarget.value);
+                                      }
+                                      if (e.key === 'Escape') {
+                                        setEditingPostback(null);
+                                      }
+                                    }}
+                                    autoFocus
+                                  />
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <div className="text-sm font-mono truncate text-slate-300 flex-1" title={postback.url}>
+                                    {postback.url}
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(postback.url);
+                                      toast({ title: "URL copiada!", description: "URL do postback copiada para a área de transferência." });
+                                    }}
+                                    className="h-8 w-8 p-0 hover:bg-purple-600"
+                                  >
+                                    <Copy className="h-3 w-3 text-purple-400" />
+                                  </Button>
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-slate-300">
+                              <div className="flex items-center gap-2">
+                                <Switch
+                                  checked={postback.active || false}
+                                  onCheckedChange={() => handleToggleActive(postback)}
                                 />
+                                <span className={postback.active ? "text-green-600" : "text-red-600"}>
+                                  {postback.active ? "Ativo" : "Inativo"}
+                                </span>
                               </div>
-                            ) : (
-                              <div className="text-sm font-mono truncate text-slate-300" title={postback.url}>
-                                {postback.url}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                {!postback.isAutomatic ? (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleEdit(postback)}
+                                      className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+                                    >
+                                      <Edit className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleDelete(postback.id)}
+                                      className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </>
+                                ) : (
+                                  <span className="text-xs text-slate-500 flex items-center gap-1">
+                                    <Settings className="w-3 h-3" />
+                                    Protegido
+                                  </span>
+                                )}
                               </div>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-slate-300">
-                            <div className="flex items-center gap-2">
-                              <Switch
-                                checked={postback.active}
-                                onCheckedChange={() => handleToggleActive(postback)}
-                              />
-                              <span className={postback.active ? "text-green-600" : "text-red-600"}>
-                                {postback.active ? "Ativo" : "Inativo"}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleEdit(postback)}
-                                className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleDelete(postback.id)}
-                                className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
+                            </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
