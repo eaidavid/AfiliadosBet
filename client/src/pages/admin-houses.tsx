@@ -1144,48 +1144,221 @@ export default function AdminHouses() {
         </DialogContent>
       </Dialog>
 
-      {/* View Details Dialog */}
+      {/* Enhanced View Details Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-2xl">
+        <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl text-white">Detalhes da Casa de Apostas</DialogTitle>
+            <DialogTitle className="text-2xl text-white flex items-center gap-3">
+              <Building2 className="w-6 h-6 text-blue-400" />
+              Detalhes da Casa de Apostas
+            </DialogTitle>
           </DialogHeader>
+          
           {viewingHouse && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-slate-300">Nome</Label>
-                  <p className="text-white font-medium">{viewingHouse.name}</p>
+            <div className="space-y-8 mt-6">
+              {/* Main Information - Two Columns */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left Column - Basic Info */}
+                <div className="space-y-6">
+                  <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
+                    <h3 className="text-lg font-semibold text-blue-400 mb-4 flex items-center gap-2">
+                      <User className="w-5 h-5" />
+                      Informações Básicas
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-slate-400 text-sm">Nome da Casa</Label>
+                        <p className="text-white font-medium text-lg">{viewingHouse.name}</p>
+                      </div>
+                      
+                      <div>
+                        <Label className="text-slate-400 text-sm">URL Base</Label>
+                        <div className="flex items-center gap-2 mt-1">
+                          <p className="text-blue-400 text-sm font-mono bg-slate-800 px-3 py-2 rounded flex-1 break-all">
+                            {viewingHouse.baseUrl}
+                          </p>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleCopyLink(viewingHouse)}
+                            className="border-blue-600 text-blue-400 hover:bg-blue-600 hover:text-white flex-shrink-0"
+                            title="Copiar URL"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <Label className="text-slate-400 text-sm">Tipo de Comissão</Label>
+                        <div className="mt-2">
+                          <Badge 
+                            className={`text-white ${
+                              viewingHouse.commissionType === 'CPA' ? 'bg-green-600' :
+                              viewingHouse.commissionType === 'RevShare' ? 'bg-blue-600' :
+                              'bg-purple-600'
+                            }`}
+                          >
+                            {viewingHouse.commissionType}
+                          </Badge>
+                        </div>
+                        
+                        {/* Commission Values */}
+                        {viewingHouse.commissionType && (
+                          <div className="mt-2 space-y-1">
+                            {(viewingHouse.commissionType.includes("CPA") && viewingHouse.cpaValue) && (
+                              <div className="text-green-400 text-sm">CPA: {formatCurrency(viewingHouse.cpaValue)}</div>
+                            )}
+                            {(viewingHouse.commissionType.includes("RevShare") && viewingHouse.revshareValue) && (
+                              <div className="text-blue-400 text-sm">RevShare: {formatPercentage(viewingHouse.revshareValue)}</div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <Label className="text-slate-300">Token de Segurança</Label>
-                  <p className="text-white font-mono text-sm">{viewingHouse.securityToken}</p>
-                </div>
-                <div>
-                  <Label className="text-slate-300">URL Base</Label>
-                  <p className="text-blue-400">{viewingHouse.baseUrl}</p>
-                </div>
-                <div>
-                  <Label className="text-slate-300">Parâmetro Primário</Label>
-                  <p className="text-white">{viewingHouse.primaryParam}</p>
-                </div>
-                <div>
-                  <Label className="text-slate-300">Tipo de Comissão</Label>
-                  <p className="text-white">{viewingHouse.commissionType}</p>
-                </div>
-                <div>
-                  <Label className="text-slate-300">Status</Label>
-                  <Badge variant={viewingHouse.isActive ? "default" : "secondary"}>
-                    {viewingHouse.isActive ? "Ativa" : "Inativa"}
-                  </Badge>
+
+                {/* Right Column - Technical Info */}
+                <div className="space-y-6">
+                  <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
+                    <h3 className="text-lg font-semibold text-green-400 mb-4 flex items-center gap-2">
+                      <Settings className="w-5 h-5" />
+                      Dados Técnicos
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-slate-400 text-sm flex items-center gap-2">
+                          Status
+                        </Label>
+                        <div className="mt-2">
+                          <Badge 
+                            variant={viewingHouse.isActive ? "default" : "secondary"}
+                            className={`flex items-center gap-2 w-fit ${
+                              viewingHouse.isActive 
+                                ? 'bg-green-600 text-white' 
+                                : 'bg-red-600 text-white'
+                            }`}
+                          >
+                            {viewingHouse.isActive ? (
+                              <>
+                                <CheckCircle2 className="w-4 h-4" />
+                                Ativa
+                              </>
+                            ) : (
+                              <>
+                                <XCircle className="w-4 h-4" />
+                                Inativa
+                              </>
+                            )}
+                          </Badge>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <Label className="text-slate-400 text-sm flex items-center gap-2">
+                          Parâmetro Primário
+                          <div className="group relative">
+                            <Button variant="ghost" size="sm" className="h-auto p-0 text-slate-500 hover:text-slate-300">
+                              <span className="w-4 h-4 border border-slate-500 rounded-full flex items-center justify-center text-xs">?</span>
+                            </Button>
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                              Campo identificador do afiliado
+                            </div>
+                          </div>
+                        </Label>
+                        <p className="text-white font-mono bg-slate-800 px-3 py-2 rounded mt-1">{viewingHouse.primaryParam}</p>
+                      </div>
+                      
+                      <div>
+                        <Label className="text-slate-400 text-sm flex items-center gap-2">
+                          Token de Segurança
+                          <div className="group relative">
+                            <Button variant="ghost" size="sm" className="h-auto p-0 text-slate-500 hover:text-slate-300">
+                              <span className="w-4 h-4 border border-slate-500 rounded-full flex items-center justify-center text-xs">?</span>
+                            </Button>
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                              Usado para validar a origem dos postbacks
+                            </div>
+                          </div>
+                        </Label>
+                        <div className="flex items-center gap-2 mt-1">
+                          <p className="text-yellow-400 font-mono text-sm bg-slate-800 px-3 py-2 rounded flex-1 break-all">
+                            {viewingHouse.securityToken}
+                          </p>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              navigator.clipboard.writeText(viewingHouse.securityToken || '');
+                              toast({ title: "Token copiado com sucesso!" });
+                            }}
+                            className="border-yellow-600 text-yellow-400 hover:bg-yellow-600 hover:text-white flex-shrink-0"
+                            title="Copiar Token"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
+
+              {/* Description Section */}
               {viewingHouse.description && (
-                <div>
-                  <Label className="text-slate-300">Descrição</Label>
-                  <p className="text-slate-400">{viewingHouse.description}</p>
+                <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600">
+                  <Label className="text-slate-400 text-sm">Descrição</Label>
+                  <p className="text-slate-300 mt-2">{viewingHouse.description}</p>
                 </div>
               )}
+
+              {/* Automatic Postbacks Section */}
+              <div className="bg-slate-700/30 rounded-lg p-6 border border-slate-600">
+                <h3 className="text-xl font-semibold text-purple-400 mb-4 flex items-center gap-2">
+                  <LinkIcon className="w-5 h-5" />
+                  URLs de Postback Automáticos
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {['click', 'register', 'deposit', 'revenue'].map((eventType) => {
+                    const postbackUrl = `${window.location.origin}/postback/${eventType}?token=${viewingHouse.securityToken}`;
+                    const eventLabels = {
+                      click: 'Click',
+                      register: 'Register', 
+                      deposit: 'Deposit',
+                      revenue: 'Revenue'
+                    };
+                    
+                    return (
+                      <div key={eventType} className="bg-slate-800 rounded-lg p-4 border border-slate-600">
+                        <div className="flex items-center justify-between mb-2">
+                          <Label className="text-slate-300 font-medium">
+                            {eventLabels[eventType as keyof typeof eventLabels]}
+                          </Label>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              navigator.clipboard.writeText(postbackUrl);
+                              toast({ title: `URL ${eventType} copiada com sucesso!` });
+                            }}
+                            className="border-purple-600 text-purple-400 hover:bg-purple-600 hover:text-white"
+                            title={`Copiar URL ${eventType}`}
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <p className="text-xs font-mono text-slate-400 bg-slate-900 px-3 py-2 rounded break-all">
+                          {postbackUrl}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           )}
         </DialogContent>
