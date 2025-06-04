@@ -52,9 +52,9 @@ const bettingHouseSchema = z.object({
   commissionType: z.enum(["CPA", "RevShare", "CPA+RevShare"], {
     required_error: "Tipo de comissão é obrigatório"
   }),
-  cpaValue: z.number().min(0).optional(),
-  revshareValue: z.number().min(0).max(100).optional(),
-  minDeposit: z.number().min(0).optional(),
+  cpaValue: z.union([z.number(), z.string().transform((val) => val === "" ? undefined : Number(val))]).optional(),
+  revshareValue: z.union([z.number(), z.string().transform((val) => val === "" ? undefined : Number(val))]).optional(),
+  minDeposit: z.union([z.number(), z.string().transform((val) => val === "" ? undefined : Number(val))]).optional(),
   paymentMethods: z.string().optional(),
   securityToken: z.string().optional(),
   identifier: z.string().min(1, "Identificador único é obrigatório"),
