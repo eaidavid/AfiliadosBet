@@ -1,0 +1,163 @@
+Crie uma nova página chamada “Administração de Casas de Apostas” (/admin/houses) que seja totalmente funcional, de acordo com o banco de dados abaixo e com as seguintes regras:
+
+🔧 Banco de Dados e Estrutura Base
+Tabela principal: betting_houses
+
+Tabelas relacionadas:
+
+registered_postbacks (postbacks registrados por casa)
+
+affiliate_links (para ativação/desativação)
+
+conversions (CPA, RevShare)
+
+postback_logs (logs de auditoria de postbacks)
+
+Tokens de segurança das casas devem ser imutáveis e usados nas URLs.
+
+🧱 Seções da Página
+1. 📋 Listagem das Casas de Apostas
+Tabela com as seguintes colunas:
+
+Nome da Casa (name)
+
+Tipo de Comissão (commission_type)
+
+Exibir múltiplos tipos se aplicável (Ex: “CPA + RevShare”)
+
+Valores:
+
+CPA (cpa_value) — mostrar R$
+
+RevShare (revshare_value) — mostrar %
+
+Hybrid = mostrar cpa e revshare em conjunto mas cada um tera seu valor
+
+URL base (base_url)
+
+Token de Segurança (security_token) visualização apenas
+
+Status (Ativa/Inativa)
+
+Ações:
+
+✏️ Editar
+
+🔁 Gerenciar Postbacks (abre modal)
+
+👁️ Pré-visualizar postbacks (copia/visualiza links)
+
+🚫 Inativar
+
+Importante: O token não deve ser editável em nenhuma situação.
+
+2. 🆕 Criação de Nova Casa
+Formulário com os seguintes campos (baseado na tabela betting_houses):
+
+Campo	Tipo	Regras
+Nome (name)	texto	obrigatório
+Descrição (description)	texto	opcional
+URL base (base_url)	texto	obrigatório
+Parâmetro principal (primary_param)	texto	obrigatório
+Parâmetros adicionais (additional_params)	JSON	opcional
+Tipo de Comissão (commission_type)	select: cpa, revshare, cpa+revshare	obrigatório
+Valor CPA (cpa_value)	monetário	opcional
+Valor RevShare (revshare_value)	percentual	opcional
+Depósito mínimo (min_deposit)	monetário	opcional
+Métodos de pagamento (payment_methods)	texto	opcional
+Ativo (is_active)	checkbox	default true
+Token (security_token)	gerado automaticamente	não editável
+Parâmetros de Mapeamento (parameter_mapping)	JSON	opcional
+
+🛠 Funcionalidade extra ao criar:
+
+Gerar automaticamente o security_token (UUID seguro).
+
+Criar automaticamente os seguintes postbacks em registered_postbacks com base no token:
+
+/postback/click?token={token}
+
+/postback/register?token={token}
+
+/postback/deposit?token={token}
+
+/postback/revenue?token={token}
+
+Os postbacks devem vir com event_type, house_id, house_name, url, is_active = true.
+
+3. 🧾 Edição de Casa
+Mesma interface do formulário de criação, porém:
+
+Campo security_token deve aparecer, mas bloqueado para edição.
+
+Permitir alterar todos os campos, exceto o token.
+
+Mostrar visualização dos postbacks associados.
+
+Permitir ativar/desativar postbacks específicos.
+
+4. 📩 Modal de Gerenciar Postbacks (por Casa)
+Ao clicar em "Postbacks" em uma casa específica:
+
+Abrir modal com todos os postbacks registrados (registered_postbacks) daquela casa.
+
+Listar por colunas:
+
+Tipo do Evento (click, register, deposit, revenue)
+
+URL completa com token
+
+Origem (Automático ou Manual)
+
+Status (Ativo/Inativo)
+
+Ação: ✅ Copiar Link | 🛠 Editar | 🚫 Desativar
+
+🔘 Permitir adicionar um novo postback manualmente:
+
+Campos:
+
+Tipo de Evento (event_type)
+
+Descrição
+
+Ativo/Inativo
+
+🔧 A URL deve ser montada automaticamente com o token da casa:
+
+bash
+Copiar
+Editar
+/postback/{event_type}?token={security_token}
+5. 👁️ Pré-visualização de Postbacks na Criação/Edição
+Abaixo do formulário de criação/edição, exibir um bloco de visualização com os 4 postbacks padrão já montados:
+
+Exemplo:
+
+Click: /postback/click?token=abc123xyz
+
+Registro: /postback/register?token=abc123xyz
+
+Depósito: /postback/deposit?token=abc123xyz
+
+Receita: /postback/revenue?token=abc123xyz
+
+Botões ao lado de cada um: “📋 Copiar URL”
+
+🔐 Segurança e Auditoria
+O sistema deve localizar a casa de apostas pelo token recebido no postback.
+
+Todos os postbacks recebidos devem ser registrados em postback_logs com:
+
+casa, subid, evento, valor, status, ip, raw, timestamp
+
+Nunca permitir que o token seja editado por painel, API ou qualquer outra forma.
+
+🧠 Extras (Recomendado)
+🔎 Filtro por nome da casa ou token
+
+📊 Contador de afiliados ativos por casa
+
+🧾 Visualização rápida do total de comissões por casa (CPA/RevShare)
+
+💬 Tooltip explicativo para diferença de CPA e RevShare
