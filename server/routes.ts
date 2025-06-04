@@ -1407,7 +1407,7 @@ export async function registerRoutes(app: any): Promise<Server> {
           .from(schema.bettingHouses)
           .where(and(
             eq(schema.bettingHouses.identifier, identifier),
-            not(eq(schema.bettingHouses.id, houseId))
+            ne(schema.bettingHouses.id, houseId)
           ))
           .limit(1);
 
