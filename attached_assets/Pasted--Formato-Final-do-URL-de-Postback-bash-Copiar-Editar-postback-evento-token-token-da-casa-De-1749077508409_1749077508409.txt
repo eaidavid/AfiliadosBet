@@ -1,0 +1,62 @@
+✅ Formato Final do URL de Postback
+bash
+Copiar
+Editar
+/postback/{evento}?token={token_da_casa}
+🔍 Detalhamento de Cada Parte
+🔹 /postback/
+Descrição: Prefixo fixo da rota que identifica que se trata de uma requisição de postback no sistema.
+
+Responsabilidade: Direciona para o controller responsável por interpretar e registrar o evento vindo da casa de apostas.
+
+Observação: Essa rota deve estar protegida contra ataques (rate limit, IP allowlist ou token validation).
+
+🔹 {evento}
+Descrição: Representa o tipo de evento sendo reportado pela casa de apostas.
+
+Valores possíveis:
+
+click → clique no link de afiliado
+
+register → novo cadastro do usuário na casa de apostas
+
+deposit → primeiro ou novo depósito feito
+
+revenue → comissão baseada em receita (RevShare)
+
+Uso interno: Esse valor define qual será o tipo registrado na tabela conversions.type, e possivelmente determina o cálculo da comissão.
+
+Validação: Deve aceitar apenas os eventos permitidos. Caso contrário, deve retornar erro 400 ou 422.
+
+🔹 ?token={token_da_casa}
+Descrição: Token único e exclusivo da casa de apostas. Serve como identificador seguro e inalterável.
+
+Origem: Este token é gerado automaticamente ao criar uma casa, armazenado no campo betting_houses.security_token.
+
+Uso interno:
+
+Localiza a casa de apostas relacionada ao evento.
+
+Valida se o postback é legítimo (inclusive pode usar para autorizar).
+
+Usado para consultar a configuração de postbacks da casa (parâmetros esperados, permissões, etc).
+
+Importância: O token substitui a necessidade de enviar house_id via GET e evita exposição de dados sensíveis.
+
+🧪 Exemplos de URLs Reais
+Para uma casa com token abc123securetoken456:
+
+Tipo de Evento	URL
+Click	/postback/click?token=abc123securetoken456
+Registro	/postback/register?token=abc123securetoken456
+Depósito	/postback/deposit?token=abc123securetoken456
+Receita	/postback/revenue?token=abc123securetoken456
+
+🛡️ Validações Recomendadas no Backend
+Verificar se o token existe e corresponde a uma casa ativa (betting_houses.is_active = true)
+
+Verificar se o evento (click, register, etc) está habilitado para essa casa (enabled_postbacks inclui o evento)
+
+Logar todos os dados recebidos (no mínimo token, evento, IP e query string) na tabela postback_logs
+
+Se o subid (parâmetro de referência de afiliado) estiver presente, associar ao affiliate_links e users

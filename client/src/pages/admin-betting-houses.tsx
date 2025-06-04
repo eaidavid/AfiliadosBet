@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -98,6 +98,7 @@ export default function AdminBettingHouses() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [viewingHouse, setViewingHouse] = useState<BettingHouse | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [previewPostbacks, setPreviewPostbacks] = useState<Array<{eventType: string; url: string}>>([]);
   const [isPostbackModalOpen, setIsPostbackModalOpen] = useState(false);
   const [selectedHouseId, setSelectedHouseId] = useState<number | null>(null);
   
@@ -131,6 +132,33 @@ export default function AdminBettingHouses() {
       parameterMapping: "",
     },
   });
+
+  // Function to generate automatic postback previews
+  const generatePostbackPreviews = (identifier: string) => {
+    if (!identifier) {
+      setPreviewPostbacks([]);
+      return;
+    }
+
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(2, 8);
+    const events = ['click', 'register', 'deposit', 'revenue'];
+    
+    const previews = events.map(eventType => ({
+      eventType,
+      url: `/postback/${eventType}?token=token_${timestamp}_${identifier}_${eventType}_${randomString}`
+    }));
+    
+    setPreviewPostbacks(previews);
+  };
+
+  // Watch identifier field to generate previews
+  const watchedIdentifier = form.watch('identifier');
+  
+  // Generate previews when identifier changes
+  React.useEffect(() => {
+    generatePostbackPreviews(watchedIdentifier);
+  }, [watchedIdentifier]);
 
   // Query para buscar casas
   const { data: housesData, isLoading, error } = useQuery<BettingHouse[]>({

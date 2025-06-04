@@ -1,0 +1,69 @@
+Por favor, reformule completamente a página /betting-houses, mantendo o layout e estrutura atual, mas implementando de forma funcional e dinâmica as seguintes funcionalidades relacionadas a Postbacks, conforme já definido no sistema:
+
+✅ Alterações Obrigatórias
+1. Criação Automática de Postbacks
+Ao criar uma nova casa de apostas, gere automaticamente os seguintes 4 postbacks:
+
+/postback/click?token={token}
+
+/postback/register?token={token}
+
+/postback/deposit?token={token}
+
+/postback/revenue?token={token}
+
+O token deve ser único por casa, inalterável, e usado na URL de todos os postbacks.
+
+2. Visualização Prévia na Criação/Edição
+Exiba na tela de criação os 4 postbacks gerados automaticamente assim que preencher o identificador único.
+
+Exiba também na tela de edição os postbacks existentes da casa, com as seguintes ações:
+
+Copiar link
+
+Visualizar status (Ativo/Inativo)
+
+Indicação de origem (Automático/Manual)
+
+3. Token
+O campo de token deve ser visível, mas nunca editável.
+
+A URL de postback deve ser baseada no token e exibida para cada evento.
+
+4. Modal de Postbacks (botão de ações da casa)
+Exibir todos os postbacks (os 4 padrões + os adicionados manualmente).
+
+Para cada postback:
+
+Exibir tipo de evento (click, register, deposit, revenue)
+
+Exibir botão de copiar URL
+
+Exibir status (Ativo/Inativo)
+
+Exibir se foi criado automaticamente ou manualmente
+
+Permitir adicionar novos postbacks via botão "+ Adicionar Postback"
+
+O campo de URL deve vir preenchido automaticamente com base no token da casa e no tipo de evento selecionado.
+
+5. Geração da URL de Postback
+As URLs devem sempre seguir o padrão:
+
+bash
+Copiar
+Editar
+/postback/{evento}?token={token_da_casa}
+Não gere rotas do tipo /postback/{identificador}/evento.
+
+A identificação da casa deve ser feita pelo token, que será único.
+
+⚙️ Importante
+Toda a lógica de criação, exibição e edição de postbacks deve estar funcional, não apenas visual.
+
+Os links de postback precisam ser reais e utilizáveis (dinâmicos).
+
+As interações (copiar, ativar, inativar, adicionar) precisam atualizar o estado no banco/backend.
+
+✅ A interface já está boa, não precisa mudar visualmente — apenas tornar todos os recursos funcionais de acordo com o prompt.
+🚫 Não manter campos ou botões sem função.
