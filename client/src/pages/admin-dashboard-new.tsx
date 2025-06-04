@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import AdminSidebar from "@/components/admin/sidebar";
 import { 
   Users, 
   Building2, 
@@ -22,7 +23,8 @@ import {
   Wallet,
   Timer,
   Award,
-  Download
+  Download,
+  Menu
 } from "lucide-react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
@@ -145,6 +147,9 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 export default function AdminDashboard() {
+  const [currentPage, setCurrentPage] = useState("dashboard");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   // Dados do sistema
   const { data: systemOverview, isLoading: overviewLoading, refetch: refetchOverview } = useQuery<SystemOverview>({
     queryKey: ['/api/admin/dashboard/overview'],
@@ -180,51 +185,67 @@ export default function AdminDashboard() {
     refetchOverview();
   };
 
-  return (
-    <div className="min-h-screen bg-[#0F172A] text-white">
-      {/* Header */}
-      <div className="bg-[#1C1F26] border-b border-[#1E293B] p-4 sm:p-6 sticky top-0 z-10">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">Dashboard Admin</h1>
-            <p className="text-[#94A3B8] mt-1">Visão geral completa do sistema de afiliados</p>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <Link href="/admin/leads">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="bg-gradient-to-r from-[#8B5CF6] to-[#3B82F6] border-0 hover:opacity-90 text-white"
-              >
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Gerenciar Leads
-              </Button>
-            </Link>
-            
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={refreshData}
-              className="bg-gradient-to-r from-[#00C39A] to-[#3B82F6] border-0 hover:opacity-90"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Atualizar
-            </Button>
+  const handlePageChange = (page: string) => {
+    setCurrentPage(page);
+    if (page === "leads") {
+      window.location.href = "/admin/leads";
+    }
+  };
 
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="bg-[#1E293B] border-[#334155] text-white hover:bg-[#334155]"
+  return (
+    <div className="min-h-screen bg-slate-950 flex">
+      {/* Sidebar */}
+      <AdminSidebar currentPage={currentPage} onPageChange={handlePageChange} />
+      
+      {/* Main Content */}
+      <div className="flex-1 lg:ml-72">
+        {/* Mobile Header */}
+        <div className="lg:hidden bg-slate-900/50 backdrop-blur-sm border-b border-slate-700/50 p-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-bold text-white">Dashboard Admin</h1>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="text-white"
             >
-              <Download className="h-4 w-4 mr-2" />
-              Exportar
+              <Menu className="h-5 w-5" />
             </Button>
           </div>
         </div>
-      </div>
 
-      <div className="p-4 sm:p-6 space-y-6">
+        {/* Desktop Header */}
+        <div className="hidden lg:block bg-slate-900/30 backdrop-blur-sm border-b border-slate-700/50 p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">Dashboard Admin</h1>
+              <p className="text-slate-400 mt-1">Visão geral completa do sistema de afiliados</p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={refreshData}
+                className="bg-gradient-to-r from-emerald-500 to-blue-600 border-0 hover:opacity-90 text-white"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Atualizar
+              </Button>
+
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Exportar
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4 sm:p-6 space-y-6">
         {/* 1. RESUMO GERAL DO SISTEMA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -636,6 +657,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </motion.div>
+        </div>
       </div>
     </div>
   );
