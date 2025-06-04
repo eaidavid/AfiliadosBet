@@ -1,0 +1,110 @@
+✅ Nome da Página
+/admin/casas – Gerenciamento de Casas de Apostas
+
+🧩 Objetivo da Página
+Uma central administrativa onde o admin pode visualizar, editar, ativar/desativar, configurar parâmetros e postbacks, e também acompanhar afiliados conectados a cada casa, além de monitorar detalhes de comissão (CPA / RevShare).
+
+🎯 Componentes e Funcionalidades da Página
+1. 🔍 Filtro e Pesquisa
+Campo de busca por nome da casa.
+
+Filtros:
+
+Ativas / Inativas
+
+Tipo de Comissão (CPA, RevShare, Ambas)
+
+Com postback configurado / Não configurado
+
+2. 🧾 Tabela Geral das Casas de Apostas
+Colunas e dados (extraídos da tabela betting_houses):
+
+Logo	Nome	Tipo de Comissão	Valor Comissão	Postbacks	Afiliados	Status	Ações
+logo_url	name	commission_type	CPA: cpa_value
+Rev: revshare_value	✓/✗ (com base no enabled_postbacks)	🔢 (count de affiliate_links)	✅ / ❌ (is_active)	[Ver] [Editar] [Desativar] [Postbacks] [Afiliações]
+
+3. 🔧 Botões de Ação e o Que Fazem
+📄 [Ver]
+Abre um modal ou rota detalhada com todas as informações da casa, incluindo:
+
+description, payment_methods, min_deposit
+
+parameter_mapping, security_token, base_url
+
+Histórico de criação e edição
+
+✏️ [Editar]
+Abre o formulário pré-preenchido com os dados da casa (mesmo da criação), para edição direta de:
+
+Comissão
+
+Postbacks habilitados
+
+Parâmetros
+
+Token de segurança
+
+Logotipo
+
+❌ [Desativar] / ✅ [Ativar]
+Alterna o is_active da casa.
+
+Confirmação com alerta.
+
+Efeito imediato na exibição para afiliados.
+
+🌐 [Postbacks]
+Abre modal ou rota /admin/casas/:id/postbacks com:
+
+Lista dos postbacks registrados (de registered_postbacks)
+
+Botão para adicionar novo postback
+
+Editar/Desativar postbacks específicos
+
+Testar postback com parâmetros fictícios (debug)
+
+🧑‍💼 [Afiliações]
+Abre modal ou rota /admin/casas/:id/afiliados com:
+
+Lista de afiliados conectados (affiliate_links)
+
+Link gerado para cada um (generated_url)
+
+Status do link
+
+Ações para desativar o link ou copiar URL
+
+4. ➕ Botão "Nova Casa de Apostas"
+Vai para /admin/casas/nova
+
+Formulário completo com os campos da tabela betting_houses
+
+Upload de logo opcional
+
+Preview de link com base_url + primary_param + {subid}
+
+📊 Extra: Painel de Resumo Superior
+Mostra cards com KPIs rápidos:
+
+Total de Casas Ativas (count where is_active = true)
+
+Total de Casas com CPA / RevShare
+
+Casas com Postback Ativo (enabled_postbacks com valores)
+
+Casas com mais Afiliações (top 3 com mais affiliate_links)
+
+🛡️ Segurança
+Somente user.role === 'admin' pode acessar
+
+Caso contrário, redirecionar para /login ou página pública
+
+💡 Sugestão de Estilo (Dark UI)
+Cards com borda azul/cinza e sombras suaves
+
+Ícones (ex: lucide-react) para cada botão
+
+Botões: azul para editar, cinza para visualizar, vermelho para desativar
+
+Modal animado com framer-motion para ações sensíveis

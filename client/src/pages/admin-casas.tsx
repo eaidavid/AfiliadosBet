@@ -7,13 +7,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Pencil, Trash2, Building2, ExternalLink, Eye, Users } from "lucide-react";
+import { 
+  Plus, 
+  Pencil, 
+  Trash2, 
+  Building2, 
+  ExternalLink, 
+  Eye, 
+  Users, 
+  Search,
+  Filter,
+  Webhook,
+  DollarSign,
+  ToggleLeft,
+  ToggleRight,
+  Copy,
+  TestTube,
+  Link as LinkIcon,
+  TrendingUp,
+  Activity
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import AdminSidebar from "@/components/admin/sidebar";
@@ -37,6 +57,14 @@ interface BettingHouse {
   logoUrl?: string;
   isActive: boolean;
   createdAt: string;
+  commissionType?: string;
+  cpaValue?: number;
+  revshareValue?: number;
+  enabledPostbacks?: boolean;
+  minDeposit?: number;
+  paymentMethods?: string;
+  parameterMapping?: string;
+  securityToken?: string;
   _count?: {
     affiliateLinks: number;
     conversions: number;
@@ -47,6 +75,18 @@ export default function AdminCasas() {
   const [currentPage, setCurrentPage] = useState("houses");
   const [editingHouse, setEditingHouse] = useState<BettingHouse | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [viewingHouse, setViewingHouse] = useState<BettingHouse | null>(null);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isPostbackDialogOpen, setIsPostbackDialogOpen] = useState(false);
+  const [isAffiliatesDialogOpen, setIsAffiliatesDialogOpen] = useState(false);
+  const [selectedHouseId, setSelectedHouseId] = useState<number | null>(null);
+  
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [commissionFilter, setCommissionFilter] = useState("all");
+  const [postbackFilter, setPostbackFilter] = useState("all");
+  
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -59,6 +99,26 @@ export default function AdminCasas() {
       logoUrl: "",
       isActive: true,
     },
+  });
+
+  // Filtering logic
+  const filteredHouses = houses.filter((house) => {
+    const matchesSearch = house.name.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === "all" || 
+      (statusFilter === "active" && house.isActive) ||
+      (statusFilter === "inactive" && !house.isActive);
+    
+    const matchesCommission = commissionFilter === "all" ||
+      (commissionFilter === "cpa" && house.commissionType?.includes("CPA")) ||
+      (commissionFilter === "revshare" && house.commissionType?.includes("RevShare")) ||
+      (commissionFilter === "both" && house.commissionType === "Both");
+    
+    const matchesPostback = postbackFilter === "all" ||
+      (postbackFilter === "configured" && house.enabledPostbacks) ||
+      (postbackFilter === "not-configured" && !house.enabledPostbacks);
+    
+    return matchesSearch && matchesStatus && matchesCommission && matchesPostback;
   });
 
   // Query para buscar casas
@@ -337,24 +397,27 @@ export default function AdminCasas() {
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* KPI Dashboard */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <Card className="bg-slate-800 border-slate-700">
+              <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-slate-400 text-sm font-medium">Total de Casas</p>
+                      <p className="text-blue-400 text-sm font-medium">Casas Ativas</p>
                       <p className="text-2xl font-bold text-white">
-                        {houses.length}
+                        {houses.filter(h => h.isActive).length}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1">
+                        de {houses.length} total
                       </p>
                     </div>
                     <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
-                      <Building2 className="h-6 w-6 text-blue-400" />
+                      <Activity className="h-6 w-6 text-blue-400" />
                     </div>
                   </div>
                 </CardContent>
@@ -366,17 +429,20 @@ export default function AdminCasas() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <Card className="bg-slate-800 border-slate-700">
+              <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border-emerald-500/20">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-slate-400 text-sm font-medium">Casas Ativas</p>
+                      <p className="text-emerald-400 text-sm font-medium">Com CPA</p>
                       <p className="text-2xl font-bold text-white">
-                        {houses.filter(h => h.isActive).length}
+                        {houses.filter(h => h.commissionType?.includes('CPA')).length}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1">
+                        comissão fixa
                       </p>
                     </div>
                     <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
-                      <Eye className="h-6 w-6 text-emerald-400" />
+                      <DollarSign className="h-6 w-6 text-emerald-400" />
                     </div>
                   </div>
                 </CardContent>
@@ -388,23 +454,112 @@ export default function AdminCasas() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <Card className="bg-slate-800 border-slate-700">
+              <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-500/20">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-slate-400 text-sm font-medium">Total de Links</p>
+                      <p className="text-purple-400 text-sm font-medium">Com Postback</p>
                       <p className="text-2xl font-bold text-white">
-                        {houses.reduce((acc, house) => acc + (house._count?.affiliateLinks || 0), 0)}
+                        {houses.filter(h => h.enabledPostbacks).length}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1">
+                        configurados
                       </p>
                     </div>
                     <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
-                      <Users className="h-6 w-6 text-purple-400" />
+                      <Webhook className="h-6 w-6 text-purple-400" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <Card className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border-orange-500/20">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-orange-400 text-sm font-medium">Total Afiliações</p>
+                      <p className="text-2xl font-bold text-white">
+                        {houses.reduce((acc, house) => acc + (house._count?.affiliateLinks || 0), 0)}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1">
+                        links ativos
+                      </p>
+                    </div>
+                    <div className="w-12 h-12 bg-orange-500/20 rounded-xl flex items-center justify-center">
+                      <TrendingUp className="h-6 w-6 text-orange-400" />
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </motion.div>
           </div>
+
+          {/* Filters and Search */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <Card className="bg-slate-800 border-slate-700">
+              <CardContent className="p-6">
+                <div className="flex flex-col lg:flex-row gap-4">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+                      <Input
+                        placeholder="Buscar por nome da casa..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10 bg-slate-700 border-slate-600 text-white"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-3">
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="w-40 bg-slate-700 border-slate-600 text-white">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-800 border-slate-700">
+                        <SelectItem value="all">Todos Status</SelectItem>
+                        <SelectItem value="active">Ativas</SelectItem>
+                        <SelectItem value="inactive">Inativas</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Select value={commissionFilter} onValueChange={setCommissionFilter}>
+                      <SelectTrigger className="w-40 bg-slate-700 border-slate-600 text-white">
+                        <SelectValue placeholder="Comissão" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-800 border-slate-700">
+                        <SelectItem value="all">Todas</SelectItem>
+                        <SelectItem value="cpa">Apenas CPA</SelectItem>
+                        <SelectItem value="revshare">Apenas RevShare</SelectItem>
+                        <SelectItem value="both">CPA + RevShare</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Select value={postbackFilter} onValueChange={setPostbackFilter}>
+                      <SelectTrigger className="w-48 bg-slate-700 border-slate-600 text-white">
+                        <SelectValue placeholder="Postbacks" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-800 border-slate-700">
+                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="configured">Configurado</SelectItem>
+                        <SelectItem value="not-configured">Não Configurado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
           {/* Houses Table */}
           <motion.div
@@ -421,30 +576,33 @@ export default function AdminCasas() {
                   <Table>
                     <TableHeader>
                       <TableRow className="border-slate-700">
+                        <TableHead className="text-slate-300">Logo</TableHead>
                         <TableHead className="text-slate-300">Nome</TableHead>
+                        <TableHead className="text-slate-300">Tipo de Comissão</TableHead>
+                        <TableHead className="text-slate-300">Valor Comissão</TableHead>
+                        <TableHead className="text-slate-300">Postbacks</TableHead>
+                        <TableHead className="text-slate-300">Afiliados</TableHead>
                         <TableHead className="text-slate-300">Status</TableHead>
-                        <TableHead className="text-slate-300">URL</TableHead>
-                        <TableHead className="text-slate-300">Links</TableHead>
-                        <TableHead className="text-slate-300">Conversões</TableHead>
-                        <TableHead className="text-slate-300">Criada em</TableHead>
-                        <TableHead className="text-slate-300">Ações</TableHead>
+                        <TableHead className="text-slate-300 text-center">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {isLoading ? (
                         <TableRow>
-                          <TableCell colSpan={7} className="text-center text-slate-400 py-8">
+                          <TableCell colSpan={8} className="text-center text-slate-400 py-8">
                             Carregando casas...
                           </TableCell>
                         </TableRow>
-                      ) : houses.length === 0 ? (
+                      ) : filteredHouses.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={7} className="text-center text-slate-400 py-8">
-                            Nenhuma casa encontrada
+                          <TableCell colSpan={8} className="text-center text-slate-400 py-8">
+                            <Building2 className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+                            <p className="text-slate-400 text-lg">Nenhuma casa encontrada</p>
+                            <p className="text-slate-500 text-sm">Tente ajustar os filtros ou adicione uma nova casa</p>
                           </TableCell>
                         </TableRow>
                       ) : (
-                        houses.map((house) => (
+                        filteredHouses.map((house) => (
                           <TableRow key={house.id} className="border-slate-700">
                             <TableCell>
                               <div className="flex items-center gap-3">
