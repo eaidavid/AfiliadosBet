@@ -1256,6 +1256,397 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // === COMPREHENSIVE BETTING HOUSES MANAGEMENT API ===
+  
+  // Get all betting houses with enhanced data
+  app.get("/api/admin/betting-houses", requireAdmin, async (req: any, res) => {
+    try {
+      const houses = await db.select({
+        id: schema.bettingHouses.id,
+        name: schema.bettingHouses.name,
+        description: schema.bettingHouses.description,
+        baseUrl: schema.bettingHouses.baseUrl,
+        primaryParam: schema.bettingHouses.primaryParam,
+        additionalParams: schema.bettingHouses.additionalParams,
+        commissionType: schema.bettingHouses.commissionType,
+        cpaValue: schema.bettingHouses.cpaValue,
+        revshareValue: schema.bettingHouses.revshareValue,
+        minDeposit: schema.bettingHouses.minDeposit,
+        paymentMethods: schema.bettingHouses.paymentMethods,
+        securityToken: schema.bettingHouses.securityToken,
+        identifier: schema.bettingHouses.identifier,
+        logoUrl: schema.bettingHouses.logoUrl,
+        isActive: schema.bettingHouses.isActive,
+        enabledPostbacks: schema.bettingHouses.enabledPostbacks,
+        parameterMapping: schema.bettingHouses.parameterMapping,
+        createdAt: schema.bettingHouses.createdAt,
+        updatedAt: schema.bettingHouses.updatedAt
+      })
+        .from(schema.bettingHouses)
+        .orderBy(desc(schema.bettingHouses.createdAt));
+
+      // Get affiliate link counts for each house
+      const housesWithCounts = await Promise.all(houses.map(async (house) => {
+        const [affiliateLinksCount] = await db.select({
+          count: sql`count(*)`.as('count')
+        })
+          .from(schema.affiliateLinks)
+          .where(eq(schema.affiliateLinks.houseId, house.id));
+
+        const [conversionsCount] = await db.select({
+          count: sql`count(*)`.as('count')
+        })
+          .from(schema.conversions)
+          .where(eq(schema.conversions.houseId, house.id));
+
+        return {
+          ...house,
+          _count: {
+            affiliateLinks: Number(affiliateLinksCount.count || 0),
+            conversions: Number(conversionsCount.count || 0)
+          }
+        };
+      }));
+
+      res.json(housesWithCounts);
+    } catch (error) {
+      console.error("Erro ao buscar casas de apostas:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Create new betting house
+  app.post("/api/admin/betting-houses", requireAdmin, async (req: any, res) => {
+    try {
+      const {
+        name,
+        description,
+        baseUrl,
+        primaryParam,
+        additionalParams,
+        commissionType,
+        cpaValue,
+        revshareValue,
+        minDeposit,
+        paymentMethods,
+        securityToken,
+        identifier,
+        logoUrl,
+        isActive,
+        enabledPostbacks,
+        parameterMapping
+      } = req.body;
+
+      // Check if identifier is unique
+      const existingHouse = await db.select({ id: schema.bettingHouses.id })
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.identifier, identifier))
+        .limit(1);
+
+      if (existingHouse.length > 0) {
+        return res.status(400).json({ error: "Identificador já existe" });
+      }
+
+      const [newHouse] = await db.insert(schema.bettingHouses).values({
+        name,
+        description,
+        baseUrl,
+        primaryParam,
+        additionalParams: additionalParams ? JSON.parse(additionalParams) : null,
+        commissionType,
+        cpaValue: cpaValue?.toString(),
+        revshareValue: revshareValue?.toString(),
+        minDeposit: minDeposit?.toString(),
+        paymentMethods,
+        securityToken: securityToken || `token_${Date.now()}_${Math.random().toString(36).substring(2)}`,
+        identifier,
+        logoUrl,
+        isActive: isActive ?? true,
+        enabledPostbacks: enabledPostbacks || [],
+        parameterMapping: parameterMapping ? JSON.parse(parameterMapping) : {},
+        updatedAt: new Date()
+      }).returning();
+
+      res.json(newHouse);
+    } catch (error) {
+      console.error("Erro ao criar casa de apostas:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Update betting house
+  app.put("/api/admin/betting-houses/:id", requireAdmin, async (req: any, res) => {
+    try {
+      const houseId = parseInt(req.params.id);
+      const {
+        name,
+        description,
+        baseUrl,
+        primaryParam,
+        additionalParams,
+        commissionType,
+        cpaValue,
+        revshareValue,
+        minDeposit,
+        paymentMethods,
+        securityToken,
+        identifier,
+        logoUrl,
+        isActive,
+        enabledPostbacks,
+        parameterMapping
+      } = req.body;
+
+      // Check if identifier is unique (excluding current house)
+      if (identifier) {
+        const existingHouse = await db.select({ id: schema.bettingHouses.id })
+          .from(schema.bettingHouses)
+          .where(and(
+            eq(schema.bettingHouses.identifier, identifier),
+            not(eq(schema.bettingHouses.id, houseId))
+          ))
+          .limit(1);
+
+        if (existingHouse.length > 0) {
+          return res.status(400).json({ error: "Identificador já existe" });
+        }
+      }
+
+      const [updatedHouse] = await db.update(schema.bettingHouses)
+        .set({
+          name,
+          description,
+          baseUrl,
+          primaryParam,
+          additionalParams: additionalParams ? JSON.parse(additionalParams) : null,
+          commissionType,
+          cpaValue: cpaValue?.toString(),
+          revshareValue: revshareValue?.toString(),
+          minDeposit: minDeposit?.toString(),
+          paymentMethods,
+          securityToken,
+          identifier,
+          logoUrl,
+          isActive,
+          enabledPostbacks: enabledPostbacks || [],
+          parameterMapping: parameterMapping ? JSON.parse(parameterMapping) : {},
+          updatedAt: new Date()
+        })
+        .where(eq(schema.bettingHouses.id, houseId))
+        .returning();
+
+      if (!updatedHouse) {
+        return res.status(404).json({ error: "Casa de apostas não encontrada" });
+      }
+
+      res.json(updatedHouse);
+    } catch (error) {
+      console.error("Erro ao atualizar casa de apostas:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Toggle betting house status
+  app.patch("/api/admin/betting-houses/:id/toggle", requireAdmin, async (req: any, res) => {
+    try {
+      const houseId = parseInt(req.params.id);
+
+      // Get current status
+      const [currentHouse] = await db.select({ isActive: schema.bettingHouses.isActive })
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.id, houseId))
+        .limit(1);
+
+      if (!currentHouse) {
+        return res.status(404).json({ error: "Casa de apostas não encontrada" });
+      }
+
+      // Toggle status
+      const [updatedHouse] = await db.update(schema.bettingHouses)
+        .set({
+          isActive: !currentHouse.isActive,
+          updatedAt: new Date()
+        })
+        .where(eq(schema.bettingHouses.id, houseId))
+        .returning();
+
+      res.json(updatedHouse);
+    } catch (error) {
+      console.error("Erro ao alterar status da casa:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Delete betting house
+  app.delete("/api/admin/betting-houses/:id", requireAdmin, async (req: any, res) => {
+    try {
+      const houseId = parseInt(req.params.id);
+
+      // Check if house has active affiliate links
+      const activeLinks = await db.select({ id: schema.affiliateLinks.id })
+        .from(schema.affiliateLinks)
+        .where(and(
+          eq(schema.affiliateLinks.houseId, houseId),
+          eq(schema.affiliateLinks.isActive, true)
+        ))
+        .limit(1);
+
+      if (activeLinks.length > 0) {
+        return res.status(400).json({ 
+          error: "Não é possível deletar uma casa com links de afiliados ativos" 
+        });
+      }
+
+      // Check if house has conversions
+      const conversions = await db.select({ id: schema.conversions.id })
+        .from(schema.conversions)
+        .where(eq(schema.conversions.houseId, houseId))
+        .limit(1);
+
+      if (conversions.length > 0) {
+        return res.status(400).json({ 
+          error: "Não é possível deletar uma casa com conversões registradas" 
+        });
+      }
+
+      const deletedHouse = await db.delete(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.id, houseId))
+        .returning();
+
+      if (deletedHouse.length === 0) {
+        return res.status(404).json({ error: "Casa de apostas não encontrada" });
+      }
+
+      res.json({ message: "Casa de apostas deletada com sucesso" });
+    } catch (error) {
+      console.error("Erro ao deletar casa de apostas:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Get betting house postback configuration
+  app.get("/api/admin/betting-houses/:id/postbacks", requireAdmin, async (req: any, res) => {
+    try {
+      const houseId = parseInt(req.params.id);
+
+      const [house] = await db.select({
+        id: schema.bettingHouses.id,
+        name: schema.bettingHouses.name,
+        identifier: schema.bettingHouses.identifier,
+        securityToken: schema.bettingHouses.securityToken,
+        enabledPostbacks: schema.bettingHouses.enabledPostbacks,
+        parameterMapping: schema.bettingHouses.parameterMapping
+      })
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.id, houseId))
+        .limit(1);
+
+      if (!house) {
+        return res.status(404).json({ error: "Casa de apostas não encontrada" });
+      }
+
+      // Generate postback URLs for each event type
+      const basePostbackUrl = `${req.protocol}://${req.get('host')}/postback/${house.identifier}`;
+      const postbackUrls = {
+        click: `${basePostbackUrl}/click?subid={SUBID}&token=${house.securityToken}`,
+        registration: `${basePostbackUrl}/registration?subid={SUBID}&customer_id={CUSTOMER_ID}&token=${house.securityToken}`,
+        deposit: `${basePostbackUrl}/deposit?subid={SUBID}&customer_id={CUSTOMER_ID}&amount={AMOUNT}&token=${house.securityToken}`,
+        firstDeposit: `${basePostbackUrl}/first-deposit?subid={SUBID}&customer_id={CUSTOMER_ID}&amount={AMOUNT}&token=${house.securityToken}`,
+        profit: `${basePostbackUrl}/profit?subid={SUBID}&customer_id={CUSTOMER_ID}&amount={AMOUNT}&token=${house.securityToken}`
+      };
+
+      res.json({
+        house,
+        postbackUrls,
+        enabledEvents: house.enabledPostbacks || [],
+        securityToken: house.securityToken,
+        parameterMapping: house.parameterMapping || {}
+      });
+    } catch (error) {
+      console.error("Erro ao buscar configurações de postback:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Update betting house postback configuration
+  app.put("/api/admin/betting-houses/:id/postbacks", requireAdmin, async (req: any, res) => {
+    try {
+      const houseId = parseInt(req.params.id);
+      const { enabledPostbacks, parameterMapping, securityToken } = req.body;
+
+      const [updatedHouse] = await db.update(schema.bettingHouses)
+        .set({
+          enabledPostbacks: enabledPostbacks || [],
+          parameterMapping: parameterMapping || {},
+          securityToken: securityToken || `token_${Date.now()}_${Math.random().toString(36).substring(2)}`,
+          updatedAt: new Date()
+        })
+        .where(eq(schema.bettingHouses.id, houseId))
+        .returning();
+
+      if (!updatedHouse) {
+        return res.status(404).json({ error: "Casa de apostas não encontrada" });
+      }
+
+      res.json(updatedHouse);
+    } catch (error) {
+      console.error("Erro ao atualizar configurações de postback:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Get affiliate links for a betting house
+  app.get("/api/admin/betting-houses/:id/affiliates", requireAdmin, async (req: any, res) => {
+    try {
+      const houseId = parseInt(req.params.id);
+
+      const affiliateLinks = await db.select({
+        linkId: schema.affiliateLinks.id,
+        generatedUrl: schema.affiliateLinks.generatedUrl,
+        isActive: schema.affiliateLinks.isActive,
+        createdAt: schema.affiliateLinks.createdAt,
+        userId: schema.users.id,
+        username: schema.users.username,
+        fullName: schema.users.fullName,
+        email: schema.users.email
+      })
+        .from(schema.affiliateLinks)
+        .innerJoin(schema.users, eq(schema.affiliateLinks.userId, schema.users.id))
+        .where(eq(schema.affiliateLinks.houseId, houseId))
+        .orderBy(desc(schema.affiliateLinks.createdAt));
+
+      // Get conversion stats for each affiliate
+      const affiliatesWithStats = await Promise.all(affiliateLinks.map(async (link) => {
+        const [stats] = await db.select({
+          totalClicks: sql`count(case when ${schema.conversions.type} = 'click' then 1 end)`.as('totalClicks'),
+          totalRegistrations: sql`count(case when ${schema.conversions.type} = 'registration' then 1 end)`.as('totalRegistrations'),
+          totalDeposits: sql`count(case when ${schema.conversions.type} = 'deposit' then 1 end)`.as('totalDeposits'),
+          totalCommission: sql`sum(cast(${schema.conversions.commission} as decimal))`.as('totalCommission')
+        })
+          .from(schema.conversions)
+          .where(and(
+            eq(schema.conversions.userId, link.userId),
+            eq(schema.conversions.houseId, houseId)
+          ));
+
+        return {
+          ...link,
+          stats: {
+            totalClicks: Number(stats.totalClicks || 0),
+            totalRegistrations: Number(stats.totalRegistrations || 0),
+            totalDeposits: Number(stats.totalDeposits || 0),
+            totalCommission: Number(stats.totalCommission || 0)
+          }
+        };
+      }));
+
+      res.json(affiliatesWithStats);
+    } catch (error) {
+      console.error("Erro ao buscar afiliados da casa:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   // === SISTEMA DE CONTROLE DE LEADS POR CUSTOMER_ID ===
 
   // Função auxiliar para verificar duplicação

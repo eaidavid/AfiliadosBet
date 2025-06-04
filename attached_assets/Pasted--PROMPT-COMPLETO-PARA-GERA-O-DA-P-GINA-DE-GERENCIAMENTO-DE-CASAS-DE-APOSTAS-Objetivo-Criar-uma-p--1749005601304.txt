@@ -1,0 +1,146 @@
+✅ PROMPT COMPLETO PARA GERAÇÃO DA PÁGINA DE GERENCIAMENTO DE CASAS DE APOSTAS
+Objetivo: Criar uma página completa, moderna e funcional para gerenciar casas de apostas no sistema administrativo.
+
+💡 Contexto:
+As casas de apostas são armazenadas na tabela betting_houses.
+
+Cada casa pode ter diferentes tipos de comissão: CPA, RevShare ou CPA + RevShare (híbrido).
+
+Já existe um painel admin no sistema, mas a antiga página de administração foi deslocada para outra rota, e o formulário de criação/edit está incompleto.
+
+Os cards do dashboard precisam de ajustes visuais e correções nos dados.
+
+✅ Requisitos da página:
+Rota nova:
+
+Mova a página de gerenciamento de casas de apostas para uma nova rota:
+/admin/betting-houses
+
+Listagem das casas:
+
+Mostre todas as casas cadastradas com:
+
+Nome, logo, status (ativa ou não)
+
+Tipo de comissão
+
+Se tem postback configurado
+
+Quantidade de afiliados ativos
+
+Ações disponíveis:
+
+Editar
+
+Ativar/Desativar
+
+Excluir
+
+Copiar link de afiliado
+
+Ver postbacks configurados
+
+Criação e edição (formulário completo):
+
+Utilize um formulário com os seguintes campos:
+
+Nome
+
+Descrição
+
+URL base
+
+Parâmetro primário (ex: subid)
+
+Parâmetros adicionais (chave: valor)
+
+Tipo de comissão: CPA, RevShare, CPA + RevShare
+
+Valor CPA (input condicional)
+
+Percentual RevShare (input condicional)
+
+Depósito mínimo para CPA
+
+Métodos de pagamento aceitos
+
+Token de segurança para postback
+
+Identificador único da casa
+
+URL do logo
+
+Ativa? (checkbox)
+
+Quais postbacks estão habilitados: (click, registro, depósito, lucro)
+
+Mapeamento de parâmetros (JSON editável)
+
+Ações funcionais:
+
+Todos os botões devem ser funcionais com seus respectivos handlers:
+
+Editar (carrega os dados no formulário)
+
+Excluir (com confirmação)
+
+Salvar (create/update)
+
+Copiar link (clipboard)
+
+Toggle ativar/desativar
+
+Visualizar configurações de postback (modal)
+
+Melhoria visual dos cards no dashboard:
+
+Corrigir harmonia do layout dos cards:
+
+Alinhamento
+
+Cores mais suaves e coerentes
+
+Textos reescritos com padronização:
+
+Casas Ativas: 6 de 6 casas
+
+Com CPA: 2 com comissão CPA
+
+Com Postback: 6 casas com postback
+
+Total Afiliações: X links ativos (corrigir cálculo)
+
+Corrigir total de afiliações:
+
+A contagem de links ativos está errada (está 0).
+
+Verifique na tabela de afiliações (provavelmente affiliations ou similar) o total de registros ativos por casa.
+
+Corrija a query ou lógica que alimenta esse dado.
+
+🔍 EXTRA: Verificação dos campos no banco de dados
+Peça ao sistema para verificar e adicionar todos os campos essenciais na tabela betting_houses:
+
+Campo	Tipo sugerido	Descrição
+id	UUID ou Serial	Identificador único
+name	VARCHAR	Nome da casa
+description	TEXT	Descrição da casa
+base_url	TEXT	URL base usada nos links promocionais
+primary_param	VARCHAR	Parâmetro primário da URL (ex: subid, ref, s1)
+additional_params	JSON ou TEXT	Parâmetros adicionais configuráveis
+commission_type	ENUM	cpa, revshare, cpa+revshare
+cpa_value	NUMERIC	Valor fixo por CPA
+revshare_value	NUMERIC	Porcentagem de RevShare
+min_deposit	NUMERIC	Valor mínimo para ativar CPA (se aplicável)
+payment_methods	TEXT ou JSON	Meios de pagamento aceitos
+security_token	TEXT	Token usado nos postbacks
+identifier	VARCHAR (UNIQUE)	Usado para identificar nas rotas de postback
+logo_url	TEXT	URL do logo da casa
+is_active	BOOLEAN	Casa visível no sistema?
+enabled_postbacks	JSON[] ou TEXT	Tipos de postbacks ativados (click, registro, depósito, lucro)
+parameter_mapping	JSON	Mapeia parâmetros externos para internos
+created_at	TIMESTAMP	Data de criação
+updated_at	TIMESTAMP	Data de atualização
+
+🧠 Caso algum campo esteja ausente, adicione via migration com Drizzle ORM.
+
