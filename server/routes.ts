@@ -5,7 +5,7 @@ import { storage } from "./storage";
 import { db } from "./db";
 import { affiliateLinks } from "@shared/schema";
 import * as schema from "@shared/schema";
-import { eq, sql, desc, and, or, ilike, gte, lt, inArray } from "drizzle-orm";
+import { eq, sql, desc, and, or, ilike, gte, lt, inArray, ne } from "drizzle-orm";
 import { postbackLogs } from "../shared/schema";
 import bcrypt from "bcrypt";
 import session from "express-session";
