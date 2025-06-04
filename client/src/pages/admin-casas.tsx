@@ -101,6 +101,12 @@ export default function AdminCasas() {
     },
   });
 
+  // Query para buscar casas
+  const { data: houses = [], isLoading } = useQuery<BettingHouse[]>({
+    queryKey: ["/api/admin/houses"],
+    refetchInterval: 30000,
+  });
+
   // Filtering logic
   const filteredHouses = houses.filter((house) => {
     const matchesSearch = house.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -119,12 +125,6 @@ export default function AdminCasas() {
       (postbackFilter === "not-configured" && !house.enabledPostbacks);
     
     return matchesSearch && matchesStatus && matchesCommission && matchesPostback;
-  });
-
-  // Query para buscar casas
-  const { data: houses = [], isLoading } = useQuery<BettingHouse[]>({
-    queryKey: ["/api/admin/houses"],
-    refetchInterval: 30000,
   });
 
   // Mutation para criar/editar casa
@@ -196,6 +196,31 @@ export default function AdminCasas() {
     },
   });
 
+  // Mutation para alterar status da casa
+  const toggleHouseStatus = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/admin/houses/${id}/toggle`, {
+        method: "PATCH",
+      });
+      if (!response.ok) throw new Error("Erro ao alterar status da casa");
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Status alterado",
+        description: "O status da casa foi alterado com sucesso.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/houses"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro ao alterar status",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handlePageChange = (page: string) => {
     setCurrentPage(page);
     if (page === "dashboard") {
@@ -205,6 +230,11 @@ export default function AdminCasas() {
     } else if (page === "leads") {
       window.location.href = "/admin/leads";
     }
+  };
+
+  const handleView = (house: BettingHouse) => {
+    setViewingHouse(house);
+    setIsViewDialogOpen(true);
   };
 
   const handleEdit = (house: BettingHouse) => {
@@ -217,6 +247,16 @@ export default function AdminCasas() {
       isActive: house.isActive,
     });
     setIsDialogOpen(true);
+  };
+
+  const handlePostbacks = (houseId: number) => {
+    setSelectedHouseId(houseId);
+    setIsPostbackDialogOpen(true);
+  };
+
+  const handleAffiliates = (houseId: number) => {
+    setSelectedHouseId(houseId);
+    setIsAffiliatesDialogOpen(true);
   };
 
   const handleDelete = (id: number) => {
@@ -603,75 +643,138 @@ export default function AdminCasas() {
                         </TableRow>
                       ) : (
                         filteredHouses.map((house) => (
-                          <TableRow key={house.id} className="border-slate-700">
+                          <TableRow key={house.id} className="border-slate-700 hover:bg-slate-700/50">
                             <TableCell>
-                              <div className="flex items-center gap-3">
-                                {house.logoUrl && (
-                                  <img
-                                    src={house.logoUrl}
-                                    alt={house.name}
-                                    className="w-8 h-8 rounded object-cover"
-                                  />
-                                )}
-                                <div>
-                                  <p className="text-white font-medium">{house.name}</p>
-                                  {house.description && (
-                                    <p className="text-slate-400 text-sm truncate max-w-48">
-                                      {house.description}
-                                    </p>
-                                  )}
+                              {house.logoUrl ? (
+                                <img 
+                                  src={house.logoUrl} 
+                                  alt={house.name}
+                                  className="w-10 h-10 rounded-lg object-cover"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 bg-slate-600 rounded-lg flex items-center justify-center">
+                                  <Building2 className="w-5 h-5 text-slate-400" />
                                 </div>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <p className="text-white font-medium">{house.name}</p>
+                                {house.description && (
+                                  <p className="text-slate-400 text-sm truncate max-w-[200px]">{house.description}</p>
+                                )}
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Badge
-                                variant={house.isActive ? "default" : "secondary"}
-                                className={
-                                  house.isActive
-                                    ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/20"
-                                    : "bg-slate-500/20 text-slate-400 border-slate-500/20"
-                                }
-                              >
-                                {house.isActive ? "Ativa" : "Inativa"}
-                              </Badge>
+                              <div className="flex flex-col gap-1">
+                                {house.commissionType === 'CPA' && (
+                                  <Badge variant="secondary" className="w-fit bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                                    CPA
+                                  </Badge>
+                                )}
+                                {house.commissionType === 'RevShare' && (
+                                  <Badge variant="secondary" className="w-fit bg-blue-500/20 text-blue-400 border-blue-500/30">
+                                    RevShare
+                                  </Badge>
+                                )}
+                                {house.commissionType === 'Both' && (
+                                  <div className="flex flex-col gap-1">
+                                    <Badge variant="secondary" className="w-fit bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                                      CPA
+                                    </Badge>
+                                    <Badge variant="secondary" className="w-fit bg-blue-500/20 text-blue-400 border-blue-500/30">
+                                      RevShare
+                                    </Badge>
+                                  </div>
+                                )}
+                              </div>
                             </TableCell>
                             <TableCell>
-                              <a
-                                href={house.baseUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-400 hover:text-blue-300 flex items-center gap-1"
-                              >
-                                <span className="max-w-32 truncate">{house.baseUrl}</span>
-                                <ExternalLink className="h-3 w-3" />
-                              </a>
+                              <div className="flex flex-col gap-1 text-sm">
+                                {house.cpaValue && (
+                                  <span className="text-emerald-400">CPA: R$ {house.cpaValue}</span>
+                                )}
+                                {house.revshareValue && (
+                                  <span className="text-blue-400">Rev: {house.revshareValue}%</span>
+                                )}
+                              </div>
                             </TableCell>
-                            <TableCell className="text-slate-300">
-                              {house._count?.affiliateLinks || 0}
-                            </TableCell>
-                            <TableCell className="text-slate-300">
-                              {house._count?.conversions || 0}
-                            </TableCell>
-                            <TableCell className="text-slate-400">
-                              {new Date(house.createdAt).toLocaleDateString("pt-BR")}
+                            <TableCell>
+                              <div className="flex items-center">
+                                {house.enabledPostbacks ? (
+                                  <Badge variant="secondary" className="bg-green-500/20 text-green-400 border-green-500/30">
+                                    ✓ Configurado
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="secondary" className="bg-red-500/20 text-red-400 border-red-500/30">
+                                    ✗ Não Configurado
+                                  </Badge>
+                                )}
+                              </div>
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
-                                <Button
-                                  variant="ghost"
+                                <Users className="h-4 w-4 text-slate-400" />
+                                <span className="text-slate-300 font-medium">{house._count?.affiliateLinks || 0}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={house.isActive ? "default" : "secondary"} 
+                                     className={house.isActive ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-red-500/20 text-red-400 border-red-500/30"}>
+                                {house.isActive ? "✅ Ativa" : "❌ Inativa"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center justify-center gap-1">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => handleView(house)}
+                                  title="Ver detalhes"
+                                  className="h-8 w-8 p-0 hover:bg-slate-600"
+                                >
+                                  <Eye className="h-4 w-4 text-slate-400" />
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
                                   size="sm"
                                   onClick={() => handleEdit(house)}
-                                  className="text-slate-400 hover:text-white hover:bg-slate-700"
+                                  title="Editar"
+                                  className="h-8 w-8 p-0 hover:bg-blue-600"
                                 >
-                                  <Pencil className="h-4 w-4" />
+                                  <Pencil className="h-4 w-4 text-blue-400" />
                                 </Button>
-                                <Button
-                                  variant="ghost"
+                                <Button 
+                                  variant="ghost" 
                                   size="sm"
-                                  onClick={() => handleDelete(house.id)}
-                                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                  onClick={() => toggleHouseStatus.mutate(house.id)}
+                                  disabled={toggleHouseStatus.isPending}
+                                  title={house.isActive ? "Desativar" : "Ativar"}
+                                  className="h-8 w-8 p-0 hover:bg-yellow-600"
                                 >
-                                  <Trash2 className="h-4 w-4" />
+                                  {house.isActive ? (
+                                    <ToggleLeft className="h-4 w-4 text-yellow-400" />
+                                  ) : (
+                                    <ToggleRight className="h-4 w-4 text-yellow-400" />
+                                  )}
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => handlePostbacks(house.id)}
+                                  title="Configurar Postbacks"
+                                  className="h-8 w-8 p-0 hover:bg-purple-600"
+                                >
+                                  <Webhook className="h-4 w-4 text-purple-400" />
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => handleAffiliates(house.id)}
+                                  title="Ver Afiliações"
+                                  className="h-8 w-8 p-0 hover:bg-orange-600"
+                                >
+                                  <LinkIcon className="h-4 w-4 text-orange-400" />
                                 </Button>
                               </div>
                             </TableCell>
