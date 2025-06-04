@@ -31,6 +31,17 @@ export default function AdminSidebar({ currentPage, onPageChange }: AdminSidebar
     if (isMobile) {
       setIsMobileOpen(false);
     }
+    
+    // Navigate to the correct routes
+    if (page === "dashboard") {
+      window.location.href = "/admin";
+    } else if (page === "houses") {
+      window.location.href = "/admin/casas";
+    } else if (page === "manage") {
+      window.location.href = "/admin/manage";
+    } else if (page === "leads") {
+      window.location.href = "/admin/leads";
+    }
   };
 
   const toggleCollapse = () => {

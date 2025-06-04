@@ -13,6 +13,7 @@ import UserDashboardComplete from "@/pages/user-dashboard-complete";
 import UserReports from "@/pages/user-reports-clean";
 import AdminDashboard from "@/pages/admin-dashboard-new";
 import AdminLeadsManagement from "@/pages/admin-leads-management";
+import AdminCasas from "@/pages/admin-casas";
 import NotFound from "@/pages/not-found";
 import AdminPanelToggle from "@/components/admin-panel-toggle";
 
@@ -81,6 +82,7 @@ function Router() {
       <Route path="/reports" component={AuthenticatedUserReports} />
       <Route path="/admin" component={AuthenticatedAdminDashboard} />
       <Route path="/admin/leads" component={AuthenticatedAdminLeads} />
+      <Route path="/admin/casas" component={AuthenticatedAdminCasas} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -199,6 +201,36 @@ function AuthenticatedAdminLeads() {
   return (
     <div className="mobile-safe no-bounce">
       <AdminLeadsManagement />
+      <AdminPanelToggle />
+    </div>
+  );
+}
+
+function AuthenticatedAdminCasas() {
+  const { isAuthenticated, isLoading, isAdmin } = useAuth();
+  const [location, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading && (!isAuthenticated || !isAdmin)) {
+      setLocation("/login");
+    }
+  }, [isAuthenticated, isLoading, isAdmin, setLocation]);
+
+  if (isLoading) {
+    return (
+      <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce">
+        <div className="text-emerald-500 text-xl">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !isAdmin) {
+    return null;
+  }
+
+  return (
+    <div className="mobile-safe no-bounce">
+      <AdminCasas />
       <AdminPanelToggle />
     </div>
   );
