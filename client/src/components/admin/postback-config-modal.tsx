@@ -84,7 +84,7 @@ export default function PostbackConfigModal({ isOpen, onClose, houseId }: Postba
         title: "Sucesso!",
         description: "Postback criado com sucesso!",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/postbacks", houseId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/betting-houses", houseId, "postbacks"] });
       setIsAddingNew(false);
       form.reset();
     },
@@ -111,7 +111,7 @@ export default function PostbackConfigModal({ isOpen, onClose, houseId }: Postba
         title: "Sucesso!",
         description: "Postback atualizado com sucesso!",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/postbacks", houseId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/betting-houses", houseId, "postbacks"] });
       setEditingPostback(null);
     },
     onError: (error: any) => {
@@ -137,7 +137,7 @@ export default function PostbackConfigModal({ isOpen, onClose, houseId }: Postba
         title: "Sucesso!",
         description: "Postback deletado com sucesso!",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/postbacks", houseId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/betting-houses", houseId, "postbacks"] });
     },
     onError: (error: any) => {
       toast({
