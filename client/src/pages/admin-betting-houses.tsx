@@ -41,6 +41,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import AdminSidebar from "@/components/admin/sidebar";
+import AdminHeader from "@/components/admin/header";
 
 // Enhanced schema for complete betting house management
 const bettingHouseSchema = z.object({
@@ -99,6 +100,7 @@ export default function AdminBettingHouses() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isPostbackDialogOpen, setIsPostbackDialogOpen] = useState(false);
   const [selectedHouseId, setSelectedHouseId] = useState<number | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Filter states
   const [searchTerm, setSearchTerm] = useState("");
@@ -292,16 +294,44 @@ export default function AdminBettingHouses() {
 
   return (
     <div className="min-h-screen bg-slate-900 flex">
-      <AdminSidebar currentPage="betting-houses" onPageChange={() => {}} />
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`
+        fixed lg:relative top-0 left-0 h-full z-50 lg:z-auto
+        transform transition-transform duration-300 ease-in-out
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        <AdminSidebar 
+          currentPage="betting-houses" 
+          onPageChange={() => {
+            setIsMobileMenuOpen(false);
+          }} 
+        />
+      </div>
       
-      <div className="flex-1 ml-64">
+      <div className="flex-1 lg:ml-64">
         {/* Header */}
-        <div className="bg-slate-800 border-b border-slate-700 px-6 py-4">
-          <div className="flex items-center justify-between">
+        <AdminHeader 
+          title="Gerenciamento de Casas de Apostas"
+          subtitle="Gerencie suas casas de apostas, comissões e configurações de postback"
+          onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        />
+
+        {/* Main Content */}
+        <div className="p-4 lg:p-6">
+          {/* Action Header */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-white">Gerenciamento de Casas de Apostas</h1>
-              <p className="text-slate-400 mt-1">
-                Gerencie suas casas de apostas, comissões e configurações de postback
+              <h2 className="text-xl font-semibold text-white">Casas de Apostas</h2>
+              <p className="text-slate-400 text-sm">
+                {houses.length} casa{houses.length !== 1 ? 's' : ''} cadastrada{houses.length !== 1 ? 's' : ''}
               </p>
             </div>
             
@@ -654,11 +684,10 @@ export default function AdminBettingHouses() {
               </DialogContent>
             </Dialog>
           </div>
-        </div>
+          </div>
 
-        <div className="p-6 space-y-6">
           {/* Enhanced KPI Dashboard */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -767,7 +796,7 @@ export default function AdminBettingHouses() {
             transition={{ delay: 0.5 }}
           >
             <Card className="bg-slate-800 border-slate-700">
-              <CardContent className="p-6">
+              <CardContent className="p-4 lg:p-6">
                 <div className="flex flex-col lg:flex-row gap-4">
                   <div className="flex-1">
                     <div className="relative">
