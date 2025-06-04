@@ -1,0 +1,96 @@
+🔷 1. RESUMO GERAL DO SISTEMA
+Visão macro com números-chave atualizados em tempo real.
+
+KPIs Individuais:
+Indicador	Fonte / Cálculo	Observações
+Afiliados Ativos	SELECT COUNT(*) FROM users WHERE role = 'affiliate' AND is_active = true	Exibe somente afiliados ativos
+Casas de Apostas Ativas	SELECT COUNT(*) FROM betting_houses WHERE is_active = true	Para saber quantas estão no ar
+Links de Afiliados Gerados	SELECT COUNT(*) FROM affiliate_links	Total de links únicos criados
+Total de Conversões	SELECT COUNT(*) FROM conversions	Todas as conversões registradas
+Total de Cliques	SELECT COUNT(*) FROM click_tracking	Todos os rastreamentos de clique
+Total Pago em Comissões	SELECT SUM(amount) FROM payments WHERE status = 'paid'	Soma das comissões pagas
+Comissões Pendentes	SELECT SUM(amount) FROM payments WHERE status = 'pending'	Valor a pagar ainda
+Lucro Gerado (Leads)	SELECT SUM(amount) FROM conversions WHERE type = 'profit'	Soma de todos os lucros gerados
+
+🔷 2. ATIVIDADE RECENTE EM TEMPO REAL
+Eventos em ordem cronológica para facilitar a auditoria e detecção de anomalias.
+
+Bloco A: Últimos Postbacks Recebidos
+Fonte: postback_logs ORDER BY criado_em DESC LIMIT 10
+
+Colunas: casa, evento, valor, status, subid, criado_em, ip
+
+Bloco B: Últimos Cliques nos Links
+Fonte: click_tracking ORDER BY clicked_at DESC LIMIT 10
+
+Colunas: user_id, house_id, ip_address, user_agent, clicked_at
+
+Bloco C: Últimas Conversões Registradas
+Fonte: conversions ORDER BY converted_at DESC LIMIT 10
+
+Colunas: user_id, house_id, type, amount, commission, customer_id, converted_at
+
+🔷 3. RANKING DOS MELHORES AFILIADOS
+Métrica para premiar, monitorar e impulsionar os melhores usuários.
+
+Tabela: Top 10 por Comissões
+Agrupamento: GROUP BY user_id
+
+Colunas:
+
+username (join com users)
+
+Soma Total de Commission (SUM(commission))
+
+Total de Conversões (COUNT(*))
+
+Total de Leads (COUNT(DISTINCT customer_id))
+
+🔷 4. DESEMPENHO DAS CASAS DE APOSTAS
+Entenda quais casas estão trazendo resultados reais.
+
+Tabela Comparativa:
+Casa	Cliques	Registros	Depósitos	Lucro Gerado	Comissão Total
+
+Fonte combinada:
+
+click_tracking (cliques por house_id)
+
+conversions filtrando type
+
+JOIN betting_houses para nome da casa
+
+🔷 5. RESUMO DE EVENTOS POR CASA (POSTBACKS)
+Diagnóstico das integrações com plataformas externas.
+
+Tabela:
+Casa	Evento	Total Recebido	Último Recebido
+Brazzino	deposit	18	02/06/2025
+Blaze	registration	9	01/06/2025
+
+Fonte: postback_logs
+
+Agrupamento: GROUP BY casa, evento
+
+Último evento: MAX(criado_em)
+
+🔷 6. PAGAMENTOS RECENTES
+Controle financeiro claro e imediato.
+
+Tabela:
+Afiliado	Valor	Status	Método	Chave Pix	Transação	Pago em
+João	R$150	Paid	PIX	CPF	#TX1234	31/05/25
+Carla	R$90	Pending	PIX	Email	-	-
+
+Fonte: payments JOIN users
+
+Ordenar por created_at DESC
+
+🛠️ Recursos Avançados (opcional para o futuro)
+Filtros dinâmicos por data, tipo de conversão, casa e afiliado.
+
+Notificações de falhas em postbacks (status != "ok")
+
+Botão de exportar CSV/Excel para todas as tabelas.
+
+Validação de integridade: usuários sem links, links sem cliques, casas sem postbacks.

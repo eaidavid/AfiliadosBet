@@ -11,7 +11,7 @@ import Register from "@/pages/register";
 import Login from "@/pages/login";
 import UserDashboardComplete from "@/pages/user-dashboard-complete";
 import UserReports from "@/pages/user-reports-clean";
-import AdminDashboard from "@/pages/admin-dashboard";
+import AdminDashboard from "@/pages/admin-dashboard-new";
 import AdminLeadsManagement from "@/pages/admin-leads-management";
 import NotFound from "@/pages/not-found";
 import AdminPanelToggle from "@/components/admin-panel-toggle";

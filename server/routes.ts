@@ -5257,5 +5257,345 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // ===== NEW COMPREHENSIVE DASHBOARD API ENDPOINTS =====
+  
+  // GET /api/admin/dashboard/overview - Sistema geral com KPIs
+  app.get("/api/admin/dashboard/overview", requireAuth, requireAdmin, async (req: any, res: any) => {
+    try {
+      // 1. Afiliados Ativos
+      const activeAffiliatesResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(schema.users)
+        .where(and(eq(schema.users.role, 'affiliate'), eq(schema.users.isActive, true)));
+
+      // 2. Casas de Apostas Ativas  
+      const activeHousesResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.isActive, true));
+
+      // 3. Links de Afiliados Gerados
+      const totalLinksResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(schema.affiliateLinks);
+
+      // 4. Total de Conversões
+      const totalConversionsResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(schema.conversions);
+
+      // 5. Total de Cliques
+      const totalClicksResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(schema.clickTracking);
+
+      // 6. Total Pago em Comissões
+      const totalPaidResult = await db
+        .select({ total: sql<number>`sum(${schema.payments.amount}::numeric)` })
+        .from(schema.payments)
+        .where(eq(schema.payments.status, 'paid'));
+
+      // 7. Comissões Pendentes
+      const pendingCommissionsResult = await db
+        .select({ total: sql<number>`sum(${schema.payments.amount}::numeric)` })
+        .from(schema.payments)
+        .where(eq(schema.payments.status, 'pending'));
+
+      // 8. Lucro Gerado (Leads)
+      const totalProfitResult = await db
+        .select({ total: sql<number>`sum(${schema.conversions.amount}::numeric)` })
+        .from(schema.conversions)
+        .where(eq(schema.conversions.type, 'profit'));
+
+      const overview = {
+        activeAffiliates: Number(activeAffiliatesResult[0]?.count || 0),
+        activeHouses: Number(activeHousesResult[0]?.count || 0),
+        totalAffiliateLinks: Number(totalLinksResult[0]?.count || 0),
+        totalConversions: Number(totalConversionsResult[0]?.count || 0),
+        totalClicks: Number(totalClicksResult[0]?.count || 0),
+        totalPaidCommissions: Number(totalPaidResult[0]?.total || 0),
+        pendingCommissions: Number(pendingCommissionsResult[0]?.total || 0),
+        totalProfit: Number(totalProfitResult[0]?.total || 0)
+      };
+
+      res.json(overview);
+
+    } catch (error) {
+      console.error("Erro ao buscar overview do dashboard:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // GET /api/admin/dashboard/recent-activity - Atividade recente em tempo real
+  app.get("/api/admin/dashboard/recent-activity", requireAuth, requireAdmin, async (req: any, res: any) => {
+    try {
+      // Últimos Postbacks Recebidos
+      const recentPostbacks = await db
+        .select({
+          id: schema.postbackLogs.id,
+          casa: schema.postbackLogs.casa,
+          evento: schema.postbackLogs.evento,
+          valor: schema.postbackLogs.valor,
+          status: schema.postbackLogs.status,
+          subid: schema.postbackLogs.subid,
+          criadoEm: schema.postbackLogs.criadoEm,
+          ip: schema.postbackLogs.ip
+        })
+        .from(schema.postbackLogs)
+        .orderBy(sql`${schema.postbackLogs.criadoEm} desc`)
+        .limit(10);
+
+      // Últimos Cliques nos Links
+      const recentClicks = await db
+        .select({
+          id: schema.clickTracking.id,
+          username: schema.users.username,
+          houseName: schema.bettingHouses.name,
+          ipAddress: schema.clickTracking.ipAddress,
+          userAgent: schema.clickTracking.userAgent,
+          clickedAt: schema.clickTracking.clickedAt
+        })
+        .from(schema.clickTracking)
+        .innerJoin(schema.users, eq(schema.clickTracking.userId, schema.users.id))
+        .innerJoin(schema.bettingHouses, eq(schema.clickTracking.houseId, schema.bettingHouses.id))
+        .orderBy(sql`${schema.clickTracking.clickedAt} desc`)
+        .limit(10);
+
+      // Últimas Conversões Registradas
+      const recentConversions = await db
+        .select({
+          id: schema.conversions.id,
+          username: schema.users.username,
+          houseName: schema.bettingHouses.name,
+          type: schema.conversions.type,
+          amount: schema.conversions.amount,
+          commission: schema.conversions.commission,
+          customerId: schema.conversions.customerId,
+          convertedAt: schema.conversions.convertedAt
+        })
+        .from(schema.conversions)
+        .innerJoin(schema.users, eq(schema.conversions.userId, schema.users.id))
+        .innerJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
+        .orderBy(sql`${schema.conversions.convertedAt} desc`)
+        .limit(10);
+
+      const activity = {
+        postbacks: recentPostbacks.map(p => ({
+          id: p.id,
+          casa: p.casa,
+          evento: p.evento,
+          valor: Number(p.valor || 0),
+          status: p.status,
+          subid: p.subid,
+          criadoEm: p.criadoEm,
+          ip: p.ip
+        })),
+        clicks: recentClicks.map(c => ({
+          id: c.id,
+          username: c.username,
+          houseName: c.houseName,
+          ipAddress: c.ipAddress,
+          userAgent: c.userAgent,
+          clickedAt: c.clickedAt
+        })),
+        conversions: recentConversions.map(c => ({
+          id: c.id,
+          username: c.username,
+          houseName: c.houseName,
+          type: c.type,
+          amount: Number(c.amount || 0),
+          commission: Number(c.commission || 0),
+          customerId: c.customerId,
+          convertedAt: c.convertedAt
+        }))
+      };
+
+      res.json(activity);
+
+    } catch (error) {
+      console.error("Erro ao buscar atividade recente:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // GET /api/admin/dashboard/top-affiliates - Ranking dos melhores afiliados
+  app.get("/api/admin/dashboard/top-affiliates", requireAuth, requireAdmin, async (req: any, res: any) => {
+    try {
+      const topAffiliates = await db
+        .select({
+          id: schema.users.id,
+          username: schema.users.username,
+          fullName: schema.users.fullName,
+          totalCommission: sql<number>`sum(${schema.conversions.commission}::numeric)`,
+          totalConversions: sql<number>`count(*)`,
+          totalLeads: sql<number>`count(distinct ${schema.conversions.customerId})`
+        })
+        .from(schema.conversions)
+        .innerJoin(schema.users, eq(schema.conversions.userId, schema.users.id))
+        .where(eq(schema.users.role, 'affiliate'))
+        .groupBy(schema.users.id, schema.users.username, schema.users.fullName)
+        .orderBy(sql`sum(${schema.conversions.commission}::numeric) desc`)
+        .limit(10);
+
+      const affiliates = topAffiliates.map(affiliate => ({
+        id: affiliate.id,
+        username: affiliate.username,
+        fullName: affiliate.fullName,
+        totalCommission: Number(affiliate.totalCommission || 0),
+        totalConversions: Number(affiliate.totalConversions || 0),
+        totalLeads: Number(affiliate.totalLeads || 0)
+      }));
+
+      res.json(affiliates);
+
+    } catch (error) {
+      console.error("Erro ao buscar top afiliados:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // GET /api/admin/dashboard/house-performance - Desempenho das casas de apostas
+  app.get("/api/admin/dashboard/house-performance", requireAuth, requireAdmin, async (req: any, res: any) => {
+    try {
+      // Buscar todas as casas ativas
+      const houses = await db
+        .select({
+          id: schema.bettingHouses.id,
+          name: schema.bettingHouses.name
+        })
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.isActive, true));
+
+      const housePerformance = [];
+
+      for (const house of houses) {
+        // Cliques por casa
+        const clicksResult = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(schema.clickTracking)
+          .where(eq(schema.clickTracking.houseId, house.id));
+
+        // Registros por casa
+        const registrationsResult = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(schema.conversions)
+          .where(and(
+            eq(schema.conversions.houseId, house.id),
+            eq(schema.conversions.type, 'registration')
+          ));
+
+        // Depósitos por casa
+        const depositsResult = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(schema.conversions)
+          .where(and(
+            eq(schema.conversions.houseId, house.id),
+            eq(schema.conversions.type, 'deposit')
+          ));
+
+        // Lucro por casa
+        const profitResult = await db
+          .select({ total: sql<number>`sum(${schema.conversions.amount}::numeric)` })
+          .from(schema.conversions)
+          .where(and(
+            eq(schema.conversions.houseId, house.id),
+            eq(schema.conversions.type, 'profit')
+          ));
+
+        // Comissão total por casa
+        const commissionResult = await db
+          .select({ total: sql<number>`sum(${schema.conversions.commission}::numeric)` })
+          .from(schema.conversions)
+          .where(eq(schema.conversions.houseId, house.id));
+
+        housePerformance.push({
+          houseName: house.name,
+          totalClicks: Number(clicksResult[0]?.count || 0),
+          totalRegistrations: Number(registrationsResult[0]?.count || 0),
+          totalDeposits: Number(depositsResult[0]?.count || 0),
+          totalProfit: Number(profitResult[0]?.total || 0),
+          totalCommission: Number(commissionResult[0]?.total || 0)
+        });
+      }
+
+      res.json(housePerformance);
+
+    } catch (error) {
+      console.error("Erro ao buscar performance das casas:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // GET /api/admin/dashboard/postback-summary - Resumo de eventos por casa
+  app.get("/api/admin/dashboard/postback-summary", requireAuth, requireAdmin, async (req: any, res: any) => {
+    try {
+      const postbackSummary = await db
+        .select({
+          casa: schema.postbackLogs.casa,
+          evento: schema.postbackLogs.evento,
+          totalReceived: sql<number>`count(*)`,
+          lastReceived: sql<string>`max(${schema.postbackLogs.criadoEm})`
+        })
+        .from(schema.postbackLogs)
+        .groupBy(schema.postbackLogs.casa, schema.postbackLogs.evento)
+        .orderBy(sql`max(${schema.postbackLogs.criadoEm}) desc`);
+
+      const summary = postbackSummary.map(item => ({
+        casa: item.casa,
+        evento: item.evento,
+        totalReceived: Number(item.totalReceived),
+        lastReceived: item.lastReceived
+      }));
+
+      res.json(summary);
+
+    } catch (error) {
+      console.error("Erro ao buscar resumo de postbacks:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // GET /api/admin/dashboard/recent-payments - Pagamentos recentes
+  app.get("/api/admin/dashboard/recent-payments", requireAuth, requireAdmin, async (req: any, res: any) => {
+    try {
+      const recentPayments = await db
+        .select({
+          id: schema.payments.id,
+          affiliateName: schema.users.fullName,
+          username: schema.users.username,
+          amount: schema.payments.amount,
+          status: schema.payments.status,
+          method: schema.payments.method,
+          pixKey: schema.users.pixKey,
+          transactionId: schema.payments.transactionId,
+          paidAt: schema.payments.paidAt,
+          createdAt: schema.payments.createdAt
+        })
+        .from(schema.payments)
+        .innerJoin(schema.users, eq(schema.payments.userId, schema.users.id))
+        .orderBy(sql`${schema.payments.createdAt} desc`)
+        .limit(20);
+
+      const payments = recentPayments.map(payment => ({
+        id: payment.id,
+        affiliateName: payment.affiliateName,
+        username: payment.username,
+        amount: Number(payment.amount),
+        status: payment.status,
+        method: payment.method,
+        pixKey: payment.pixKey,
+        transactionId: payment.transactionId,
+        paidAt: payment.paidAt,
+        createdAt: payment.createdAt
+      }));
+
+      res.json(payments);
+
+    } catch (error) {
+      console.error("Erro ao buscar pagamentos recentes:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   return httpServer;
 }

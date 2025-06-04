@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { 
   Users, 
   Building2, 
@@ -18,49 +18,103 @@ import {
   Calendar,
   Filter,
   RefreshCw,
-  BarChart3
+  BarChart3,
+  MousePointer,
+  Link as LinkIcon,
+  Target,
+  Wallet,
+  Timer,
+  Award,
+  Download
 } from "lucide-react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 
-interface DashboardStats {
+// Interfaces para o novo dashboard
+interface SystemOverview {
   activeAffiliates: number;
   activeHouses: number;
-  postbacksToday: number;
-  totalPaidThisMonth: number;
-}
-
-interface ConversionByType {
-  type: string;
-  count: number;
-  totalAmount: number;
-  totalCommission: number;
-}
-
-interface ConversionEvolution {
-  date: string;
-  count: number;
-  totalCommission: number;
-}
-
-interface TopAffiliate {
-  id: number;
-  username: string;
-  fullName: string;
-  email: string;
+  totalAffiliateLinks: number;
   totalConversions: number;
-  totalCommission: number;
+  totalClicks: number;
+  totalPaidCommissions: number;
+  pendingCommissions: number;
+  totalProfit: number;
+}
+
+interface RecentActivity {
+  postbacks: RecentPostback[];
+  clicks: RecentClick[];
+  conversions: RecentConversion[];
 }
 
 interface RecentPostback {
   id: number;
   casa: string;
   evento: string;
-  subid: string;
   valor: number;
   status: string;
+  subid: string;
   criadoEm: string;
   ip: string;
+}
+
+interface RecentClick {
+  id: number;
+  username: string;
+  houseName: string;
+  ipAddress: string;
+  userAgent: string;
+  clickedAt: string;
+}
+
+interface RecentConversion {
+  id: number;
+  username: string;
+  houseName: string;
+  type: string;
+  amount: number;
+  commission: number;
+  customerId: string;
+  convertedAt: string;
+}
+
+interface TopAffiliate {
+  id: number;
+  username: string;
+  fullName: string;
+  totalCommission: number;
+  totalConversions: number;
+  totalLeads: number;
+}
+
+interface HousePerformance {
+  houseName: string;
+  totalClicks: number;
+  totalRegistrations: number;
+  totalDeposits: number;
+  totalProfit: number;
+  totalCommission: number;
+}
+
+interface PostbackSummary {
+  casa: string;
+  evento: string;
+  totalReceived: number;
+  lastReceived: string;
+}
+
+interface RecentPayment {
+  id: number;
+  affiliateName: string;
+  username: string;
+  amount: number;
+  status: string;
+  method: string;
+  pixKey: string;
+  transactionId: string;
+  paidAt: string;
+  createdAt: string;
 }
 
 const AnimatedNumber = ({ value, prefix = "", suffix = "" }: { value: number; prefix?: string; suffix?: string }) => {
