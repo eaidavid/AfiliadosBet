@@ -35,7 +35,8 @@ interface AdminHousesManagementProps {
 export default function AdminHousesManagement({ onPageChange }: AdminHousesManagementProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingHouse, setEditingHouse] = useState<any>(null);
-  // Postback configuration removed - handled in code
+  const [isPostbackModalOpen, setIsPostbackModalOpen] = useState(false);
+  const [selectedHouseId, setSelectedHouseId] = useState<number | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -526,6 +527,18 @@ export default function AdminHousesManagement({ onPageChange }: AdminHousesManag
                   <div className="flex items-center space-x-2">
                     <Button
                       size="sm"
+                      onClick={() => {
+                        setSelectedHouseId(house.id);
+                        setIsPostbackModalOpen(true);
+                      }}
+                      className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/20"
+                      title="Configurar Postbacks"
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      Postbacks
+                    </Button>
+                    <Button
+                      size="sm"
                       onClick={() => handleEdit(house)}
                       className="bg-slate-700 hover:bg-slate-600 text-white"
                     >
@@ -720,6 +733,18 @@ export default function AdminHousesManagement({ onPageChange }: AdminHousesManag
           </Card>
         )}
       </div>
+
+      {/* Postback Configuration Modal */}
+      {selectedHouseId && (
+        <PostbackConfigModal
+          isOpen={isPostbackModalOpen}
+          onClose={() => {
+            setIsPostbackModalOpen(false);
+            setSelectedHouseId(null);
+          }}
+          houseId={selectedHouseId}
+        />
+      )}
     </div>
   );
 }
