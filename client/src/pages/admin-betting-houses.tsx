@@ -342,7 +342,6 @@ export default function AdminBettingHouses() {
   return (
     <div className="min-h-screen bg-slate-900">
       <AdminSidebar currentPage="betting-houses" onPageChange={() => {}} />
-      
       <div className="lg:ml-64 transition-all duration-300 ease-in-out">
         {/* Header */}
         <div className="bg-slate-800 border-b border-slate-700 px-4 lg:px-6 py-4">
@@ -717,7 +716,7 @@ export default function AdminBettingHouses() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-blue-400 text-sm font-medium">Casas Ativas</p>
+                      <p className="text-sm font-medium text-[#0f172a]">Casas Ativas</p>
                       <p className="text-2xl font-bold text-white">
                         {houses.filter(h => h.isActive).length}
                       </p>
@@ -1082,7 +1081,6 @@ export default function AdminBettingHouses() {
           </motion.div>
         </div>
       </div>
-
       {/* View Details Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-2xl">
@@ -1129,7 +1127,6 @@ export default function AdminBettingHouses() {
           )}
         </DialogContent>
       </Dialog>
-
       {/* Postback Configuration Dialog */}
       <Dialog open={isPostbackDialogOpen} onOpenChange={setIsPostbackDialogOpen}>
         <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-2xl">
