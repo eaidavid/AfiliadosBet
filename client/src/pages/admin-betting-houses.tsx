@@ -142,6 +142,9 @@ export default function AdminBettingHouses() {
     console.error("Error loading betting houses:", error);
   }
 
+  // Safety check para garantir que nunca teremos dados inválidos
+  const safeHouses = Array.isArray(houses) ? houses.filter(h => h && typeof h === 'object' && h.id) : [];
+
   // Filtering logic with comprehensive null safety
   const filteredHouses = useMemo(() => {
     if (!Array.isArray(safeHouses)) return [];
@@ -335,9 +338,6 @@ export default function AdminBettingHouses() {
       </div>
     );
   }
-
-  // Safety check para garantir que nunca teremos dados inválidos
-  const safeHouses = Array.isArray(houses) ? houses.filter(h => h && typeof h === 'object' && h.id) : [];
 
   return (
     <div className="min-h-screen bg-slate-900">
