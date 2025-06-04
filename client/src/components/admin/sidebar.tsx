@@ -38,6 +38,8 @@ export default function AdminSidebar({ currentPage, onPageChange }: AdminSidebar
       window.location.href = "/admin";
     } else if (page === "betting-houses") {
       window.location.href = "/admin/betting-houses";
+    } else if (page === "houses") {
+      window.location.href = "/admin/houses";
     } else if (page === "manage") {
       window.location.href = "/admin/manage";
     } else if (page === "leads") {
