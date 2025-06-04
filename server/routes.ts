@@ -5020,5 +5020,242 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // ===== LEADS MANAGEMENT API ENDPOINTS =====
+  
+  // GET /api/admin/leads - Lista todos os leads com paginação
+  app.get("/api/admin/leads", requireAuth, requireAdmin, async (req: any, res: any) => {
+    try {
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 20;
+      const offset = (page - 1) * limit;
+
+      // Buscar leads agrupados por customer_id
+      const leadsQuery = await db
+        .select({
+          customerId: schema.conversions.customerId,
+          totalConversions: sql<number>`count(*)`,
+          totalCommission: sql<number>`sum(${schema.conversions.commission}::numeric)`,
+          totalAmount: sql<number>`sum(${schema.conversions.amount}::numeric)`,
+          firstConversion: sql<string>`min(${schema.conversions.convertedAt})`,
+          lastConversion: sql<string>`max(${schema.conversions.convertedAt})`,
+          affiliates: sql<string[]>`array_agg(distinct ${schema.users.username})`,
+          houses: sql<string[]>`array_agg(distinct ${schema.bettingHouses.name})`
+        })
+        .from(schema.conversions)
+        .innerJoin(schema.users, eq(schema.conversions.userId, schema.users.id))
+        .innerJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
+        .where(isNotNull(schema.conversions.customerId))
+        .groupBy(schema.conversions.customerId)
+        .orderBy(sql`max(${schema.conversions.convertedAt}) desc`)
+        .limit(limit)
+        .offset(offset);
+
+      // Contar total de leads únicos
+      const totalCountResult = await db
+        .select({
+          count: sql<number>`count(distinct ${schema.conversions.customerId})`
+        })
+        .from(schema.conversions)
+        .where(isNotNull(schema.conversions.customerId));
+
+      const totalLeads = totalCountResult[0]?.count || 0;
+      const totalPages = Math.ceil(totalLeads / limit);
+
+      res.json({
+        leads: leadsQuery.map(lead => ({
+          customerId: lead.customerId,
+          totalConversions: Number(lead.totalConversions),
+          totalCommission: Number(lead.totalCommission || 0),
+          totalAmount: Number(lead.totalAmount || 0),
+          firstConversion: lead.firstConversion,
+          lastConversion: lead.lastConversion,
+          affiliates: lead.affiliates || [],
+          houses: lead.houses || []
+        })),
+        pagination: {
+          currentPage: page,
+          totalPages,
+          totalLeads,
+          limit
+        }
+      });
+
+    } catch (error) {
+      console.error("Erro ao buscar leads:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // GET /api/admin/leads/:customerId - Detalhes completos de um lead
+  app.get("/api/admin/leads/:customerId", requireAuth, requireAdmin, async (req: any, res: any) => {
+    try {
+      const { customerId } = req.params;
+
+      // Buscar todos os eventos do customer_id
+      const events = await db
+        .select({
+          id: schema.conversions.id,
+          type: schema.conversions.type,
+          amount: schema.conversions.amount,
+          commission: schema.conversions.commission,
+          convertedAt: schema.conversions.convertedAt,
+          data: schema.conversions.conversionData,
+          house: {
+            id: schema.bettingHouses.id,
+            name: schema.bettingHouses.name
+          },
+          affiliate: {
+            username: schema.users.username,
+            fullName: schema.users.fullName,
+            email: schema.users.email
+          }
+        })
+        .from(schema.conversions)
+        .innerJoin(schema.users, eq(schema.conversions.userId, schema.users.id))
+        .innerJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
+        .where(eq(schema.conversions.customerId, customerId))
+        .orderBy(schema.conversions.convertedAt);
+
+      if (events.length === 0) {
+        return res.status(404).json({ error: "Lead não encontrado" });
+      }
+
+      // Calcular totais
+      const totalConversions = events.length;
+      const totalCommission = events.reduce((sum, event) => sum + parseFloat(event.commission || '0'), 0);
+      const totalAmount = events.reduce((sum, event) => sum + parseFloat(event.amount || '0'), 0);
+
+      // Resumo de eventos por tipo
+      const eventsSummary = events.reduce((summary, event) => {
+        const type = event.type.toLowerCase();
+        summary[type] = (summary[type] || 0) + 1;
+        return summary;
+      }, {} as Record<string, number>);
+
+      const leadDetail = {
+        customerId,
+        totalConversions,
+        totalCommission,
+        totalAmount,
+        events: events.map(event => ({
+          id: event.id,
+          type: event.type,
+          amount: parseFloat(event.amount || '0'),
+          commission: parseFloat(event.commission || '0'),
+          convertedAt: event.convertedAt,
+          house: event.house,
+          affiliate: event.affiliate,
+          data: event.data
+        })),
+        eventsSummary: {
+          click: eventsSummary.click || 0,
+          registration: eventsSummary.registration || 0,
+          deposit: eventsSummary.deposit || 0,
+          profit: eventsSummary.profit || 0,
+          ...eventsSummary
+        }
+      };
+
+      res.json(leadDetail);
+
+    } catch (error) {
+      console.error("Erro ao buscar detalhes do lead:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // GET /api/admin/leads/:customerId/validate/:houseId/:type - Validar se evento já existe
+  app.get("/api/admin/leads/:customerId/validate/:houseId/:type", requireAuth, requireAdmin, async (req: any, res: any) => {
+    try {
+      const { customerId, houseId, type } = req.params;
+
+      const existingEvent = await db
+        .select({ id: schema.conversions.id })
+        .from(schema.conversions)
+        .where(and(
+          eq(schema.conversions.customerId, customerId),
+          eq(schema.conversions.houseId, parseInt(houseId)),
+          eq(schema.conversions.type, type)
+        ))
+        .limit(1);
+
+      const isDuplicate = existingEvent.length > 0;
+
+      res.json({
+        customerId,
+        houseId: parseInt(houseId),
+        type,
+        isDuplicate,
+        canProceed: !isDuplicate,
+        message: isDuplicate 
+          ? `Evento '${type}' já registrado para customer_id ${customerId}`
+          : `Evento '${type}' pode ser registrado para customer_id ${customerId}`
+      });
+
+    } catch (error) {
+      console.error("Erro na validação:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // GET /api/admin/leads/report/by-affiliate - Relatório por afiliado
+  app.get("/api/admin/leads/report/by-affiliate", requireAuth, requireAdmin, async (req: any, res: any) => {
+    try {
+      const startDate = req.query.startDate;
+      const endDate = req.query.endDate;
+
+      let query = db
+        .select({
+          affiliate: {
+            id: schema.users.id,
+            username: schema.users.username,
+            fullName: schema.users.fullName
+          },
+          totalLeads: sql<number>`count(distinct ${schema.conversions.customerId})`,
+          totalConversions: sql<number>`count(*)`,
+          totalCommission: sql<number>`sum(${schema.conversions.commission}::numeric)`,
+          totalAmount: sql<number>`sum(${schema.conversions.amount}::numeric)`,
+          houses: sql<string[]>`array_agg(distinct ${schema.bettingHouses.name})`
+        })
+        .from(schema.conversions)
+        .innerJoin(schema.users, eq(schema.conversions.userId, schema.users.id))
+        .innerJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
+        .where(isNotNull(schema.conversions.customerId))
+        .groupBy(schema.users.id, schema.users.username, schema.users.fullName)
+        .orderBy(sql`sum(${schema.conversions.commission}::numeric) desc`);
+
+      // Aplicar filtros de data se fornecidos
+      if (startDate && endDate) {
+        query = query.where(and(
+          isNotNull(schema.conversions.customerId),
+          sql`${schema.conversions.convertedAt} >= ${startDate}::timestamp`,
+          sql`${schema.conversions.convertedAt} <= ${endDate}::timestamp`
+        ));
+      }
+
+      const report = await query;
+
+      res.json({
+        report: report.map(item => ({
+          affiliate: item.affiliate,
+          totalLeads: Number(item.totalLeads),
+          totalConversions: Number(item.totalConversions),
+          totalCommission: Number(item.totalCommission || 0),
+          totalAmount: Number(item.totalAmount || 0),
+          houses: item.houses || []
+        })),
+        filters: {
+          startDate,
+          endDate
+        },
+        generatedAt: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error("Erro no relatório por afiliado:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   return httpServer;
 }

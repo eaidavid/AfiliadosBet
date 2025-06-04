@@ -17,8 +17,10 @@ import {
   AlertCircle,
   Calendar,
   Filter,
-  RefreshCw
+  RefreshCw,
+  BarChart3
 } from "lucide-react";
+import { Link } from "wouter";
 import { motion } from "framer-motion";
 
 interface DashboardStats {
