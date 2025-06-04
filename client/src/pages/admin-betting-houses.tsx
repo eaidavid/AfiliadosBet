@@ -41,6 +41,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import AdminSidebar from "@/components/admin/sidebar";
+import PostbackConfigModal from "@/components/admin/postback-config-modal";
 
 // Enhanced schema for complete betting house management
 const bettingHouseSchema = z.object({
@@ -1127,6 +1128,18 @@ export default function AdminBettingHouses() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Postback Configuration Modal */}
+      {selectedHouseId && (
+        <PostbackConfigModal
+          isOpen={isPostbackModalOpen}
+          onClose={() => {
+            setIsPostbackModalOpen(false);
+            setSelectedHouseId(null);
+          }}
+          houseId={selectedHouseId}
+        />
+      )}
 
     </div>
   );
