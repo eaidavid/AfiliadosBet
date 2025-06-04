@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Edit, Trash2, Plus, Settings } from "lucide-react";
+import { Edit, Trash2, Plus, Settings, Copy, Bot, User, CheckCircle, Clock } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertPostbackSchema, type Postback, type BettingHouse } from "@shared/schema";
