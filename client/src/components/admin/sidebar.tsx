@@ -19,7 +19,7 @@ export default function AdminSidebar({ currentPage, onPageChange }: AdminSidebar
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
     { id: "houses", label: "Administração de Casas", icon: Building },
     { id: "manage", label: "Administração de Afiliados", icon: Users },
-    { id: "postback-generator", label: "Gerador de Postbacks", icon: Webhook },
+    { id: "gerador-de-postbacks", label: "Gerador de Postbacks", icon: Webhook },
     { id: "postbacks", label: "Logs de Postbacks", icon: Webhook },
     { id: "settings", label: "Configurações", icon: Settings },
   ];
@@ -37,6 +37,8 @@ export default function AdminSidebar({ currentPage, onPageChange }: AdminSidebar
       window.location.href = "/admin/houses";
     } else if (page === "manage") {
       window.location.href = "/admin/manage";
+    } else if (page === "gerador-de-postbacks") {
+      window.location.href = "/admin/postback-generator";
     } else if (page === "leads") {
       window.location.href = "/admin/leads";
     }
