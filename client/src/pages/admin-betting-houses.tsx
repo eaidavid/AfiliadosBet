@@ -138,8 +138,10 @@ export default function AdminBettingHouses() {
   });
 
   // Filtering logic
-  const filteredHouses = houses.filter((house) => {
-    const matchesSearch = house.name.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredHouses = (houses || []).filter((house) => {
+    if (!house) return false;
+    
+    const matchesSearch = house.name?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false;
     
     const matchesStatus = statusFilter === "all" || 
       (statusFilter === "active" && house.isActive) ||
@@ -151,8 +153,8 @@ export default function AdminBettingHouses() {
       (commissionFilter === "both" && house.commissionType === "CPA+RevShare");
     
     const matchesPostback = postbackFilter === "all" ||
-      (postbackFilter === "configured" && house.enabledPostbacks && house.enabledPostbacks.length > 0) ||
-      (postbackFilter === "not-configured" && (!house.enabledPostbacks || house.enabledPostbacks.length === 0));
+      (postbackFilter === "configured" && house.enabledPostbacks && Array.isArray(house.enabledPostbacks) && house.enabledPostbacks.length > 0) ||
+      (postbackFilter === "not-configured" && (!house.enabledPostbacks || !Array.isArray(house.enabledPostbacks) || house.enabledPostbacks.length === 0));
     
     return matchesSearch && matchesStatus && matchesCommission && matchesPostback;
   });
