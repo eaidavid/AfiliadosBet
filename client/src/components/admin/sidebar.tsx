@@ -19,10 +19,8 @@ export default function AdminSidebar({ currentPage, onPageChange }: AdminSidebar
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
     { id: "houses", label: "Administração de Casas", icon: Building },
     { id: "manage", label: "Administração de Afiliados", icon: Users },
-    { id: "links", label: "Links", icon: Link2 },
     { id: "postback-generator", label: "Gerador de Postbacks", icon: Webhook },
     { id: "postbacks", label: "Logs de Postbacks", icon: Webhook },
-    { id: "registered-postbacks", label: "Postbacks Registrados", icon: Webhook },
     { id: "settings", label: "Configurações", icon: Settings },
   ];
 
