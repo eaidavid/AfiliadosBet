@@ -133,7 +133,7 @@ export default function AdminBettingHouses() {
   });
 
   // Query para buscar casas
-  const { data: houses = [], isLoading, error } = useQuery<BettingHouse[]>({
+  const { data: housesData, isLoading, error } = useQuery<BettingHouse[]>({
     queryKey: ["/api/admin/betting-houses"],
     refetchInterval: 30000,
   });
@@ -143,8 +143,9 @@ export default function AdminBettingHouses() {
     console.error("Error loading betting houses:", error);
   }
 
-  // Safety check para garantir que nunca teremos dados inválidos
-  const safeHouses = Array.isArray(houses) ? houses.filter(h => h && typeof h === 'object' && h.id) : [];
+  // Comprehensive safety check to ensure we always have valid data
+  const houses = Array.isArray(housesData) ? housesData.filter(h => h && typeof h === 'object' && h.id) : [];
+  const safeHouses = houses;
 
   // Filtering logic with comprehensive null safety
   const filteredHouses = useMemo(() => {
@@ -717,10 +718,10 @@ export default function AdminBettingHouses() {
                     <div>
                       <p className="text-sm font-medium text-[#0f172a]">Casas Ativas</p>
                       <p className="text-2xl font-bold text-white">
-                        {houses.filter(h => h.isActive).length}
+                        {(houses || []).filter(h => h && h.isActive).length}
                       </p>
                       <p className="text-xs text-slate-400 mt-1">
-                        de {houses.length} casas
+                        de {(houses || []).length} casas
                       </p>
                     </div>
                     <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
@@ -742,7 +743,7 @@ export default function AdminBettingHouses() {
                     <div>
                       <p className="text-emerald-400 text-sm font-medium">Com CPA</p>
                       <p className="text-2xl font-bold text-white">
-                        {houses.filter(h => h.commissionType?.includes('CPA')).length}
+                        {(houses || []).filter(h => h && h.commissionType?.includes('CPA')).length}
                       </p>
                       <p className="text-xs text-slate-400 mt-1">
                         com comissão CPA
@@ -767,7 +768,7 @@ export default function AdminBettingHouses() {
                     <div>
                       <p className="text-purple-400 text-sm font-medium">Com Postback</p>
                       <p className="text-2xl font-bold text-white">
-                        {houses.filter(h => h.enabledPostbacks && h.enabledPostbacks.length > 0).length}
+                        {(houses || []).filter(h => h && h.enabledPostbacks && h.enabledPostbacks.length > 0).length}
                       </p>
                       <p className="text-xs text-slate-400 mt-1">
                         casas com postback
