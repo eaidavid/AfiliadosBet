@@ -1,0 +1,195 @@
+Crie uma página administrativa moderna e avançada na rota /manage para gerenciar afiliados de casas de apostas. Essa página deve se integrar à estrutura de banco de dados existente, apresentar informações completas sobre afiliados, comissões, tokens e postbacks, e oferecer uma interface intuitiva, interativa e responsiva.
+
+🔗 Banco de Dados (resumo da estrutura usada)
+Cada afiliado possui:
+
+id
+
+subid (identificador único do afiliado, enviado no link de tracking)
+
+token (gerado automaticamente, único por afiliado, usado nas URLs de postback)
+
+casa_id (relacionamento com a casa de apostas)
+
+tipo_comissao (cpa, revshare, cpa+revshare)
+
+valor_cpa
+
+percentual_revshare
+
+status (ativo, inativo)
+
+data_criacao
+
+A casa de apostas (referenciada por casa_id) possui:
+
+nome
+
+token da casa (usado para identificar o postback)
+
+url_base
+
+parametro_primario (ex: subid)
+
+tipo_comissao (geral da casa)
+
+status
+
+📋 Estrutura da Página /manage
+1. Cabeçalho da Página:
+
+Título: Administração de Afiliados
+
+Botão: + Novo Afiliado (abre modal para cadastro)
+
+Indicadores resumidos no topo (cards):
+
+Total de Afiliados
+
+Ativos
+
+Inativos
+
+Último Cadastro
+
+2. Filtros Avançados (acima da tabela):
+
+Input SubID
+
+Dropdown Casa de Apostas (preenchido dinamicamente)
+
+Dropdown Tipo de Comissão (CPA / RevShare / Ambos)
+
+Dropdown Status (Ativo / Inativo)
+
+Botão Aplicar Filtros
+
+Botão Limpar Filtros
+
+3. Tabela Completa de Afiliados:
+
+Colunas:
+
+SubID
+
+Nome da Casa
+
+Tipo de Comissão (exibe badges: CPA, RevShare ou Ambos)
+
+Valor CPA (R$)
+
+Percentual RevShare (%)
+
+Token (copiável)
+
+Status (badge)
+
+Data de Criação
+
+Ações
+
+Ordenação por qualquer coluna
+
+Paginação
+
+4. Ações por Afiliado (última coluna da tabela):
+
+🔍 Ver Detalhes (abre modal com todas as informações + histórico de postbacks)
+
+✏️ Editar (abre modal com formulário para atualizar valores de comissão e status — não pode alterar SubID ou Token)
+
+🔁 Ativar/Inativar (toggle direto)
+
+🗑️ Excluir (com confirmação)
+
+🧾 Modal de Detalhes do Afiliado (ao clicar em “Ver Detalhes”)
+Dividido em abas:
+
+Informações do Afiliado:
+
+SubID (fixo)
+
+Token (copiável)
+
+Casa Vinculada
+
+Tipo de Comissão
+
+Valor CPA
+
+Percentual RevShare
+
+Status
+
+Data de Criação
+
+URL de Postback (gerada dinamicamente com o token):
+
+/postback/click?token=...
+
+/postback/register?token=...
+
+/postback/deposit?token=...
+
+/postback/revenue?token=...
+
+Histórico de Postbacks:
+
+Listagem completa dos logs de eventos recebidos por esse token:
+
+Data/Hora
+
+Tipo de Evento (click, register, deposit, revenue)
+
+URL disparada
+
+Status da resposta (ex: 200 OK)
+
+Corpo da Resposta (JSON, se houver)
+
+Botão Exportar CSV
+
+🛠 Regras de Comportamento e Negócio
+O token e o subid não podem ser alterados via UI.
+
+Caso o afiliado tenha CPA + RevShare, exibir os dois valores.
+
+A URL de postback deve ser gerada automaticamente com base no token do afiliado.
+
+Exemplo de URL:
+
+/postback/deposit?token=token_456abc123xyz
+
+Cada chamada a essa rota deve ser registrada em um log (já vinculado ao afiliado pelo token).
+
+💅 Estética e Experiência
+Design escuro (dark mode), seguindo a identidade visual do sistema
+
+Estilo limpo, moderno e com boa hierarquia visual
+
+Componentes visuais:
+
+Cards de estatísticas
+
+Tabela com hover e sort
+
+Badges coloridas
+
+Modais bonitos com animação
+
+Botões arredondados e com feedback visual
+
+Ícones informativos
+
+Responsividade total (mobile/tablet/desktop)
+
+🔁 Complementos (se possível):
+Sistema de busca instantânea por SubID na tabela
+
+Exportação completa de afiliados (CSV/Excel)
+
+Tooltip explicando cada tipo de comissão
+
+Loading suave e animações com Framer Motion
+
+Confirmações de ação (modais para excluir e alterar status)

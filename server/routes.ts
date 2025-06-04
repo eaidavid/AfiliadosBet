@@ -1796,6 +1796,195 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // === COMPREHENSIVE AFFILIATE MANAGEMENT API ===
+  
+  // Get all affiliates with house information
+  app.get("/api/admin/affiliates", requireAdmin, async (req: any, res) => {
+    try {
+      const affiliates = await db.select({
+        id: schema.affiliateLinks.id,
+        subid: schema.affiliateLinks.subid,
+        token: schema.affiliateLinks.token,
+        casa_id: schema.affiliateLinks.houseId,
+        casa_nome: schema.bettingHouses.name,
+        tipo_comissao: schema.affiliateLinks.commissionType,
+        valor_cpa: schema.affiliateLinks.cpaValue,
+        percentual_revshare: schema.affiliateLinks.revshareValue,
+        status: schema.affiliateLinks.isActive,
+        data_criacao: schema.affiliateLinks.createdAt
+      })
+        .from(schema.affiliateLinks)
+        .leftJoin(schema.bettingHouses, eq(schema.affiliateLinks.houseId, schema.bettingHouses.id))
+        .orderBy(desc(schema.affiliateLinks.createdAt));
+
+      res.json(affiliates);
+    } catch (error) {
+      console.error("Erro ao buscar afiliados:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Create new affiliate
+  app.post("/api/admin/affiliates", requireAdmin, async (req: any, res) => {
+    try {
+      const { subid, casa_id, tipo_comissao, valor_cpa, percentual_revshare, status } = req.body;
+
+      // Check if subid already exists
+      const existingAffiliate = await db.select({ id: schema.affiliateLinks.id })
+        .from(schema.affiliateLinks)
+        .where(eq(schema.affiliateLinks.subid, subid))
+        .limit(1);
+
+      if (existingAffiliate.length > 0) {
+        return res.status(400).json({ error: "SubID já existe" });
+      }
+
+      // Generate unique token
+      const token = `token_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+
+      // Get house information
+      const [house] = await db.select()
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.id, casa_id))
+        .limit(1);
+
+      if (!house) {
+        return res.status(400).json({ error: "Casa de apostas não encontrada" });
+      }
+
+      const [newAffiliate] = await db.insert(schema.affiliateLinks).values({
+        subid,
+        houseId: casa_id,
+        token,
+        commissionType: tipo_comissao,
+        cpaValue: valor_cpa ? valor_cpa.toString() : null,
+        revshareValue: percentual_revshare ? percentual_revshare.toString() : null,
+        isActive: status ?? true,
+        updatedAt: new Date()
+      }).returning();
+
+      res.json(newAffiliate);
+    } catch (error) {
+      console.error("Erro ao criar afiliado:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Update affiliate
+  app.put("/api/admin/affiliates/:id", requireAdmin, async (req: any, res) => {
+    try {
+      const affiliateId = parseInt(req.params.id);
+      const { casa_id, tipo_comissao, valor_cpa, percentual_revshare, status } = req.body;
+
+      const [updatedAffiliate] = await db.update(schema.affiliateLinks)
+        .set({
+          houseId: casa_id,
+          commissionType: tipo_comissao,
+          cpaValue: valor_cpa ? valor_cpa.toString() : null,
+          revshareValue: percentual_revshare ? percentual_revshare.toString() : null,
+          isActive: status,
+          updatedAt: new Date()
+        })
+        .where(eq(schema.affiliateLinks.id, affiliateId))
+        .returning();
+
+      if (!updatedAffiliate) {
+        return res.status(404).json({ error: "Afiliado não encontrado" });
+      }
+
+      res.json(updatedAffiliate);
+    } catch (error) {
+      console.error("Erro ao atualizar afiliado:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Toggle affiliate status
+  app.patch("/api/admin/affiliates/:id/toggle", requireAdmin, async (req: any, res) => {
+    try {
+      const affiliateId = parseInt(req.params.id);
+
+      // Get current status
+      const [currentAffiliate] = await db.select({ isActive: schema.affiliateLinks.isActive })
+        .from(schema.affiliateLinks)
+        .where(eq(schema.affiliateLinks.id, affiliateId))
+        .limit(1);
+
+      if (!currentAffiliate) {
+        return res.status(404).json({ error: "Afiliado não encontrado" });
+      }
+
+      const [updatedAffiliate] = await db.update(schema.affiliateLinks)
+        .set({
+          isActive: !currentAffiliate.isActive,
+          updatedAt: new Date()
+        })
+        .where(eq(schema.affiliateLinks.id, affiliateId))
+        .returning();
+
+      res.json(updatedAffiliate);
+    } catch (error) {
+      console.error("Erro ao alterar status do afiliado:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Delete affiliate
+  app.delete("/api/admin/affiliates/:id", requireAdmin, async (req: any, res) => {
+    try {
+      const affiliateId = parseInt(req.params.id);
+
+      const deleted = await db.delete(schema.affiliateLinks)
+        .where(eq(schema.affiliateLinks.id, affiliateId))
+        .returning();
+
+      if (deleted.length === 0) {
+        return res.status(404).json({ error: "Afiliado não encontrado" });
+      }
+
+      res.json({ message: "Afiliado deletado com sucesso" });
+    } catch (error) {
+      console.error("Erro ao deletar afiliado:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Get postback logs for specific affiliate
+  app.get("/api/admin/postback-logs/:affiliateId", requireAdmin, async (req: any, res) => {
+    try {
+      const affiliateId = parseInt(req.params.affiliateId);
+
+      // Get affiliate token first
+      const [affiliate] = await db.select({ token: schema.affiliateLinks.token })
+        .from(schema.affiliateLinks)
+        .where(eq(schema.affiliateLinks.id, affiliateId))
+        .limit(1);
+
+      if (!affiliate) {
+        return res.status(404).json({ error: "Afiliado não encontrado" });
+      }
+
+      // Get postback logs for this token
+      const logs = await db.select({
+        id: schema.postbackLogs.id,
+        data_hora: schema.postbackLogs.timestamp,
+        tipo_evento: schema.postbackLogs.eventType,
+        url_disparada: schema.postbackLogs.url,
+        status_resposta: schema.postbackLogs.statusCode,
+        corpo_resposta: schema.postbackLogs.response
+      })
+        .from(schema.postbackLogs)
+        .where(sql`${schema.postbackLogs.url} LIKE '%token=${affiliate.token}%'`)
+        .orderBy(desc(schema.postbackLogs.timestamp))
+        .limit(100);
+
+      res.json(logs);
+    } catch (error) {
+      console.error("Erro ao buscar logs de postback:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   // === SISTEMA DE CONTROLE DE LEADS POR CUSTOMER_ID ===
 
   // Função auxiliar para verificar duplicação
