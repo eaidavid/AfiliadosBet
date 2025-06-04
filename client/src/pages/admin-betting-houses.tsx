@@ -285,10 +285,21 @@ export default function AdminBettingHouses() {
   };
 
   const onSubmit = (data: BettingHouseFormData) => {
+    // Process data to ensure correct types
+    const processedData = {
+      ...data,
+      cpaValue: data.cpaValue ? Number(data.cpaValue) : undefined,
+      revshareValue: data.revshareValue ? Number(data.revshareValue) : undefined,
+      minDeposit: data.minDeposit ? Number(data.minDeposit) : undefined,
+      enabledPostbacks: data.enabledPostbacks || [],
+      additionalParams: data.additionalParams || "",
+      parameterMapping: data.parameterMapping || ""
+    };
+
     if (editingHouse) {
-      updateHouseMutation.mutate({ ...data, id: editingHouse.id });
+      updateHouseMutation.mutate({ ...processedData, id: editingHouse.id });
     } else {
-      createHouseMutation.mutate(data);
+      createHouseMutation.mutate(processedData);
     }
   };
 

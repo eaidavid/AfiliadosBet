@@ -1352,18 +1352,22 @@ export async function registerRoutes(app: any): Promise<Server> {
         description,
         baseUrl,
         primaryParam,
-        additionalParams: additionalParams ? JSON.parse(additionalParams) : null,
+        additionalParams: typeof additionalParams === 'string' && additionalParams ? 
+          JSON.parse(additionalParams) : 
+          (additionalParams || null),
         commissionType,
-        cpaValue: cpaValue?.toString(),
-        revshareValue: revshareValue?.toString(),
-        minDeposit: minDeposit?.toString(),
+        cpaValue: cpaValue ? cpaValue.toString() : null,
+        revshareValue: revshareValue ? revshareValue.toString() : null,
+        minDeposit: minDeposit ? minDeposit.toString() : null,
         paymentMethods,
         securityToken: securityToken || `token_${Date.now()}_${Math.random().toString(36).substring(2)}`,
         identifier,
         logoUrl,
         isActive: isActive ?? true,
-        enabledPostbacks: enabledPostbacks || [],
-        parameterMapping: parameterMapping ? JSON.parse(parameterMapping) : {},
+        enabledPostbacks: Array.isArray(enabledPostbacks) ? enabledPostbacks : [],
+        parameterMapping: typeof parameterMapping === 'string' && parameterMapping ? 
+          JSON.parse(parameterMapping) : 
+          (parameterMapping || {}),
         updatedAt: new Date()
       }).returning();
 
@@ -1418,18 +1422,22 @@ export async function registerRoutes(app: any): Promise<Server> {
           description,
           baseUrl,
           primaryParam,
-          additionalParams: additionalParams ? JSON.parse(additionalParams) : null,
+          additionalParams: typeof additionalParams === 'string' && additionalParams ? 
+            JSON.parse(additionalParams) : 
+            (additionalParams || null),
           commissionType,
-          cpaValue: cpaValue?.toString(),
-          revshareValue: revshareValue?.toString(),
-          minDeposit: minDeposit?.toString(),
+          cpaValue: cpaValue ? cpaValue.toString() : null,
+          revshareValue: revshareValue ? revshareValue.toString() : null,
+          minDeposit: minDeposit ? minDeposit.toString() : null,
           paymentMethods,
           securityToken,
           identifier,
           logoUrl,
           isActive,
-          enabledPostbacks: enabledPostbacks || [],
-          parameterMapping: parameterMapping ? JSON.parse(parameterMapping) : {},
+          enabledPostbacks: Array.isArray(enabledPostbacks) ? enabledPostbacks : [],
+          parameterMapping: typeof parameterMapping === 'string' && parameterMapping ? 
+            JSON.parse(parameterMapping) : 
+            (parameterMapping || {}),
           updatedAt: new Date()
         })
         .where(eq(schema.bettingHouses.id, houseId))
