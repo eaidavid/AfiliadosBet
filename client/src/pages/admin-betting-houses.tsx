@@ -291,16 +291,16 @@ export default function AdminBettingHouses() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex">
+    <div className="min-h-screen bg-slate-900">
       <AdminSidebar currentPage="betting-houses" onPageChange={() => {}} />
       
-      <div className="flex-1 ml-64">
+      <div className="lg:ml-64 transition-all duration-300 ease-in-out">
         {/* Header */}
-        <div className="bg-slate-800 border-b border-slate-700 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-white">Gerenciamento de Casas de Apostas</h1>
-              <p className="text-slate-400 mt-1">
+        <div className="bg-slate-800 border-b border-slate-700 px-4 lg:px-6 py-4">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="pt-12 lg:pt-0">
+              <h1 className="text-xl lg:text-2xl font-bold text-white">Gerenciamento de Casas de Apostas</h1>
+              <p className="text-slate-400 mt-1 text-sm lg:text-base">
                 Gerencie suas casas de apostas, comissões e configurações de postback
               </p>
             </div>
@@ -308,7 +308,7 @@ export default function AdminBettingHouses() {
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button 
-                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-6"
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-4 lg:px-6 text-sm lg:text-base w-full lg:w-auto"
                   onClick={() => {
                     setEditingHouse(null);
                     form.reset();
@@ -319,7 +319,7 @@ export default function AdminBettingHouses() {
                 </Button>
               </DialogTrigger>
               
-              <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-[95vw] lg:max-w-4xl max-h-[90vh] overflow-y-auto mx-4 lg:mx-0">
                 <DialogHeader>
                   <DialogTitle className="text-xl text-white">
                     {editingHouse ? "Editar Casa de Apostas" : "Nova Casa de Apostas"}
@@ -656,9 +656,9 @@ export default function AdminBettingHouses() {
           </div>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-4 lg:p-6 space-y-4 lg:space-y-6">
           {/* Enhanced KPI Dashboard */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -767,8 +767,8 @@ export default function AdminBettingHouses() {
             transition={{ delay: 0.5 }}
           >
             <Card className="bg-slate-800 border-slate-700">
-              <CardContent className="p-6">
-                <div className="flex flex-col lg:flex-row gap-4">
+              <CardContent className="p-4 lg:p-6">
+                <div className="flex flex-col gap-4">
                   <div className="flex-1">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
@@ -781,9 +781,9 @@ export default function AdminBettingHouses() {
                     </div>
                   </div>
                   
-                  <div className="flex gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-40 bg-slate-700 border-slate-600 text-white">
+                      <SelectTrigger className="w-full bg-slate-700 border-slate-600 text-white">
                         <SelectValue placeholder="Status" />
                       </SelectTrigger>
                       <SelectContent className="bg-slate-800 border-slate-700">
@@ -794,7 +794,7 @@ export default function AdminBettingHouses() {
                     </Select>
 
                     <Select value={commissionFilter} onValueChange={setCommissionFilter}>
-                      <SelectTrigger className="w-40 bg-slate-700 border-slate-600 text-white">
+                      <SelectTrigger className="w-full bg-slate-700 border-slate-600 text-white">
                         <SelectValue placeholder="Comissão" />
                       </SelectTrigger>
                       <SelectContent className="bg-slate-800 border-slate-700">
@@ -806,7 +806,7 @@ export default function AdminBettingHouses() {
                     </Select>
 
                     <Select value={postbackFilter} onValueChange={setPostbackFilter}>
-                      <SelectTrigger className="w-48 bg-slate-700 border-slate-600 text-white">
+                      <SelectTrigger className="w-full bg-slate-700 border-slate-600 text-white">
                         <SelectValue placeholder="Postbacks" />
                       </SelectTrigger>
                       <SelectContent className="bg-slate-800 border-slate-700">
