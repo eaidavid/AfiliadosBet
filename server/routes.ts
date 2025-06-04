@@ -1063,6 +1063,176 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // === ENDPOINTS PARA DASHBOARD ADMINISTRATIVO ===
+
+  // Estatísticas gerais do dashboard
+  app.get("/api/admin/dashboard/stats", requireAdmin, async (req: any, res) => {
+    try {
+      const today = new Date();
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+      // Afiliados ativos
+      const activeAffiliates = await db.select({ count: sql`count(*)`.as('count') })
+        .from(schema.users)
+        .where(and(
+          eq(schema.users.role, 'affiliate'),
+          eq(schema.users.isActive, true)
+        ));
+
+      // Casas ativas
+      const activeHouses = await db.select({ count: sql`count(*)`.as('count') })
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.isActive, true));
+
+      // Postbacks hoje
+      const postbacksToday = await db.select({ count: sql`count(*)`.as('count') })
+        .from(schema.postbackLogs)
+        .where(gte(schema.postbackLogs.criadoEm, startOfToday));
+
+      // Total pago no mês
+      const totalPaidThisMonth = await db.select({ 
+        total: sql`sum(cast(${schema.payments.amount} as decimal))`.as('total') 
+      })
+        .from(schema.payments)
+        .where(and(
+          eq(schema.payments.status, 'paid'),
+          gte(schema.payments.createdAt, startOfMonth)
+        ));
+
+      res.json({
+        activeAffiliates: Number(activeAffiliates[0]?.count || 0),
+        activeHouses: Number(activeHouses[0]?.count || 0),
+        postbacksToday: Number(postbacksToday[0]?.count || 0),
+        totalPaidThisMonth: Number(totalPaidThisMonth[0]?.total || 0)
+      });
+
+    } catch (error) {
+      console.error("Erro ao buscar estatísticas do dashboard:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Estatísticas de conversões por tipo
+  app.get("/api/admin/dashboard/conversions-by-type", requireAdmin, async (req: any, res) => {
+    try {
+      const conversionStats = await db.select({
+        type: schema.conversions.type,
+        count: sql`count(*)`.as('count'),
+        totalAmount: sql`sum(cast(${schema.conversions.amount} as decimal))`.as('totalAmount'),
+        totalCommission: sql`sum(cast(${schema.conversions.commission} as decimal))`.as('totalCommission')
+      })
+        .from(schema.conversions)
+        .groupBy(schema.conversions.type);
+
+      res.json(conversionStats.map(stat => ({
+        type: stat.type,
+        count: Number(stat.count),
+        totalAmount: Number(stat.totalAmount || 0),
+        totalCommission: Number(stat.totalCommission || 0)
+      })));
+
+    } catch (error) {
+      console.error("Erro ao buscar conversões por tipo:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Evolução de conversões (últimos 30 dias)
+  app.get("/api/admin/dashboard/conversions-evolution", requireAdmin, async (req: any, res) => {
+    try {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const evolutionData = await db.select({
+        date: sql`date(${schema.conversions.convertedAt})`.as('date'),
+        count: sql`count(*)`.as('count'),
+        totalCommission: sql`sum(cast(${schema.conversions.commission} as decimal))`.as('totalCommission')
+      })
+        .from(schema.conversions)
+        .where(gte(schema.conversions.convertedAt, thirtyDaysAgo))
+        .groupBy(sql`date(${schema.conversions.convertedAt})`)
+        .orderBy(sql`date(${schema.conversions.convertedAt})`);
+
+      res.json(evolutionData.map(item => ({
+        date: item.date,
+        count: Number(item.count),
+        totalCommission: Number(item.totalCommission || 0)
+      })));
+
+    } catch (error) {
+      console.error("Erro ao buscar evolução de conversões:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Top 5 afiliados
+  app.get("/api/admin/dashboard/top-affiliates", requireAdmin, async (req: any, res) => {
+    try {
+      const topAffiliates = await db.select({
+        id: schema.users.id,
+        username: schema.users.username,
+        fullName: schema.users.fullName,
+        email: schema.users.email,
+        totalConversions: sql`count(${schema.conversions.id})`.as('totalConversions'),
+        totalCommission: sql`sum(cast(${schema.conversions.commission} as decimal))`.as('totalCommission')
+      })
+        .from(schema.users)
+        .leftJoin(schema.conversions, eq(schema.users.id, schema.conversions.userId))
+        .where(eq(schema.users.role, 'affiliate'))
+        .groupBy(schema.users.id, schema.users.username, schema.users.fullName, schema.users.email)
+        .orderBy(desc(sql`sum(cast(${schema.conversions.commission} as decimal))`))
+        .limit(5);
+
+      res.json(topAffiliates.map(affiliate => ({
+        id: affiliate.id,
+        username: affiliate.username,
+        fullName: affiliate.fullName,
+        email: affiliate.email,
+        totalConversions: Number(affiliate.totalConversions || 0),
+        totalCommission: Number(affiliate.totalCommission || 0)
+      })));
+
+    } catch (error) {
+      console.error("Erro ao buscar top afiliados:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Postbacks recentes
+  app.get("/api/admin/dashboard/recent-postbacks", requireAdmin, async (req: any, res) => {
+    try {
+      const recentPostbacks = await db.select({
+        id: schema.postbackLogs.id,
+        casa: schema.postbackLogs.casa,
+        evento: schema.postbackLogs.evento,
+        subid: schema.postbackLogs.subid,
+        valor: schema.postbackLogs.valor,
+        status: schema.postbackLogs.status,
+        criadoEm: schema.postbackLogs.criadoEm,
+        ip: schema.postbackLogs.ip
+      })
+        .from(schema.postbackLogs)
+        .orderBy(desc(schema.postbackLogs.criadoEm))
+        .limit(10);
+
+      res.json(recentPostbacks.map(postback => ({
+        id: postback.id,
+        casa: postback.casa,
+        evento: postback.evento,
+        subid: postback.subid,
+        valor: Number(postback.valor || 0),
+        status: postback.status,
+        criadoEm: postback.criadoEm,
+        ip: postback.ip
+      })));
+
+    } catch (error) {
+      console.error("Erro ao buscar postbacks recentes:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   // Endpoint para atualizar perfil do usuário
   app.put("/api/user/profile", requireAuth, async (req: any, res) => {
     try {

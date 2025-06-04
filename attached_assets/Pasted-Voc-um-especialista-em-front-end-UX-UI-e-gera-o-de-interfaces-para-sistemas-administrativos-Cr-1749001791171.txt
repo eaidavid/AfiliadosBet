@@ -1,0 +1,79 @@
+Você é um especialista em front-end, UX/UI e geração de interfaces para sistemas administrativos. Crie uma **página de Dashboard Administrativo** para o sistema chamado **AfiliadosBet**.
+
+Este sistema foi desenvolvido do zero e utiliza dados dinâmicos vindos da API (sem mocks ou dados estáticos). O backend já está pronto e fornece todos os endpoints REST necessários.
+
+---
+
+📍 **Sobre o sistema:**
+- Plataforma de afiliação com as seguintes entidades:
+  - Afiliados
+  - Casas de apostas
+  - Links de afiliados
+  - Rastreamento de cliques
+  - Postbacks
+  - Pagamentos
+  - Sistema de comissões
+
+---
+
+📌 **Requisitos da página `/dashboard`:**
+
+1. **Cabeçalho fixo (topo da página):**
+   - Título: `Dashboard Administrativo`
+   - Filtro de período: seletor de datas ou período (ex: últimos 7 dias, mês atual, etc)
+
+2. **Cards de estatísticas com números animados:**
+   - **Afiliados Ativos** — `GET /api/users?role=affiliate&is_active=true`
+   - **Casas Ativas** — `GET /api/betting-houses?is_active=true`
+   - **Postbacks Hoje** — `GET /api/postbacks?date=today`
+   - **Total Pago no Mês** — `GET /api/payments?month=current` (soma do campo `amount`)
+
+3. **Gráfico de Barras — Conversões por Tipo:**
+   - Tipos: click, registration, deposit, profit
+   - Endpoint: `GET /api/conversions/stats?by=type`
+
+4. **Gráfico de Linha — Evolução de Conversões (últimos 30 dias):**
+   - Endpoint: `GET /api/conversions/stats?by=date&period=30d`
+
+5. **Top 5 Afiliados:**
+   - Dados: avatar, nome completo, total de conversões, total de comissão
+   - Endpoint: `GET /api/users/top-affiliates?limit=5`
+
+6. **Postbacks Recentes:**
+   - Lista com ícones, timestamp, nome do evento e badge de status
+   - Endpoint: `GET /api/postbacks?limit=10&sort=desc`
+
+---
+
+🎨 **Estilo e Design:**
+- Interface escura premium, moderna e clean
+- Usar **Tailwind CSS** (ou similar)
+- Layout fluido, responsivo (desktop e mobile)
+- Estilo visual tipo SaaS/Fintech
+- Cards com `rounded-2xl`, `shadow-md`, `bg-[#1C1F26]`
+Gradiente botão: #00C39A → #3B82F6
+Fundo escuro: #0F172A (tom similar a slate-900)
+Textos primários: #FFFFFF
+Textos secundários: #94A3B8 ou #CBD5E1
+Bordas e linhas: #1E293B ou #334155 
+
+---
+
+🧭 **Navegação (menu lateral ou superior):**
+Cada página deve ter sua própria rota:
+- `/dashboard` (esta página)
+- `/afiliados`
+- `/casas`
+- `/postbacks`
+- `/pagamentos`
+- `/config`
+
+---
+
+📌 **Observações finais:**
+- Dados sempre vindos da API real (sem dados fixos ou mockados)
+- Rótulos e textos devem estar em **português do Brasil**
+- Página modular e independente
+- Se necessário, **pergunte antes de assumir comportamentos ou suposições**
+
+Gere o **código real do frontend** (React + Tailwind recomendado) dessa página com base nesses requisitos.
