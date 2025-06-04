@@ -1062,8 +1062,9 @@ export default function AdminBettingHouses() {
           </motion.div>
         </div>
       </div>
-
-      {/* View Details Dialog */}
+    </div>
+    
+    {/* View Details Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-2xl">
           <DialogHeader>
