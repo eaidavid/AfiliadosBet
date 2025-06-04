@@ -97,7 +97,7 @@ export default function AdminBettingHouses() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [viewingHouse, setViewingHouse] = useState<BettingHouse | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  const [isPostbackDialogOpen, setIsPostbackDialogOpen] = useState(false);
+  const [isPostbackModalOpen, setIsPostbackModalOpen] = useState(false);
   const [selectedHouseId, setSelectedHouseId] = useState<number | null>(null);
   
   // Filter states
@@ -303,7 +303,7 @@ export default function AdminBettingHouses() {
 
   const handlePostbacks = (houseId: number) => {
     setSelectedHouseId(houseId);
-    setIsPostbackDialogOpen(true);
+    setIsPostbackModalOpen(true);
   };
 
   const onSubmit = (data: BettingHouseFormData) => {
@@ -1127,27 +1127,7 @@ export default function AdminBettingHouses() {
           )}
         </DialogContent>
       </Dialog>
-      {/* Postback Configuration Dialog */}
-      <Dialog open={isPostbackDialogOpen} onOpenChange={setIsPostbackDialogOpen}>
-        <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl text-white">Configurações de Postback</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-slate-400">
-              Configurações de postback para a casa selecionada serão implementadas aqui.
-            </p>
-            <div className="flex justify-end">
-              <Button
-                onClick={() => setIsPostbackDialogOpen(false)}
-                className="bg-slate-700 hover:bg-slate-600"
-              >
-                Fechar
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+
     </div>
   );
 }
