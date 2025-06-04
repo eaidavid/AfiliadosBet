@@ -132,10 +132,15 @@ export default function AdminBettingHouses() {
   });
 
   // Query para buscar casas
-  const { data: houses = [], isLoading } = useQuery<BettingHouse[]>({
+  const { data: houses = [], isLoading, error } = useQuery<BettingHouse[]>({
     queryKey: ["/api/admin/betting-houses"],
     refetchInterval: 30000,
   });
+
+  // Add error handling for data loading
+  if (error) {
+    console.error("Error loading betting houses:", error);
+  }
 
   // Filtering logic
   const filteredHouses = (houses || []).filter((house) => {
@@ -302,6 +307,18 @@ export default function AdminBettingHouses() {
       createHouseMutation.mutate(processedData);
     }
   };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-900">
+        <AdminSidebar currentPage="betting-houses" onPageChange={() => {}} />
+        <div className="lg:ml-64 transition-all duration-300 ease-in-out min-h-screen flex items-center justify-center">
+          <div className="text-white text-xl">Carregando casas de apostas...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-900">
