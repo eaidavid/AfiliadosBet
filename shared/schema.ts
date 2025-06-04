@@ -326,6 +326,27 @@ export const postbackLogsRelations = relations(postbackLogs, ({ one }) => ({
   // Não precisa de relação direta pois subid pode não existir
 }));
 
+// Tabela de configurações de postbacks por casa
+export const postbacks = pgTable("postbacks", {
+  id: serial("id").primaryKey(),
+  houseId: integer("house_id").notNull().references(() => bettingHouses.id),
+  eventType: text("event_type").notNull(), // "click", "register", "deposit", "revenue"
+  url: text("url").notNull(),
+  active: boolean("active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  // Índice único para garantir apenas um postback por casa e tipo de evento
+  index("idx_house_event_unique").on(table.houseId, table.eventType),
+]);
+
+export const postbacksRelations = relations(postbacks, ({ one }) => ({
+  house: one(bettingHouses, {
+    fields: [postbacks.houseId],
+    references: [bettingHouses.id],
+  }),
+}));
+
 // Tipos das novas tabelas
 export type Evento = typeof eventos.$inferSelect;
 export type InsertEvento = typeof eventos.$inferInsert;
@@ -333,3 +354,16 @@ export type Comissao = typeof comissoes.$inferSelect;
 export type InsertComissao = typeof comissoes.$inferInsert;
 export type PostbackLog = typeof postbackLogs.$inferSelect;
 export type InsertPostbackLog = typeof postbackLogs.$inferInsert;
+export type Postback = typeof postbacks.$inferSelect;
+export type InsertPostback = typeof postbacks.$inferInsert;
+
+// Schema para validação de postbacks
+export const insertPostbackSchema = createInsertSchema(postbacks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  eventType: z.enum(["click", "register", "deposit", "revenue"]),
+  url: z.string().url("URL inválida"),
+  active: z.boolean().default(true),
+});

@@ -11,12 +11,13 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Building, Plus, Edit, Trash2, Users, TrendingUp, DollarSign, ExternalLink, Copy, CheckCircle } from "lucide-react";
+import { Building, Plus, Edit, Trash2, Users, TrendingUp, DollarSign, ExternalLink, Copy, CheckCircle, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertBettingHouseSchema, type InsertBettingHouse, type BettingHouse } from "@shared/schema";
 import { useLocation } from "wouter";
+import PostbackConfigModal from "./postback-config-modal";
 
 interface BettingHouseWithStats extends BettingHouse {
   stats?: {

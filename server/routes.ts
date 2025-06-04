@@ -5132,6 +5132,128 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // === POSTBACK CONFIGURATION ROUTES ===
+  
+  // Get postbacks for a specific betting house
+  app.get("/api/admin/postbacks/:house_id", requireAdmin, async (req: any, res) => {
+    try {
+      const houseId = parseInt(req.params.house_id);
+
+      // Get house details
+      const [house] = await db.select()
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.id, houseId))
+        .limit(1);
+
+      if (!house) {
+        return res.status(404).json({ error: "Casa de apostas não encontrada" });
+      }
+
+      // Get postbacks for this house
+      const postbacks = await db.select()
+        .from(schema.postbacks)
+        .where(eq(schema.postbacks.houseId, houseId));
+
+      res.json({
+        house,
+        postbacks
+      });
+    } catch (error) {
+      console.error("Erro ao buscar postbacks:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Create new postback
+  app.post("/api/admin/postbacks", requireAdmin, async (req: any, res) => {
+    try {
+      const { houseId, eventType, url, active } = req.body;
+
+      // Validate input
+      if (!houseId || !eventType || !url) {
+        return res.status(400).json({ error: "Dados obrigatórios: houseId, eventType, url" });
+      }
+
+      // Check if postback already exists for this house and event type
+      const existing = await db.select()
+        .from(schema.postbacks)
+        .where(and(
+          eq(schema.postbacks.houseId, houseId),
+          eq(schema.postbacks.eventType, eventType)
+        ))
+        .limit(1);
+
+      if (existing.length > 0) {
+        return res.status(400).json({ error: "Já existe um postback para este evento nesta casa" });
+      }
+
+      // Create new postback
+      const [newPostback] = await db.insert(schema.postbacks)
+        .values({
+          houseId,
+          eventType,
+          url,
+          active: active ?? true
+        })
+        .returning();
+
+      res.status(201).json(newPostback);
+    } catch (error) {
+      console.error("Erro ao criar postback:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Update existing postback
+  app.put("/api/admin/postbacks/:id", requireAdmin, async (req: any, res) => {
+    try {
+      const postbackId = parseInt(req.params.id);
+      const { url, active } = req.body;
+
+      if (!url) {
+        return res.status(400).json({ error: "URL é obrigatória" });
+      }
+
+      const [updatedPostback] = await db.update(schema.postbacks)
+        .set({
+          url,
+          active: active ?? true,
+          updatedAt: new Date()
+        })
+        .where(eq(schema.postbacks.id, postbackId))
+        .returning();
+
+      if (!updatedPostback) {
+        return res.status(404).json({ error: "Postback não encontrado" });
+      }
+
+      res.json(updatedPostback);
+    } catch (error) {
+      console.error("Erro ao atualizar postback:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Delete postback
+  app.delete("/api/admin/postbacks/:id", requireAdmin, async (req: any, res) => {
+    try {
+      const postbackId = parseInt(req.params.id);
+
+      const [deletedPostback] = await db.delete(schema.postbacks)
+        .where(eq(schema.postbacks.id, postbackId))
+        .returning();
+
+      if (!deletedPostback) {
+        return res.status(404).json({ error: "Postback não encontrado" });
+      }
+
+      res.json({ message: "Postback deletado com sucesso" });
+    } catch (error) {
+      console.error("Erro ao deletar postback:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   wss.on('connection', (ws) => {
     console.log('Cliente WebSocket conectado');
     
