@@ -49,7 +49,14 @@ export default function PostbackConfigModal({ isOpen, onClose, houseId }: Postba
   const queryClient = useQueryClient();
 
   const { data: postbackData, isLoading } = useQuery<PostbackData>({
-    queryKey: ["/api/admin/postbacks", houseId],
+    queryKey: ["/api/admin/betting-houses", houseId, "postbacks"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/admin/betting-houses/${houseId}/postbacks`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch postback data");
+      }
+      return response.json();
+    },
     enabled: isOpen && !!houseId,
   });
 
