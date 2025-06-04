@@ -90,7 +90,14 @@ export const conversions = pgTable("conversions", {
   customerId: text("customer_id"), // ID do cliente na casa de apostas
   conversionData: jsonb("conversion_data"), // Additional data from postback
   convertedAt: timestamp("converted_at").defaultNow(),
-});
+}, (table) => [
+  // Índice composto para evitar duplicações por customer_id + house_id + type
+  index("idx_customer_house_type").on(table.customerId, table.houseId, table.type),
+  // Índice para consultas por customer_id
+  index("idx_customer_id").on(table.customerId),
+  // Índice para consultas por afiliado
+  index("idx_user_conversions").on(table.userId, table.convertedAt),
+]);
 
 // Payment records table
 export const payments = pgTable("payments", {

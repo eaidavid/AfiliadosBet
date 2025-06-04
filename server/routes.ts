@@ -303,14 +303,14 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
-  // POSTBACK ROUTE - Rota principal unificada
+  // POSTBACK ROUTE - Rota principal unificada com controle de duplicações
   app.get("/postback/:casa/:evento/:token", async (req: any, res: any) => {
     try {
       const { casa, evento, token } = req.params;
       const { subid, amount, customer_id } = req.query;
       const ip = req.ip || req.connection.remoteAddress || 'unknown';
       
-      console.log(`📩 Postback recebido: casa=${casa}, evento=${evento}, token=${token}, subid=${subid}`);
+      console.log(`📩 Postback recebido: casa=${casa}, evento=${evento}, token=${token}, subid=${subid}, customer_id=${customer_id}`);
       
       // Verificar se a casa existe pelo identificador
       const house = await db.select()
@@ -338,6 +338,26 @@ export async function registerRoutes(app: any): Promise<Server> {
       if (affiliate.length === 0) {
         console.log(`❌ Afiliado não encontrado: ${subid}`);
         return res.status(404).json({ error: "Afiliado não encontrado" });
+      }
+      
+      // CONTROLE DE DUPLICAÇÕES POR CUSTOMER_ID
+      const finalCustomerId = (customer_id || subid) as string;
+      
+      // Verificar duplicação para eventos críticos (registration, first_deposit)
+      if (finalCustomerId && ['registration', 'first_deposit', 'deposit'].includes(evento)) {
+        const isDuplicate = await checkDuplicateConversion(finalCustomerId, house[0].id, evento);
+        
+        if (isDuplicate) {
+          console.log(`🚫 DUPLICAÇÃO DETECTADA: customer_id=${finalCustomerId}, house=${house[0].name}, evento=${evento}`);
+          return res.status(409).json({ 
+            error: "Evento duplicado detectado",
+            message: `Customer ${finalCustomerId} já possui evento '${evento}' registrado para esta casa`,
+            customerId: finalCustomerId,
+            event: evento,
+            house: house[0].name,
+            preventedDuplicate: true
+          });
+        }
       }
       
       // Calcular comissão baseada no tipo da casa
@@ -402,12 +422,13 @@ export async function registerRoutes(app: any): Promise<Server> {
         commissionValue = cpaCommission + revShareCommission;
       }
       
-      // Registrar conversão
+      // Registrar conversão com customer_id correto
       const conversionData = {
-        customer_id: customer_id || subid, 
+        customer_id: finalCustomerId, 
         event: evento, 
         house_name: house[0].name,
-        processed_at: new Date().toISOString() 
+        processed_at: new Date().toISOString(),
+        duplicate_check_passed: true
       };
       
       await db.insert(schema.conversions).values({
@@ -416,9 +437,11 @@ export async function registerRoutes(app: any): Promise<Server> {
         type: evento,
         amount: eventAmount.toString(),
         commission: commissionValue.toString(),
-        customerId: (customer_id || subid) as string,
+        customerId: finalCustomerId,
         conversionData: conversionData
       });
+      
+      console.log(`✅ Conversão registrada: customer_id=${finalCustomerId}, evento=${evento}, comissão=R$${commissionValue}`);
       
       // Criar registro de pagamento pendente se houver comissão
       if (commissionValue > 0) {
@@ -1229,6 +1252,253 @@ export async function registerRoutes(app: any): Promise<Server> {
 
     } catch (error) {
       console.error("Erro ao buscar postbacks recentes:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // === SISTEMA DE CONTROLE DE LEADS POR CUSTOMER_ID ===
+
+  // Função auxiliar para verificar duplicação
+  async function checkDuplicateConversion(customerId: string, houseId: number, type: string) {
+    if (!customerId) return false;
+    
+    const existing = await db.select({ id: schema.conversions.id })
+      .from(schema.conversions)
+      .where(and(
+        eq(schema.conversions.customerId, customerId),
+        eq(schema.conversions.houseId, houseId),
+        eq(schema.conversions.type, type)
+      ))
+      .limit(1);
+    
+    return existing.length > 0;
+  }
+
+  // Consultar leads por customer_id
+  app.get("/api/admin/leads/:customerId", requireAdmin, async (req: any, res) => {
+    try {
+      const customerId = req.params.customerId;
+
+      const leadData = await db.select({
+        conversionId: schema.conversions.id,
+        customerId: schema.conversions.customerId,
+        type: schema.conversions.type,
+        amount: schema.conversions.amount,
+        commission: schema.conversions.commission,
+        convertedAt: schema.conversions.convertedAt,
+        conversionData: schema.conversions.conversionData,
+        affiliateUsername: schema.users.username,
+        affiliateFullName: schema.users.fullName,
+        affiliateEmail: schema.users.email,
+        houseName: schema.bettingHouses.name,
+        houseId: schema.bettingHouses.id
+      })
+        .from(schema.conversions)
+        .innerJoin(schema.users, eq(schema.conversions.userId, schema.users.id))
+        .innerJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
+        .where(eq(schema.conversions.customerId, customerId))
+        .orderBy(desc(schema.conversions.convertedAt));
+
+      // Agrupar dados por customer_id
+      const leadSummary = {
+        customerId,
+        totalConversions: leadData.length,
+        totalCommission: leadData.reduce((sum, conv) => sum + Number(conv.commission || 0), 0),
+        totalAmount: leadData.reduce((sum, conv) => sum + Number(conv.amount || 0), 0),
+        events: leadData.map(conv => ({
+          id: conv.conversionId,
+          type: conv.type,
+          amount: Number(conv.amount || 0),
+          commission: Number(conv.commission || 0),
+          convertedAt: conv.convertedAt,
+          house: {
+            id: conv.houseId,
+            name: conv.houseName
+          },
+          affiliate: {
+            username: conv.affiliateUsername,
+            fullName: conv.affiliateFullName,
+            email: conv.affiliateEmail
+          },
+          data: conv.conversionData
+        })),
+        // Estatísticas por tipo de evento
+        eventsSummary: {
+          click: leadData.filter(c => c.type === 'click').length,
+          registration: leadData.filter(c => c.type === 'registration').length,
+          deposit: leadData.filter(c => c.type === 'deposit').length,
+          profit: leadData.filter(c => c.type === 'profit').length
+        }
+      };
+
+      res.json(leadSummary);
+
+    } catch (error) {
+      console.error("Erro ao consultar lead:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Listar todos os leads (customer_ids únicos)
+  app.get("/api/admin/leads", requireAdmin, async (req: any, res) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 20;
+      const offset = (page - 1) * limit;
+
+      const leadsData = await db.select({
+        customerId: schema.conversions.customerId,
+        totalConversions: sql`count(*)`.as('totalConversions'),
+        totalCommission: sql`sum(cast(${schema.conversions.commission} as decimal))`.as('totalCommission'),
+        totalAmount: sql`sum(cast(${schema.conversions.amount} as decimal))`.as('totalAmount'),
+        firstConversion: sql`min(${schema.conversions.convertedAt})`.as('firstConversion'),
+        lastConversion: sql`max(${schema.conversions.convertedAt})`.as('lastConversion'),
+        affiliateUsername: sql`array_agg(distinct ${schema.users.username})`.as('affiliateUsername'),
+        houseNames: sql`array_agg(distinct ${schema.bettingHouses.name})`.as('houseNames')
+      })
+        .from(schema.conversions)
+        .innerJoin(schema.users, eq(schema.conversions.userId, schema.users.id))
+        .innerJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
+        .where(sql`${schema.conversions.customerId} IS NOT NULL`)
+        .groupBy(schema.conversions.customerId)
+        .orderBy(desc(sql`max(${schema.conversions.convertedAt})`))
+        .limit(limit)
+        .offset(offset);
+
+      // Contar total de leads únicos
+      const totalCount = await db.select({
+        count: sql`count(distinct ${schema.conversions.customerId})`.as('count')
+      })
+        .from(schema.conversions)
+        .where(sql`${schema.conversions.customerId} IS NOT NULL`);
+
+      res.json({
+        leads: leadsData.map(lead => ({
+          customerId: lead.customerId,
+          totalConversions: Number(lead.totalConversions),
+          totalCommission: Number(lead.totalCommission || 0),
+          totalAmount: Number(lead.totalAmount || 0),
+          firstConversion: lead.firstConversion,
+          lastConversion: lead.lastConversion,
+          affiliates: Array.isArray(lead.affiliateUsername) ? lead.affiliateUsername : [lead.affiliateUsername],
+          houses: Array.isArray(lead.houseNames) ? lead.houseNames : [lead.houseNames]
+        })),
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(Number(totalCount[0]?.count || 0) / limit),
+          totalLeads: Number(totalCount[0]?.count || 0),
+          limit
+        }
+      });
+
+    } catch (error) {
+      console.error("Erro ao listar leads:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Endpoint para validar se um evento já existe para um customer_id
+  app.get("/api/admin/leads/:customerId/validate/:houseId/:type", requireAdmin, async (req: any, res) => {
+    try {
+      const { customerId, houseId, type } = req.params;
+      
+      const isDuplicate = await checkDuplicateConversion(customerId, parseInt(houseId), type);
+      
+      res.json({
+        customerId,
+        houseId: parseInt(houseId),
+        type,
+        isDuplicate,
+        message: isDuplicate ? 'Evento já registrado para este customer_id' : 'Evento pode ser registrado'
+      });
+
+    } catch (error) {
+      console.error("Erro ao validar duplicação:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Relatório detalhado de leads por afiliado
+  app.get("/api/admin/leads/report/by-affiliate", requireAdmin, async (req: any, res) => {
+    try {
+      const affiliateId = req.query.affiliateId;
+      const startDate = req.query.startDate;
+      const endDate = req.query.endDate;
+
+      let whereConditions = [sql`${schema.conversions.customerId} IS NOT NULL`];
+      
+      if (affiliateId) {
+        whereConditions.push(eq(schema.conversions.userId, parseInt(affiliateId as string)));
+      }
+      
+      if (startDate) {
+        whereConditions.push(gte(schema.conversions.convertedAt, new Date(startDate as string)));
+      }
+      
+      if (endDate) {
+        whereConditions.push(lt(schema.conversions.convertedAt, new Date(endDate as string)));
+      }
+
+      const reportData = await db.select({
+        customerId: schema.conversions.customerId,
+        affiliateId: schema.users.id,
+        affiliateUsername: schema.users.username,
+        affiliateFullName: schema.users.fullName,
+        houseId: schema.bettingHouses.id,
+        houseName: schema.bettingHouses.name,
+        eventTypes: sql`array_agg(${schema.conversions.type} order by ${schema.conversions.convertedAt})`.as('eventTypes'),
+        totalEvents: sql`count(*)`.as('totalEvents'),
+        totalCommission: sql`sum(cast(${schema.conversions.commission} as decimal))`.as('totalCommission'),
+        totalAmount: sql`sum(cast(${schema.conversions.amount} as decimal))`.as('totalAmount'),
+        firstEvent: sql`min(${schema.conversions.convertedAt})`.as('firstEvent'),
+        lastEvent: sql`max(${schema.conversions.convertedAt})`.as('lastEvent')
+      })
+        .from(schema.conversions)
+        .innerJoin(schema.users, eq(schema.conversions.userId, schema.users.id))
+        .innerJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
+        .where(and(...whereConditions))
+        .groupBy(
+          schema.conversions.customerId,
+          schema.users.id,
+          schema.users.username,
+          schema.users.fullName,
+          schema.bettingHouses.id,
+          schema.bettingHouses.name
+        )
+        .orderBy(desc(sql`max(${schema.conversions.convertedAt})`));
+
+      res.json({
+        report: reportData.map(item => ({
+          customerId: item.customerId,
+          affiliate: {
+            id: item.affiliateId,
+            username: item.affiliateUsername,
+            fullName: item.affiliateFullName
+          },
+          house: {
+            id: item.houseId,
+            name: item.houseName
+          },
+          events: {
+            types: Array.isArray(item.eventTypes) ? item.eventTypes : [item.eventTypes],
+            total: Number(item.totalEvents),
+            firstEvent: item.firstEvent,
+            lastEvent: item.lastEvent
+          },
+          totals: {
+            commission: Number(item.totalCommission || 0),
+            amount: Number(item.totalAmount || 0)
+          }
+        })),
+        summary: {
+          totalLeads: reportData.length,
+          totalCommission: reportData.reduce((sum, item) => sum + Number(item.totalCommission || 0), 0),
+          totalAmount: reportData.reduce((sum, item) => sum + Number(item.totalAmount || 0), 0)
+        }
+      });
+
+    } catch (error) {
+      console.error("Erro ao gerar relatório:", error);
       res.status(500).json({ error: "Erro interno do servidor" });
     }
   });
