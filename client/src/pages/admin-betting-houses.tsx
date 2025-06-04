@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -143,7 +143,7 @@ export default function AdminBettingHouses() {
   }
 
   // Filtering logic with comprehensive null safety
-  const filteredHouses = React.useMemo(() => {
+  const filteredHouses = useMemo(() => {
     if (!Array.isArray(safeHouses)) return [];
     
     return safeHouses.filter((house) => {
