@@ -332,6 +332,7 @@ export const postbacks = pgTable("postbacks", {
   houseId: integer("house_id").notNull().references(() => bettingHouses.id),
   eventType: text("event_type").notNull(), // "click", "register", "deposit", "revenue"
   url: text("url").notNull(),
+  token: text("token").notNull(), // Token único para esta casa e evento
   active: boolean("active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -365,5 +366,6 @@ export const insertPostbackSchema = createInsertSchema(postbacks).omit({
 }).extend({
   eventType: z.enum(["click", "register", "deposit", "revenue"]),
   url: z.string().url("URL inválida"),
+  token: z.string().min(1, "Token é obrigatório"),
   active: z.boolean().default(true),
 });

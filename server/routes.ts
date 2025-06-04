@@ -1256,6 +1256,39 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // Function to generate unique postback routes for a betting house
+  async function generatePostbacksForHouse(houseId: number, houseIdentifier: string, req: any) {
+    const eventTypes = ['click', 'register', 'deposit', 'revenue'];
+    const baseUrl = `${req.protocol}://${req.get('host')}/postback/${houseIdentifier}`;
+    
+    // Check if postbacks already exist for this house to prevent duplicates
+    const existingPostbacks = await db.select()
+      .from(schema.postbacks)
+      .where(eq(schema.postbacks.houseId, houseId));
+    
+    if (existingPostbacks.length > 0) {
+      console.log(`Postbacks already exist for house ${houseId}, skipping generation`);
+      return;
+    }
+    
+    for (const eventType of eventTypes) {
+      const uniqueToken = `${houseIdentifier}_${eventType}_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+      const postbackUrl = `${baseUrl}/${eventType}?token=${uniqueToken}&subid={SUBID}&customer_id={CUSTOMER_ID}&amount={AMOUNT}`;
+      
+      await db.insert(schema.postbacks).values({
+        houseId,
+        eventType,
+        url: postbackUrl,
+        token: uniqueToken,
+        active: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+      
+      console.log(`Generated postback for ${houseIdentifier}: ${eventType} -> ${postbackUrl}`);
+    }
+  }
+
   // === COMPREHENSIVE BETTING HOUSES MANAGEMENT API ===
   
   // Get all betting houses with enhanced data
@@ -1370,6 +1403,9 @@ export async function registerRoutes(app: any): Promise<Server> {
           (parameterMapping || {}),
         updatedAt: new Date()
       }).returning();
+
+      // Automatically generate unique postback routes for this house
+      await generatePostbacksForHouse(newHouse.id, newHouse.identifier, req);
 
       res.json(newHouse);
     } catch (error) {
@@ -1589,11 +1625,25 @@ export async function registerRoutes(app: any): Promise<Server> {
         return res.status(400).json({ error: "Postback para este evento já existe nesta casa" });
       }
 
+      // Get house identifier for token generation
+      const [house] = await db.select({ identifier: schema.bettingHouses.identifier })
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.id, houseId))
+        .limit(1);
+
+      if (!house) {
+        return res.status(404).json({ error: "Casa de apostas não encontrada" });
+      }
+
+      // Generate unique token for this postback
+      const uniqueToken = `${house.identifier}_${eventType}_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+
       const [newPostback] = await db.insert(schema.postbacks)
         .values({
           houseId,
           eventType,
           url,
+          token: uniqueToken,
           active: active ?? true,
           createdAt: new Date(),
           updatedAt: new Date()
