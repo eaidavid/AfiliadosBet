@@ -62,6 +62,7 @@ const bettingHouseSchema = z.object({
   minDeposit: z.union([z.number(), z.string().transform((val) => val === "" ? undefined : Number(val))]).optional(),
   paymentMethods: z.string().optional(),
   securityToken: z.string().optional(),
+  identifier: z.string().min(1, "Identificador único é obrigatório"),
   logoUrl: z.string().url().optional().or(z.literal("")),
   isActive: z.boolean(),
   parameterMapping: z.string().optional(),
@@ -151,6 +152,7 @@ export default function AdminHouses() {
       minDeposit: 0,
       paymentMethods: "",
       securityToken: "",
+      identifier: "",
       logoUrl: "",
       isActive: true,
       parameterMapping: "",
@@ -335,6 +337,7 @@ export default function AdminHouses() {
       minDeposit: house.minDeposit || 0,
       paymentMethods: house.paymentMethods || "",
       securityToken: house.securityToken || "",
+      identifier: (house as any).identifier || "",
       logoUrl: house.logoUrl || "",
       isActive: house.isActive,
       parameterMapping: house.parameterMapping || "",
@@ -858,6 +861,23 @@ export default function AdminHouses() {
                         <FormControl>
                           <Input {...field} className="bg-slate-700 border-slate-600 text-white" />
                         </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="identifier"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-300">Identificador Único *</FormLabel>
+                        <FormControl>
+                          <Input {...field} className="bg-slate-700 border-slate-600 text-white" placeholder="ex: brazino777" />
+                        </FormControl>
+                        <FormDescription className="text-slate-400 text-xs">
+                          Identificador único usado nos postbacks (apenas letras, números e hífen)
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
