@@ -1,0 +1,78 @@
+✅ Objetivo:
+Implementar a página de configuração de postbacks por casa de apostas, acessada pelo botão de ação 🧩 na listagem de casas. Essa página/modal deve permitir visualizar, criar, editar e excluir URLs de postback por evento (clique, registro, depósito, lucro).
+
+🧩 Estrutura do Modal: Configurações de Postback
+📍 Abertura:
+O botão de ação (ícone de postback) da tabela deve abrir o modal com os dados da casa (house_id) carregados via API.
+
+🖼️ Conteúdo do Modal:
+Título:
+Configurações de Postback – Casa: Brazzino
+
+🔧 Formulário de Configuração:
+Evento	URL de Postback	Status	Ações
+Clique	https://meusite.com/pb/click?subid={subid}	✅ Ativo	✏️ 🗑️
+Registro	https://meusite.com/pb/register?subid={subid}	✅ Ativo	✏️ 🗑️
+Depósito	https://meusite.com/pb/deposit?subid={subid}	❌ Inativo	✏️ 🗑️
+Receita/Lucro	https://meusite.com/pb/revenue?subid={subid}	✅ Ativo	✏️ 🗑️
+
+➕ Botão "Adicionar Novo Postback"
+Ao clicar, aparece um formulário inline:
+
+Evento: [clique, registro, depósito, receita]
+
+URL: input
+
+Status: checkbox ou toggle (ativo/inativo)
+
+Botão [Salvar]
+
+🧠 Regras de Negócio:
+Cada casa pode ter até 1 postback por tipo de evento.
+
+subid deve ser preservado como {subid} (placeholder).
+
+API de postbacks deve usar house_id como chave.
+
+Logs de alterações devem ser salvos (ex: admin_logs).
+
+🗃️ Banco de Dados sugerido
+Tabela: postbacks
+Campo	Tipo	Descrição
+id	UUID	ID único
+house_id	UUID	Relacionado à casa de apostas
+event_type	string	"click", "register", "deposit"...
+url	string	URL do postback
+active	boolean	Ativo ou inativo
+created_at	timestamp	Data de criação
+
+⚠️ Se não existir, crie essa tabela com Drizzle ORM migration.
+
+🖥️ API sugerida (REST ou RPC):
+GET /admin/postbacks/:house_id → listar postbacks da casa
+
+POST /admin/postbacks → criar novo postback
+
+PUT /admin/postbacks/:id → editar
+
+DELETE /admin/postbacks/:id → remover
+
+🎨 Estilo (UI/UX):
+Use shadcn/ui:
+
+Modal (Dialog)
+
+Tabela simplificada dentro do modal
+
+Inputs com zod para validação
+
+✅ Ações esperadas:
+Botão do ícone de postback abre o modal corretamente
+
+Modal exibe todos postbacks cadastrados daquela casa
+
+Admin pode adicionar, editar ou excluir qualquer postback
+
+O modal fecha e atualiza a lista após cada ação
+
+Mensagens de sucesso e erro são exibidas com toast
