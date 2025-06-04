@@ -293,6 +293,7 @@ export default function AdminBettingHouses() {
   };
 
   return (
+    <>
     <div className="min-h-screen bg-slate-900 flex">
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
@@ -1065,7 +1066,7 @@ export default function AdminBettingHouses() {
     </div>
     
     {/* View Details Dialog */}
-      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+    <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-xl text-white">Detalhes da Casa de Apostas</DialogTitle>
@@ -1132,6 +1133,6 @@ export default function AdminBettingHouses() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }
