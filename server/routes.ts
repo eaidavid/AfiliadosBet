@@ -1804,18 +1804,15 @@ export async function registerRoutes(app: any): Promise<Server> {
       const postbacks = await db.select({
         id: schema.registeredPostbacks.id,
         house_id: schema.registeredPostbacks.houseId,
-        house_name: schema.bettingHouses.name,
+        house_name: schema.registeredPostbacks.houseName,
         name: schema.registeredPostbacks.name,
         url: schema.registeredPostbacks.url,
         event_type: schema.registeredPostbacks.eventType,
         description: schema.registeredPostbacks.description,
-        parameter_mapping: schema.registeredPostbacks.parameterMapping,
         is_active: schema.registeredPostbacks.isActive
       })
         .from(schema.registeredPostbacks)
-        .leftJoin(schema.bettingHouses, eq(schema.registeredPostbacks.houseId, schema.bettingHouses.id))
-        .where(eq(schema.registeredPostbacks.isActive, true))
-        .orderBy(schema.bettingHouses.name, schema.registeredPostbacks.eventType);
+        .orderBy(schema.registeredPostbacks.houseName, schema.registeredPostbacks.eventType);
 
       res.json(postbacks);
     } catch (error) {
@@ -4837,17 +4834,7 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
-  // Rotas para gerenciar postbacks registrados
-  app.get("/api/admin/registered-postbacks", requireAdmin, async (req, res) => {
-    try {
-      const postbacks = await db.select().from(schema.registeredPostbacks)
-        .orderBy(desc(schema.registeredPostbacks.createdAt));
-      res.json(postbacks);
-    } catch (error) {
-      console.error('Erro ao buscar postbacks registrados:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
-    }
-  });
+  // Rotas para gerenciar postbacks registrados (REMOVIDO - usar endpoint 1802)
 
   app.post("/api/admin/registered-postbacks", requireAdmin, async (req, res) => {
     try {
