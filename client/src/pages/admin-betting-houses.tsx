@@ -1078,7 +1078,7 @@ export default function AdminBettingHouses() {
                 </div>
                 <div>
                   <Label className="text-slate-300">Identificador</Label>
-                  <p className="text-white font-medium">{viewingHouse.identifier}</p>
+                  <p className="text-white font-medium">{viewingHouse.identifier || ''}</p>
                 </div>
                 <div>
                   <Label className="text-slate-300">URL Base</Label>
@@ -1086,11 +1086,11 @@ export default function AdminBettingHouses() {
                 </div>
                 <div>
                   <Label className="text-slate-300">Parâmetro Primário</Label>
-                  <p className="text-white">{viewingHouse.primaryParam}</p>
+                  <p className="text-white">{viewingHouse.primaryParam || ''}</p>
                 </div>
                 <div>
                   <Label className="text-slate-300">Tipo de Comissão</Label>
-                  <p className="text-white">{viewingHouse.commissionType}</p>
+                  <p className="text-white">{viewingHouse.commissionType || ''}</p>
                 </div>
                 <div>
                   <Label className="text-slate-300">Status</Label>
