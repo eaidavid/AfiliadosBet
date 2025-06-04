@@ -17,8 +17,7 @@ export default function AdminSidebar({ currentPage, onPageChange }: AdminSidebar
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
-    { id: "houses", label: "Casas de Apostas", icon: Building },
-    { id: "betting-houses", label: "Gerenciar Casas", icon: Building },
+    { id: "betting-houses", label: "Casas de Apostas", icon: Building },
     { id: "manage", label: "Gerenciar", icon: Users },
     { id: "links", label: "Links", icon: Link2 },
     { id: "postback-generator", label: "Gerador de Postbacks", icon: Webhook },
@@ -36,8 +35,6 @@ export default function AdminSidebar({ currentPage, onPageChange }: AdminSidebar
     // Navigate to the correct routes
     if (page === "dashboard") {
       window.location.href = "/admin";
-    } else if (page === "houses") {
-      window.location.href = "/admin/casas";
     } else if (page === "betting-houses") {
       window.location.href = "/admin/betting-houses";
     } else if (page === "manage") {
