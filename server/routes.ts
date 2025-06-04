@@ -1450,7 +1450,8 @@ export async function registerRoutes(app: any): Promise<Server> {
       res.json(updatedHouse);
     } catch (error) {
       console.error("Erro ao atualizar casa de apostas:", error);
-      res.status(500).json({ error: "Erro interno do servidor" });
+      console.error("Dados recebidos:", req.body);
+      res.status(500).json({ error: "Erro ao atualizar casa de apostas", details: error.message });
     }
   });
 
