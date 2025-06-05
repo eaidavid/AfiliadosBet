@@ -68,6 +68,13 @@ export default function PostbackGeneratorProfessional() {
   const [testLogs, setTestLogs] = useState<TestLog[]>([]);
   const [isLogsOpen, setIsLogsOpen] = useState(false);
 
+  // Manual Test Link Creator states
+  const [manualSelectedHouse, setManualSelectedHouse] = useState<string>("");
+  const [manualSelectedEventType, setManualSelectedEventType] = useState<string>("");
+  const [manualTestParams, setManualTestParams] = useState<TestParameters>({});
+  const [manualPostbackUrl, setManualPostbackUrl] = useState<string>("");
+  const [manualGeneratedLink, setManualGeneratedLink] = useState<string>("");
+
   // Fetch betting houses
   const { data: bettingHouses = [], isLoading: housesLoading } = useQuery({
     queryKey: ['/api/betting-houses'],
@@ -274,6 +281,85 @@ export default function PostbackGeneratorProfessional() {
       title: "Copiado!",
       description: "URL copiada para a área de transferência"
     });
+  };
+
+  // Manual Test Link Creator functions
+  const findPostbackForManualTest = () => {
+    if (!manualSelectedHouse || !manualSelectedEventType || !postbacks) return null;
+    
+    return postbacks.find((postback: RegisteredPostback) => 
+      postback && 
+      postback.house_id?.toString() === manualSelectedHouse && 
+      postback.event_type === manualSelectedEventType &&
+      postback.is_active
+    );
+  };
+
+  const generateManualTestLink = () => {
+    const postback = findPostbackForManualTest();
+    if (!postback || !postback.url) return "";
+    
+    let url = postback.url;
+    const detectedParams = detectParameters(url);
+    
+    detectedParams.forEach(param => {
+      const value = manualTestParams[param] || '';
+      url = url.replace(new RegExp(`\\{${param}\\}`, 'g'), encodeURIComponent(value));
+    });
+    
+    return url;
+  };
+
+  const resetManualForm = () => {
+    setManualSelectedHouse("");
+    setManualSelectedEventType("");
+    setManualTestParams({});
+    setManualPostbackUrl("");
+    setManualGeneratedLink("");
+  };
+
+  const handleManualHouseChange = (houseId: string) => {
+    setManualSelectedHouse(houseId);
+    setManualSelectedEventType("");
+    setManualTestParams({});
+    setManualPostbackUrl("");
+    setManualGeneratedLink("");
+  };
+
+  const handleManualEventTypeChange = (eventType: string) => {
+    setManualSelectedEventType(eventType);
+    const postback = postbacks?.find((p: RegisteredPostback) => 
+      p && 
+      p.house_id?.toString() === manualSelectedHouse && 
+      p.event_type === eventType &&
+      p.is_active
+    );
+    
+    if (postback) {
+      setManualPostbackUrl(postback.url);
+      const params = detectParameters(postback.url);
+      const initialParams: TestParameters = {};
+      params.forEach(param => {
+        initialParams[param] = '';
+      });
+      setManualTestParams(initialParams);
+    } else {
+      setManualPostbackUrl("");
+      setManualTestParams({});
+    }
+    setManualGeneratedLink("");
+  };
+
+  const generateManualLink = () => {
+    const link = generateManualTestLink();
+    setManualGeneratedLink(link);
+    
+    if (link) {
+      toast({
+        title: "Link Gerado",
+        description: "Link de teste criado com sucesso",
+      });
+    }
   };
 
   const clearFilters = () => {
@@ -613,6 +699,182 @@ export default function PostbackGeneratorProfessional() {
               </Card>
             </Collapsible>
           )}
+
+          {/* Manual Test Link Creator */}
+          <Card className="bg-slate-900/50 border-slate-700">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Settings className="w-5 h-5 text-green-400" />
+                Criador Manual de Links de Teste
+              </CardTitle>
+              <CardDescription className="text-slate-400">
+                Crie links de teste personalizados selecionando casa de apostas e tipo de evento
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Selection Dropdowns */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Betting House Selector */}
+                <div className="space-y-2">
+                  <Label className="text-slate-300">Casa de Apostas</Label>
+                  <Select value={manualSelectedHouse} onValueChange={handleManualHouseChange}>
+                    <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+                      <SelectValue placeholder="Selecione uma casa de apostas" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-600">
+                      {bettingHouses && Array.isArray(bettingHouses) && bettingHouses
+                        .filter((house: BettingHouse) => house && house.id && house.name && house.isActive)
+                        .map((house: BettingHouse) => (
+                          <SelectItem key={house.id} value={house.id.toString()} className="text-white hover:bg-slate-700">
+                            🏢 {house.name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Event Type Selector */}
+                <div className="space-y-2">
+                  <Label className="text-slate-300">Tipo de Evento</Label>
+                  <Select 
+                    value={manualSelectedEventType} 
+                    onValueChange={handleManualEventTypeChange}
+                    disabled={!manualSelectedHouse}
+                  >
+                    <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+                      <SelectValue placeholder="Selecione um tipo de evento" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-600">
+                      {eventTypes && eventTypes.length > 0 && eventTypes
+                        .filter((eventType: string) => {
+                          if (!manualSelectedHouse) return false;
+                          return postbacks?.some((p: RegisteredPostback) => 
+                            p && 
+                            p.house_id?.toString() === manualSelectedHouse && 
+                            p.event_type === eventType &&
+                            p.is_active
+                          );
+                        })
+                        .map((eventType: string) => (
+                          <SelectItem key={eventType} value={eventType} className="text-white hover:bg-slate-700">
+                            ⚡ {eventType}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Postback URL Display */}
+              {manualPostbackUrl && (
+                <div className="space-y-2">
+                  <Label className="text-slate-300">URL do Postback Encontrada</Label>
+                  <div className="bg-slate-800/50 p-3 rounded border border-slate-600">
+                    <p className="text-slate-400 font-mono text-sm break-all">
+                      {manualPostbackUrl}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Parameters Form */}
+              {manualPostbackUrl && detectParameters(manualPostbackUrl).length > 0 && (
+                <div className="space-y-4">
+                  <Label className="text-slate-300 text-base">Preencher Parâmetros</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {detectParameters(manualPostbackUrl).map((param) => (
+                      <div key={param} className="space-y-2">
+                        <Label htmlFor={`manual-${param}`} className="text-slate-300 capitalize">
+                          {param.replace('_', ' ')}
+                        </Label>
+                        <Input
+                          id={`manual-${param}`}
+                          value={manualTestParams[param] || ''}
+                          onChange={(e) => setManualTestParams(prev => ({
+                            ...prev,
+                            [param]: e.target.value
+                          }))}
+                          className="bg-slate-800 border-slate-600 text-white"
+                          placeholder={`Digite o valor para ${param}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Actions */}
+              {manualPostbackUrl && (
+                <div className="flex gap-3 flex-wrap">
+                  <Button
+                    onClick={generateManualLink}
+                    className="bg-green-600 hover:bg-green-700"
+                    disabled={!manualSelectedHouse || !manualSelectedEventType}
+                  >
+                    <Zap className="w-4 h-4 mr-2" />
+                    Gerar Link de Teste
+                  </Button>
+                  <Button
+                    onClick={resetManualForm}
+                    variant="outline"
+                    className="bg-slate-800 border-slate-600 text-white hover:bg-slate-700"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Limpar Formulário
+                  </Button>
+                </div>
+              )}
+
+              {/* Generated Link Display */}
+              {manualGeneratedLink && (
+                <div className="space-y-3 p-4 bg-green-900/20 border border-green-700/50 rounded-lg">
+                  <Label className="text-green-400 font-medium">Link de Teste Gerado</Label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 bg-slate-800/50 p-3 rounded border border-slate-600">
+                      <p className="text-green-400 font-mono text-sm break-all">
+                        {manualGeneratedLink}
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => copyToClipboard(manualGeneratedLink)}
+                      variant="outline"
+                      size="sm"
+                      className="bg-slate-800 border-slate-600 text-white hover:bg-slate-700 flex-shrink-0"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => window.open(manualGeneratedLink, '_blank')}
+                      variant="outline"
+                      size="sm"
+                      className="bg-blue-800 border-blue-600 text-blue-300 hover:bg-blue-700"
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Abrir em Nova Aba
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* No Postback Warning */}
+              {manualSelectedHouse && manualSelectedEventType && !manualPostbackUrl && (
+                <div className="p-4 bg-yellow-900/20 border border-yellow-700/50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5 text-yellow-400" />
+                    <p className="text-yellow-400 font-medium">
+                      Nenhum postback configurado para esta combinação
+                    </p>
+                  </div>
+                  <p className="text-yellow-300/80 text-sm mt-1">
+                    Não foi encontrado um postback ativo para a casa "{bettingHouses?.find((h: BettingHouse) => h.id.toString() === manualSelectedHouse)?.name}" 
+                    com o evento "{manualSelectedEventType}". Configure um postback primeiro.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Test Modal */}
           <Dialog open={isTestModalOpen} onOpenChange={setIsTestModalOpen}>
