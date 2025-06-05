@@ -210,8 +210,10 @@ export default function AdminDashboard() {
         <div className="hidden lg:block bg-slate-900/30 backdrop-blur-sm border-b border-slate-700/50 p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">Dashboard Admin</h1>
-              <p className="text-slate-400 mt-1">Visão geral completa do sistema de afiliados</p>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-emerald-400 bg-clip-text text-transparent">
+                Dashboard Administrativo
+              </h1>
+              <p className="text-slate-400 mt-2">Visão geral completa do sistema de afiliados</p>
             </div>
             
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
@@ -219,7 +221,7 @@ export default function AdminDashboard() {
                 variant="outline" 
                 size="sm" 
                 onClick={refreshData}
-                className="bg-gradient-to-r from-emerald-500 to-blue-600 border-0 hover:opacity-90 text-white"
+                className="bg-slate-800 border-slate-600 text-white hover:bg-slate-700"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Atualizar
@@ -228,7 +230,7 @@ export default function AdminDashboard() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600"
+                className="bg-slate-800 border-slate-600 text-white hover:bg-slate-700"
               >
                 <Download className="h-4 w-4 mr-2" />
                 Exportar
@@ -244,65 +246,65 @@ export default function AdminDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0 }}
         >
-          <Card className="bg-[#1C1F26] border-[#1E293B] shadow-lg rounded-2xl">
+          <Card className="bg-slate-800 border-slate-700">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <Target className="h-5 w-5 text-[#00C39A]" />
+                <Target className="h-5 w-5 text-blue-400" />
                 Resumo Geral do Sistema
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-[#00C39A]">
+                  <div className="text-2xl font-bold text-emerald-400">
                     {systemOverview?.activeAffiliates || 0}
                   </div>
-                  <div className="text-sm text-[#94A3B8]">Afiliados Ativos</div>
+                  <div className="text-sm text-slate-400">Afiliados Ativos</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-[#3B82F6]">
+                  <div className="text-2xl font-bold text-blue-400">
                     {systemOverview?.activeHouses || 0}
                   </div>
-                  <div className="text-sm text-[#94A3B8]">Casas de Apostas Ativas</div>
+                  <div className="text-sm text-slate-400">Casas de Apostas Ativas</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-[#8B5CF6]">
+                  <div className="text-2xl font-bold text-purple-400">
                     {systemOverview?.totalAffiliateLinks || 0}
                   </div>
-                  <div className="text-sm text-[#94A3B8]">Links de Afiliados</div>
+                  <div className="text-sm text-slate-400">Links de Afiliados</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-[#F59E0B]">
+                  <div className="text-2xl font-bold text-yellow-400">
                     {systemOverview?.totalConversions || 0}
                   </div>
-                  <div className="text-sm text-[#94A3B8]">Total de Conversões</div>
+                  <div className="text-sm text-slate-400">Total de Conversões</div>
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-[#334155]">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-600">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-[#10B981]">
+                  <div className="text-2xl font-bold text-green-400">
                     {systemOverview?.totalClicks || 0}
                   </div>
-                  <div className="text-sm text-[#94A3B8]">Total de Cliques</div>
+                  <div className="text-sm text-slate-400">Total de Cliques</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-[#00C39A]">
+                  <div className="text-2xl font-bold text-emerald-400">
                     R$ {(systemOverview?.totalPaidCommissions || 0).toLocaleString()}
                   </div>
-                  <div className="text-sm text-[#94A3B8]">Total Pago</div>
+                  <div className="text-sm text-slate-400">Total Pago</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-[#F59E0B]">
+                  <div className="text-2xl font-bold text-orange-400">
                     R$ {(systemOverview?.pendingCommissions || 0).toLocaleString()}
                   </div>
-                  <div className="text-sm text-[#94A3B8]">Comissões Pendentes</div>
+                  <div className="text-sm text-slate-400">Comissões Pendentes</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-[#8B5CF6]">
+                  <div className="text-2xl font-bold text-purple-400">
                     R$ {(systemOverview?.totalProfit || 0).toLocaleString()}
                   </div>
-                  <div className="text-sm text-[#94A3B8]">Lucro Gerado</div>
+                  <div className="text-sm text-slate-400">Lucro Gerado</div>
                 </div>
               </div>
             </CardContent>
@@ -317,34 +319,34 @@ export default function AdminDashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <Card className="bg-[#1C1F26] border-[#1E293B] shadow-lg rounded-2xl">
+            <Card className="bg-slate-800 border-slate-700">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <Activity className="h-5 w-5 text-[#3B82F6]" />
+                  <Activity className="h-5 w-5 text-blue-400" />
                   Últimos Postbacks
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3 max-h-64 overflow-y-auto">
                   {recentActivity?.postbacks?.map((postback) => (
-                    <div key={postback.id} className="flex items-center justify-between p-3 bg-[#1E293B]/50 rounded-lg">
+                    <div key={postback.id} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg">
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="text-white font-medium">{postback.casa}</span>
-                          <span className="text-[#94A3B8]">•</span>
-                          <span className="text-[#94A3B8] text-sm">{postback.evento}</span>
+                          <span className="text-slate-400">•</span>
+                          <span className="text-slate-400 text-sm">{postback.evento}</span>
                         </div>
-                        <div className="text-sm text-[#94A3B8]">@{postback.subid}</div>
+                        <div className="text-sm text-slate-400">@{postback.subid}</div>
                       </div>
                       <div className="text-right">
                         <StatusBadge status={postback.status} />
-                        <div className="text-xs text-[#94A3B8] mt-1">
+                        <div className="text-xs text-slate-400 mt-1">
                           {new Date(postback.criadoEm).toLocaleTimeString()}
                         </div>
                       </div>
                     </div>
                   )) || (
-                    <div className="text-center text-[#94A3B8] py-4">
+                    <div className="text-center text-slate-400 py-4">
                       Nenhum postback recente
                     </div>
                   )}
