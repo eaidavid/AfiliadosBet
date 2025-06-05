@@ -465,7 +465,7 @@ function AuthenticatedAdminManage() {
 
   return (
     <div className="mobile-safe no-bounce">
-      <AdminManage />
+      <AdminManageSimple />
       <AdminPanelToggle />
     </div>
   );

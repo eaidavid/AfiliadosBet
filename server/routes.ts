@@ -317,21 +317,22 @@ export async function registerRoutes(app: express.Application) {
       
       console.log('🔍 Listando afiliados com filtros:', { search, status, house, date });
       
-      // FIXED: Use role='affiliate' instead of role='user' for consistent counting
-      let whereCondition = eq(schema.users.role, 'affiliate');
+      // Base condition: only affiliate users
+      let baseCondition = eq(schema.users.role, 'affiliate');
+      let finalCondition = baseCondition;
       
       if (search) {
         const searchCondition = or(
           ilike(schema.users.email, `%${search}%`),
           ilike(schema.users.fullName, `%${search}%`)
         );
-        whereCondition = and(whereCondition, searchCondition);
+        finalCondition = and(finalCondition, searchCondition);
       }
       
       if (status === 'active') {
-        whereCondition = and(whereCondition, eq(schema.users.isActive, true));
+        finalCondition = and(finalCondition, eq(schema.users.isActive, true));
       } else if (status === 'inactive') {
-        whereCondition = and(whereCondition, eq(schema.users.isActive, false));
+        finalCondition = and(finalCondition, eq(schema.users.isActive, false));
       }
       
       if (date) {
@@ -339,11 +340,11 @@ export async function registerRoutes(app: express.Application) {
         const nextDay = new Date(targetDate);
         nextDay.setDate(nextDay.getDate() + 1);
         
-        const dateCondition = and(
+        finalCondition = and(
+          finalCondition,
           gte(schema.users.createdAt, targetDate),
           lt(schema.users.createdAt, nextDay)
         );
-        whereCondition = and(whereCondition, dateCondition);
       }
       
       const users = await db
@@ -381,11 +382,11 @@ export async function registerRoutes(app: express.Application) {
           const totalCommissions = conversions.reduce((sum, c) => sum + parseFloat(c.commission || '0'), 0);
           
           // Buscar casas relacionadas
-          const houseIds = [...new Set(userLinks.map(link => link.houseId))];
-          const houses = await db
+          const houseIds = Array.from(new Set(userLinks.map(link => link.houseId)));
+          const houses = houseIds.length > 0 ? await db
             .select({ name: schema.bettingHouses.name })
             .from(schema.bettingHouses)
-            .where(inArray(schema.bettingHouses.id, houseIds.length > 0 ? houseIds : [0]));
+            .where(inArray(schema.bettingHouses.id, houseIds)) : [];
           
           return {
             ...user,

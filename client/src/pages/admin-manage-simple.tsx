@@ -8,6 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Users, Search, Eye, Edit, Trash2 } from 'lucide-react';
 import AdminSidebar from '@/components/admin/sidebar';
 
+const SIDEBAR_PROPS = {
+  currentPage: 'manage',
+  onPageChange: () => {}
+};
+
 interface User {
   id: number;
   username: string;
@@ -53,7 +58,7 @@ export default function AdminManageSimple() {
   if (isLoading) {
     return (
       <div className="flex h-screen bg-slate-950">
-        <AdminSidebar />
+        <AdminSidebar {...SIDEBAR_PROPS} />
         <div className="flex-1 p-6">
           <div className="flex items-center justify-center h-full">
             <div className="text-slate-400">Carregando...</div>
@@ -66,7 +71,7 @@ export default function AdminManageSimple() {
   if (error) {
     return (
       <div className="flex h-screen bg-slate-950">
-        <AdminSidebar />
+        <AdminSidebar {...SIDEBAR_PROPS} />
         <div className="flex-1 p-6">
           <div className="flex items-center justify-center h-full">
             <div className="text-red-400">Erro ao carregar dados</div>
@@ -78,7 +83,7 @@ export default function AdminManageSimple() {
 
   return (
     <div className="flex h-screen bg-slate-950">
-      <AdminSidebar />
+      <AdminSidebar {...SIDEBAR_PROPS} />
       <div className="flex-1 p-6 overflow-auto">
         <div className="space-y-6">
           {/* Header */}
