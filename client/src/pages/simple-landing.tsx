@@ -44,10 +44,10 @@ const fadeInStyles = `
       flex-direction: column !important;
       align-items: center !important;
       justify-content: center !important;
-      height: 64px !important;
-      min-height: 64px !important;
-      max-height: 64px !important;
-      padding: 0.75rem 0.5rem !important;
+      height: 72px !important;
+      min-height: 72px !important;
+      max-height: 72px !important;
+      padding: 1rem 0.75rem !important;
       touch-action: manipulation !important;
       -webkit-touch-callout: none !important;
       -webkit-user-select: none !important;
@@ -56,17 +56,18 @@ const fadeInStyles = `
     }
     
     [data-radix-collection-item] span {
-      font-size: 0.75rem !important;
-      line-height: 1 !important;
+      font-size: 0.875rem !important;
+      line-height: 1.2 !important;
     }
     
     .tab-content-mobile {
-      margin-top: 1.5rem !important;
+      margin-top: 2rem !important;
       clear: both !important;
     }
     
     [role="tablist"] {
-      margin-bottom: 2rem !important;
+      margin-bottom: 3rem !important;
+      padding: 1rem !important;
     }
   }
 `;
@@ -314,27 +315,27 @@ export default function SimpleLanding() {
           </div>
           
           <Tabs defaultValue="comissao" className="w-full max-w-6xl mx-auto">
-            <TabsList className="grid grid-cols-3 w-full bg-slate-800/50 rounded-xl p-3 mb-8 gap-2">
+            <TabsList className="grid grid-cols-3 w-full bg-slate-800/50 rounded-xl p-4 mb-12 gap-3">
               <TabsTrigger 
                 value="comissao" 
-                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-3 px-2 rounded-lg text-sm sm:text-base font-medium min-h-[64px] h-[64px] touch-manipulation flex flex-col items-center justify-center"
+                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-4 px-3 rounded-lg text-sm sm:text-base font-medium min-h-[72px] h-[72px] touch-manipulation flex flex-col items-center justify-center"
               >
-                <Calculator className="h-4 w-4 sm:h-5 sm:w-5 mb-1" />
-                <span className="text-center leading-tight text-xs sm:text-sm">Comissão</span>
+                <Calculator className="h-5 w-5 sm:h-6 sm:w-6 mb-1" />
+                <span className="text-center leading-tight text-sm sm:text-base">Comissão</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="termos" 
-                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-3 px-2 rounded-lg text-sm sm:text-base font-medium min-h-[64px] h-[64px] touch-manipulation flex flex-col items-center justify-center"
+                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-4 px-3 rounded-lg text-sm sm:text-base font-medium min-h-[72px] h-[72px] touch-manipulation flex flex-col items-center justify-center"
               >
-                <FileText className="h-4 w-4 sm:h-5 sm:w-5 mb-1" />
-                <span className="text-center leading-tight text-xs sm:text-sm">Termos</span>
+                <FileText className="h-5 w-5 sm:h-6 sm:w-6 mb-1" />
+                <span className="text-center leading-tight text-sm sm:text-base">Termos</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="direitos" 
-                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-3 px-2 rounded-lg text-sm sm:text-base font-medium min-h-[64px] h-[64px] touch-manipulation flex flex-col items-center justify-center"
+                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-4 px-3 rounded-lg text-sm sm:text-base font-medium min-h-[72px] h-[72px] touch-manipulation flex flex-col items-center justify-center"
               >
-                <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 mb-1" />
-                <span className="text-center leading-tight text-xs sm:text-sm">Direitos</span>
+                <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 mb-1" />
+                <span className="text-center leading-tight text-sm sm:text-base">Direitos</span>
               </TabsTrigger>
             </TabsList>
 
