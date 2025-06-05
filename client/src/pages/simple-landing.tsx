@@ -315,7 +315,7 @@ export default function SimpleLanding() {
           </div>
           
           <Tabs defaultValue="comissao" className="w-full max-w-6xl mx-auto">
-            <TabsList className="grid grid-cols-3 w-full bg-slate-800/50 rounded-xl p-4 mb-12 gap-3">
+            <TabsList className="grid grid-cols-3 w-full bg-slate-800/50 rounded-xl p-6 mb-12 gap-4">
               <TabsTrigger 
                 value="comissao" 
                 className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-4 px-3 rounded-lg text-sm sm:text-base font-medium min-h-[72px] h-[72px] touch-manipulation flex flex-col items-center justify-center"
