@@ -1,0 +1,135 @@
+🎯 Objetivo:
+Garantir que o menu lateral (side menu) funcione perfeitamente em todas as páginas (admin e usuário), com:
+
+Layout responsivo (colapsável em mobile)
+
+Overlay/Backdrop ao abrir
+
+Scroll travado em background
+
+Botão de abertura fixo no topo no mobile
+
+Comportamento já validado nas páginas de /profile e /payments
+
+📦 1. Componente Global: SidebarLayout
+Crie (ou ajuste) um componente layout reutilizável chamado SidebarLayout.tsx que envolva todas as páginas autenticadas (admin e user), e implemente:
+
+tsx
+Copiar
+Editar
+import { useState } from "react";
+
+export default function SidebarLayout({ children }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="flex">
+      {/* MENU LATERAL */}
+      <aside className={`fixed sm:relative z-50 h-full w-64 bg-[#0E1B2B] transition-transform ${open ? "translate-x-0" : "-translate-x-full"} sm:translate-x-0`}>
+        {/* Logo, links, etc */}
+      </aside>
+
+      {/* BACKDROP */}
+      {open && <div className="fixed inset-0 bg-black bg-opacity-50 z-40 sm:hidden" onClick={() => setOpen(false)}></div>}
+
+      {/* BOTÃO MOBILE */}
+      <button className="absolute top-4 left-4 z-50 sm:hidden" onClick={() => setOpen(!open)}>
+        <MenuIcon className="w-6 h-6 text-white" />
+      </button>
+
+      {/* CONTEÚDO PRINCIPAL */}
+      <main className="flex-1 sm:ml-64 w-full min-h-screen overflow-y-auto bg-[#101D33] pb-24">
+        {children}
+      </main>
+    </div>
+  );
+}
+🧩 2. Rotas que DEVEM usar esse layout
+Aplique o SidebarLayout em todas as rotas autenticadas listadas abaixo:
+
+🔒 Usuário:
+/home
+
+/betting-houses
+
+/my-links
+
+/reports
+
+/payments
+
+/profile
+
+🔧 Admin:
+/admin
+
+/admin/houses
+
+/admin/manage
+
+/admin/postback-generator
+
+/admin/postback-logs
+
+/admin/settings
+
+❌ Exceções (não usar layout):
+/login
+
+⚙️ 3. Estrutura básica do menu lateral
+Usuário:
+tsx
+Copiar
+Editar
+[
+  { icon: <HomeIcon />, label: "Dashboard", path: "/home" },
+  { icon: <ActivityIcon />, label: "Relatórios", path: "/reports" },
+  { icon: <LinkIcon />, label: "Meus Links", path: "/my-links" },
+  { icon: <CreditCardIcon />, label: "Pagamentos", path: "/payments" },
+  { icon: <UserIcon />, label: "Perfil", path: "/profile" }
+]
+Admin:
+tsx
+Copiar
+Editar
+[
+  { icon: <BarChartIcon />, label: "Dashboard", path: "/admin" },
+  { icon: <BuildingIcon />, label: "Casas", path: "/admin/houses" },
+  { icon: <UsersIcon />, label: "Afiliados", path: "/admin/manage" },
+  { icon: <CodeIcon />, label: "Postbacks", path: "/admin/postback-generator" },
+  { icon: <ClipboardListIcon />, label: "Logs", path: "/admin/postback-logs" },
+  { icon: <SettingsIcon />, label: "Configurações", path: "/admin/settings" }
+]
+🎨 4. Detalhes visuais obrigatórios
+Cor de fundo: bg-[#0E1B2B] (escuro consistente)
+
+Ícone ativo: text-green-400 + border-l-4 border-green-400
+
+Hover: hover:bg-white/5
+
+Texto: text-sm, espaçamento com gap-2 e px-4 py-3
+
+Separação entre seções com dividers ou espaçamento
+
+📱 5. Comportamento mobile
+Abrir/fechar o menu com botão flutuante no canto superior esquerdo (MenuIcon)
+
+Fechar o menu ao clicar fora (overlay)
+
+Travamento de scroll com overflow-hidden no body enquanto o menu estiver aberto
+
+Não quebrar layout do conteúdo (usar sm:ml-64 para o main)
+
+🧠 Dicas de UX extra:
+Mostrar o nome do usuário no topo (em mobile) com ícone/avatar
+
+Exibir quantidade de notificações ou pendências (ex: pagamentos) com badge
+
+Usar animações com transition-transform para suavizar o menu entrando/saindo
+
+🔁 Sugestão de melhorias futuras no painel admin:
+Permitir reestruturação do menu lateral via painel (ordem, ícones, páginas habilitadas)
+
+Incluir controle de permissões (ex: alguns admins só verem algumas rotas)
+
+Menu lateral colapsável com ícones compactos (modo "dock")
