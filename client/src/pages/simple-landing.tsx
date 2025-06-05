@@ -15,7 +15,10 @@ import {
   BarChart3, 
   Coins,
   Trophy,
-  Rocket
+  Rocket,
+  Clock,
+  Calendar,
+  Shield
 } from "lucide-react";
 
 // Estilos CSS inline para animações fade-in
@@ -287,6 +290,287 @@ export default function SimpleLanding() {
             <TabsContent value="comissao" className="mt-8">
               <Card className="bg-slate-800/30 border-slate-700/50 backdrop-blur-sm">
                 <CardContent className="p-8">
+                  {/* Como Funcionam os Pagamentos */}
+                  <div className="mb-12">
+                    <div className="flex items-center mb-6">
+                      <DollarSign className="h-6 w-6 text-green-400 mr-3" />
+                      <h3 className="text-2xl font-bold text-white">Como Funcionam os Pagamentos na Plataforma AfiliadosBet</h3>
+                    </div>
+                    
+                    <p className="text-gray-300 mb-8 text-lg leading-relaxed">
+                      Nós sabemos que receber sua comissão de forma rápida e segura é essencial para o seu sucesso. Por isso, aqui na AfiliadosBet, os pagamentos são realizados sempre de forma mensal, garantindo organização e transparência para você.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                      <Card className="bg-slate-900/50 border-blue-500/20 hover:border-blue-500/40 transition-colors">
+                        <CardContent className="p-6">
+                          <div className="flex items-center mb-3">
+                            <Calendar className="h-5 w-5 text-blue-400 mr-2" />
+                            <h4 className="text-lg font-semibold text-white">Período de Apuração</h4>
+                          </div>
+                          <ul className="text-gray-300 text-sm space-y-1">
+                            <li>• O mês começa no dia 1º</li>
+                            <li>• O fechamento ocorre no último dia do mês (30 ou 31)</li>
+                          </ul>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="bg-slate-900/50 border-green-500/20 hover:border-green-500/40 transition-colors">
+                        <CardContent className="p-6">
+                          <div className="flex items-center mb-3">
+                            <Clock className="h-5 w-5 text-green-400 mr-2" />
+                            <h4 className="text-lg font-semibold text-white">Prazo para Pagamento</h4>
+                          </div>
+                          <p className="text-gray-300 text-sm">
+                            Os pagamentos são processados até o 5º dia útil do mês seguinte ao fechamento do período.
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    <div className="bg-blue-900/30 rounded-lg p-6 mb-8">
+                      <h4 className="text-blue-400 font-semibold mb-3 flex items-center">
+                        <Info className="h-5 w-5 mr-2" />
+                        Exemplo prático:
+                      </h4>
+                      <ul className="text-gray-300 space-y-2">
+                        <li>• <strong>Período de apuração:</strong> 1º a 31 de maio</li>
+                        <li>• <strong>Pagamento:</strong> até o 5º dia útil de junho</li>
+                      </ul>
+                    </div>
+
+                    <Card className="bg-gradient-to-r from-green-900/30 to-blue-900/30 border-green-500/30">
+                      <CardContent className="p-6">
+                        <div className="flex items-center mb-4">
+                          <Shield className="h-6 w-6 text-green-400 mr-3" />
+                          <h4 className="text-xl font-bold text-white">Transparência e Segurança</h4>
+                        </div>
+                        <p className="text-gray-300 leading-relaxed">
+                          Nossa plataforma foi desenvolvida para oferecer total transparência e controle sobre seus ganhos. Você pode acompanhar em tempo real suas métricas, comissões e status de pagamento, tendo sempre a certeza de que o valor devido será pago no prazo combinado.
+                        </p>
+                        <p className="text-green-400 mt-4 font-semibold">
+                          Confie na AfiliadosBet para entregar não só as melhores comissões, mas também a segurança e confiança que você merece.
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <Separator className="bg-slate-700/50 my-8" />
+
+                  {/* Como Funciona a Comissão */}
+                  <div className="mb-12">
+                    <div className="flex items-center mb-6">
+                      <BarChart3 className="h-6 w-6 text-purple-400 mr-3" />
+                      <h3 className="text-2xl font-bold text-white">Como Funciona a Comissão de Afiliados?</h3>
+                    </div>
+                    
+                    <p className="text-gray-300 mb-8 text-lg leading-relaxed">
+                      Se você quer lucrar indicando jogadores para uma casa de apostas, é essencial entender os dois modelos de comissão mais usados no mercado: Revenue Share e CPA.
+                    </p>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                      {/* Revenue Share */}
+                      <Card className="bg-gradient-to-br from-purple-900/30 to-blue-800/20 border-purple-500/30">
+                        <CardContent className="p-8">
+                          <div className="flex items-center mb-4">
+                            <div className="p-3 bg-purple-500/20 rounded-full mr-4">
+                              <TrendingUp className="h-8 w-8 text-purple-400" />
+                            </div>
+                            <h4 className="text-2xl font-bold text-white">Revenue Share</h4>
+                          </div>
+                          <p className="text-gray-300 mb-6 leading-relaxed">
+                            No modelo Revenue Share, você ganha uma porcentagem sobre o lucro que a casa de apostas tem com os jogadores que você indicou.
+                          </p>
+                          
+                          <div className="bg-slate-900/50 rounded-lg p-4 mb-4">
+                            <h5 className="text-purple-400 font-semibold mb-2">Como é calculado:</h5>
+                            <ul className="text-gray-300 space-y-1 text-sm">
+                              <li>• Jogador perde R$ 400 apostando</li>
+                              <li>• Casa desconta 20% de custos administrativos</li>
+                              <li>• Receita líquida: R$ 320</li>
+                              <li>• Com 50% Revenue Share: <strong className="text-green-400">R$ 160 de comissão</strong></li>
+                            </ul>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex items-center text-green-400">
+                              <span className="mr-2">✅</span>
+                              <span className="text-sm">Ganhos recorrentes</span>
+                            </div>
+                            <div className="flex items-center text-green-400">
+                              <span className="mr-2">✅</span>
+                              <span className="text-sm">Escalável</span>
+                            </div>
+                            <div className="flex items-center text-green-400">
+                              <span className="mr-2">✅</span>
+                              <span className="text-sm">Potencial maior no longo prazo</span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* CPA */}
+                      <Card className="bg-gradient-to-br from-orange-900/30 to-yellow-800/20 border-orange-500/30">
+                        <CardContent className="p-8">
+                          <div className="flex items-center mb-4">
+                            <div className="p-3 bg-orange-500/20 rounded-full mr-4">
+                              <DollarSign className="h-8 w-8 text-orange-400" />
+                            </div>
+                            <h4 className="text-2xl font-bold text-white">CPA (Custo por Aquisição)</h4>
+                          </div>
+                          <p className="text-gray-300 mb-6 leading-relaxed">
+                            O CPA é um pagamento fixo por cada novo jogador que você traz, após ele se cadastrar e fazer um depósito qualificado.
+                          </p>
+                          
+                          <div className="bg-slate-900/50 rounded-lg p-4 mb-4">
+                            <h5 className="text-orange-400 font-semibold mb-2">Exemplo:</h5>
+                            <ul className="text-gray-300 space-y-1 text-sm">
+                              <li>• Jogador faz depósito mínimo (R$ 50)</li>
+                              <li>• Casa paga R$ 150 por jogador qualificado</li>
+                              <li>• Você recebe <strong className="text-green-400">R$ 150</strong>, independente do que ele apostar depois</li>
+                            </ul>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex items-center text-green-400">
+                              <span className="mr-2">✅</span>
+                              <span className="text-sm">Pagamentos rápidos</span>
+                            </div>
+                            <div className="flex items-center text-green-400">
+                              <span className="mr-2">✅</span>
+                              <span className="text-sm">Previsibilidade no faturamento</span>
+                            </div>
+                            <div className="flex items-center text-green-400">
+                              <span className="mr-2">✅</span>
+                              <span className="text-sm">Ótimo para tráfego pago</span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Tabela Comparativa */}
+                    <Card className="bg-slate-900/50 border-slate-700/50 mb-8">
+                      <CardHeader>
+                        <CardTitle className="text-white flex items-center">
+                          <BarChart3 className="h-5 w-5 text-blue-400 mr-2" />
+                          Qual é o melhor modelo?
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left">
+                            <thead>
+                              <tr className="border-b border-slate-700">
+                                <th className="text-blue-400 py-3 px-4 font-semibold">Modelo</th>
+                                <th className="text-blue-400 py-3 px-4 font-semibold">Ganhos</th>
+                                <th className="text-blue-400 py-3 px-4 font-semibold">Frequência</th>
+                                <th className="text-blue-400 py-3 px-4 font-semibold">Ideal para</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr className="border-b border-slate-800/50">
+                                <td className="text-white py-4 px-4 font-semibold">Revenue Share</td>
+                                <td className="text-gray-300 py-4 px-4">Percentual sobre perdas líquidas</td>
+                                <td className="text-gray-300 py-4 px-4">Recorrente (mensal)</td>
+                                <td className="text-gray-300 py-4 px-4">Influenciadores, redes sociais, tráfego orgânico</td>
+                              </tr>
+                              <tr>
+                                <td className="text-white py-4 px-4 font-semibold">CPA</td>
+                                <td className="text-gray-300 py-4 px-4">Valor fixo por jogador</td>
+                                <td className="text-gray-300 py-4 px-4">Único (por jogador)</td>
+                                <td className="text-gray-300 py-4 px-4">Tráfego pago, grandes portais</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <Separator className="bg-slate-700/50 my-8" />
+
+                  {/* Importante sobre CPA */}
+                  <div className="mb-8">
+                    <div className="flex items-center mb-6">
+                      <Info className="h-6 w-6 text-yellow-400 mr-3" />
+                      <h3 className="text-2xl font-bold text-white">Importante: Sobre o Modelo de Comissão CPA</h3>
+                    </div>
+                    
+                    <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-6 mb-6">
+                      <p className="text-gray-300 mb-4 leading-relaxed">
+                        Informamos que todas as comissões iniciais em nosso programa de afiliados são baseadas no modelo <strong className="text-green-400">Revenue Share</strong> — ou seja, você ganha uma porcentagem sobre o lucro líquido que a casa de apostas tem com os jogadores que você indicar.
+                      </p>
+                      <p className="text-blue-400 italic">
+                        (Revenue Share é ideal para quem busca ganhos recorrentes e potencialmente maiores no longo prazo.)
+                      </p>
+                    </div>
+
+                    <h4 className="text-xl font-bold text-white mb-4">Mas e o CPA? Ele está disponível?</h4>
+                    <p className="text-gray-300 mb-6 leading-relaxed">
+                      Sim! Algumas casas parceiras disponibilizam o modelo de comissão CPA (Custo por Aquisição), porém, para liberar essa opção, precisamos primeiro mensurar a qualidade dos jogadores que você está trazendo.
+                    </p>
+
+                    <Card className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border-blue-500/30">
+                      <CardContent className="p-6">
+                        <h5 className="text-blue-400 font-semibold mb-4 flex items-center">
+                          <Trophy className="h-5 w-5 mr-2" />
+                          Requisitos para desbloquear o CPA:
+                        </h5>
+                        <div className="space-y-3">
+                          <div className="flex items-center text-gray-300">
+                            <span className="text-green-400 mr-2">✅</span>
+                            <span>Atingir pelo menos <strong className="text-white">50 FTDs em 30 dias</strong></span>
+                          </div>
+                          <div className="flex items-center text-gray-300">
+                            <span className="text-green-400 mr-2">✅</span>
+                            <span>Cada FTD deve realizar ao menos <strong className="text-white">1 redépósito</strong> no período</span>
+                          </div>
+                        </div>
+                        <div className="bg-slate-900/50 rounded-lg p-4 mt-4">
+                          <p className="text-sm text-gray-400">
+                            <strong>FTD</strong> = First Time Deposit (jogadores que se cadastram e realizam o primeiro depósito real)
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <div className="mt-6 bg-slate-900/50 rounded-lg p-6">
+                      <h5 className="text-blue-400 font-semibold mb-3">Por que isso é importante?</h5>
+                      <p className="text-gray-300 leading-relaxed">
+                        O modelo CPA exige uma análise de qualidade, pois trata-se de uma comissão fixa por aquisição. Portanto, avaliamos se os jogadores estão realmente ativos, engajados e oferecendo valor à operação.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Call to Action */}
+                  <div className="text-center">
+                    <div className="bg-gradient-to-r from-green-600/20 to-blue-600/20 rounded-xl p-6 border border-green-500/30">
+                      <div className="flex items-center justify-center mb-4">
+                        <Rocket className="h-6 w-6 text-green-400 mr-2" />
+                        <p className="text-green-400 font-semibold text-lg">Pronto para começar a lucrar?</p>
+                      </div>
+                      <div className="space-y-2 mb-6">
+                        <p className="text-gray-300">• Comissão de até 50% Revenue Share</p>
+                        <p className="text-gray-300">• CPA competitivo e com qualificação rápida</p>
+                        <p className="text-gray-300">• Pagamentos mensais e suporte dedicado</p>
+                      </div>
+                      <button 
+                        onClick={() => window.location.href = "/register"}
+                        className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-4 text-lg font-semibold rounded-lg shadow-lg shadow-green-900/30 transition-all transform hover:scale-105"
+                      >
+                        <Rocket className="mr-2 h-5 w-5 inline" />
+                        Cadastre-se e comece a ganhar ainda hoje!
+                      </button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="termos" className="mt-8">
+              <Card className="bg-slate-800/30 border-slate-700/50 backdrop-blur-sm">
+                <CardContent className="p-8">
                   {/* Principais Siglas */}
                   <div className="mb-12">
                     <div className="flex items-center mb-6">
@@ -493,40 +777,6 @@ export default function SimpleLanding() {
                         </div>
                       </CardContent>
                     </Card>
-
-                    {/* Call to Action */}
-                    <div className="mt-8 text-center">
-                      <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-xl p-6 border border-blue-500/30">
-                        <div className="flex items-center justify-center mb-4">
-                          <Trophy className="h-6 w-6 text-yellow-400 mr-2" />
-                          <p className="text-yellow-400 font-semibold text-lg">💡 Dica de afiliado:</p>
-                        </div>
-                        <p className="text-gray-300 mb-6 text-lg">
-                          Entender a diferença entre GGR e NGR é essencial para calcular seus ganhos e escolher as melhores oportunidades!
-                        </p>
-                        <button 
-                          onClick={() => window.location.href = "/register"}
-                          className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-4 text-lg font-semibold rounded-lg shadow-lg shadow-green-900/30 transition-all transform hover:scale-105"
-                        >
-                          <Rocket className="mr-2 h-5 w-5 inline" />
-                          📲 Junte-se agora ao nosso programa de afiliados
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="termos" className="mt-8">
-              <Card className="bg-slate-800/30 border-slate-700/50 backdrop-blur-sm">
-                <CardContent className="p-8">
-                  <div className="text-center py-16">
-                    <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-2xl font-bold text-white mb-4">Termos Técnicos</h3>
-                    <p className="text-gray-400 text-lg">
-                      Conteúdo em desenvolvimento. Em breve você terá acesso a todos os termos técnicos importantes.
-                    </p>
                   </div>
                 </CardContent>
               </Card>
