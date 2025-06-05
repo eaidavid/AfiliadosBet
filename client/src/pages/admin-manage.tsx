@@ -28,41 +28,30 @@ import {
   Download,
   Users,
   Building2,
-  DollarSign,
-  Percent,
   Calendar,
   CheckCircle2,
   XCircle,
-  TrendingUp,
-  Activity,
   RefreshCw,
-  AlertTriangle,
-  ChevronLeft,
-  ChevronRight,
-  ExternalLink,
-  Hash,
-  Shield,
-  Clock,
-  Link as LinkIcon
+  Settings,
+  Activity
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import AdminSidebar from "@/components/admin/sidebar";
+import { useToast } from "@/hooks/use-toast";
+import { AdminSidebar } from "@/components/admin/sidebar";
 
-// Schema for affiliate form
+// Form schema
 const affiliateSchema = z.object({
   subid: z.string().min(1, "SubID é obrigatório"),
   casa_id: z.number().min(1, "Casa de apostas é obrigatória"),
-  tipo_comissao: z.enum(["cpa", "revshare", "cpa+revshare"], {
-    required_error: "Tipo de comissão é obrigatório"
-  }),
-  valor_cpa: z.number().optional(),
+  tipo_comissao: z.enum(["cpa", "revshare", "cpa+revshare"]),
+  valor_cpa: z.number().min(0).optional(),
   percentual_revshare: z.number().min(0).max(100).optional(),
-  status: z.boolean().default(true),
+  status: z.boolean(),
 });
 
 type AffiliateFormData = z.infer<typeof affiliateSchema>;
 
+// Types
 interface Affiliate {
   id: number;
   subid: string;
@@ -348,339 +337,323 @@ export default function AdminManage() {
   };
 
   return (
-    <div className="flex h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-slate-950 text-white">
       <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
       
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex-1 overflow-auto p-6">
-          {/* Header */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+      <div className="lg:ml-72 px-4 md:px-6 lg:px-8 pt-6 pb-8 max-w-[1600px] mx-auto transition-all duration-300">
+        {/* Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+                <Users className="w-8 h-8 text-blue-400" />
+                Administração de Afiliados
+              </h1>
+              <p className="text-slate-300 mt-2">
+                Gerencie afiliados, comissões e tokens de postback
+              </p>
+            </div>
+            <Button
+              onClick={handleAdd}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Novo Afiliado
+            </Button>
+          </div>
+
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <Card className="bg-slate-800 border-slate-700">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-300 text-sm">Total de Afiliados</p>
+                    <p className="text-2xl font-bold text-white">{stats.total}</p>
+                  </div>
                   <Users className="w-8 h-8 text-blue-400" />
-                  Administração de Afiliados
-                </h1>
-                <p className="text-slate-400 mt-2">
-                  Gerencie afiliados, comissões e tokens de postback
-                </p>
-              </div>
-              <Button
-                onClick={handleAdd}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Novo Afiliado
-              </Button>
-            </div>
-
-            {/* Statistics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              <Card className="bg-slate-800 border-slate-700">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-slate-400 text-sm">Total de Afiliados</p>
-                      <p className="text-2xl font-bold text-white">{stats.total}</p>
-                    </div>
-                    <Users className="w-8 h-8 text-blue-400" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-slate-800 border-slate-700">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-slate-400 text-sm">Ativos</p>
-                      <p className="text-2xl font-bold text-green-400">{stats.ativos}</p>
-                    </div>
-                    <CheckCircle2 className="w-8 h-8 text-green-400" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-slate-800 border-slate-700">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-slate-400 text-sm">Inativos</p>
-                      <p className="text-2xl font-bold text-red-400">{stats.inativos}</p>
-                    </div>
-                    <XCircle className="w-8 h-8 text-red-400" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-slate-800 border-slate-700">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-slate-400 text-sm">Último Cadastro</p>
-                      <p className="text-sm font-medium text-white">
-                        {stats.ultimoCadastro ? formatDate(stats.ultimoCadastro.toISOString()) : "Nenhum"}
-                      </p>
-                    </div>
-                    <Calendar className="w-8 h-8 text-purple-400" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Filters */}
-            <Card className="bg-slate-800 border-slate-700 mb-6">
-              <CardHeader>
-                <CardTitle className="text-xl text-white flex items-center gap-2">
-                  <Filter className="w-5 h-5" />
-                  Filtros Avançados
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                  <div>
-                    <Label className="text-slate-300 text-sm">SubID</Label>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <Input
-                        placeholder="Buscar por SubID..."
-                        value={searchSubid}
-                        onChange={(e) => setSearchSubid(e.target.value)}
-                        className="bg-slate-700 border-slate-600 text-white pl-10"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label className="text-slate-300 text-sm">Casa de Apostas</Label>
-                    <Select value={filterCasa} onValueChange={setFilterCasa}>
-                      <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                        <SelectValue placeholder="Todas as casas" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-700 border-slate-600">
-                        <SelectItem value="all">Todas as casas</SelectItem>
-                        {Array.isArray(bettingHouses) && bettingHouses.map((house: BettingHouse) => (
-                          <SelectItem key={house.id} value={house.id.toString()}>
-                            {house.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label className="text-slate-300 text-sm">Tipo de Comissão</Label>
-                    <Select value={filterComissao} onValueChange={setFilterComissao}>
-                      <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                        <SelectValue placeholder="Todos os tipos" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-700 border-slate-600">
-                        <SelectItem value="all">Todos os tipos</SelectItem>
-                        <SelectItem value="cpa">CPA</SelectItem>
-                        <SelectItem value="revshare">RevShare</SelectItem>
-                        <SelectItem value="cpa+revshare">CPA + RevShare</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label className="text-slate-300 text-sm">Status</Label>
-                    <Select value={filterStatus} onValueChange={setFilterStatus}>
-                      <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                        <SelectValue placeholder="Todos os status" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-700 border-slate-600">
-                        <SelectItem value="all">Todos os status</SelectItem>
-                        <SelectItem value="ativo">Ativo</SelectItem>
-                        <SelectItem value="inativo">Inativo</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={clearFilters}
-                    className="border-slate-600 text-slate-300 hover:bg-slate-700"
-                  >
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                    Limpar Filtros
-                  </Button>
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
 
-          {/* Affiliates Table */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
             <Card className="bg-slate-800 border-slate-700">
-              <CardHeader>
-                <CardTitle className="text-xl text-white flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5" />
-                    Afiliados ({filteredAffiliates.length})
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-slate-600 text-slate-300 hover:bg-slate-700"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Exportar CSV
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                {loadingAffiliates ? (
-                  <div className="p-8 text-center">
-                    <RefreshCw className="w-8 h-8 mx-auto mb-4 text-slate-400 animate-spin" />
-                    <p className="text-slate-400">Carregando afiliados...</p>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-300 text-sm">Ativos</p>
+                    <p className="text-2xl font-bold text-green-400">{stats.ativos}</p>
                   </div>
-                ) : filteredAffiliates.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader className="bg-slate-750">
-                        <TableRow className="border-slate-600 hover:bg-slate-750">
-                          <TableHead className="text-slate-300 font-semibold">SubID</TableHead>
-                          <TableHead className="text-slate-300 font-semibold">Casa de Apostas</TableHead>
-                          <TableHead className="text-slate-300 font-semibold">Tipo de Comissão</TableHead>
-                          <TableHead className="text-slate-300 font-semibold">Valor CPA</TableHead>
-                          <TableHead className="text-slate-300 font-semibold">RevShare (%)</TableHead>
-                          <TableHead className="text-slate-300 font-semibold">Token</TableHead>
-                          <TableHead className="text-slate-300 font-semibold">Status</TableHead>
-                          <TableHead className="text-slate-300 font-semibold">Data de Criação</TableHead>
-                          <TableHead className="text-slate-300 font-semibold">Ações</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredAffiliates.map((affiliate: Affiliate) => (
-                          <TableRow key={affiliate.id} className="border-slate-700 hover:bg-slate-800/50">
-                            <TableCell className="text-white font-mono">
-                              {affiliate.subid}
-                            </TableCell>
-                            <TableCell className="text-slate-300">
-                              {affiliate.casa_nome}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-1">
-                                {affiliate.tipo_comissao === 'cpa' && (
-                                  <Badge className="bg-green-600 text-white">CPA</Badge>
-                                )}
-                                {affiliate.tipo_comissao === 'revshare' && (
-                                  <Badge className="bg-blue-600 text-white">RevShare</Badge>
-                                )}
-                                {affiliate.tipo_comissao === 'cpa+revshare' && (
-                                  <>
-                                    <Badge className="bg-green-600 text-white">CPA</Badge>
-                                    <Badge className="bg-blue-600 text-white">RevShare</Badge>
-                                  </>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-green-400">
-                              {affiliate.valor_cpa ? formatCurrency(affiliate.valor_cpa) : "-"}
-                            </TableCell>
-                            <TableCell className="text-blue-400">
-                              {affiliate.percentual_revshare ? formatPercentage(affiliate.percentual_revshare) : "-"}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs font-mono text-slate-400 bg-slate-700 px-2 py-1 rounded">
-                                  {affiliate.token.substring(0, 12)}...
-                                </span>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => handleCopyToken(affiliate.token)}
-                                  className="h-6 w-6 p-0 hover:bg-slate-600"
-                                >
-                                  <Copy className="w-3 h-3" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge 
-                                variant={affiliate.status ? "default" : "secondary"}
-                                className={affiliate.status ? "bg-green-600 text-white" : "bg-red-600 text-white"}
-                              >
-                                {affiliate.status ? "Ativo" : "Inativo"}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-slate-300">
-                              {formatDate(affiliate.data_criacao)}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-1">
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => handleView(affiliate)}
-                                  title="Ver Detalhes"
-                                  className="h-8 w-8 p-0 hover:bg-blue-600"
-                                >
-                                  <Eye className="h-4 w-4 text-blue-400" />
-                                </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => handleEdit(affiliate)}
-                                  title="Editar"
-                                  className="h-8 w-8 p-0 hover:bg-yellow-600"
-                                >
-                                  <Pencil className="h-4 w-4 text-yellow-400" />
-                                </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => handleToggleStatus(affiliate.id)}
-                                  title={affiliate.status ? "Inativar" : "Ativar"}
-                                  className="h-8 w-8 p-0 hover:bg-purple-600"
-                                >
-                                  {affiliate.status ? (
-                                    <ToggleRight className="h-4 w-4 text-green-400" />
-                                  ) : (
-                                    <ToggleLeft className="h-4 w-4 text-red-400" />
-                                  )}
-                                </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => handleDelete(affiliate.id)}
-                                  title="Excluir"
-                                  className="h-8 w-8 p-0 hover:bg-red-600"
-                                >
-                                  <Trash2 className="h-4 w-4 text-red-400" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                  <CheckCircle2 className="w-8 h-8 text-green-400" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-800 border-slate-700">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-300 text-sm">Inativos</p>
+                    <p className="text-2xl font-bold text-red-400">{stats.inativos}</p>
                   </div>
-                ) : (
-                  <div className="p-8 text-center text-slate-400">
-                    <Users className="w-12 h-12 mx-auto mb-4 text-slate-600" />
-                    <h3 className="text-lg font-medium text-slate-300 mb-2">Nenhum afiliado encontrado</h3>
-                    <p className="text-sm">
-                      {searchSubid || filterCasa !== "all" || filterComissao !== "all" || filterStatus !== "all" 
-                        ? "Tente ajustar os filtros ou limpar a busca."
-                        : "Comece criando seu primeiro afiliado."}
+                  <XCircle className="w-8 h-8 text-red-400" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-800 border-slate-700">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-slate-300 text-sm">Último Cadastro</p>
+                    <p className="text-sm font-medium text-white">
+                      {stats.ultimoCadastro ? formatDate(stats.ultimoCadastro.toISOString()) : "Nenhum"}
                     </p>
                   </div>
-                )}
+                  <Calendar className="w-8 h-8 text-purple-400" />
+                </div>
               </CardContent>
             </Card>
-          </motion.div>
-        </div>
+          </div>
+
+          {/* Filters */}
+          <Card className="bg-slate-800 border-slate-700 mb-6">
+            <CardHeader>
+              <CardTitle className="text-xl text-white flex items-center gap-2">
+                <Filter className="w-5 h-5" />
+                Filtros Avançados
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <div>
+                  <Label className="text-slate-300 text-sm">SubID</Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Input
+                      placeholder="Buscar por SubID..."
+                      value={searchSubid}
+                      onChange={(e) => setSearchSubid(e.target.value)}
+                      className="bg-slate-700 border-slate-600 text-white pl-10"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-slate-300 text-sm">Casa de Apostas</Label>
+                  <Select value={filterCasa} onValueChange={setFilterCasa}>
+                    <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                      <SelectValue placeholder="Todas as casas" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-700 border-slate-600">
+                      <SelectItem value="all">Todas as casas</SelectItem>
+                      {Array.isArray(bettingHouses) && bettingHouses.map((house: BettingHouse) => (
+                        <SelectItem key={house.id} value={house.id.toString()}>
+                          {house.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-slate-300 text-sm">Tipo de Comissão</Label>
+                  <Select value={filterComissao} onValueChange={setFilterComissao}>
+                    <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                      <SelectValue placeholder="Todos os tipos" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-700 border-slate-600">
+                      <SelectItem value="all">Todos os tipos</SelectItem>
+                      <SelectItem value="cpa">CPA</SelectItem>
+                      <SelectItem value="revshare">RevShare</SelectItem>
+                      <SelectItem value="cpa+revshare">CPA + RevShare</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-slate-300 text-sm">Status</Label>
+                  <Select value={filterStatus} onValueChange={setFilterStatus}>
+                    <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                      <SelectValue placeholder="Todos os status" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-700 border-slate-600">
+                      <SelectItem value="all">Todos os status</SelectItem>
+                      <SelectItem value="ativo">Ativo</SelectItem>
+                      <SelectItem value="inativo">Inativo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Limpar Filtros
+                </Button>
+                <Badge variant="outline" className="text-slate-300 border-slate-600">
+                  {filteredAffiliates.length} resultado(s)
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Affiliates Table */}
+          <Card className="bg-slate-800 border-slate-700">
+            <CardHeader>
+              <CardTitle className="text-xl text-white flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Lista de Afiliados
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingAffiliates ? (
+                <div className="flex items-center justify-center py-12">
+                  <RefreshCw className="w-8 h-8 animate-spin text-blue-400" />
+                  <span className="ml-2 text-slate-300">Carregando afiliados...</span>
+                </div>
+              ) : filteredAffiliates.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-slate-700">
+                        <TableHead className="text-slate-300 font-semibold">SubID</TableHead>
+                        <TableHead className="text-slate-300 font-semibold">Casa de Apostas</TableHead>
+                        <TableHead className="text-slate-300 font-semibold">Tipo Comissão</TableHead>
+                        <TableHead className="text-slate-300 font-semibold">Valor/Percentual</TableHead>
+                        <TableHead className="text-slate-300 font-semibold">Token</TableHead>
+                        <TableHead className="text-slate-300 font-semibold">Status</TableHead>
+                        <TableHead className="text-slate-300 font-semibold">Data Criação</TableHead>
+                        <TableHead className="text-slate-300 font-semibold">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredAffiliates.map((affiliate: Affiliate) => (
+                        <TableRow key={affiliate.id} className="border-slate-700 hover:bg-slate-700/50">
+                          <TableCell className="font-medium text-blue-400">
+                            {affiliate.subid}
+                          </TableCell>
+                          <TableCell className="text-slate-300">
+                            {affiliate.casa_nome}
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant="outline" 
+                              className={
+                                affiliate.tipo_comissao === 'cpa' 
+                                  ? "border-green-500 text-green-400"
+                                  : affiliate.tipo_comissao === 'revshare'
+                                  ? "border-blue-500 text-blue-400"
+                                  : "border-purple-500 text-purple-400"
+                              }
+                            >
+                              {affiliate.tipo_comissao.toUpperCase()}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-slate-300">
+                            {affiliate.tipo_comissao === 'cpa' && formatCurrency(affiliate.valor_cpa)}
+                            {affiliate.tipo_comissao === 'revshare' && formatPercentage(affiliate.percentual_revshare)}
+                            {affiliate.tipo_comissao === 'cpa+revshare' && 
+                              `${formatCurrency(affiliate.valor_cpa)} + ${formatPercentage(affiliate.percentual_revshare)}`
+                            }
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <code className="bg-slate-700 px-2 py-1 rounded text-xs text-slate-300 max-w-[100px] truncate">
+                                {affiliate.token}
+                              </code>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleCopyToken(affiliate.token)}
+                                className="h-6 w-6 p-0 hover:bg-slate-600"
+                              >
+                                <Copy className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant={affiliate.status ? "default" : "secondary"}
+                              className={affiliate.status ? "bg-green-600 text-white" : "bg-red-600 text-white"}
+                            >
+                              {affiliate.status ? "Ativo" : "Inativo"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-slate-300">
+                            {formatDate(affiliate.data_criacao)}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleView(affiliate)}
+                                title="Ver Detalhes"
+                                className="h-8 w-8 p-0 hover:bg-blue-600"
+                              >
+                                <Eye className="h-4 w-4 text-blue-400" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleEdit(affiliate)}
+                                title="Editar"
+                                className="h-8 w-8 p-0 hover:bg-yellow-600"
+                              >
+                                <Pencil className="h-4 w-4 text-yellow-400" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleToggleStatus(affiliate.id)}
+                                title={affiliate.status ? "Inativar" : "Ativar"}
+                                className="h-8 w-8 p-0 hover:bg-purple-600"
+                              >
+                                {affiliate.status ? (
+                                  <ToggleRight className="h-4 w-4 text-green-400" />
+                                ) : (
+                                  <ToggleLeft className="h-4 w-4 text-red-400" />
+                                )}
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleDelete(affiliate.id)}
+                                title="Excluir"
+                                className="h-8 w-8 p-0 hover:bg-red-600"
+                              >
+                                <Trash2 className="h-4 w-4 text-red-400" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Users className="w-12 h-12 mx-auto mb-4 text-slate-600" />
+                  <h3 className="text-lg font-medium text-slate-300 mb-2">Nenhum afiliado encontrado</h3>
+                  <p className="text-sm text-slate-300">
+                    {searchSubid || filterCasa !== "all" || filterComissao !== "all" || filterStatus !== "all" 
+                      ? "Tente ajustar os filtros ou limpar a busca."
+                      : "Comece criando seu primeiro afiliado."}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
 
       {/* Form Dialog */}
@@ -700,17 +673,14 @@ export default function AdminManage() {
                   name="subid"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-300">SubID *</FormLabel>
+                      <FormLabel className="text-slate-300">SubID</FormLabel>
                       <FormControl>
                         <Input 
                           {...field} 
                           className="bg-slate-700 border-slate-600 text-white"
-                          disabled={!!editingAffiliate}
+                          placeholder="Ex: AFF001"
                         />
                       </FormControl>
-                      <FormDescription className="text-slate-400 text-xs">
-                        Identificador único do afiliado (não pode ser alterado)
-                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -721,18 +691,15 @@ export default function AdminManage() {
                   name="casa_id"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-300">Casa de Apostas *</FormLabel>
-                      <Select 
-                        value={field.value?.toString()} 
-                        onValueChange={(value) => field.onChange(parseInt(value))}
-                      >
+                      <FormLabel className="text-slate-300">Casa de Apostas</FormLabel>
+                      <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
                         <FormControl>
                           <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                            <SelectValue placeholder="Selecione uma casa" />
+                            <SelectValue placeholder="Selecione a casa" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="bg-slate-700 border-slate-600">
-                          {bettingHouses.map((house: BettingHouse) => (
+                          {Array.isArray(bettingHouses) && bettingHouses.map((house: BettingHouse) => (
                             <SelectItem key={house.id} value={house.id.toString()}>
                               {house.name}
                             </SelectItem>
@@ -749,8 +716,8 @@ export default function AdminManage() {
                   name="tipo_comissao"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-300">Tipo de Comissão *</FormLabel>
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <FormLabel className="text-slate-300">Tipo de Comissão</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                             <SelectValue placeholder="Selecione o tipo" />
@@ -767,20 +734,6 @@ export default function AdminManage() {
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center justify-between">
-                      <FormLabel className="text-slate-300">Status Ativo</FormLabel>
-                      <FormControl>
-                        <Switch checked={field.value} onCheckedChange={field.onChange} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 {(form.watch("tipo_comissao") === "cpa" || form.watch("tipo_comissao") === "cpa+revshare") && (
                   <FormField
                     control={form.control}
@@ -790,11 +743,12 @@ export default function AdminManage() {
                         <FormLabel className="text-slate-300">Valor CPA (R$)</FormLabel>
                         <FormControl>
                           <Input 
-                            type="number" 
+                            type="number"
                             step="0.01"
                             {...field}
                             onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                            className="bg-slate-700 border-slate-600 text-white" 
+                            className="bg-slate-700 border-slate-600 text-white"
+                            placeholder="0.00"
                           />
                         </FormControl>
                         <FormMessage />
@@ -812,13 +766,13 @@ export default function AdminManage() {
                         <FormLabel className="text-slate-300">Percentual RevShare (%)</FormLabel>
                         <FormControl>
                           <Input 
-                            type="number" 
-                            min="0" 
-                            max="100" 
-                            step="0.1"
+                            type="number"
+                            step="0.01"
+                            max="100"
                             {...field}
                             onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                            className="bg-slate-700 border-slate-600 text-white" 
+                            className="bg-slate-700 border-slate-600 text-white"
+                            placeholder="0.00"
                           />
                         </FormControl>
                         <FormMessage />
@@ -827,6 +781,28 @@ export default function AdminManage() {
                   />
                 )}
               </div>
+
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-600 p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-slate-300">Status do Afiliado</FormLabel>
+                      <FormDescription className="text-slate-400">
+                        Define se o afiliado está ativo e pode receber comissões
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        className="data-[state=checked]:bg-green-600"
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
 
               <div className="flex justify-end gap-3">
                 <Button
@@ -839,13 +815,17 @@ export default function AdminManage() {
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
                   disabled={createAffiliateMutation.isPending || updateAffiliateMutation.isPending}
+                  className="bg-blue-600 hover:bg-blue-700"
                 >
                   {createAffiliateMutation.isPending || updateAffiliateMutation.isPending ? (
-                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  ) : null}
-                  {editingAffiliate ? "Atualizar" : "Criar"}
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    editingAffiliate ? "Atualizar" : "Criar Afiliado"
+                  )}
                 </Button>
               </div>
             </form>
@@ -857,235 +837,157 @@ export default function AdminManage() {
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
         <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-2xl text-white flex items-center gap-3">
-              <Eye className="w-6 h-6 text-blue-400" />
+            <DialogTitle className="text-xl text-white flex items-center gap-2">
+              <Eye className="w-5 h-5" />
               Detalhes do Afiliado
             </DialogTitle>
           </DialogHeader>
           
           {viewingAffiliate && (
-            <Tabs defaultValue="info" className="mt-6">
+            <Tabs defaultValue="info" className="w-full">
               <TabsList className="grid w-full grid-cols-3 bg-slate-700">
-                <TabsTrigger value="info" className="data-[state=active]:bg-slate-600">
+                <TabsTrigger value="info" className="text-slate-300 data-[state=active]:bg-slate-600">
                   Informações
                 </TabsTrigger>
-                <TabsTrigger value="postbacks" className="data-[state=active]:bg-slate-600">
-                  URLs de Postback
+                <TabsTrigger value="postbacks" className="text-slate-300 data-[state=active]:bg-slate-600">
+                  URLs Postback
                 </TabsTrigger>
-                <TabsTrigger value="logs" className="data-[state=active]:bg-slate-600">
-                  Histórico
+                <TabsTrigger value="logs" className="text-slate-300 data-[state=active]:bg-slate-600">
+                  Logs
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="info" className="space-y-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <Card className="bg-slate-700/50 border-slate-600">
-                    <CardHeader>
-                      <CardTitle className="text-lg text-blue-400">Dados do Afiliado</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
+              <TabsContent value="info" className="space-y-4">
+                <Card className="bg-slate-700 border-slate-600">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <Settings className="w-5 h-5" />
+                      Dados do Afiliado
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-slate-400 text-sm">SubID</Label>
-                        <p className="text-white font-mono text-lg">{viewingAffiliate.subid}</p>
+                        <Label className="text-slate-300">SubID</Label>
+                        <p className="text-white font-medium">{viewingAffiliate.subid}</p>
                       </div>
                       <div>
-                        <Label className="text-slate-400 text-sm">Token</Label>
-                        <div className="flex items-center gap-2">
-                          <p className="text-yellow-400 font-mono text-sm bg-slate-800 px-3 py-2 rounded flex-1 break-all">
+                        <Label className="text-slate-300">Casa de Apostas</Label>
+                        <p className="text-white font-medium">{viewingAffiliate.casa_nome}</p>
+                      </div>
+                      <div>
+                        <Label className="text-slate-300">Tipo de Comissão</Label>
+                        <Badge className="mt-1">
+                          {viewingAffiliate.tipo_comissao.toUpperCase()}
+                        </Badge>
+                      </div>
+                      <div>
+                        <Label className="text-slate-300">Status</Label>
+                        <Badge 
+                          variant={viewingAffiliate.status ? "default" : "secondary"}
+                          className={`mt-1 ${viewingAffiliate.status ? "bg-green-600" : "bg-red-600"}`}
+                        >
+                          {viewingAffiliate.status ? "Ativo" : "Inativo"}
+                        </Badge>
+                      </div>
+                      <div>
+                        <Label className="text-slate-300">Valor CPA</Label>
+                        <p className="text-white font-medium">
+                          {formatCurrency(viewingAffiliate.valor_cpa)}
+                        </p>
+                      </div>
+                      <div>
+                        <Label className="text-slate-300">Percentual RevShare</Label>
+                        <p className="text-white font-medium">
+                          {formatPercentage(viewingAffiliate.percentual_revshare)}
+                        </p>
+                      </div>
+                      <div className="col-span-2">
+                        <Label className="text-slate-300">Token</Label>
+                        <div className="flex items-center gap-2 mt-1">
+                          <code className="bg-slate-600 px-3 py-2 rounded text-white flex-1">
                             {viewingAffiliate.token}
-                          </p>
+                          </code>
                           <Button
                             size="sm"
-                            variant="outline"
                             onClick={() => handleCopyToken(viewingAffiliate.token)}
-                            className="border-yellow-600 text-yellow-400 hover:bg-yellow-600 hover:text-white"
+                            className="bg-blue-600 hover:bg-blue-700"
                           >
                             <Copy className="w-4 h-4" />
                           </Button>
                         </div>
                       </div>
-                      <div>
-                        <Label className="text-slate-400 text-sm">Casa Vinculada</Label>
-                        <p className="text-white">{viewingAffiliate.casa_nome}</p>
-                      </div>
-                      <div>
-                        <Label className="text-slate-400 text-sm">Data de Criação</Label>
-                        <p className="text-white">{formatDate(viewingAffiliate.data_criacao)}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-slate-700/50 border-slate-600">
-                    <CardHeader>
-                      <CardTitle className="text-lg text-green-400">Comissão</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <Label className="text-slate-400 text-sm">Tipo de Comissão</Label>
-                        <div className="flex gap-2 mt-1">
-                          {viewingAffiliate.tipo_comissao === 'cpa' && (
-                            <Badge className="bg-green-600 text-white">CPA</Badge>
-                          )}
-                          {viewingAffiliate.tipo_comissao === 'revshare' && (
-                            <Badge className="bg-blue-600 text-white">RevShare</Badge>
-                          )}
-                          {viewingAffiliate.tipo_comissao === 'cpa+revshare' && (
-                            <>
-                              <Badge className="bg-green-600 text-white">CPA</Badge>
-                              <Badge className="bg-blue-600 text-white">RevShare</Badge>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                      {viewingAffiliate.valor_cpa && (
-                        <div>
-                          <Label className="text-slate-400 text-sm">Valor CPA</Label>
-                          <p className="text-green-400 text-lg font-semibold">
-                            {formatCurrency(viewingAffiliate.valor_cpa)}
-                          </p>
-                        </div>
-                      )}
-                      {viewingAffiliate.percentual_revshare && (
-                        <div>
-                          <Label className="text-slate-400 text-sm">Percentual RevShare</Label>
-                          <p className="text-blue-400 text-lg font-semibold">
-                            {formatPercentage(viewingAffiliate.percentual_revshare)}
-                          </p>
-                        </div>
-                      )}
-                      <div>
-                        <Label className="text-slate-400 text-sm">Status</Label>
-                        <div className="mt-1">
-                          <Badge 
-                            className={`${
-                              viewingAffiliate.status ? 'bg-green-600' : 'bg-red-600'
-                            } text-white`}
-                          >
-                            {viewingAffiliate.status ? 'Ativo' : 'Inativo'}
-                          </Badge>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="postbacks" className="space-y-6">
-                <Card className="bg-slate-700/50 border-slate-600">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-purple-400 flex items-center gap-2">
-                      <LinkIcon className="w-5 h-5" />
-                      URLs de Postback Automáticos
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {Object.entries(generatePostbackUrls(viewingAffiliate.token)).map(([type, url]) => {
-                        const typeLabels = {
-                          click: 'Click',
-                          register: 'Register', 
-                          deposit: 'Deposit',
-                          revenue: 'Revenue'
-                        };
-                        
-                        return (
-                          <div key={type} className="bg-slate-800 rounded-lg p-4 border border-slate-600">
-                            <div className="flex items-center justify-between mb-2">
-                              <Label className="text-slate-300 font-medium">
-                                {typeLabels[type as keyof typeof typeLabels]}
-                              </Label>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleCopyUrl(url, type)}
-                                className="border-purple-600 text-purple-400 hover:bg-purple-600 hover:text-white"
-                              >
-                                <Copy className="w-4 h-4" />
-                              </Button>
-                            </div>
-                            <p className="text-xs font-mono text-slate-400 bg-slate-900 px-3 py-2 rounded break-all">
-                              {url}
-                            </p>
-                          </div>
-                        );
-                      })}
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
 
-              <TabsContent value="logs" className="space-y-6">
-                <Card className="bg-slate-700/50 border-slate-600">
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-lg text-orange-400 flex items-center gap-2">
+              <TabsContent value="postbacks" className="space-y-4">
+                <Card className="bg-slate-700 border-slate-600">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
                       <Activity className="w-5 h-5" />
-                      Histórico de Postbacks
+                      URLs de Postback
                     </CardTitle>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-slate-600 text-slate-300 hover:bg-slate-700"
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      Exportar CSV
-                    </Button>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {Object.entries(generatePostbackUrls(viewingAffiliate.token)).map(([type, url]) => (
+                      <div key={type} className="space-y-2">
+                        <Label className="text-slate-300 capitalize">{type}</Label>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            value={url}
+                            readOnly
+                            className="bg-slate-600 border-slate-500 text-white"
+                          />
+                          <Button
+                            size="sm"
+                            onClick={() => handleCopyUrl(url, type)}
+                            className="bg-blue-600 hover:bg-blue-700"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="logs" className="space-y-4">
+                <Card className="bg-slate-700 border-slate-600">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <Activity className="w-5 h-5" />
+                      Logs de Postback
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {postbackLogs.length > 0 ? (
-                      <div className="overflow-x-auto">
-                        <Table>
-                          <TableHeader>
-                            <TableRow className="border-slate-600">
-                              <TableHead className="text-slate-300">Data/Hora</TableHead>
-                              <TableHead className="text-slate-300">Evento</TableHead>
-                              <TableHead className="text-slate-300">URL</TableHead>
-                              <TableHead className="text-slate-300">Status</TableHead>
-                              <TableHead className="text-slate-300">Resposta</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {postbackLogs.map((log: PostbackLog) => (
-                              <TableRow key={log.id} className="border-slate-600">
-                                <TableCell className="text-slate-300">
-                                  {formatDate(log.data_hora)}
-                                </TableCell>
-                                <TableCell>
-                                  <Badge className="bg-purple-600 text-white">
-                                    {log.tipo_evento}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell className="text-blue-400 text-xs font-mono max-w-xs truncate">
-                                  {log.url_disparada}
-                                </TableCell>
-                                <TableCell>
-                                  <Badge 
-                                    className={
-                                      log.status_resposta.startsWith('2') 
-                                        ? 'bg-green-600 text-white' 
-                                        : 'bg-red-600 text-white'
-                                    }
-                                  >
-                                    {log.status_resposta}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell className="text-slate-400 text-xs max-w-xs truncate">
-                                  {log.corpo_resposta || '-'}
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
+                    {Array.isArray(postbackLogs) && postbackLogs.length > 0 ? (
+                      <div className="space-y-2 max-h-96 overflow-y-auto">
+                        {postbackLogs.map((log: PostbackLog) => (
+                          <div key={log.id} className="bg-slate-600 p-3 rounded">
+                            <div className="flex items-center justify-between mb-2">
+                              <Badge variant="outline" className="text-slate-300">
+                                {log.tipo_evento}
+                              </Badge>
+                              <span className="text-xs text-slate-400">
+                                {formatDate(log.data_hora)}
+                              </span>
+                            </div>
+                            <p className="text-sm text-white mb-1">
+                              URL: {log.url_disparada}
+                            </p>
+                            <p className="text-sm text-slate-300">
+                              Status: {log.status_resposta}
+                            </p>
+                          </div>
+                        ))}
                       </div>
                     ) : (
-                      <div className="text-center py-8">
-                        <Activity className="w-12 h-12 mx-auto mb-4 text-slate-600" />
-                        <h3 className="text-lg font-medium text-slate-300 mb-2">
-                          Nenhum log encontrado
-                        </h3>
-                        <p className="text-sm text-slate-400">
-                          Este afiliado ainda não possui histórico de postbacks.
-                        </p>
-                      </div>
+                      <p className="text-slate-400 text-center py-8">
+                        Nenhum log de postback encontrado
+                      </p>
                     )}
                   </CardContent>
                 </Card>
