@@ -339,7 +339,7 @@ export default function AdminManage() {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
-      <div className="lg:ml-72 px-4 md:px-6 lg:px-8 pt-6 pb-8 max-w-[1600px] mx-auto transition-all duration-300 pl-[17px] pr-[17px] ml-[9px] mr-[9px]">
+      <div className="lg:ml-72 px-4 md:px-6 lg:px-8 max-w-[1600px] mx-auto transition-all duration-300 pl-[17px] pr-[17px] ml-[9px] mr-[9px] mt-[0px] mb-[0px] pt-[77px] pb-[77px]">
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
