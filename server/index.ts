@@ -5,6 +5,7 @@ import { db } from "./db";
 import { eq, sql, desc } from "drizzle-orm";
 import * as schema from "../shared/schema";
 import session from "express-session";
+import passport from "passport";
 
 const app = express();
 
@@ -22,6 +23,10 @@ app.use(session({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Configurar Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Todas as rotas são registradas através do registerRoutes em routes.ts
 

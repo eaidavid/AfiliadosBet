@@ -1,8 +1,7 @@
 import express from 'express';
 import { db } from "./db";
 import * as schema from "../shared/schema";
-import { eq, desc, and, or, ilike, gte, lt, inArray, asc } from "drizzle-orm";
-import { Server as WSServer } from "ws";
+import { eq, desc, and, or, ilike, gte, lt, inArray } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
@@ -21,7 +20,7 @@ passport.use(new LocalStrategy(
         return done(null, false, { message: 'Email não encontrado' });
       }
 
-      const isValid = await bcrypt.compare(password, user.passwordHash);
+      const isValid = await bcrypt.compare(password, user.password);
       if (!isValid) {
         return done(null, false, { message: 'Senha incorreta' });
       }
@@ -49,69 +48,31 @@ passport.deserializeUser(async (id: any, done) => {
   }
 });
 
-function getSession(req: any) {
-  return req.session?.passport?.user;
-}
-
 function requireAuth(req: any, res: any, next: any) {
-  if (req.isAuthenticated()) {
+  if (req.isAuthenticated && req.isAuthenticated()) {
     return next();
   }
   res.status(401).json({ error: "Authentication required" });
 }
 
 function requireAdmin(req: any, res: any, next: any) {
-  if (req.isAuthenticated() && req.user?.role === 'admin') {
+  if (req.isAuthenticated && req.isAuthenticated() && req.user?.role === 'admin') {
     return next();
   }
   res.status(403).json({ error: "Admin access required" });
 }
 
-export async function registerRoutes(app: express.Application): Promise<Server> {
+export async function registerRoutes(app: express.Application) {
+  
   // Auth routes
-  app.post("/api/auth/register", async (req, res) => {
-    try {
-      const { email, password, fullName, cpf, phone } = req.body;
-
-      const existingUser = await db
-        .select()
-        .from(schema.users)
-        .where(eq(schema.users.email, email))
-        .limit(1);
-
-      if (existingUser.length > 0) {
-        return res.status(400).json({ error: "Email já está em uso" });
-      }
-
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const [newUser] = await db
-        .insert(schema.users)
-        .values({
-          email,
-          passwordHash: hashedPassword,
-          fullName,
-          cpf,
-          phone,
-          role: 'affiliate',
-          isActive: true,
-        })
-        .returning();
-
-      res.json({ success: true, user: { id: newUser.id, email: newUser.email, role: newUser.role } });
-    } catch (error) {
-      console.error("Registration error:", error);
-      res.status(500).json({ error: "Erro interno do servidor" });
-    }
-  });
-
   app.post("/api/auth/login", passport.authenticate('local'), (req, res) => {
     res.json({ 
       success: true, 
       user: { 
-        id: req.user.id, 
-        email: req.user.email, 
-        role: req.user.role,
-        fullName: req.user.fullName 
+        id: (req.user as any).id, 
+        email: (req.user as any).email, 
+        role: (req.user as any).role,
+        fullName: (req.user as any).fullName 
       } 
     });
   });
@@ -123,13 +84,13 @@ export async function registerRoutes(app: express.Application): Promise<Server> 
   });
 
   app.get("/api/auth/me", (req, res) => {
-    if (req.isAuthenticated()) {
+    if (req.isAuthenticated && req.isAuthenticated()) {
       res.json({ 
         user: { 
-          id: req.user.id, 
-          email: req.user.email, 
-          role: req.user.role,
-          fullName: req.user.fullName 
+          id: (req.user as any).id, 
+          email: (req.user as any).email, 
+          role: (req.user as any).role,
+          fullName: (req.user as any).fullName 
         } 
       });
     } else {
@@ -137,13 +98,13 @@ export async function registerRoutes(app: express.Application): Promise<Server> 
     }
   });
 
-  // User profile routes
+  // User profile routes with PIX data
   app.get("/api/user/profile", requireAuth, async (req, res) => {
     try {
       const [user] = await db
         .select()
         .from(schema.users)
-        .where(eq(schema.users.id, req.user.id));
+        .where(eq(schema.users.id, (req.user as any).id));
 
       if (!user) {
         return res.status(404).json({ error: "Usuário não encontrado" });
@@ -172,7 +133,7 @@ export async function registerRoutes(app: express.Application): Promise<Server> 
       await db
         .update(schema.users)
         .set({ fullName, cpf, phone })
-        .where(eq(schema.users.id, req.user.id));
+        .where(eq(schema.users.id, (req.user as any).id));
 
       res.json({ success: true });
     } catch (error) {
@@ -188,7 +149,7 @@ export async function registerRoutes(app: express.Application): Promise<Server> 
       await db
         .update(schema.users)
         .set({ pixKeyType, pixKeyValue })
-        .where(eq(schema.users.id, req.user.id));
+        .where(eq(schema.users.id, (req.user as any).id));
 
       res.json({ success: true });
     } catch (error) {
@@ -197,7 +158,51 @@ export async function registerRoutes(app: express.Application): Promise<Server> 
     }
   });
 
-  // Affiliate routes with CORRECTED count logic
+  // Admin stats with FIXED affiliate counting
+  app.get("/api/stats/admin", async (req, res) => {
+    try {
+      // FIXED: Count users with role='affiliate' for consistency
+      const affiliateUsers = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.role, 'affiliate'));
+
+      const allHouses = await db.select().from(schema.bettingHouses);
+      const allLinks = await db.select().from(schema.affiliateLinks);
+      const allConversions = await db.select().from(schema.conversions);
+
+      const totalAffiliates = affiliateUsers.length;
+      const totalHouses = allHouses.length;
+      const totalLinks = allLinks.length;
+      const totalConversions = allConversions.length;
+
+      const totalVolume = allConversions.reduce((sum, conversion) => {
+        return sum + parseFloat(conversion.amount || '0');
+      }, 0);
+
+      const totalCommissions = allConversions.reduce((sum, conversion) => {
+        return sum + parseFloat(conversion.commission || '0');
+      }, 0);
+
+      const stats = {
+        totalAffiliates, // Now correctly counting only affiliate role users
+        totalHouses,
+        totalLinks,
+        totalConversions,
+        totalVolume: totalVolume.toFixed(2),
+        totalCommissions: totalCommissions.toFixed(2)
+      };
+
+      console.log(`📊 Admin stats - Afiliados: ${totalAffiliates}`);
+      res.json(stats);
+
+    } catch (error) {
+      console.error("Erro ao buscar estatísticas do admin:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Admin affiliates route with FIXED counting logic
   app.get("/api/admin/affiliates", requireAdmin, async (req, res) => {
     try {
       const { search, status, house, date } = req.query;
@@ -205,12 +210,10 @@ export async function registerRoutes(app: express.Application): Promise<Server> 
       console.log('🔍 Listando afiliados com filtros:', { search, status, house, date });
       
       // FIXED: Use role='affiliate' instead of role='user' for consistent counting
-      let baseCondition = eq(schema.users.role, 'affiliate');
-      let whereCondition = baseCondition;
+      let whereCondition = eq(schema.users.role, 'affiliate');
       
       if (search) {
         const searchCondition = or(
-          ilike(schema.users.username, `%${search}%`),
           ilike(schema.users.email, `%${search}%`),
           ilike(schema.users.fullName, `%${search}%`)
         );
@@ -224,7 +227,7 @@ export async function registerRoutes(app: express.Application): Promise<Server> 
       }
       
       if (date) {
-        const targetDate = new Date(date);
+        const targetDate = new Date(date as string);
         const nextDay = new Date(targetDate);
         nextDay.setDate(nextDay.getDate() + 1);
         
@@ -243,7 +246,6 @@ export async function registerRoutes(app: express.Application): Promise<Server> 
           fullName: schema.users.fullName,
           isActive: schema.users.isActive,
           createdAt: schema.users.createdAt,
-          lastAccess: schema.users.lastAccess,
         })
         .from(schema.users)
         .where(whereCondition)
@@ -290,7 +292,7 @@ export async function registerRoutes(app: express.Application): Promise<Server> 
       
       // Filtrar por casa se especificado
       const finalResults = house && house !== 'all' 
-        ? affiliatesWithStats.filter(user => user.houses.includes(house))
+        ? affiliatesWithStats.filter(user => user.houses.includes(house as string))
         : affiliatesWithStats;
       
       console.log(`✅ Encontrados ${finalResults.length} afiliados`);
@@ -302,56 +304,10 @@ export async function registerRoutes(app: express.Application): Promise<Server> 
     }
   });
 
-  // Admin stats route with CORRECTED affiliate count
-  app.get("/api/stats/admin", async (req, res) => {
-    try {
-      // FIXED: Count users with role='affiliate' for consistency
-      const affiliateUsers = await db
-        .select()
-        .from(schema.users)
-        .where(eq(schema.users.role, 'affiliate'));
-
-      const allHouses = await db.select().from(schema.bettingHouses);
-      const allLinks = await db.select().from(schema.affiliateLinks);
-      const allConversions = await db.select().from(schema.conversions);
-
-      // Calculate totals with correct affiliate count
-      const totalAffiliates = affiliateUsers.length;
-      const totalHouses = allHouses.length;
-      const totalLinks = allLinks.length;
-      const totalConversions = allConversions.length;
-
-      // Calculate volume and commissions
-      const totalVolume = allConversions.reduce((sum, conversion) => {
-        return sum + parseFloat(conversion.amount || '0');
-      }, 0);
-
-      const totalCommissions = allConversions.reduce((sum, conversion) => {
-        return sum + parseFloat(conversion.commission || '0');
-      }, 0);
-
-      const stats = {
-        totalAffiliates, // Now correctly counting only affiliate role users
-        totalHouses,
-        totalLinks,
-        totalConversions,
-        totalVolume: totalVolume.toFixed(2),
-        totalCommissions: totalCommissions.toFixed(2)
-      };
-
-      console.log(`📊 Admin stats - Afiliados: ${totalAffiliates}`);
-      res.json(stats);
-
-    } catch (error) {
-      console.error("Erro ao buscar estatísticas do admin:", error);
-      res.status(500).json({ error: "Erro interno do servidor" });
-    }
-  });
-
   // User stats
   app.get("/api/stats/user", requireAuth, async (req, res) => {
     try {
-      const userId = req.user.id;
+      const userId = (req.user as any).id;
       
       const userLinks = await db
         .select()
@@ -399,49 +355,14 @@ export async function registerRoutes(app: express.Application): Promise<Server> 
     }
   });
 
-  // Create affiliate link
-  app.post("/api/affiliate-links", requireAuth, async (req, res) => {
-    try {
-      const { houseId } = req.body;
-      const userId = req.user.id;
-
-      const [house] = await db
-        .select()
-        .from(schema.bettingHouses)
-        .where(eq(schema.bettingHouses.id, houseId));
-
-      if (!house) {
-        return res.status(404).json({ error: "Casa não encontrada" });
-      }
-
-      const subid = `${userId}_${Date.now()}`;
-      
-      const [newLink] = await db
-        .insert(schema.affiliateLinks)
-        .values({
-          userId,
-          houseId,
-          subid,
-          generatedUrl: `${house.baseUrl}?${house.primaryParam}=${subid}`,
-        })
-        .returning();
-
-      res.json(newLink);
-    } catch (error) {
-      console.error("Erro ao criar link:", error);
-      res.status(500).json({ error: "Erro interno do servidor" });
-    }
-  });
-
   // Get user links
   app.get("/api/my-links", requireAuth, async (req, res) => {
     try {
-      const userId = req.user.id;
+      const userId = (req.user as any).id;
       
       const links = await db
         .select({
           id: schema.affiliateLinks.id,
-          subid: schema.affiliateLinks.subid,
           generatedUrl: schema.affiliateLinks.generatedUrl,
           createdAt: schema.affiliateLinks.createdAt,
           houseName: schema.bettingHouses.name,
@@ -458,51 +379,5 @@ export async function registerRoutes(app: express.Application): Promise<Server> 
     }
   });
 
-  // Simple postback route
-  app.get("/api/postback/:casa/:evento", async (req, res) => {
-    try {
-      const { casa, evento } = req.params;
-      const { subid, valor = 0, customer_id } = req.query;
-
-      console.log(`📋 Postback recebido: casa=${casa}, evento=${evento}, subid=${subid}`);
-
-      // Find the affiliate link
-      const [link] = await db
-        .select()
-        .from(schema.affiliateLinks)
-        .where(eq(schema.affiliateLinks.subid, subid as string))
-        .limit(1);
-
-      if (!link) {
-        console.log(`❌ Link não encontrado para subid: ${subid}`);
-        return res.status(404).json({ error: "Link não encontrado" });
-      }
-
-      // Create conversion record
-      const [conversion] = await db
-        .insert(schema.conversions)
-        .values({
-          userId: link.userId,
-          houseId: link.houseId,
-          affiliateLinkId: link.id,
-          type: evento as string,
-          amount: valor.toString(),
-          commission: (parseFloat(valor.toString()) * 0.5).toString(), // 50% commission
-          customerId: customer_id as string,
-          conversionData: { casa, evento, subid, valor, customer_id },
-        })
-        .returning();
-
-      console.log(`✅ Conversão criada: ID ${conversion.id}`);
-      res.json({ success: true, conversionId: conversion.id });
-
-    } catch (error) {
-      console.error("Erro no postback:", error);
-      res.status(500).json({ error: "Erro interno do servidor" });
-    }
-  });
-
   console.log("✅ Rotas registradas com sucesso");
-  
-  return {} as Server; // Return placeholder WebSocket server
 }
