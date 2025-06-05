@@ -348,10 +348,11 @@ export default function AdminManage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="flex h-screen bg-slate-950 text-white">
       <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
       
-      <div className="lg:ml-72 px-4 md:px-6 lg:px-8 pt-6 pb-8 max-w-[1600px] mx-auto transition-all duration-300">
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-auto p-6">
           {/* Header */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -378,7 +379,7 @@ export default function AdminManage() {
             </div>
 
             {/* Statistics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
               <Card className="bg-slate-800 border-slate-700">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
@@ -680,6 +681,7 @@ export default function AdminManage() {
             </Card>
           </motion.div>
         </div>
+      </div>
 
       {/* Form Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -730,7 +732,7 @@ export default function AdminManage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="bg-slate-700 border-slate-600">
-                          {Array.isArray(bettingHouses) && bettingHouses.map((house: BettingHouse) => (
+                          {bettingHouses.map((house: BettingHouse) => (
                             <SelectItem key={house.id} value={house.id.toString()}>
                               {house.name}
                             </SelectItem>
@@ -1092,7 +1094,6 @@ export default function AdminManage() {
           )}
         </DialogContent>
       </Dialog>
-      </div>
     </div>
   );
 }
