@@ -452,25 +452,25 @@ export default function BettingHouses() {
 
                     <CardContent className="space-y-4">
                       {/* Commission Panel */}
-                      {commissions.length > 0 && (
-                        <div className="space-y-2">
-                          <h4 className="text-sm font-medium text-slate-300 flex items-center gap-2">
-                            <Award className="h-4 w-4" />
-                            Comissões
-                          </h4>
-                          <div className="grid grid-cols-1 gap-2">
-                            {commissions.map((commission, idx) => (
-                              <div key={idx} className={`${commission.color} text-white rounded-lg p-3 flex items-center justify-between`}>
-                                <div className="flex items-center gap-2">
-                                  {commission.icon}
-                                  <span className="font-medium">{commission.type}</span>
-                                </div>
-                                <span className="font-bold">{commission.value}</span>
-                              </div>
-                            ))}
-                          </div>
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-medium text-slate-300 flex items-center gap-2">
+                          <Award className="h-4 w-4" />
+                          Comissões
+                        </h4>
+                        <div className="bg-slate-800 rounded-lg p-3">
+                          {getCommissionDisplay(house)}
                         </div>
-                      )}
+                        <div className="flex items-center gap-2 mt-2">
+                          {(() => {
+                            const badge = getCommissionBadge(house);
+                            return (
+                              <Badge className={`${badge.color} text-white text-xs`}>
+                                {badge.text}
+                              </Badge>
+                            );
+                          })()}
+                        </div>
+                      </div>
 
                       {/* Financial Data */}
                       <div className="space-y-2">
