@@ -358,7 +358,7 @@ export default function AdminManage() {
             </div>
             <Button
               onClick={handleAdd}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white pl-[3px] pr-[3px] text-[12px] ml-[-2px] mr-[-2px]"
             >
               <Plus className="w-4 h-4 mr-2" />
               Novo Afiliado

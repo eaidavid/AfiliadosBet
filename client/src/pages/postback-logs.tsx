@@ -321,7 +321,7 @@ export default function PostbackLogs() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      <AdminSidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
+      <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
       
       <div className="lg:ml-72 px-4 md:px-6 lg:px-8 pt-6 pb-8 max-w-[1600px] mx-auto transition-all duration-300">
         <motion.div
@@ -341,7 +341,7 @@ export default function PostbackLogs() {
                 Monitore e analise todos os disparos de postbacks em tempo real
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
               <div className="flex items-center gap-2">
                 <Switch
                   checked={autoRefresh}
@@ -350,27 +350,29 @@ export default function PostbackLogs() {
                 />
                 <Label className="text-slate-300">Auto-refresh</Label>
               </div>
-              {autoRefresh && (
-                <Select value={refreshInterval.toString()} onValueChange={(value) => setRefreshInterval(Number(value))}>
-                  <SelectTrigger className="w-24 bg-slate-800 border-slate-600 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-600">
-                    <SelectItem value="15">15s</SelectItem>
-                    <SelectItem value="30">30s</SelectItem>
-                    <SelectItem value="60">60s</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-              <Button
-                onClick={() => refetchLogs()}
-                variant="outline"
-                size="sm"
-                className="bg-slate-800 border-slate-600 text-white hover:bg-slate-700"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Atualizar
-              </Button>
+              <div className="flex items-center gap-3">
+                {autoRefresh && (
+                  <Select value={refreshInterval.toString()} onValueChange={(value) => setRefreshInterval(Number(value))}>
+                    <SelectTrigger className="w-24 bg-slate-800 border-slate-600 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-600">
+                      <SelectItem value="15">15s</SelectItem>
+                      <SelectItem value="30">30s</SelectItem>
+                      <SelectItem value="60">60s</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+                <Button
+                  onClick={() => refetchLogs()}
+                  variant="outline"
+                  size="sm"
+                  className="bg-slate-800 border-slate-600 text-white hover:bg-slate-700"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Atualizar
+                </Button>
+              </div>
             </div>
           </div>
 
