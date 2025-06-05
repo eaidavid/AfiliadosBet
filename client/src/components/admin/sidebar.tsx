@@ -13,7 +13,7 @@ export function AdminSidebar({ currentPage, onPageChange }: AdminSidebarProps) {
   const logout = useLogout();
   const isMobile = useIsMobile();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
@@ -133,11 +133,21 @@ export function AdminSidebar({ currentPage, onPageChange }: AdminSidebarProps) {
 
   // Desktop Sidebar
   return (
-    <div
-      className={`fixed inset-y-0 left-0 z-40 bg-slate-900/50 backdrop-blur-sm border-r border-slate-700/50 transition-all duration-300 ${
-        isCollapsed ? "w-20" : "w-72"
-      }`}
-    >
+    <>
+      {/* Blur Overlay when expanded */}
+      {!isCollapsed && (
+        <div 
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30"
+          onClick={() => setIsCollapsed(true)}
+        />
+      )}
+      
+      {/* Sidebar */}
+      <div
+        className={`fixed inset-y-0 left-0 z-40 bg-slate-900/95 backdrop-blur-md border-r border-slate-700/50 transition-all duration-300 ${
+          isCollapsed ? "w-20" : "w-72"
+        }`}
+      >
       {/* Collapse Toggle Button */}
       <button
         onClick={toggleCollapse}
@@ -231,6 +241,7 @@ export function AdminSidebar({ currentPage, onPageChange }: AdminSidebarProps) {
         </div>
       </div>
     </div>
+    </>
   );
 }
 
