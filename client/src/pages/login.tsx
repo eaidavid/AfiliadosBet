@@ -47,22 +47,22 @@ export default function Login() {
   };
 
   return (
-    <div className="mobile-safe bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4 no-bounce safe-area">
-      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-blue-600/5"></div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4 pt-16 pb-8">
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-blue-600/5 -z-10"></div>
       
-      <Card className="w-full max-w-md bg-slate-900/90 border-slate-700 backdrop-blur-sm touch-target">
-        <CardHeader className="text-center space-y-4">
-          <div className="w-16 h-16 mx-auto flex items-center justify-center">
+      <Card className="w-full max-w-md bg-slate-900/90 border-slate-700 backdrop-blur-sm relative z-10">
+        <CardHeader className="text-center space-y-4 pt-6">
+          <div className="w-16 h-16 mx-auto flex items-center justify-center relative">
             <img 
               src={logoPath} 
               alt="AfiliadosBet Logo" 
-              className="w-16 h-16 object-contain"
+              className="w-14 h-14 object-contain"
             />
           </div>
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
+          <CardTitle className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
             AfiliadosBet
           </CardTitle>
-          <p className="text-slate-400">Faça login para acessar sua conta</p>
+          <p className="text-slate-400 text-sm">Faça login para acessar sua conta</p>
         </CardHeader>
 
         <CardContent>
