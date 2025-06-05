@@ -171,9 +171,8 @@ export default function AffiliatePayments() {
 
   if (summaryLoading || paymentsLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white">
-        <AffiliateSidebar />
-        <ResponsiveLayout>
+      <SidebarLayout>
+        <div className="p-6">
           <div className="animate-pulse space-y-6">
             <div className="h-12 bg-slate-800 rounded-lg"></div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -183,15 +182,14 @@ export default function AffiliatePayments() {
             </div>
             <div className="h-96 bg-slate-800 rounded-lg"></div>
           </div>
-        </ResponsiveLayout>
-      </div>
+        </div>
+      </SidebarLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <AffiliateSidebar />
-      <ResponsiveLayout>
+    <SidebarLayout>
+      <div className="p-6 max-w-7xl mx-auto">
         <div className="space-y-8">
           {/* Header */}
           <div className="space-y-4">
@@ -498,7 +496,7 @@ export default function AffiliatePayments() {
             </DialogContent>
           </Dialog>
         </div>
-      </ResponsiveLayout>
-    </div>
+      </div>
+    </SidebarLayout>
   );
 }

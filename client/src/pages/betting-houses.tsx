@@ -270,9 +270,8 @@ export default function BettingHouses() {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-950 text-white">
-      <AffiliateSidebar />
-      <div className="flex-1 ml-72 transition-all duration-300 p-6">
+    <SidebarLayout>
+      <div className="p-6">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Header */}
           <div className="space-y-4">
@@ -593,6 +592,6 @@ export default function BettingHouses() {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+    </SidebarLayout>
   );
 }

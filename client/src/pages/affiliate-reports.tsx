@@ -14,7 +14,7 @@ import {
   PieChart,
   Activity
 } from 'lucide-react';
-import { AffiliateSidebar } from '@/components/affiliate-sidebar';
+import SidebarLayout from '@/components/sidebar-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
