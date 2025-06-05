@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Link2, Search, Filter, Copy, ExternalLink, TrendingUp, MousePointer, DollarSign, Calendar, AlertCircle, Crown, CheckCircle2 } from 'lucide-react';
-import { AffiliateSidebar } from '@/components/affiliate-sidebar';
+import SidebarLayout from '@/components/sidebar-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';

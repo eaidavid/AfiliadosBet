@@ -261,9 +261,8 @@ export default function UserProfile() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white">
-        <AffiliateSidebar />
-        <ResponsiveLayout>
+      <SidebarLayout>
+        <div className="p-6">
           <div className="animate-pulse space-y-6">
             <div className="h-12 bg-slate-800 rounded-lg"></div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -272,15 +271,14 @@ export default function UserProfile() {
               ))}
             </div>
           </div>
-        </ResponsiveLayout>
-      </div>
+        </div>
+      </SidebarLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <AffiliateSidebar />
-      <ResponsiveLayout>
+    <SidebarLayout>
+      <div className="p-6 max-w-4xl mx-auto">
         <div className="space-y-8">
           {/* Header */}
           <div className="space-y-4">
@@ -768,7 +766,7 @@ export default function UserProfile() {
             </div>
           </div>
         </div>
-      </ResponsiveLayout>
-    </div>
+      </div>
+    </SidebarLayout>
   );
 }

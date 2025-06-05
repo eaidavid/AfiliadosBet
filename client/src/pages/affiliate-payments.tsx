@@ -30,8 +30,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { AffiliateSidebar } from '@/components/affiliate-sidebar';
-import { ResponsiveLayout } from '@/components/responsive-layout';
+import SidebarLayout from '@/components/sidebar-layout';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Payment {
