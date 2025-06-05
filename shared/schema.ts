@@ -29,7 +29,6 @@ export const users = pgTable("users", {
   country: text("country").default("BR"),
   role: text("role").default("affiliate"), // 'affiliate' or 'admin'
   isActive: boolean("is_active").default(true),
-  pix: text("pix"), // Campo legado para compatibilidade
   pixKeyType: text("pix_key_type"), // Tipo da chave PIX
   pixKeyValue: text("pix_key_value"), // Valor da chave PIX
   createdAt: timestamp("created_at").defaultNow(),
