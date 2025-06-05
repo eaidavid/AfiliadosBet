@@ -140,6 +140,17 @@ export default function SimpleLanding() {
             >
               ⚡ Como Funciona
             </button>
+            <button 
+              onClick={() => {
+                const informacoesSection = document.getElementById('informacoes-importantes');
+                if (informacoesSection) {
+                  informacoesSection.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+              className="border border-blue-500 text-blue-300 hover:bg-blue-600 hover:text-white px-8 py-4 text-lg font-medium rounded-xl transition-all transform hover:scale-105 opacity-75 hover:opacity-100"
+            >
+              📋 Informações Importantes
+            </button>
           </div>
 
           {/* Statistics */}
@@ -251,7 +262,7 @@ export default function SimpleLanding() {
       </div>
 
       {/* Seção de Abas Informativas */}
-      <div className="relative z-10 py-20 bg-slate-900/50 backdrop-blur-sm">
+      <div id="informacoes-importantes" className="relative z-10 py-20 bg-slate-900/50 backdrop-blur-sm">
         <div className="container mx-auto px-6">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
