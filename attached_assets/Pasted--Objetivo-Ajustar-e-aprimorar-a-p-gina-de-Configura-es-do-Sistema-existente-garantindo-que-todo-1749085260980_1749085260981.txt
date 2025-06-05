@@ -1,0 +1,57 @@
+📌 Objetivo:
+Ajustar e aprimorar a página de Configurações do Sistema existente, garantindo que todos os campos funcionem corretamente com dados reais do banco de dados AfiliadosBet, evitando configurações “falsas” ou não integradas.
+
+🧱 Corrigir Conexões com o Banco de Dados
+1. Use a tabela system_settings para armazenar e buscar configurações globais:
+
+Chave (setting_key)	Valor (setting_value)	Tipo (type)
+api_token	string	text / secret
+global_webhook	string	url
+debug_mode	true / false	boolean
+log_retention_days	inteiro	number
+allow_test_mode	true / false	boolean
+
+Todas as alterações devem ser salvas e recuperadas via essa tabela.
+
+Adicionar proteção para valores secret (exibir parcialmente ou com botão "Mostrar").
+
+⚙️ Corrigir Funcionalidades Visuais e UX
+2. Certifique-se de que os elementos abaixo estão funcionando:
+
+Campo/Tela	Correção Necessária
+Modo Debug	Deve alterar e refletir debug_mode da system_settings.
+Token API	Mostrar token real da chave api_token com botão de copiar e regenerar.
+Webhook Padrão	Campo deve refletir e atualizar global_webhook.
+Dias de retenção de log	Campo numérico conectado com log_retention_days.
+Alternância de teste de postback	Refletir allow_test_mode.
+Senha ou permissões do admin	Buscar de admins e validar permissões (is_superadmin).
+
+🧩 Extras Recomendados
+3. Adicionar funcionalidades para confiabilidade:
+
+✅ Mostrar última atualização de cada configuração (com updated_at)
+
+🔄 Botão “Salvar Alterações” global, com feedback visual (toast)
+
+🔐 Regeneração de token com modal de confirmação
+
+📤 Exportar configurações em JSON
+
+📥 Importar configurações via JSON com validação de setting_key e tipos
+
+📱 Responsividade
+4. Padronizar layout com margens e grid para mobile:
+
+Aplicar espaçamento lateral igual em todas as telas (ex: px-4 ou px-6)
+
+Garantir responsividade dos cards e forms com grid-cols-1 md:grid-cols-2
+
+Evitar quebra ou overflow horizontal em campos longos
+
+🔒 Permissões
+5. Validar ações por tipo de usuário:
+
+Configurações críticas (ex: regenerar token, modo debug) visíveis apenas se admins.is_superadmin = true
+
+Impedir alteração de configurações por admins comuns
+

@@ -225,6 +225,18 @@ export const systemConfig = pgTable("system_config", {
   updated_by: integer("updated_by").references(() => users.id),
 });
 
+// System settings table for advanced configurations
+export const systemSettings = pgTable("system_settings", {
+  id: serial("id").primaryKey(),
+  setting_key: varchar("setting_key", { length: 255 }).notNull().unique(),
+  setting_value: text("setting_value"),
+  type: varchar("type", { length: 50 }).notNull(), // text, secret, url, boolean, number
+  description: text("description"),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+  updated_by: integer("updated_by").references(() => users.id),
+});
+
 // Audit logs table for tracking administrative actions
 export const auditLogs = pgTable("audit_logs", {
   id: serial("id").primaryKey(),
@@ -247,6 +259,13 @@ export const systemConfigRelations = relations(systemConfig, ({ one }) => ({
   }),
 }));
 
+export const systemSettingsRelations = relations(systemSettings, ({ one }) => ({
+  updatedBy: one(users, {
+    fields: [systemSettings.updated_by],
+    references: [users.id],
+  }),
+}));
+
 export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
   user: one(users, {
     fields: [auditLogs.user_id],
@@ -257,6 +276,8 @@ export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
 // Type exports
 export type SystemConfig = typeof systemConfig.$inferSelect;
 export type InsertSystemConfig = typeof systemConfig.$inferInsert;
+export type SystemSettings = typeof systemSettings.$inferSelect;
+export type InsertSystemSettings = typeof systemSettings.$inferInsert;
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type InsertAuditLog = typeof auditLogs.$inferInsert;
 

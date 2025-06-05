@@ -957,6 +957,122 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // System Settings API endpoints
+  app.get("/api/admin/system-settings", async (req, res) => {
+    try {
+      // Verificar acesso admin
+      if (!req.session?.user || req.session.user.role !== 'admin') {
+        return res.status(401).json({ error: "Acesso negado" });
+      }
+
+      const settings = await db.select().from(schema.systemSettings);
+      
+      // Group settings by category for easier frontend consumption
+      const settingsMap = settings.reduce((acc, setting) => {
+        acc[setting.setting_key] = setting;
+        return acc;
+      }, {} as Record<string, any>);
+
+      res.json(settingsMap);
+    } catch (error) {
+      console.error("Erro ao buscar configurações:", error);
+      res.status(500).json({ error: "Erro interno" });
+    }
+  });
+
+  app.post("/api/admin/system-settings", async (req, res) => {
+    try {
+      // Verificar acesso admin
+      if (!req.session?.user || req.session.user.role !== 'admin') {
+        return res.status(401).json({ error: "Acesso negado" });
+      }
+
+      const { setting_key, setting_value, type, description } = req.body;
+
+      // Upsert setting
+      await db.insert(schema.systemSettings)
+        .values({
+          setting_key,
+          setting_value,
+          type,
+          description,
+          updated_by: req.session.user.id,
+          updated_at: new Date()
+        })
+        .onConflictDoUpdate({
+          target: schema.systemSettings.setting_key,
+          set: {
+            setting_value,
+            updated_by: req.session.user.id,
+            updated_at: new Date()
+          }
+        });
+
+      // Log audit
+      await db.insert(schema.auditLogs).values({
+        user_id: req.session.user.id,
+        action: 'UPDATE',
+        table_name: 'system_settings',
+        record_id: setting_key,
+        new_values: JSON.stringify({ setting_key, setting_value, type }),
+        ip_address: req.ip,
+        user_agent: req.get('User-Agent')
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Erro ao salvar configuração:", error);
+      res.status(500).json({ error: "Erro interno" });
+    }
+  });
+
+  app.post("/api/admin/regenerate-token", async (req, res) => {
+    try {
+      // Verificar acesso superadmin
+      if (!req.session?.user || req.session.user.role !== 'admin') {
+        return res.status(401).json({ error: "Acesso negado" });
+      }
+
+      // Generate new API token
+      const newToken = 'afbet_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+      // Update token in database
+      await db.insert(schema.systemSettings)
+        .values({
+          setting_key: 'api_token',
+          setting_value: newToken,
+          type: 'secret',
+          description: 'Token de API do sistema',
+          updated_by: req.session.user.id,
+          updated_at: new Date()
+        })
+        .onConflictDoUpdate({
+          target: schema.systemSettings.setting_key,
+          set: {
+            setting_value: newToken,
+            updated_by: req.session.user.id,
+            updated_at: new Date()
+          }
+        });
+
+      // Log audit
+      await db.insert(schema.auditLogs).values({
+        user_id: req.session.user.id,
+        action: 'UPDATE',
+        table_name: 'system_settings',
+        record_id: 'api_token',
+        new_values: JSON.stringify({ action: 'token_regenerated' }),
+        ip_address: req.ip,
+        user_agent: req.get('User-Agent')
+      });
+
+      res.json({ token: newToken });
+    } catch (error) {
+      console.error("Erro ao regenerar token:", error);
+      res.status(500).json({ error: "Erro interno" });
+    }
+  });
+
   // Endpoint para buscar comissões por afiliado
   app.get("/api/admin/affiliate-commissions", async (req, res) => {
     try {
