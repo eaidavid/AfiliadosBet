@@ -429,7 +429,7 @@ export default function PostbackGeneratorProfessional() {
                 Teste e valide postbacks de casas de apostas com dados reais do banco
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-2">
               <Badge variant="outline" className="text-green-400 border-green-400">
                 {activePostbacks.length} postback(s) ativos
               </Badge>
