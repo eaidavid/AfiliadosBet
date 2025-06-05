@@ -321,10 +321,12 @@ export async function registerRoutes(app: express.Application) {
       let baseCondition = eq(schema.users.role, 'affiliate');
       let finalCondition = baseCondition;
       
-      if (search) {
+      if (search && typeof search === 'string') {
+        const searchTerm = `%${search}%`;
         const searchCondition = or(
-          ilike(schema.users.email, `%${search}%`),
-          ilike(schema.users.fullName, `%${search}%`)
+          ilike(schema.users.email, searchTerm),
+          ilike(schema.users.fullName, searchTerm),
+          ilike(schema.users.username, searchTerm)
         );
         finalCondition = and(finalCondition, searchCondition!);
       }
@@ -360,20 +362,20 @@ export async function registerRoutes(app: express.Application) {
         .where(finalCondition)
         .orderBy(desc(schema.users.createdAt));
       
-      // Para cada usuário, buscar estatísticas
+      // Para cada afiliado, buscar estatísticas
       const affiliatesWithStats = await Promise.all(
-        users.map(async (user) => {
-          // Buscar links do usuário
-          const userLinks = await db
+        users.map(async (affiliate) => {
+          // Buscar links do afiliado
+          const affiliateLinks = await db
             .select()
             .from(schema.affiliateLinks)
-            .where(eq(schema.affiliateLinks.userId, user.id));
+            .where(eq(schema.affiliateLinks.userId, affiliate.id));
           
-          // Buscar conversões do usuário
+          // Buscar conversões do afiliado
           const conversions = await db
             .select()
             .from(schema.conversions)
-            .where(eq(schema.conversions.userId, user.id));
+            .where(eq(schema.conversions.userId, affiliate.id));
           
           // Calcular estatísticas
           const totalClicks = conversions.filter(c => c.type === 'click').length;
@@ -381,15 +383,15 @@ export async function registerRoutes(app: express.Application) {
           const totalDeposits = conversions.filter(c => c.type === 'deposit').length;
           const totalCommissions = conversions.reduce((sum, c) => sum + parseFloat(c.commission || '0'), 0);
           
-          // Buscar casas relacionadas
-          const houseIds = Array.from(new Set(userLinks.map(link => link.houseId)));
+          // Buscar casas relacionadas ao afiliado
+          const houseIds = Array.from(new Set(affiliateLinks.map((link: any) => link.houseId)));
           const houses = houseIds.length > 0 ? await db
             .select({ name: schema.bettingHouses.name })
             .from(schema.bettingHouses)
-            .where(inArray(schema.bettingHouses.id, houseIds)) : [];
+            .where(inArray(schema.bettingHouses.id, houseIds as number[])) : [];
           
           return {
-            ...user,
+            ...affiliate,
             totalClicks,
             totalRegistrations,
             totalDeposits,
