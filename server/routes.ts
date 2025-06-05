@@ -3113,25 +3113,25 @@ export async function registerRoutes(app: any): Promise<Server> {
 
   // === COMPREHENSIVE AFFILIATE MANAGEMENT API ===
   
-  // Get all affiliates with house information
+  // Get all affiliates (users with role 'affiliate')
   app.get("/api/admin/affiliates", requireAdmin, async (req: any, res) => {
     try {
       const affiliates = await db.select({
-        id: schema.affiliateLinks.id,
-        subid: schema.affiliateLinks.subid,
-        token: schema.affiliateLinks.token,
-        casa_id: schema.affiliateLinks.houseId,
-        casa_nome: schema.bettingHouses.name,
-        tipo_comissao: schema.affiliateLinks.commissionType,
-        valor_cpa: schema.affiliateLinks.cpaValue,
-        percentual_revshare: schema.affiliateLinks.revshareValue,
-        status: schema.affiliateLinks.isActive,
-        data_criacao: schema.affiliateLinks.createdAt
+        id: schema.users.id,
+        username: schema.users.username,
+        fullName: schema.users.fullName,
+        email: schema.users.email,
+        cpf: schema.users.cpf,
+        phone: schema.users.phone,
+        status: schema.users.isActive,
+        data_criacao: schema.users.createdAt,
+        role: schema.users.role
       })
-        .from(schema.affiliateLinks)
-        .leftJoin(schema.bettingHouses, eq(schema.affiliateLinks.houseId, schema.bettingHouses.id))
-        .orderBy(desc(schema.affiliateLinks.createdAt));
+        .from(schema.users)
+        .where(eq(schema.users.role, 'affiliate'))
+        .orderBy(desc(schema.users.createdAt));
 
+      console.log(`✅ Encontrados ${affiliates.length} afiliados na rota /api/admin/affiliates`);
       res.json(affiliates);
     } catch (error) {
       console.error("Erro ao buscar afiliados:", error);
@@ -3653,106 +3653,7 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
-  // Endpoints para gerenciar afiliados
-  app.get("/api/admin/affiliates", requireAdmin, async (req: any, res) => {
-    try {
-      const { search, status, house, date } = req.query;
-      
-      console.log('🔍 Listando afiliados com filtros:', { search, status, house, date });
-      
-      let baseCondition = eq(schema.users.role, 'user');
-      let whereCondition = baseCondition;
-      
-      if (search) {
-        const searchCondition = or(
-          ilike(schema.users.username, `%${search}%`),
-          ilike(schema.users.email, `%${search}%`),
-          ilike(schema.users.fullName, `%${search}%`)
-        );
-        whereCondition = and(whereCondition, searchCondition);
-      }
-      
-      if (status === 'active') {
-        whereCondition = and(whereCondition, eq(schema.users.isActive, true));
-      } else if (status === 'inactive') {
-        whereCondition = and(whereCondition, eq(schema.users.isActive, false));
-      }
-      
-      if (date) {
-        const targetDate = new Date(date);
-        const nextDay = new Date(targetDate);
-        nextDay.setDate(nextDay.getDate() + 1);
-        
-        const dateCondition = and(
-          gte(schema.users.createdAt, targetDate),
-          lt(schema.users.createdAt, nextDay)
-        );
-        whereCondition = and(whereCondition, dateCondition);
-      }
-      
-      const users = await db
-        .select({
-          id: schema.users.id,
-          username: schema.users.username,
-          email: schema.users.email,
-          fullName: schema.users.fullName,
-          isActive: schema.users.isActive,
-          createdAt: schema.users.createdAt,
-          lastAccess: schema.users.lastAccess,
-        })
-        .from(schema.users)
-        .where(whereCondition)
-        .orderBy(desc(schema.users.createdAt));
-      
-      // Para cada usuário, buscar estatísticas
-      const affiliatesWithStats = await Promise.all(
-        users.map(async (user) => {
-          // Buscar links do usuário
-          const userLinks = await db
-            .select()
-            .from(schema.affiliateLinks)
-            .where(eq(schema.affiliateLinks.userId, user.id));
-          
-          // Buscar conversões do usuário
-          const conversions = await db
-            .select()
-            .from(schema.conversions)
-            .where(eq(schema.conversions.userId, user.id));
-          
-          // Calcular estatísticas
-          const totalClicks = conversions.filter(c => c.type === 'click').length;
-          const totalRegistrations = conversions.filter(c => c.type === 'registration').length;
-          const totalDeposits = conversions.filter(c => c.type === 'deposit').length;
-          const totalCommissions = conversions.reduce((sum, c) => sum + parseFloat(c.commission || '0'), 0);
-          
-          // Buscar casas relacionadas
-          const houseIds = [...new Set(userLinks.map(link => link.houseId))];
-          const houses = await db
-            .select({ name: schema.bettingHouses.name })
-            .from(schema.bettingHouses)
-            .where(inArray(schema.bettingHouses.id, houseIds.length > 0 ? houseIds : [0]));
-          
-          return {
-            ...user,
-            totalClicks,
-            totalRegistrations,
-            totalDeposits,
-            totalCommissions: totalCommissions.toFixed(2),
-            houses: houses.map(h => h.name)
-          };
-        })
-      );
-      
-      // Filtrar por casa se especificado
-      const finalResults = house && house !== 'all' 
-        ? affiliatesWithStats.filter(user => user.houses.includes(house))
-        : affiliatesWithStats;
-      
-      console.log(`✅ Encontrados ${finalResults.length} afiliados`);
-      res.json(finalResults);
-      
-    } catch (error) {
-      console.error('❌ Erro ao listar afiliados:', error);
+  // REMOVED DUPLICATE - Using the main definition at line 3117
       res.status(500).json({ error: 'Erro interno do servidor' });
     }
   });
