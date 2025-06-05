@@ -323,7 +323,7 @@ export default function PostbackLogs() {
     <div className="min-h-screen bg-slate-950 text-white">
       <AdminSidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
       
-      <div className="ml-64 p-8">
+      <div className="lg:ml-72 px-4 md:px-6 lg:px-8 pt-6 pb-8 max-w-[1600px] mx-auto transition-all duration-300">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -375,7 +375,7 @@ export default function PostbackLogs() {
           </div>
 
           {/* Metrics Dashboard */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4 md:gap-6">
             <Card className="bg-slate-900/50 border-slate-700">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
