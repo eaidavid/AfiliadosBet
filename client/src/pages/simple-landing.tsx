@@ -21,7 +21,7 @@ import {
   Shield
 } from "lucide-react";
 
-// Estilos CSS inline para animações fade-in
+// Estilos CSS inline para animações fade-in e correções de responsividade
 const fadeInStyles = `
   @keyframes fadeInUp {
     from {
@@ -35,6 +35,32 @@ const fadeInStyles = `
   }
   .animate-fade-in {
     animation: fadeInUp 0.8s ease-out forwards;
+  }
+  
+  /* Correções para responsividade das abas */
+  @media (max-width: 640px) {
+    [data-radix-collection-item] {
+      width: 100% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      min-height: 48px !important;
+      touch-action: manipulation !important;
+      -webkit-touch-callout: none !important;
+      -webkit-user-select: none !important;
+      user-select: none !important;
+    }
+    
+    [data-state="active"] {
+      z-index: 10 !important;
+    }
+    
+    .tab-content-mobile {
+      margin-top: 1rem !important;
+      clear: both !important;
+      position: relative !important;
+      z-index: 1 !important;
+    }
   }
 `;
 
@@ -269,46 +295,46 @@ export default function SimpleLanding() {
       </div>
 
       {/* Seção de Abas Informativas */}
-      <div id="informacoes-importantes" className="relative z-10 py-20 bg-slate-900/50 backdrop-blur-sm">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+      <div id="informacoes-importantes" className="relative z-10 py-12 sm:py-20 bg-slate-900/50 backdrop-blur-sm">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 sm:mb-6">
               Informações Importantes
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+            <p className="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto">
               Tudo que você precisa saber para começar a ganhar dinheiro como afiliado
             </p>
           </div>
           
           <Tabs defaultValue="comissao" className="w-full max-w-6xl mx-auto">
-            <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 bg-slate-800/50 rounded-xl p-2 mb-8 gap-1">
+            <TabsList className="flex flex-col sm:grid sm:grid-cols-3 w-full bg-slate-800/50 rounded-xl p-2 mb-8 gap-2 sm:gap-1">
               <TabsTrigger 
                 value="comissao" 
-                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-3 px-4 rounded-lg text-sm sm:text-base whitespace-nowrap"
+                className="w-full data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-4 px-4 rounded-lg text-base font-medium min-h-[48px] touch-manipulation"
               >
-                <Calculator className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                <Calculator className="mr-2 h-4 w-4 flex-shrink-0" />
                 <span className="hidden sm:inline">Sobre sua comissão</span>
                 <span className="sm:hidden">Comissão</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="termos" 
-                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-3 px-4 rounded-lg text-sm sm:text-base whitespace-nowrap"
+                className="w-full data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-4 px-4 rounded-lg text-base font-medium min-h-[48px] touch-manipulation"
               >
-                <FileText className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                <FileText className="mr-2 h-4 w-4 flex-shrink-0" />
                 <span className="hidden sm:inline">Termos Técnicos</span>
                 <span className="sm:hidden">Termos</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="direitos" 
-                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-3 px-4 rounded-lg text-sm sm:text-base whitespace-nowrap"
+                className="w-full data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-4 px-4 rounded-lg text-base font-medium min-h-[48px] touch-manipulation"
               >
-                <BookOpen className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                <BookOpen className="mr-2 h-4 w-4 flex-shrink-0" />
                 <span className="hidden sm:inline">Direitos e Deveres</span>
                 <span className="sm:hidden">Direitos</span>
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="comissao" className="mt-8">
+            <TabsContent value="comissao" className="mt-8 tab-content-mobile">
               <Card className="bg-slate-800/30 border-slate-700/50 backdrop-blur-sm">
                 <CardContent className="p-4 sm:p-6 lg:p-8">
                   {/* Como Funcionam os Pagamentos */}
@@ -589,7 +615,7 @@ export default function SimpleLanding() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="termos" className="mt-8">
+            <TabsContent value="termos" className="mt-8 tab-content-mobile">
               <Card className="bg-slate-800/30 border-slate-700/50 backdrop-blur-sm">
                 <CardContent className="p-4 sm:p-6 lg:p-8">
                   {/* Principais Siglas */}
@@ -803,7 +829,7 @@ export default function SimpleLanding() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="direitos" className="mt-8">
+            <TabsContent value="direitos" className="mt-8 tab-content-mobile">
               <Card className="bg-slate-800/30 border-slate-700/50 backdrop-blur-sm">
                 <CardContent className="p-4 sm:p-6 lg:p-8">
                   <div className="flex items-start mb-8">
