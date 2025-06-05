@@ -119,38 +119,45 @@ export default function SimpleLanding() {
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
-            <button 
-              onClick={() => window.location.href = "/register"}
-              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-10 py-5 text-xl font-bold rounded-xl shadow-2xl shadow-green-900/50 transition-all transform hover:scale-110 hover:shadow-green-900/70 animate-bounce hover:animate-none active:scale-95"
-              style={{ animationDuration: '2s' }}
-            >
-              💰 Começar Agora Grátis
-            </button>
-            <button 
-              onClick={() => window.location.href = "/login"}
-              className="border-2 border-blue-400 text-blue-300 hover:bg-blue-600 hover:text-white px-10 py-5 text-xl font-semibold rounded-xl transition-all transform hover:scale-105 animate-pulse hover:animate-none active:scale-95"
-              style={{ animationDuration: '2.5s', animationDelay: '0.5s' }}
-            >
-              🔑 Já Tenho Conta - Entrar
-            </button>
-            <button 
-              onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
-              className="border border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-white px-8 py-4 text-lg font-medium rounded-xl transition-all transform hover:scale-105 opacity-75 hover:opacity-100"
-            >
-              ⚡ Como Funciona
-            </button>
-            <button 
-              onClick={() => {
-                const informacoesSection = document.getElementById('informacoes-importantes');
-                if (informacoesSection) {
-                  informacoesSection.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
-              className="border border-blue-500 text-blue-300 hover:bg-blue-600 hover:text-white px-8 py-4 text-lg font-medium rounded-xl transition-all transform hover:scale-105 opacity-75 hover:opacity-100"
-            >
-              📋 Informações Importantes
-            </button>
+          <div className="flex flex-col gap-4 justify-center items-center mb-16 max-w-4xl mx-auto">
+            {/* Primeira linha - Botões principais */}
+            <div className="flex flex-col sm:flex-row gap-4 w-full justify-center items-center">
+              <button 
+                onClick={() => window.location.href = "/register"}
+                className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-4 text-lg sm:text-xl font-bold rounded-xl shadow-2xl shadow-green-900/50 transition-all transform hover:scale-105 hover:shadow-green-900/70 animate-bounce hover:animate-none active:scale-95"
+                style={{ animationDuration: '2s' }}
+              >
+                💰 Começar Agora Grátis
+              </button>
+              <button 
+                onClick={() => window.location.href = "/login"}
+                className="w-full sm:w-auto border-2 border-blue-400 text-blue-300 hover:bg-blue-600 hover:text-white px-8 py-4 text-lg sm:text-xl font-semibold rounded-xl transition-all transform hover:scale-105 animate-pulse hover:animate-none active:scale-95"
+                style={{ animationDuration: '2.5s', animationDelay: '0.5s' }}
+              >
+                🔑 Já Tenho Conta - Entrar
+              </button>
+            </div>
+            
+            {/* Segunda linha - Botões informativos */}
+            <div className="flex flex-col sm:flex-row gap-3 w-full justify-center items-center">
+              <button 
+                onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
+                className="w-full sm:w-auto border border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-white px-6 py-3 text-base font-medium rounded-xl transition-all transform hover:scale-105 opacity-75 hover:opacity-100"
+              >
+                ⚡ Como Funciona
+              </button>
+              <button 
+                onClick={() => {
+                  const informacoesSection = document.getElementById('informacoes-importantes');
+                  if (informacoesSection) {
+                    informacoesSection.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                className="w-full sm:w-auto border border-blue-500 text-blue-300 hover:bg-blue-600 hover:text-white px-6 py-3 text-base font-medium rounded-xl transition-all transform hover:scale-105 opacity-75 hover:opacity-100"
+              >
+                📋 Informações Importantes
+              </button>
+            </div>
           </div>
 
           {/* Statistics */}
@@ -273,39 +280,42 @@ export default function SimpleLanding() {
             </p>
           </div>
           
-          <Tabs defaultValue="comissao" className="w-full">
-            <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 bg-slate-800/50 rounded-xl p-1 mb-8">
+          <Tabs defaultValue="comissao" className="w-full max-w-6xl mx-auto">
+            <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 bg-slate-800/50 rounded-xl p-2 mb-8 gap-1">
               <TabsTrigger 
                 value="comissao" 
-                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-3 px-6 rounded-lg"
+                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-3 px-4 rounded-lg text-sm sm:text-base whitespace-nowrap"
               >
-                <Calculator className="mr-2 h-4 w-4" />
-                Sobre sua comissão
+                <Calculator className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                <span className="hidden sm:inline">Sobre sua comissão</span>
+                <span className="sm:hidden">Comissão</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="termos" 
-                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-3 px-6 rounded-lg"
+                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-3 px-4 rounded-lg text-sm sm:text-base whitespace-nowrap"
               >
-                <FileText className="mr-2 h-4 w-4" />
-                Termos Técnicos
+                <FileText className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                <span className="hidden sm:inline">Termos Técnicos</span>
+                <span className="sm:hidden">Termos</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="direitos" 
-                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-3 px-6 rounded-lg"
+                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-3 px-4 rounded-lg text-sm sm:text-base whitespace-nowrap"
               >
-                <BookOpen className="mr-2 h-4 w-4" />
-                Direitos e Deveres
+                <BookOpen className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                <span className="hidden sm:inline">Direitos e Deveres</span>
+                <span className="sm:hidden">Direitos</span>
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="comissao" className="mt-8">
               <Card className="bg-slate-800/30 border-slate-700/50 backdrop-blur-sm">
-                <CardContent className="p-8">
+                <CardContent className="p-4 sm:p-6 lg:p-8">
                   {/* Como Funcionam os Pagamentos */}
                   <div className="mb-12">
-                    <div className="flex items-center mb-6">
-                      <DollarSign className="h-6 w-6 text-green-400 mr-3" />
-                      <h3 className="text-2xl font-bold text-white">Como Funcionam os Pagamentos na Plataforma AfiliadosBet</h3>
+                    <div className="flex items-start mb-6">
+                      <DollarSign className="h-6 w-6 text-green-400 mr-3 mt-1 flex-shrink-0" />
+                      <h3 className="text-xl sm:text-2xl font-bold text-white leading-tight">Como Funcionam os Pagamentos na Plataforma AfiliadosBet</h3>
                     </div>
                     
                     <p className="text-gray-300 mb-8 text-lg leading-relaxed">
@@ -581,7 +591,7 @@ export default function SimpleLanding() {
 
             <TabsContent value="termos" className="mt-8">
               <Card className="bg-slate-800/30 border-slate-700/50 backdrop-blur-sm">
-                <CardContent className="p-8">
+                <CardContent className="p-4 sm:p-6 lg:p-8">
                   {/* Principais Siglas */}
                   <div className="mb-12">
                     <div className="flex items-center mb-6">
@@ -795,16 +805,16 @@ export default function SimpleLanding() {
 
             <TabsContent value="direitos" className="mt-8">
               <Card className="bg-slate-800/30 border-slate-700/50 backdrop-blur-sm">
-                <CardContent className="p-8">
-                  <div className="flex items-center mb-8">
-                    <BookOpen className="h-6 w-6 text-blue-400 mr-3" />
-                    <h3 className="text-2xl font-bold text-white">Direitos e Deveres do Afiliado</h3>
+                <CardContent className="p-4 sm:p-6 lg:p-8">
+                  <div className="flex items-start mb-8">
+                    <BookOpen className="h-6 w-6 text-blue-400 mr-3 mt-1 flex-shrink-0" />
+                    <h3 className="text-xl sm:text-2xl font-bold text-white leading-tight">Direitos e Deveres do Afiliado</h3>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                     {/* O que você NÃO pode fazer */}
                     <Card className="bg-gradient-to-br from-red-900/30 to-orange-800/20 border-red-500/30">
-                      <CardContent className="p-8">
+                      <CardContent className="p-4 sm:p-6 lg:p-8">
                         <div className="flex items-center mb-6">
                           <div className="p-3 bg-red-500/20 rounded-full mr-4">
                             <span className="text-2xl">❌</span>
