@@ -133,7 +133,7 @@ export function useLogin() {
         if (data.user?.role === 'admin') {
           window.location.href = "/admin";
         } else {
-          window.location.href = "/dashboard";
+          window.location.href = "/home";
         }
       }, 200);
     },

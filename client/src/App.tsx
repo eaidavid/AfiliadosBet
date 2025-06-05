@@ -117,7 +117,7 @@ function AuthenticatedLogin() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      const targetPath = isAdmin ? "/admin" : "/dashboard";
+      const targetPath = isAdmin ? "/admin" : "/home";
       if (location !== targetPath) {
         setLocation(targetPath);
       }
