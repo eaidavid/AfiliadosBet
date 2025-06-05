@@ -112,6 +112,36 @@ export const payments = pgTable("payments", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Postback logs table for tracking all postback executions
+export const postbackLogs = pgTable("postback_logs", {
+  id: serial("id").primaryKey(),
+  bettingHouseId: integer("betting_house_id").references(() => bettingHouses.id),
+  eventType: text("event_type").notNull(),
+  urlDisparada: text("url_disparada").notNull(),
+  resposta: text("resposta"),
+  statusCode: integer("status_code").notNull(),
+  executadoEm: timestamp("executado_em").defaultNow(),
+  parametrosUtilizados: text("parametros_utilizados"),
+  subid: text("subid"),
+  valor: decimal("valor", { precision: 10, scale: 2 }),
+  tipoComissao: text("tipo_comissao"),
+  isTest: boolean("is_test").default(false),
+});
+
+// Registered postbacks table for postback configuration
+export const registeredPostbacks = pgTable("registered_postbacks", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  url: text("url").notNull(),
+  houseId: integer("house_id").references(() => bettingHouses.id),
+  houseName: text("house_name"),
+  eventType: text("event_type").notNull(),
+  description: text("description"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   affiliateLinks: many(affiliateLinks),
@@ -124,6 +154,8 @@ export const bettingHousesRelations = relations(bettingHouses, ({ many }) => ({
   affiliateLinks: many(affiliateLinks),
   conversions: many(conversions),
   clicks: many(clickTracking),
+  postbackLogs: many(postbackLogs),
+  registeredPostbacks: many(registeredPostbacks),
 }));
 
 export const affiliateLinksRelations = relations(affiliateLinks, ({ one, many }) => ({
@@ -173,6 +205,13 @@ export const paymentsRelations = relations(payments, ({ one }) => ({
   user: one(users, {
     fields: [payments.userId],
     references: [users.id],
+  }),
+}));
+
+export const postbackLogsRelations = relations(postbackLogs, ({ one }) => ({
+  house: one(bettingHouses, {
+    fields: [postbackLogs.bettingHouseId],
+    references: [bettingHouses.id],
   }),
 }));
 
@@ -290,8 +329,8 @@ export const comissoes = pgTable("comissoes", {
   criadoEm: timestamp("criado_em").defaultNow().notNull(),
 });
 
-// Tabela de logs de postback
-export const postbackLogs = pgTable("postback_logs", {
+// Legacy postback logs table (keeping for compatibility)
+export const legacyPostbackLogs = pgTable("legacy_postback_logs", {
   id: serial("id").primaryKey(),
   casa: varchar("casa").notNull(),
   subid: varchar("subid").notNull(),
@@ -322,7 +361,7 @@ export const comissoesRelations = relations(comissoes, ({ one }) => ({
   }),
 }));
 
-export const postbackLogsRelations = relations(postbackLogs, ({ one }) => ({
+export const legacyPostbackLogsRelations = relations(legacyPostbackLogs, ({ one }) => ({
   // Não precisa de relação direta pois subid pode não existir
 }));
 

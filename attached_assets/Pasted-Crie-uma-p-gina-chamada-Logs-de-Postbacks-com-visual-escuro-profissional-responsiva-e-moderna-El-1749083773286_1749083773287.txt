@@ -1,0 +1,120 @@
+Crie uma página chamada Logs de Postbacks, com visual escuro, profissional, responsiva e moderna. Ela deve ser integrada ao banco de dados AfiliadosBet, utilizando a tabela postback_logs como principal e betting_houses para nomes das casas.
+
+🎯 Objetivo:
+Exibir todos os logs de postbacks registrados com filtros avançados, painel de métricas, tabela de resultados detalhada e opção de abrir cada log.
+
+🔗 Tabelas Utilizadas:
+postback_logs
+Campos:
+
+id, betting_house_id, event_type, url_disparada, resposta, status_code, executado_em, parametros_utilizados, subid, valor, tipo_comissao, is_test
+
+betting_houses
+Para obter nome da casa via betting_house_id.
+
+🧩 Funcionalidades:
+🔎 Filtros Interativos:
+Dropdown: Casa de Aposta (carregar de betting_houses)
+
+Dropdown: Tipo de Evento (únicos registrados em event_type)
+
+Dropdown: Status (Sucesso = 2xx, Falha = !2xx, Teste = is_test)
+
+Dropdown: Tipo de Comissão (CPA, RevShare, etc.)
+
+Intervalo de datas (executado_em)
+
+Campo de texto para SubID
+
+Botões:
+
+Limpar Filtros
+
+Exportar para CSV/Excel
+
+📊 Painel de Resumo (topo da página):
+Total de Logs
+
+Logs com Sucesso (status 200–299)
+
+Logs com Falha (!2xx)
+
+Testes Realizados (is_test = true)
+
+Última Execução (executado_em mais recente)
+
+📋 Tabela de Logs:
+Mostrar em uma tabela paginada e responsiva com ordenação e busca em tempo real:
+
+executado_em (data/hora)
+
+Nome da Casa (betting_houses.name)
+
+event_type
+
+subid
+
+tipo_comissao
+
+valor
+
+url_disparada (com botão copiar)
+
+status_code (colorir: verde 2xx, vermelho outros)
+
+Resumo da resposta
+
+Ícone de Teste ou Produção
+
+Botão para abrir modal de detalhes
+
+🔍 Modal ou Drawer de Detalhes:
+Mostrar ao clicar no log:
+
+URL completa (url_disparada)
+
+Código de status e mensagem
+
+Resposta completa (resposta)
+
+Parâmetros usados (parametros_utilizados formatado como JSON)
+
+Marcar se for teste
+
+🧪 Interface:
+Tema escuro consistente com o sistema atual
+
+Usar ShadCN UI para todos os componentes
+
+Ícones do lucide-react
+
+Animações suaves com Framer Motion
+
+Debounce para busca e filtros
+
+Mobile first, responsiva
+
+Paginação, ordenação e feedback de loading
+
+Alerta visual quando nenhum log for encontrado
+
+Proteção contra XSS na resposta (limitar conteúdo perigoso)
+
+🔄 Atualização Automática:
+Adicionar switch ou dropdown para ativar autoatualização a cada 15, 30 ou 60 segundos
+
+🛠️ Extras:
+Exibir badge se for um log de teste
+
+Opção (somente admin ou modo debug): Refazer Disparo do Postback com botão
+
+🧭 Menu Lateral:
+Adicionar nova entrada no menu lateral com:
+
+Ícone: Activity (lucide-react)
+
+Nome: Logs de Postbacks
+
+Rota: /admin/postbacks/logs
+
+Ativo apenas para administradores

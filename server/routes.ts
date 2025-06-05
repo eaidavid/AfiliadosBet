@@ -1974,29 +1974,48 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // Get all postback logs with house names for admin
+  app.get("/api/admin/postback-logs", requireAdmin, async (req: any, res) => {
+    try {
+      const logs = await db.select({
+        id: schema.postbackLogs.id,
+        betting_house_id: schema.postbackLogs.bettingHouseId,
+        event_type: schema.postbackLogs.eventType,
+        url_disparada: schema.postbackLogs.urlDisparada,
+        resposta: schema.postbackLogs.resposta,
+        status_code: schema.postbackLogs.statusCode,
+        executado_em: schema.postbackLogs.executadoEm,
+        parametros_utilizados: schema.postbackLogs.parametrosUtilizados,
+        subid: schema.postbackLogs.subid,
+        valor: schema.postbackLogs.valor,
+        tipo_comissao: schema.postbackLogs.tipoComissao,
+        is_test: schema.postbackLogs.isTest,
+        house_name: schema.bettingHouses.name
+      })
+      .from(schema.postbackLogs)
+      .leftJoin(schema.bettingHouses, eq(schema.postbackLogs.bettingHouseId, schema.bettingHouses.id))
+      .orderBy(desc(schema.postbackLogs.executadoEm));
+
+      res.json(logs);
+    } catch (error) {
+      console.error("Erro ao buscar logs de postback:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   // Get postback logs for specific affiliate
   app.get("/api/admin/postback-logs/:affiliateId", requireAdmin, async (req: any, res) => {
     try {
       const affiliateId = parseInt(req.params.affiliateId);
 
-      // Get affiliate token first
-      const [affiliate] = await db.select({ token: schema.affiliateLinks.token })
-        .from(schema.affiliateLinks)
-        .where(eq(schema.affiliateLinks.id, affiliateId))
-        .limit(1);
-
-      if (!affiliate) {
-        return res.status(404).json({ error: "Afiliado não encontrado" });
-      }
-
-      // Get postback logs for this token
+      // Get postback logs for this affiliate
       const logs = await db.select({
         id: schema.postbackLogs.id,
-        data_hora: schema.postbackLogs.timestamp,
+        data_hora: schema.postbackLogs.executadoEm,
         tipo_evento: schema.postbackLogs.eventType,
-        url_disparada: schema.postbackLogs.url,
+        url_disparada: schema.postbackLogs.urlDisparada,
         status_resposta: schema.postbackLogs.statusCode,
-        corpo_resposta: schema.postbackLogs.response
+        corpo_resposta: schema.postbackLogs.resposta
       })
         .from(schema.postbackLogs)
         .where(sql`${schema.postbackLogs.url} LIKE '%token=${affiliate.token}%'`)
