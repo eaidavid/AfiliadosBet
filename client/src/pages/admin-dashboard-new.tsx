@@ -443,14 +443,14 @@ export default function AdminDashboard() {
           <Card className="bg-slate-800 border-slate-700 ">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <Award className="h-5 w-5 text-[#F59E0B]" />
+                <Award className="h-5 w-5 text-orange-400" />
                 Top 10 Afiliados por Comissões
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
-                  <TableRow className="border-[#334155]">
+                  <TableRow className="border-slate-600">
                     <TableHead className="text-slate-400">Posição</TableHead>
                     <TableHead className="text-slate-400">Afiliado</TableHead>
                     <TableHead className="text-slate-400">Total Comissão</TableHead>
@@ -460,9 +460,9 @@ export default function AdminDashboard() {
                 </TableHeader>
                 <TableBody>
                   {topAffiliates?.map((affiliate, index) => (
-                    <TableRow key={affiliate.id} className="border-[#334155]">
+                    <TableRow key={affiliate.id} className="border-slate-600">
                       <TableCell>
-                        <div className="w-8 h-8 bg-gradient-to-br from-[#00C39A] to-[#3B82F6] rounded-full flex items-center justify-center text-white font-bold text-sm">
+                        <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-blue-400 rounded-full flex items-center justify-center text-white font-bold text-sm">
                           {index + 1}
                         </div>
                       </TableCell>
@@ -500,14 +500,14 @@ export default function AdminDashboard() {
           <Card className="bg-slate-800 border-slate-700 ">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-[#8B5CF6]" />
+                <Building2 className="h-5 w-5 text-purple-400" />
                 Desempenho das Casas de Apostas
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
-                  <TableRow className="border-[#334155]">
+                  <TableRow className="border-slate-600">
                     <TableHead className="text-slate-400">Casa</TableHead>
                     <TableHead className="text-slate-400">Cliques</TableHead>
                     <TableHead className="text-slate-400">Registros</TableHead>
@@ -518,7 +518,7 @@ export default function AdminDashboard() {
                 </TableHeader>
                 <TableBody>
                   {housePerformance?.map((house) => (
-                    <TableRow key={house.houseName} className="border-[#334155]">
+                    <TableRow key={house.houseName} className="border-slate-600">
                       <TableCell className="text-white font-medium">{house.houseName}</TableCell>
                       <TableCell className="text-white">{house.totalClicks}</TableCell>
                       <TableCell className="text-white">{house.totalRegistrations}</TableCell>
@@ -559,7 +559,7 @@ export default function AdminDashboard() {
             <CardContent>
               <Table>
                 <TableHeader>
-                  <TableRow className="border-[#334155]">
+                  <TableRow className="border-slate-600">
                     <TableHead className="text-slate-400">Casa</TableHead>
                     <TableHead className="text-slate-400">Evento</TableHead>
                     <TableHead className="text-slate-400">Total Recebido</TableHead>
@@ -568,7 +568,7 @@ export default function AdminDashboard() {
                 </TableHeader>
                 <TableBody>
                   {postbackSummary?.map((summary, index) => (
-                    <TableRow key={index} className="border-[#334155]">
+                    <TableRow key={index} className="border-slate-600">
                       <TableCell className="text-white font-medium">{summary.casa}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className="text-xs">{summary.evento}</Badge>
@@ -600,14 +600,14 @@ export default function AdminDashboard() {
           <Card className="bg-slate-800 border-slate-700 ">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <Wallet className="h-5 w-5 text-[#F59E0B]" />
+                <Wallet className="h-5 w-5 text-orange-400" />
                 Pagamentos Recentes
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
-                  <TableRow className="border-[#334155]">
+                  <TableRow className="border-slate-600">
                     <TableHead className="text-slate-400">Afiliado</TableHead>
                     <TableHead className="text-slate-400">Valor</TableHead>
                     <TableHead className="text-slate-400">Status</TableHead>
@@ -619,7 +619,7 @@ export default function AdminDashboard() {
                 </TableHeader>
                 <TableBody>
                   {recentPayments?.map((payment) => (
-                    <TableRow key={payment.id} className="border-[#334155]">
+                    <TableRow key={payment.id} className="border-slate-600">
                       <TableCell>
                         <div>
                           <div className="text-white font-medium">{payment.affiliateName}</div>
