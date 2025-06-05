@@ -508,7 +508,7 @@ export default function AdminHouses() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-purple-400 text-sm font-medium">Com Postbacks</p>
-                      <p className="text-2xl font-bold text-white">
+                      <p className="text-2xl font-bold text-[#192336]">
                         {houses.length}
                       </p>
                       <p className="text-xs text-slate-400 mt-1">
