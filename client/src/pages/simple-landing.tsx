@@ -785,12 +785,157 @@ export default function SimpleLanding() {
             <TabsContent value="direitos" className="mt-8">
               <Card className="bg-slate-800/30 border-slate-700/50 backdrop-blur-sm">
                 <CardContent className="p-8">
-                  <div className="text-center py-16">
-                    <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-2xl font-bold text-white mb-4">Direitos e Deveres do Afiliado</h3>
-                    <p className="text-gray-400 text-lg">
-                      Conteúdo em desenvolvimento. Em breve você terá acesso a todas as informações sobre direitos e deveres.
-                    </p>
+                  <div className="flex items-center mb-8">
+                    <BookOpen className="h-6 w-6 text-blue-400 mr-3" />
+                    <h3 className="text-2xl font-bold text-white">Direitos e Deveres do Afiliado</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* O que você NÃO pode fazer */}
+                    <Card className="bg-gradient-to-br from-red-900/30 to-orange-800/20 border-red-500/30">
+                      <CardContent className="p-8">
+                        <div className="flex items-center mb-6">
+                          <div className="p-3 bg-red-500/20 rounded-full mr-4">
+                            <span className="text-2xl">❌</span>
+                          </div>
+                          <h4 className="text-2xl font-bold text-white">O QUE VOCÊ NÃO PODE FAZER COMO AFILIADO:</h4>
+                        </div>
+
+                        <div className="space-y-6">
+                          <div className="bg-slate-900/50 rounded-lg p-4 border-l-4 border-red-500">
+                            <div className="flex items-center mb-2">
+                              <span className="text-red-400 mr-2">🚫</span>
+                              <h5 className="text-red-400 font-semibold">Não prometa ganhos!</h5>
+                            </div>
+                            <p className="text-gray-300 text-sm">
+                              Nunca garanta qualquer tipo de lucro ao usuário.
+                            </p>
+                          </div>
+
+                          <div className="bg-slate-900/50 rounded-lg p-4 border-l-4 border-red-500">
+                            <div className="flex items-center mb-2">
+                              <span className="text-red-400 mr-2">🚫</span>
+                              <h5 className="text-red-400 font-semibold">Fake news, nem pensar!</h5>
+                            </div>
+                            <p className="text-gray-300 text-sm">
+                              É proibido divulgar informações falsas sobre bônus, campanhas ou vitórias.
+                            </p>
+                          </div>
+
+                          <div className="bg-slate-900/50 rounded-lg p-4 border-l-4 border-red-500">
+                            <div className="flex items-center mb-2">
+                              <span className="text-red-400 mr-2">🚫</span>
+                              <h5 className="text-red-400 font-semibold">Nada de ofensas ou preconceitos!</h5>
+                            </div>
+                            <p className="text-gray-300 text-sm">
+                              Qualquer discurso ofensivo ou preconceituoso é terminantemente proibido.
+                            </p>
+                          </div>
+
+                          <div className="bg-slate-900/50 rounded-lg p-4 border-l-4 border-red-500">
+                            <div className="flex items-center mb-2">
+                              <span className="text-red-400 mr-2">🚫</span>
+                              <h5 className="text-red-400 font-semibold">Sem política!</h5>
+                            </div>
+                            <p className="text-gray-300 text-sm">
+                              É proibido associar o AfiliadosBet a qualquer posicionamento político.
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* O que você PODE fazer */}
+                    <Card className="bg-gradient-to-br from-green-900/30 to-emerald-800/20 border-green-500/30">
+                      <CardContent className="p-8">
+                        <div className="flex items-center mb-6">
+                          <div className="p-3 bg-green-500/20 rounded-full mr-4">
+                            <span className="text-2xl">✅</span>
+                          </div>
+                          <h4 className="text-2xl font-bold text-white">O QUE VOCÊ PODE FAZER COMO AFILIADO:</h4>
+                        </div>
+
+                        <div className="space-y-6">
+                          <div className="bg-slate-900/50 rounded-lg p-4 border-l-4 border-green-500">
+                            <div className="flex items-center mb-2">
+                              <span className="text-green-400 mr-2">🔗</span>
+                              <h5 className="text-green-400 font-semibold">Use seu link exclusivo</h5>
+                            </div>
+                            <p className="text-gray-300 text-sm">
+                              Divulgue seu link próprio para atrair novos usuários.
+                            </p>
+                          </div>
+
+                          <div className="bg-slate-900/50 rounded-lg p-4 border-l-4 border-green-500">
+                            <div className="flex items-center mb-2">
+                              <span className="text-green-400 mr-2">📲</span>
+                              <h5 className="text-green-400 font-semibold">Aproveite suas redes sociais</h5>
+                            </div>
+                            <p className="text-gray-300 text-sm">
+                              Compartilhe ações, promoções e torneios da casa.
+                            </p>
+                          </div>
+
+                          <div className="bg-slate-900/50 rounded-lg p-4 border-l-4 border-green-500">
+                            <div className="flex items-center mb-2">
+                              <span className="text-green-400 mr-2">🕹️</span>
+                              <h5 className="text-green-400 font-semibold">Promova os jogos!</h5>
+                            </div>
+                            <p className="text-gray-300 text-sm">
+                              Foque em jogos populares e/ou exclusivos da plataforma.
+                            </p>
+                          </div>
+
+                          <div className="bg-slate-900/50 rounded-lg p-4 border-l-4 border-green-500">
+                            <div className="flex items-center mb-2">
+                              <span className="text-green-400 mr-2">💬</span>
+                              <h5 className="text-green-400 font-semibold">Conte sua experiência real</h5>
+                            </div>
+                            <p className="text-gray-300 text-sm">
+                              Mostre seus ganhos (sem prometer) e fale sobre sua vivência com a casa.
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Importante */}
+                  <div className="mt-8">
+                    <Card className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border-blue-500/30">
+                      <CardContent className="p-6">
+                        <div className="flex items-center mb-4">
+                          <Info className="h-6 w-6 text-blue-400 mr-3" />
+                          <h4 className="text-xl font-bold text-white">Importante Lembrar</h4>
+                        </div>
+                        <div className="space-y-3 text-gray-300">
+                          <p>• Sempre seja transparente e honesto em suas divulgações</p>
+                          <p>• Respeite os termos de uso de cada plataforma onde divulga</p>
+                          <p>• Mantenha-se atualizado sobre as regras e políticas do programa</p>
+                          <p>• Em caso de dúvidas, entre em contato com nosso suporte</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Call to Action */}
+                  <div className="mt-8 text-center">
+                    <div className="bg-gradient-to-r from-green-600/20 to-blue-600/20 rounded-xl p-6 border border-green-500/30">
+                      <div className="flex items-center justify-center mb-4">
+                        <Trophy className="h-6 w-6 text-green-400 mr-2" />
+                        <p className="text-green-400 font-semibold text-lg">Pronto para ser um afiliado responsável?</p>
+                      </div>
+                      <p className="text-gray-300 mb-6">
+                        Seguindo estas diretrizes, você terá uma jornada de sucesso e ganhos consistentes!
+                      </p>
+                      <button 
+                        onClick={() => window.location.href = "/register"}
+                        className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-4 text-lg font-semibold rounded-lg shadow-lg shadow-green-900/30 transition-all transform hover:scale-105"
+                      >
+                        <Rocket className="mr-2 h-5 w-5 inline" />
+                        Começar como Afiliado Agora
+                      </button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
