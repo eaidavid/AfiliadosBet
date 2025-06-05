@@ -13,6 +13,19 @@ export function useAuth() {
     
     const checkAuth = async () => {
       try {
+        // Check if user explicitly logged out
+        const isLoggedOut = localStorage.getItem('is_logged_out');
+        if (isLoggedOut) {
+          localStorage.removeItem('is_logged_out');
+          localStorage.removeItem('auth_user');
+          localStorage.removeItem('auth_timestamp');
+          if (isMounted) {
+            setUser(null);
+            setIsLoading(false);
+            return;
+          }
+        }
+
         // First check localStorage for cached auth state
         const cachedUser = localStorage.getItem('auth_user');
         const timestamp = localStorage.getItem('auth_timestamp');

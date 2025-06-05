@@ -22,7 +22,7 @@ import AdminDashboard from "@/pages/admin-dashboard-responsive";
 import AdminCasas from "@/pages/admin-casas";
 
 import AdminHouses from "@/pages/admin-houses";
-import AdminManage from "@/pages/admin-manage";
+import AdminManageSimple from "@/pages/admin-manage-simple";
 import PostbackGeneratorProfessional from "@/pages/postback-generator-professional";
 import PostbackLogs from "@/pages/postback-logs";
 import AdminSettingsEnhanced from "@/pages/admin-settings-enhanced";
