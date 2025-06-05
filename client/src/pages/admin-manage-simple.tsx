@@ -13,7 +13,7 @@ const SIDEBAR_PROPS = {
   onPageChange: () => {}
 };
 
-interface User {
+interface Affiliate {
   id: number;
   username: string;
   email: string;
@@ -31,7 +31,7 @@ export default function AdminManageSimple() {
   const [search, setSearch] = useState('');
 
   // Fetch affiliates
-  const { data: affiliates = [], isLoading, error } = useQuery<User[]>({
+  const { data: affiliates = [], isLoading, error } = useQuery<Affiliate[]>({
     queryKey: ['/api/admin/affiliates', search],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -149,41 +149,41 @@ export default function AdminManageSimple() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      affiliates.map((user) => (
-                        <TableRow key={user.id} className="border-slate-800 hover:bg-slate-800/50">
+                      affiliates.map((affiliate) => (
+                        <TableRow key={affiliate.id} className="border-slate-800 hover:bg-slate-800/50">
                           <TableCell className="text-slate-200 font-medium">
-                            {user.fullName}
+                            {affiliate.fullName}
                           </TableCell>
                           <TableCell className="text-slate-300">
-                            {user.email}
+                            {affiliate.email}
                           </TableCell>
                           <TableCell className="text-slate-300">
-                            {user.username}
+                            {affiliate.username}
                           </TableCell>
                           <TableCell>
                             <Badge 
-                              className={user.isActive 
+                              className={affiliate.isActive 
                                 ? "bg-green-900 text-green-200 border-green-700" 
                                 : "bg-red-900 text-red-200 border-red-700"
                               }
                             >
-                              {user.isActive ? 'Ativo' : 'Inativo'}
+                              {affiliate.isActive ? 'Ativo' : 'Inativo'}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-slate-300">
-                            {user.totalClicks}
+                            {affiliate.totalClicks}
                           </TableCell>
                           <TableCell className="text-slate-300">
-                            {user.totalRegistrations}
+                            {affiliate.totalRegistrations}
                           </TableCell>
                           <TableCell className="text-slate-300">
-                            {user.totalDeposits}
+                            {affiliate.totalDeposits}
                           </TableCell>
                           <TableCell className="text-slate-300">
-                            R$ {user.totalCommissions}
+                            R$ {affiliate.totalCommissions}
                           </TableCell>
                           <TableCell className="text-slate-300">
-                            {formatDate(user.createdAt)}
+                            {formatDate(affiliate.createdAt)}
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-2">
