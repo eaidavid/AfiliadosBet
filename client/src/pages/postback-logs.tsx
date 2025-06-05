@@ -322,7 +322,7 @@ export default function PostbackLogs() {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
-      <div className="lg:ml-72 px-4 md:px-6 lg:px-8 max-w-[1600px] mx-auto transition-all duration-300 mt-[0px] mb-[0px] pt-[62px] pb-[62px] pl-[25px] pr-[25px] ml-[81px] mr-[81px]">
+      <div className="lg:ml-72 px-4 md:px-6 lg:px-8 max-w-[1600px] mx-auto transition-all duration-300 mt-[0px] mb-[0px] pt-[62px] pb-[62px] pl-[25px] pr-[25px] ml-[110px] mr-[110px]">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
