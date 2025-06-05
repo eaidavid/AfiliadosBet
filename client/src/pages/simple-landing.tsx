@@ -56,7 +56,7 @@ export default function SimpleLanding() {
               AfiliadosBet
             </span>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 text-[13px] ml-[0px] mr-[0px] pl-[-19px] pr-[-19px] pt-[-11px] pb-[-11px]">
             <button 
               onClick={() => window.location.href = "/login"}
               className="text-blue-300 hover:text-white transition-colors px-4 py-2"
