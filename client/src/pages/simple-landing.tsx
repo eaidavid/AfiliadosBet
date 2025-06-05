@@ -44,22 +44,38 @@ const fadeInStyles = `
       display: flex !important;
       align-items: center !important;
       justify-content: flex-start !important;
-      min-height: 48px !important;
+      min-height: 60px !important;
+      height: 60px !important;
       touch-action: manipulation !important;
       -webkit-touch-callout: none !important;
       -webkit-user-select: none !important;
       user-select: none !important;
+      margin-bottom: 12px !important;
+      position: relative !important;
+      z-index: 20 !important;
     }
     
     [data-state="active"] {
-      z-index: 10 !important;
+      z-index: 25 !important;
     }
     
     .tab-content-mobile {
-      margin-top: 1rem !important;
+      margin-top: 2rem !important;
       clear: both !important;
       position: relative !important;
       z-index: 1 !important;
+    }
+    
+    [role="tablist"] {
+      margin-bottom: 3rem !important;
+      position: relative !important;
+      z-index: 20 !important;
+    }
+    
+    [role="tabpanel"] {
+      position: relative !important;
+      z-index: 1 !important;
+      margin-top: 3rem !important;
     }
   }
 `;
@@ -307,10 +323,10 @@ export default function SimpleLanding() {
           </div>
           
           <Tabs defaultValue="comissao" className="w-full max-w-6xl mx-auto">
-            <TabsList className="flex flex-col sm:grid sm:grid-cols-3 w-full bg-slate-800/50 rounded-xl p-2 mb-8 gap-2 sm:gap-1">
+            <TabsList className="flex flex-col sm:grid sm:grid-cols-3 w-full bg-slate-800/50 rounded-xl p-3 mb-12 gap-3 sm:gap-1">
               <TabsTrigger 
                 value="comissao" 
-                className="w-full data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-4 px-4 rounded-lg text-base font-medium min-h-[48px] touch-manipulation"
+                className="w-full data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-5 px-6 rounded-lg text-base font-medium min-h-[60px] touch-manipulation flex items-center justify-start"
               >
                 <Calculator className="mr-2 h-4 w-4 flex-shrink-0" />
                 <span className="hidden sm:inline">Sobre sua comissão</span>
@@ -318,7 +334,7 @@ export default function SimpleLanding() {
               </TabsTrigger>
               <TabsTrigger 
                 value="termos" 
-                className="w-full data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-4 px-4 rounded-lg text-base font-medium min-h-[48px] touch-manipulation"
+                className="w-full data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-5 px-6 rounded-lg text-base font-medium min-h-[60px] touch-manipulation flex items-center justify-start"
               >
                 <FileText className="mr-2 h-4 w-4 flex-shrink-0" />
                 <span className="hidden sm:inline">Termos Técnicos</span>
@@ -326,7 +342,7 @@ export default function SimpleLanding() {
               </TabsTrigger>
               <TabsTrigger 
                 value="direitos" 
-                className="w-full data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-4 px-4 rounded-lg text-base font-medium min-h-[48px] touch-manipulation"
+                className="w-full data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-5 px-6 rounded-lg text-base font-medium min-h-[60px] touch-manipulation flex items-center justify-start"
               >
                 <BookOpen className="mr-2 h-4 w-4 flex-shrink-0" />
                 <span className="hidden sm:inline">Direitos e Deveres</span>
@@ -334,7 +350,7 @@ export default function SimpleLanding() {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="comissao" className="mt-8 tab-content-mobile">
+            <TabsContent value="comissao" className="mt-16 tab-content-mobile">
               <Card className="bg-slate-800/30 border-slate-700/50 backdrop-blur-sm">
                 <CardContent className="p-4 sm:p-6 lg:p-8">
                   {/* Como Funcionam os Pagamentos */}
@@ -615,7 +631,7 @@ export default function SimpleLanding() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="termos" className="mt-8 tab-content-mobile">
+            <TabsContent value="termos" className="mt-16 tab-content-mobile">
               <Card className="bg-slate-800/30 border-slate-700/50 backdrop-blur-sm">
                 <CardContent className="p-4 sm:p-6 lg:p-8">
                   {/* Principais Siglas */}
@@ -829,7 +845,7 @@ export default function SimpleLanding() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="direitos" className="mt-8 tab-content-mobile">
+            <TabsContent value="direitos" className="mt-16 tab-content-mobile">
               <Card className="bg-slate-800/30 border-slate-700/50 backdrop-blur-sm">
                 <CardContent className="p-4 sm:p-6 lg:p-8">
                   <div className="flex items-start mb-8">
