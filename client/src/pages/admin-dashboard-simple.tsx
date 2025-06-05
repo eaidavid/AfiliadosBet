@@ -31,7 +31,7 @@ export default function AdminDashboardSimple() {
   const [currentPage, setCurrentPage] = useState("dashboard");
 
   // Buscar dados reais do banco
-  const { data: systemStats, isLoading: isLoadingStats } = useQuery({
+  const { data: systemStats, isLoading: isLoadingStats } = useQuery<any>({
     queryKey: ['/api/stats/admin'],
     refetchInterval: 30000,
   });
@@ -41,7 +41,7 @@ export default function AdminDashboardSimple() {
     refetchInterval: 30000,
   });
 
-  const { data: bettingHouses = [] } = useQuery({
+  const { data: bettingHouses = [] } = useQuery<any[]>({
     queryKey: ['/api/admin/betting-houses'],
     refetchInterval: 30000,
   });
