@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import AdminSidebar from '@/components/admin/sidebar';
 import {
   Settings,
   Shield,
@@ -181,6 +182,8 @@ export default function AdminSettingsEnhanced() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
+      <AdminSidebar currentPage="admin-settings" onPageChange={(page) => console.log('Navigate to:', page)} />
+      
       <div className="lg:ml-72 px-4 md:px-6 lg:px-8 pt-6 pb-8 max-w-[1600px] mx-auto transition-all duration-300"
            style={{ paddingTop: 'max(1.5rem, env(safe-area-inset-top))' }}>
         {/* Header */}
