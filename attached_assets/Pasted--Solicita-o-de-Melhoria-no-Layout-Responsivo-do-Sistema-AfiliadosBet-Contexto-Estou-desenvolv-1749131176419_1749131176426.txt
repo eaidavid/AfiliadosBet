@@ -1,0 +1,83 @@
+🛠️ Solicitação de Melhoria no Layout Responsivo do Sistema AfiliadosBet
+📌 Contexto
+Estou desenvolvendo o sistema AfiliadosBet, que possui dois painéis distintos:
+
+Painel Administrativo
+
+Painel do Afiliado (Usuário)
+
+Ambos utilizam um menu lateral fixo e colapsável, com duas larguras:
+
+72px (colapsado)
+
+288px (expandido)
+
+O menu lateral está funcional, mas há graves problemas de responsividade, especialmente em mobile.
+
+❗ Problemas Identificados
+📱 Em dispositivos móveis:
+Diversas páginas aparecem fora de alinhamento, algumas centralizadas, outras jogadas à direita.
+
+O scroll lateral é ativado indevidamente.
+
+O menu lateral deveria ser overlay, mas continua ocupando espaço na página.
+
+🖥️ Em desktop:
+Quando o menu é colapsado, o conteúdo principal não se ajusta à nova largura.
+
+O main permanece com margin-left fixa, causando um vazio lateral desnecessário.
+
+🎯 Objetivo
+Melhorar a estrutura de layout para que o conteúdo principal se adapte corretamente tanto no desktop quanto no mobile, respeitando o estado da sidebar (colapsado/expandido) e eliminando comportamentos indesejados como overflow, desalinhamento e margin fixa.
+
+✅ Requisitos Técnicos Desejados
+Layout Fluido com Tailwind
+Implementar uma estrutura semelhante a:
+
+tsx
+Copiar
+Editar
+<main className={cn(
+  "flex-1 transition-all duration-300",
+  isMobile ? "ml-0" : isCollapsed ? "ml-[72px]" : "ml-[288px]",
+  "overflow-x-hidden max-w-full"
+)}>
+Mobile com Menu Overlay
+
+Detectar breakpoints (<768px)
+
+Aplicar ml-0 no main
+
+Exibir menu com position: fixed, z-50 e backdrop
+
+Hook de Responsividade
+Criar algo como:
+
+ts
+Copiar
+Editar
+const useIsMobile = () => window.innerWidth < 768
+Eliminar Scroll Lateral
+
+Evitar width: 100vw com padding/margin
+
+Usar w-full, min-w-0 e overflow-x-hidden corretamente
+
+Melhorar Alinhamento do Conteúdo
+
+Utilizar container mx-auto px-4 py-6 nas páginas internas
+
+🧪 Extras Futuramente (Desejável)
+Animações suaves ao colapsar o menu
+
+Ícone hamburguer com botão de fechar no mobile
+
+Transições fluidas com ease-in-out entre modos mobile/desktop
+
+🗂️ Arquivos Envolvidos
+client/src/components/admin/sidebar.tsx
+
+client/src/components/affiliate-sidebar.tsx
+
+Provavelmente também: layout.tsx ou App.tsx
+

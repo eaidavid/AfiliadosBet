@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useLogout } from '@/hooks/use-auth';
 import {
   Home,
   Building2,
@@ -17,7 +19,9 @@ import {
   User,
   LogOut,
   Bell,
-  Crown
+  Crown,
+  Menu,
+  X
 } from 'lucide-react';
 
 interface AffiliateSidebarProps {
