@@ -93,7 +93,7 @@ function Router() {
       <Route path="/betting-houses" component={AuthenticatedBettingHouses} />
       <Route path="/houses" component={AuthenticatedBettingHouses} />
       <Route path="/my-links" component={AuthenticatedMyLinks} />
-      <Route path="/reports" component={AuthenticatedUserReports} />
+      <Route path="/reports" component={AuthenticatedReports} />
       <Route path="/admin" component={AuthenticatedAdminDashboard} />
       <Route path="/admin/leads" component={AuthenticatedAdminLeads} />
       <Route path="/admin/casas" component={AuthenticatedAdminCasas} />
