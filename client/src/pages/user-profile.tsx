@@ -402,13 +402,13 @@ export default function UserProfile() {
 
                   <div>
                     <Label className="text-slate-300">Código do Afiliado</Label>
-                    <p className="mt-1 text-slate-200 flex items-center gap-2">
+                    <div className="mt-1 flex items-center gap-2 text-slate-200">
                       <Lock className="h-4 w-4 text-slate-400" />
-                      {userProfile?.username}
+                      <span>{userProfile?.username}</span>
                       <Badge variant="secondary" className="bg-blue-900 text-blue-200">
                         Somente Leitura
                       </Badge>
-                    </p>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
