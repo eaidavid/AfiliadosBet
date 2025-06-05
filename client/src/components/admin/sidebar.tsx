@@ -9,7 +9,7 @@ interface AdminSidebarProps {
   onPageChange: (page: string) => void;
 }
 
-export default function AdminSidebar({ currentPage, onPageChange }: AdminSidebarProps) {
+export function AdminSidebar({ currentPage, onPageChange }: AdminSidebarProps) {
   const logout = useLogout();
   const isMobile = useIsMobile();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -235,3 +235,5 @@ export default function AdminSidebar({ currentPage, onPageChange }: AdminSidebar
     </div>
   );
 }
+
+export default AdminSidebar;
