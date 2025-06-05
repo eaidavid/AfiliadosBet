@@ -49,7 +49,7 @@ export default function SimpleLanding() {
       </div>
       {/* Navigation */}
       <nav className="relative z-10 bg-slate-800/50 backdrop-blur-md border-b border-blue-800/30">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+        <div className="container mx-auto px-6 py-4 flex justify-between items-center pl-[7px] pr-[7px]">
           <div className="flex items-center space-x-3">
             <img src={logoPath} alt="AfiliadosBet" className="h-10 w-10" />
             <span className="font-bold bg-gradient-to-r from-blue-400 to-green-400 bg-clip-text text-transparent text-[16px]">
