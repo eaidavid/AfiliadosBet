@@ -199,17 +199,16 @@ export default function AdminSettingsEnhanced() {
       }} />
       <div className="ml-20">
         <main className="p-4 lg:p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-emerald-500 flex items-center gap-3">
-              <Settings className="h-8 w-8" />
-              Configurações Administrativas
-            </h1>
-            <p className="text-slate-300 mt-2">
-              Gerencie configurações do sistema, segurança e monitoramento
-            </p>
-          </div>
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-emerald-400 bg-clip-text text-transparent">
+                Configurações Administrativas
+              </h1>
+              <p className="text-slate-400 mt-1">
+                Gerencie configurações do sistema, segurança e monitoramento
+              </p>
+            </div>
           
           {hasUnsavedChanges && (
             <Button 
@@ -223,9 +222,9 @@ export default function AdminSettingsEnhanced() {
           )}
         </div>
 
-        {/* System Status Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
-          <Card className="bg-slate-900 border-slate-700">
+          {/* System Status Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
+            <Card className="bg-slate-800 border-slate-700">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-500/20 rounded-lg">
