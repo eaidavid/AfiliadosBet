@@ -1,0 +1,131 @@
+Objetivo Geral:
+Padronizar todas as páginas do painel admin garantindo uma experiência visual unificada, responsiva e fluida, com carregamento rápido e renderização suave, tanto em desktop quanto em dispositivos móveis.
+
+📐 Padronização de Layout e Margens
+Utilize uma estrutura-base consistente para todas as páginas:
+
+padding-x uniforme → px-4 md:px-8
+
+padding-top → para afastar do cabeçalho fixo (ex: pt-6)
+
+max-w-[1440px] mx-auto → centralizar e limitar largura do conteúdo
+
+Espaçamento entre seções → gap-6 ou space-y-6
+
+Conteúdo principal sempre envolto em:
+
+jsx
+Copiar
+Editar
+<div className="flex flex-col overflow-x-hidden pl-[220px] pr-4 pt-6 max-w-[1440px] mx-auto space-y-6">
+  {/* conteúdo aqui */}
+</div>
+📱 Responsividade e Mobile First
+Use grid responsivo para organização de listas, cards e dados:
+
+jsx
+Copiar
+Editar
+grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4
+Filtros e formulários:
+
+flex flex-wrap gap-4
+
+Inputs e selects com w-full em telas menores
+
+Tipografia adaptativa:
+
+text-xl md:text-2xl em títulos
+
+text-sm md:text-base em descrições
+
+🎨 Componentização Padronizada com ShadCN UI
+Todos os cards devem utilizar <Card> com:
+
+jsx
+Copiar
+Editar
+rounded-2xl shadow-md p-4 border border-border/20
+Filtros com <Select>, <Input>, <DatePicker> de forma padronizada.
+
+Ícones: utilizar lucide-react para consistência visual e feedback rápido.
+
+Status: utilizar <Badge variant="outline" /> com cor condizente (ex: verde para “Ativo”, vermelho para “Erro”).
+
+🧭 Menu Lateral e Espaçamento Global
+Sidebar:
+
+Deve ser sticky com z-50, sem interferir na rolagem do conteúdo
+
+As páginas devem sempre ter padding-left que respeite o valor exato da largura do menu lateral, ex: pl-[220px]
+
+Scroll:
+
+Use overflow-auto em seções que podem crescer verticalmente (tabelas, listas longas)
+
+Evite scroll horizontal com overflow-x-hidden
+
+⚙️ Melhoria de Performance – Troca de Páginas Suaves
+Implemente rotações suaves com pré-carregamento:
+
+Sugestão com Next.js ou React Router:
+
+Use <Suspense> e lazy() para lazy-loading de páginas:
+
+jsx
+Copiar
+Editar
+const ConfigPage = React.lazy(() => import('./pages/Config'));
+
+<Suspense fallback={<PageLoader />}>
+  <ConfigPage />
+</Suspense>
+Use Framer Motion para animações de transição entre páginas:
+
+jsx
+Copiar
+Editar
+<motion.div
+  key={location.pathname}
+  initial={{ opacity: 0, y: 10 }}
+  animate={{ opacity: 1, y: 0 }}
+  exit={{ opacity: 0, y: -10 }}
+  transition={{ duration: 0.2 }}
+>
+  {/* Página */}
+</motion.div>
+Mantenha um layout persistente, evitando re-render do menu lateral.
+
+📈 Boas Práticas de UI/UX
+Tabelas longas ou áreas de log:
+
+Use overflow-x-auto, com scroll suave
+
+Use aria-label e role="table" para acessibilidade
+
+Quando não houver dados:
+
+Exiba estado vazio com ícone, sugestão de ação e frase amigável
+
+Durante carregamentos (ex: filtros alterados, data sendo buscada):
+
+Mostre <Skeleton /> ou <Loader /> (ShadCN UI ou personalizado)
+
+⚠️ Checklist Final
+✅ Todas as páginas centralizadas com max-width
+✅ Margens laterais e verticais consistentes
+✅ Layout responsivo e testado no mobile
+✅ Componentes visuais uniformes
+✅ Sidebar fixo e respeitado por todo conteúdo
+✅ Transições suaves ao trocar de página
+✅ Dados carregados com otimização e fallback amigável
+
+💡 Extras Recomendados
+Permitir exportação/importação de configurações (JSON)
+
+Gerenciar permissão de configurações críticas (admins.is_superadmin)
+
+Animar modais, tooltips e drawers com Framer Motion
+
+Testar scroll, zoom e interação em iOS e Android
+

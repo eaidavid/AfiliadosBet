@@ -67,27 +67,37 @@ export default function AdminSettingsEnhanced() {
 
   // Fetch system settings from database
   const { data: settings, isLoading: settingsLoading } = useQuery({
-    queryKey: ['/api/admin/system-settings'],
-    queryFn: () => apiRequest('/api/admin/system-settings'),
+    queryKey: ['system-settings'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/system-settings');
+      if (!response.ok) throw new Error('Failed to fetch settings');
+      return response.json();
+    },
   });
 
   // Fetch system stats
   const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ['/api/admin/system-stats'],
-    queryFn: () => apiRequest('/api/admin/system-stats'),
+    queryKey: ['system-stats'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/system-stats');
+      if (!response.ok) throw new Error('Failed to fetch stats');
+      return response.json();
+    },
   });
 
   // Save settings mutation
   const saveSettingMutation = useMutation({
     mutationFn: async (data: { setting_key: string; setting_value: string; type: string; description: string }) => {
-      return apiRequest('/api/admin/system-settings', {
+      const response = await fetch('/api/admin/system-settings', {
         method: 'POST',
         body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' }
       });
+      if (!response.ok) throw new Error('Failed to save setting');
+      return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/system-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['system-settings'] });
       toast({
         title: "Configuração salva",
         description: "As configurações foram atualizadas com sucesso.",
@@ -106,13 +116,15 @@ export default function AdminSettingsEnhanced() {
   // Regenerate token mutation
   const regenerateTokenMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest('/api/admin/regenerate-token', {
+      const response = await fetch('/api/admin/regenerate-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
+      if (!response.ok) throw new Error('Failed to regenerate token');
+      return response.json();
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/system-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['system-settings'] });
       toast({
         title: "Token regenerado",
         description: "Novo token de API gerado com sucesso.",
@@ -168,8 +180,7 @@ export default function AdminSettingsEnhanced() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <div className="max-w-7xl mx-auto p-6 space-y-6">
+    <div className="flex flex-col overflow-x-hidden pl-[220px] pr-4 pt-6 max-w-[1440px] mx-auto space-y-6 min-h-screen bg-slate-950 text-white">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -300,13 +311,13 @@ export default function AdminSettingsEnhanced() {
                       placeholder="https://exemplo.com/webhook"
                       className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-400"
                     />
-                    <p className="text-xs text-slate-400">URL para receber notificações do sistema</p>
+                    <p className="text-xs text-slate-300">URL para receber notificações do sistema</p>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
                       <Label className="text-slate-200">Modo Debug</Label>
-                      <p className="text-xs text-slate-400">Ativar logs detalhados do sistema</p>
+                      <p className="text-xs text-slate-300">Ativar logs detalhados do sistema</p>
                     </div>
                     <Switch
                       checked={getSettingValue('debug_mode') === 'true'}
@@ -328,7 +339,7 @@ export default function AdminSettingsEnhanced() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
                       <Label className="text-slate-200">Modo de Teste</Label>
-                      <p className="text-xs text-slate-400">Permitir postbacks de teste</p>
+                      <p className="text-xs text-slate-300">Permitir postbacks de teste</p>
                     </div>
                     <Switch
                       checked={getSettingValue('allow_test_mode') === 'true'}
@@ -798,7 +809,6 @@ export default function AdminSettingsEnhanced() {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
     </div>
   );
 }
