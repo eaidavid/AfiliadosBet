@@ -80,9 +80,10 @@ export default function PostbackGeneratorProfessional() {
 
   // Filter postbacks based on selected house and event
   const filteredPostbacks = useMemo(() => {
-    if (!Array.isArray(postbacks)) return [];
+    if (!postbacks || !Array.isArray(postbacks)) return [];
     
     return postbacks.filter((postback: RegisteredPostback) => {
+      if (!postback) return false;
       const houseMatch = selectedHouse === "all" || postback.house_id?.toString() === selectedHouse;
       const eventMatch = selectedEvent === "all" || postback.event_type === selectedEvent;
       return houseMatch && eventMatch;
@@ -91,13 +92,17 @@ export default function PostbackGeneratorProfessional() {
 
   // Get active postbacks only
   const activePostbacks = useMemo(() => {
-    return filteredPostbacks.filter((postback: RegisteredPostback) => postback.is_active);
+    if (!filteredPostbacks || !Array.isArray(filteredPostbacks)) return [];
+    return filteredPostbacks.filter((postback: RegisteredPostback) => postback && postback.is_active);
   }, [filteredPostbacks]);
 
   // Get unique event types for filter
   const eventTypes = useMemo(() => {
-    if (!Array.isArray(postbacks)) return [];
-    const events = postbacks.map((p: RegisteredPostback) => p.event_type).filter(Boolean);
+    if (!postbacks || !Array.isArray(postbacks)) return [];
+    const events = postbacks
+      .filter((p: RegisteredPostback) => p && p.event_type)
+      .map((p: RegisteredPostback) => p.event_type)
+      .filter(Boolean);
     return [...new Set(events)];
   }, [postbacks]);
 
@@ -138,6 +143,8 @@ export default function PostbackGeneratorProfessional() {
 
   // Generate test URL with parameters
   const generateTestUrl = (postback: RegisteredPostback) => {
+    if (!postback || !postback.url) return '';
+    
     let url = postback.url;
     const detectedParams = detectParameters(url);
     
@@ -148,8 +155,8 @@ export default function PostbackGeneratorProfessional() {
     });
 
     // Add security token if available from betting house
-    const house = Array.isArray(bettingHouses) ? 
-      bettingHouses.find((h: BettingHouse) => h.id === postback.house_id) : null;
+    const house = (bettingHouses && Array.isArray(bettingHouses)) ? 
+      bettingHouses.find((h: BettingHouse) => h && h.id === postback.house_id) : null;
     
     if (house?.securityToken) {
       const separator = url.includes('?') ? '&' : '?';
@@ -354,7 +361,7 @@ export default function PostbackGeneratorProfessional() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-slate-400 text-sm">Total de Postbacks</p>
-                    <p className="text-2xl font-bold text-white">{postbacks.length}</p>
+                    <p className="text-2xl font-bold text-white">{postbacks ? postbacks.length : 0}</p>
                   </div>
                   <Building2 className="w-8 h-8 text-blue-400" />
                 </div>
@@ -476,7 +483,7 @@ export default function PostbackGeneratorProfessional() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredPostbacks.map((postback: RegisteredPostback) => (
+                {filteredPostbacks && filteredPostbacks.length > 0 && filteredPostbacks.map((postback: RegisteredPostback) => (
                   <Card key={postback.id} className="bg-slate-800/50 border-slate-600 hover:border-blue-500/50 transition-all duration-200 hover:scale-[1.02]">
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
@@ -542,7 +549,7 @@ export default function PostbackGeneratorProfessional() {
                   <AlertTriangle className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-white mb-2">Nenhum postback encontrado</h3>
                   <p className="text-slate-400">
-                    {postbacks.length === 0 
+                    {(!postbacks || postbacks.length === 0)
                       ? "Nenhum postback registrado no sistema. Configure postbacks primeiro."
                       : "Ajuste os filtros para ver outros postbacks"
                     }
