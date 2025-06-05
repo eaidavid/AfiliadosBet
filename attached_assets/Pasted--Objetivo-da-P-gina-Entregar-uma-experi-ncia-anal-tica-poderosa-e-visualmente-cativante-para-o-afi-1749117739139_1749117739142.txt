@@ -1,0 +1,133 @@
+🎯 Objetivo da Página
+Entregar uma experiência analítica poderosa e visualmente cativante para o afiliado acompanhar seu desempenho em números, em tempo real, com resumo claro e visuais elegantes, destacando o que mais importa: cliques, conversões e comissão gerada.
+
+🎨 Estilo Visual
+Tema: Dark premium (base preto e azul escuro)
+
+Cor de destaque: Azul royal, degradê suave em botões e gráficos
+
+Tipografia: Clara, espaçada, com números destacados em tamanho grande
+
+Estilo dos componentes: Minimalista, com cards, painéis flutuantes e gráficos com visual "vidro" (glassmorphism sutil)
+
+🧱 Fonte dos Dados (banco AFILIADOSBET)
+Use os seguintes relacionamentos do banco, sempre filtrando por:
+
+user_id = sessão do usuário logado
+
+Tabelas envolvidas:
+
+affiliate_links
+
+click_tracking
+
+conversions
+
+🧩 Layout Geral da Página
+1. 🧾 Cabeçalho da Página
+Título: "Meu Relatório de Desempenho"
+
+Subtítulo: “Veja como seus links estão performando nos últimos dias”
+
+Ícone sugestão: 📈
+
+2. 💠 Resumo Rápido em Cards Numéricos
+Use 4 cards horizontais ou em grade, com ícones suaves:
+
+Métrica	Fonte	Detalhes
+Total de Cliques	click_tracking (por user_id)	COUNT total
+Conversões	conversions (por user_id)	COUNT total
+Comissão Total	conversions.commission	SUM com formatação R$
+Casas Ativas	DISTINCT affiliate_links.house_id	COUNT de casas com links ativos
+
+💡 Cada card deve conter um mini ícone, número grande, label e tooltip ao passar o mouse.
+
+3. 📈 Gráfico 1: Conversões por Tipo
+Tipo de gráfico: Pizza elegante com bordas arredondadas
+Fonte: conversions.type (agrupado)
+Exibe:
+
+Proporção entre click, registration, deposit, profit
+
+Ícones em cada slice (💥 para cliques, ✍️ para registros, 💰 para depósitos, 📊 para lucros)
+
+4. 📊 Gráfico 2: Desempenho por Casa de Aposta
+Tipo de gráfico: Barras horizontais com fundo degradê animado
+Fonte:
+
+Agrupar por betting_houses.name
+
+Dados somados por casa:
+
+Total de conversões (COUNT)
+
+Comissão total (SUM)
+
+Legenda lateral e valores visíveis nas barras. Mostrar as 3–5 casas mais relevantes.
+
+5. 🧾 Tabela Detalhada (Opcional)
+Exibir última 10 conversões do afiliado
+
+Colunas:
+
+Casa (betting_houses.name)
+
+Tipo (conversions.type)
+
+Valor da conversão (amount)
+
+Comissão gerada (commission)
+
+Cliente (customer_id, se houver)
+
+Data (converted_at, em pt-BR)
+
+6. 📆 Filtros Inteligentes
+Período:
+
+Hoje / 7 dias / 30 dias / Personalizado (date picker)
+
+Tipo de conversão:
+
+Click / Registration / Deposit / Profit
+
+Casas de aposta:
+
+Dropdown com múltiplas opções
+
+7. 📱 Responsividade e Acessibilidade
+Gráficos adaptáveis em colunas únicas no mobile
+
+Cards em slider no celular
+
+Fontes legíveis, botões grandes, tooltips acessíveis
+
+Modo noturno (padrão) e contraste claro (opcional)
+
+8. 🧠 UX Inteligente / Detalhes Visuais
+Animações suaves ao trocar período
+
+Quando passar o mouse em um gráfico, exibir resumo detalhado
+
+Números com animação de contagem (count-up)
+
+Moedas e datas formatadas:
+
+R$ 2.541,00 (pt-BR)
+
+05 de junho de 2025
+
+🚫 Empty State (afiliado sem dados)
+Exibir imagem sutil estilo wireframe
+
+Texto: “Nenhum dado disponível ainda para gerar o relatório.”
+
+Botão: "Comece criando seus links" → leva à página de casas
+
+🔗 Conexões com Outras Páginas
+Link discreto: “Ver links gerados” → vai para “Meus Links”
+
+Link: “Ver casas de apostas” → página de criação de links
+
+✨ Frase de Destaque (motivacional no topo ou rodapé)
+“Seus números contam sua história. Continue crescendo.”

@@ -1644,6 +1644,143 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // Get affiliate analytics data
+  app.get('/api/affiliate/analytics', requireAuth, async (req: any, res: any) => {
+    try {
+      const userId = req.user.id;
+      const { period = '7', conversionFilter = 'all', houseFilter = 'all' } = req.query;
+
+      // Calculate date range
+      const days = parseInt(period);
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+
+      // Get total clicks
+      const clicksQuery = db
+        .select({ count: sql<number>`count(*)`.as('count') })
+        .from(schema.clickTracking)
+        .innerJoin(schema.affiliateLinks, eq(schema.clickTracking.affiliateLinkId, schema.affiliateLinks.id))
+        .where(and(
+          eq(schema.affiliateLinks.userId, userId),
+          gte(schema.clickTracking.clickedAt, startDate)
+        ));
+
+      const [{ count: totalClicks }] = await clicksQuery;
+
+      // Get total conversions and commission
+      let conversionsQuery = db
+        .select({
+          count: sql<number>`count(*)`.as('count'),
+          totalCommission: sql<string>`sum(${schema.conversions.commission})`.as('totalCommission')
+        })
+        .from(schema.conversions)
+        .where(and(
+          eq(schema.conversions.userId, userId),
+          gte(schema.conversions.convertedAt, startDate)
+        ));
+
+      if (conversionFilter !== 'all') {
+        conversionsQuery = conversionsQuery.where(eq(schema.conversions.type, conversionFilter));
+      }
+
+      const [{ count: totalConversions, totalCommission }] = await conversionsQuery;
+
+      // Get active houses count
+      const [{ count: activeHouses }] = await db
+        .select({ count: sql<number>`count(distinct ${schema.affiliateLinks.houseId})`.as('count') })
+        .from(schema.affiliateLinks)
+        .where(and(
+          eq(schema.affiliateLinks.userId, userId),
+          eq(schema.affiliateLinks.isActive, true)
+        ));
+
+      // Get conversions by type
+      const conversionsByType = await db
+        .select({
+          type: schema.conversions.type,
+          count: sql<number>`count(*)`.as('count')
+        })
+        .from(schema.conversions)
+        .where(and(
+          eq(schema.conversions.userId, userId),
+          gte(schema.conversions.convertedAt, startDate)
+        ))
+        .groupBy(schema.conversions.type);
+
+      const totalConversionsForPercentage = conversionsByType.reduce((sum, item) => sum + item.count, 0);
+      const conversionsByTypeWithPercentage = conversionsByType.map(item => ({
+        ...item,
+        percentage: totalConversionsForPercentage > 0 ? Math.round((item.count / totalConversionsForPercentage) * 100) : 0
+      }));
+
+      // Get performance by house
+      const performanceByHouse = await db
+        .select({
+          houseName: schema.bettingHouses.name,
+          conversions: sql<number>`count(${schema.conversions.id})`.as('conversions'),
+          commission: sql<string>`sum(${schema.conversions.commission})`.as('commission'),
+          clicks: sql<number>`count(distinct ${schema.clickTracking.id})`.as('clicks')
+        })
+        .from(schema.bettingHouses)
+        .leftJoin(schema.affiliateLinks, eq(schema.bettingHouses.id, schema.affiliateLinks.houseId))
+        .leftJoin(schema.conversions, and(
+          eq(schema.affiliateLinks.userId, schema.conversions.userId),
+          eq(schema.conversions.houseId, schema.bettingHouses.id),
+          gte(schema.conversions.convertedAt, startDate)
+        ))
+        .leftJoin(schema.clickTracking, and(
+          eq(schema.affiliateLinks.id, schema.clickTracking.affiliateLinkId),
+          gte(schema.clickTracking.clickedAt, startDate)
+        ))
+        .where(eq(schema.affiliateLinks.userId, userId))
+        .groupBy(schema.bettingHouses.id, schema.bettingHouses.name)
+        .orderBy(desc(sql`sum(${schema.conversions.commission})`));
+
+      // Get recent conversions
+      const recentConversions = await db
+        .select({
+          id: schema.conversions.id,
+          houseName: schema.bettingHouses.name,
+          type: schema.conversions.type,
+          amount: schema.conversions.amount,
+          commission: schema.conversions.commission,
+          customerId: schema.conversions.customerId,
+          convertedAt: schema.conversions.convertedAt
+        })
+        .from(schema.conversions)
+        .innerJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
+        .where(and(
+          eq(schema.conversions.userId, userId),
+          gte(schema.conversions.convertedAt, startDate)
+        ))
+        .orderBy(desc(schema.conversions.convertedAt))
+        .limit(10);
+
+      const analyticsData = {
+        totalClicks: totalClicks || 0,
+        totalConversions: totalConversions || 0,
+        totalCommission: totalCommission || '0',
+        activeHouses: activeHouses || 0,
+        conversionsByType: conversionsByTypeWithPercentage,
+        performanceByHouse: performanceByHouse.map(item => ({
+          houseName: item.houseName,
+          conversions: item.conversions || 0,
+          commission: item.commission || '0',
+          clicks: item.clicks || 0
+        })),
+        recentConversions: recentConversions.map(conv => ({
+          ...conv,
+          convertedAt: conv.convertedAt?.toISOString() || new Date().toISOString()
+        }))
+      };
+
+      res.json(analyticsData);
+    } catch (error) {
+      console.error('Erro ao buscar dados de analytics:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
   // Get affiliate links with performance data
   app.get('/api/affiliate/my-links', requireAuth, async (req: any, res: any) => {
     try {

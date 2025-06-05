@@ -14,6 +14,7 @@ import UserReports from "@/pages/user-reports-clean";
 import AffiliateHome from "@/pages/affiliate-home";
 import BettingHouses from "@/pages/betting-houses";
 import MyLinks from "@/pages/my-links";
+import AffiliateReports from "@/pages/affiliate-reports";
 import AdminDashboard from "@/pages/admin-dashboard-new";
 import AdminLeadsManagement from "@/pages/admin-leads-management";
 import AdminCasas from "@/pages/admin-casas";
@@ -250,6 +251,36 @@ function AuthenticatedMyLinks() {
   return (
     <div className="mobile-safe no-bounce">
       <MyLinks />
+      <AdminPanelToggle />
+    </div>
+  );
+}
+
+function AuthenticatedReports() {
+  const { isAuthenticated, isLoading } = useAuth();
+  const [location, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      setLocation("/login");
+    }
+  }, [isAuthenticated, isLoading, setLocation]);
+
+  if (isLoading) {
+    return (
+      <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce">
+        <div className="text-emerald-500 text-xl">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  return (
+    <div className="mobile-safe no-bounce">
+      <AffiliateReports />
       <AdminPanelToggle />
     </div>
   );
