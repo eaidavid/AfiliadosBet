@@ -48,6 +48,8 @@ interface BettingHouse {
   logoUrl: string | null;
   commissionType: string;
   commissionValue: string | null;
+  cpaValue: string | null;
+  revshareValue: string | null;
   minDeposit: string | null;
   paymentMethods: any;
   isActive: boolean;
