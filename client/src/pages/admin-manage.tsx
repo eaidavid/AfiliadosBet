@@ -339,8 +339,7 @@ export default function AdminManage() {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
-      
-      <div className="lg:ml-72 px-4 md:px-6 lg:px-8 pt-6 pb-8 max-w-[1600px] mx-auto transition-all duration-300">
+      <div className="lg:ml-72 px-4 md:px-6 lg:px-8 pt-6 pb-8 max-w-[1600px] mx-auto transition-all duration-300 pl-[17px] pr-[17px] ml-[9px] mr-[9px]">
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -655,7 +654,6 @@ export default function AdminManage() {
           </Card>
         </motion.div>
       </div>
-
       {/* Form Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-2xl">
@@ -832,7 +830,6 @@ export default function AdminManage() {
           </Form>
         </DialogContent>
       </Dialog>
-
       {/* Details Dialog */}
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
         <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
