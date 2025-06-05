@@ -83,7 +83,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={SimpleLanding} />
-      <Route path="/home" component={AuthenticatedHome} />
+      <Route path="/home" component={AuthenticatedAffiliateHome} />
       <Route path="/login" component={AuthenticatedLogin} />
       <Route path="/register" component={Register} />
       <Route path="/dashboard" component={AuthenticatedUserDashboard} />
