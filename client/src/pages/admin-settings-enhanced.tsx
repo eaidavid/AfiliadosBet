@@ -284,28 +284,35 @@ export default function AdminSettingsEnhanced() {
         </div>
 
         <Tabs defaultValue="general" className="space-y-6">
-          <TabsList className="bg-slate-900 border-slate-700">
-            <TabsTrigger value="general" className="data-[state=active]:bg-emerald-600">
-              <Settings className="h-4 w-4 mr-2" />
-              Geral
-            </TabsTrigger>
-            <TabsTrigger value="security" className="data-[state=active]:bg-emerald-600">
-              <Shield className="h-4 w-4 mr-2" />
-              Segurança
-            </TabsTrigger>
-            <TabsTrigger value="monitoring" className="data-[state=active]:bg-emerald-600">
-              <Activity className="h-4 w-4 mr-2" />
-              Monitoramento
-            </TabsTrigger>
-            <TabsTrigger value="notifications" className="data-[state=active]:bg-emerald-600">
-              <Bell className="h-4 w-4 mr-2" />
-              Notificações
-            </TabsTrigger>
-            <TabsTrigger value="backup" className="data-[state=active]:bg-emerald-600">
-              <Database className="h-4 w-4 mr-2" />
-              Backup
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto">
+            <TabsList className="bg-slate-900 border-slate-700 flex-nowrap min-w-max">
+              <TabsTrigger value="general" className="data-[state=active]:bg-emerald-600 whitespace-nowrap">
+                <Settings className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Geral</span>
+                <span className="sm:hidden">Geral</span>
+              </TabsTrigger>
+              <TabsTrigger value="security" className="data-[state=active]:bg-emerald-600 whitespace-nowrap">
+                <Shield className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Segurança</span>
+                <span className="sm:hidden">Seg</span>
+              </TabsTrigger>
+              <TabsTrigger value="monitoring" className="data-[state=active]:bg-emerald-600 whitespace-nowrap">
+                <Activity className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Monitoramento</span>
+                <span className="sm:hidden">Mon</span>
+              </TabsTrigger>
+              <TabsTrigger value="notifications" className="data-[state=active]:bg-emerald-600 whitespace-nowrap">
+                <Bell className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Notificações</span>
+                <span className="sm:hidden">Not</span>
+              </TabsTrigger>
+              <TabsTrigger value="backup" className="data-[state=active]:bg-emerald-600 whitespace-nowrap">
+                <Database className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Backup</span>
+                <span className="sm:hidden">Bkp</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* General Settings */}
           <TabsContent value="general">

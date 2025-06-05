@@ -415,8 +415,8 @@ export default function AdminHouses() {
         }
       }} />
       
-      <div className="flex-1 p-4 lg:p-8 ml-0 lg:ml-64">
-        <div className="max-w-[1400px] mx-auto space-y-8">
+      <div className="flex-1 p-2 sm:p-4 lg:p-8 ml-0 lg:ml-72 overflow-x-hidden">
+        <div className="max-w-full lg:max-w-[1400px] mx-auto space-y-4 sm:space-y-6 lg:space-y-8">
           {/* Page Header */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -425,7 +425,7 @@ export default function AdminHouses() {
           >
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div>
-                <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-emerald-400 bg-clip-text text-transparent">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-emerald-400 bg-clip-text text-transparent">
                   Administração de Casas de Apostas
                 </h1>
                 <p className="text-slate-400 mt-2">

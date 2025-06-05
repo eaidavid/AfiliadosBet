@@ -198,19 +198,11 @@ export default function AdminDashboard() {
       <AdminSidebar currentPage={currentPage} onPageChange={handlePageChange} />
       
       {/* Main Content */}
-      <div className="flex-1 lg:ml-72">
+      <div className="flex-1 ml-0 lg:ml-72">
         {/* Mobile Header */}
-        <div className="lg:hidden bg-slate-900/50 backdrop-blur-sm border-b border-slate-700/50 p-4">
+        <div className="lg:hidden bg-slate-900/50 backdrop-blur-sm border-b border-slate-700/50 p-4 pl-16">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold text-white">Dashboard Admin</h1>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-white"
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
           </div>
         </div>
 
@@ -245,7 +237,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="p-4 sm:p-6 space-y-6">
+        <div className="p-2 sm:p-4 lg:p-6 space-y-4 sm:space-y-6 overflow-x-hidden">
         {/* 1. RESUMO GERAL DO SISTEMA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
