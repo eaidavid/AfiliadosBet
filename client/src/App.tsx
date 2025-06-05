@@ -17,7 +17,7 @@ import AdminCasas from "@/pages/admin-casas";
 
 import AdminHouses from "@/pages/admin-houses";
 import AdminManage from "@/pages/admin-manage";
-import PostbackGenerator from "@/pages/postback-generator";
+import PostbackGeneratorProfessional from "@/pages/postback-generator-professional";
 import NotFound from "@/pages/not-found";
 import AdminPanelToggle from "@/components/admin-panel-toggle";
 
@@ -330,7 +330,7 @@ function AuthenticatedPostbackGenerator() {
 
   return (
     <div className="mobile-safe no-bounce">
-      <PostbackGenerator />
+      <PostbackGeneratorProfessional />
       <AdminPanelToggle />
     </div>
   );
