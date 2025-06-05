@@ -69,14 +69,14 @@ export default function SimpleLanding() {
       </div>
       {/* Navigation */}
       <nav className="relative z-10 bg-slate-800/50 backdrop-blur-md border-b border-blue-800/30">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center pl-[7px] pr-[7px]">
+        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <img src={logoPath} alt="AfiliadosBet" className="h-10 w-10" />
             <span className="font-bold bg-gradient-to-r from-blue-400 to-green-400 bg-clip-text text-transparent text-[16px]">
               AfiliadosBet
             </span>
           </div>
-          <div className="flex items-center space-x-4 text-[13px] ml-[0px] mr-[0px] pl-[-19px] pr-[-19px] pt-[-11px] pb-[-11px]">
+          <div className="flex items-center space-x-4 text-sm">
             <button 
               onClick={() => window.location.href = "/login"}
               className="text-blue-300 hover:text-white transition-colors px-4 py-2"
