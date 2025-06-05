@@ -44,14 +44,14 @@ const fadeInStyles = `
       flex-direction: column !important;
       align-items: center !important;
       justify-content: center !important;
-      min-height: 50px !important;
-      padding: 0.75rem 0.5rem !important;
+      min-height: 56px !important;
+      padding: 1rem 0.75rem !important;
       touch-action: manipulation !important;
       -webkit-touch-callout: none !important;
       -webkit-user-select: none !important;
       user-select: none !important;
-      font-size: 0.75rem !important;
-      line-height: 1 !important;
+      font-size: 0.875rem !important;
+      line-height: 1.25 !important;
     }
     
     .tab-content-mobile {
@@ -311,23 +311,23 @@ export default function SimpleLanding() {
             <TabsList className="grid grid-cols-3 w-full bg-slate-800/50 rounded-xl p-2 mb-8 gap-1">
               <TabsTrigger 
                 value="comissao" 
-                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-3 px-2 rounded-lg text-xs sm:text-sm font-medium min-h-[50px] touch-manipulation flex flex-col items-center justify-center"
+                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-4 px-3 rounded-lg text-sm sm:text-base font-medium min-h-[56px] touch-manipulation flex flex-col items-center justify-center"
               >
-                <Calculator className="h-3 w-3 sm:h-4 sm:w-4 mb-1" />
+                <Calculator className="h-4 w-4 sm:h-5 sm:w-5 mb-1" />
                 <span className="text-center leading-tight">Comissão</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="termos" 
-                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-3 px-2 rounded-lg text-xs sm:text-sm font-medium min-h-[50px] touch-manipulation flex flex-col items-center justify-center"
+                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-4 px-3 rounded-lg text-sm sm:text-base font-medium min-h-[56px] touch-manipulation flex flex-col items-center justify-center"
               >
-                <FileText className="h-3 w-3 sm:h-4 sm:w-4 mb-1" />
+                <FileText className="h-4 w-4 sm:h-5 sm:w-5 mb-1" />
                 <span className="text-center leading-tight">Termos</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="direitos" 
-                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-3 px-2 rounded-lg text-xs sm:text-sm font-medium min-h-[50px] touch-manipulation flex flex-col items-center justify-center"
+                className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-4 px-3 rounded-lg text-sm sm:text-base font-medium min-h-[56px] touch-manipulation flex flex-col items-center justify-center"
               >
-                <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 mb-1" />
+                <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 mb-1" />
                 <span className="text-center leading-tight">Direitos</span>
               </TabsTrigger>
             </TabsList>
