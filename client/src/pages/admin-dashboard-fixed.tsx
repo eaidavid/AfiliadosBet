@@ -76,9 +76,14 @@ export default function AdminDashboardFixed() {
   });
 
   // Cálculos baseados em dados reais
-  const activeAffiliates = affiliates.filter(a => a.isActive).length;
-  const totalCommissions = affiliates.reduce((sum, a) => sum + parseFloat(a.totalCommissions || '0'), 0);
-  const recentAffiliates = affiliates.slice(0, 8); // 8 mais recentes
+  const activeAffiliates = Array.isArray(affiliates) ? affiliates.filter(a => a.isActive).length : 0;
+  const totalCommissions = Array.isArray(affiliates) ? affiliates.reduce((sum, a) => sum + parseFloat(a.totalCommissions || '0'), 0) : 0;
+  const recentAffiliates = Array.isArray(affiliates) ? affiliates.slice(0, 8) : [];
+
+  // Debug para verificar dados
+  console.log('🔍 Debug Dashboard - Affiliates:', affiliates);
+  console.log('🔍 Debug Dashboard - Betting Houses:', bettingHouses);
+  console.log('🔍 Debug Dashboard - System Stats:', systemStats);
 
   return (
     <div className="min-h-screen bg-slate-950">
