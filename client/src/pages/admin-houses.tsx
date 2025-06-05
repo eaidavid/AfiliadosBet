@@ -416,7 +416,6 @@ export default function AdminHouses() {
       }} />
       <div className="ml-20">
         <main className="p-4 lg:p-6 space-y-6">
-        <div className="max-w-full lg:max-w-[1400px] mx-auto space-y-4 sm:space-y-6 lg:space-y-8">
           {/* Page Header */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -782,8 +781,9 @@ export default function AdminHouses() {
               </CardContent>
             </Card>
           </motion.div>
-        </div>
+        </main>
       </div>
+      
       {/* Form Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-[95vw] lg:max-w-4xl max-h-[90vh] overflow-y-auto mx-4 lg:mx-0">
@@ -1516,8 +1516,6 @@ export default function AdminHouses() {
           </div>
         </DialogContent>
       </Dialog>
-        </main>
-      </div>
     </div>
   );
 }
