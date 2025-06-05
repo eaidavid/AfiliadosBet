@@ -1073,6 +1073,56 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // System Stats API endpoint
+  app.get("/api/admin/system-stats", async (req, res) => {
+    try {
+      // Verificar acesso admin
+      if (!req.session?.user || req.session.user.role !== 'admin') {
+        return res.status(401).json({ error: "Acesso negado" });
+      }
+
+      // Count total users
+      const totalUsersResult = await db.select({ count: sql`count(*)` }).from(schema.users);
+      const totalUsers = Number(totalUsersResult[0]?.count || 0);
+
+      // Count total betting houses
+      const totalHousesResult = await db.select({ count: sql`count(*)` }).from(schema.bettingHouses);
+      const totalHouses = Number(totalHousesResult[0]?.count || 0);
+
+      // Count total clicks today
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const totalClicksResult = await db.select({ count: sql`count(*)` })
+        .from(schema.clickTracking)
+        .where(sql`${schema.clickTracking.timestamp} >= ${today}`);
+      const totalClicks = Number(totalClicksResult[0]?.count || 0);
+
+      // Count total conversions
+      const totalConversionsResult = await db.select({ count: sql`count(*)` }).from(schema.conversions);
+      const totalConversions = Number(totalConversionsResult[0]?.count || 0);
+
+      // Calculate system uptime (mock data)
+      const uptimeHours = Math.floor(Date.now() / 1000 / 60 / 60) % 24;
+      const uptimeMinutes = Math.floor(Date.now() / 1000 / 60) % 60;
+      const systemUptime = `${uptimeHours}h ${uptimeMinutes}m`;
+
+      // Last backup (mock data)
+      const lastBackup = new Date().toLocaleDateString('pt-BR');
+
+      res.json({
+        totalUsers,
+        totalHouses,
+        totalClicks,
+        totalConversions,
+        systemUptime,
+        lastBackup
+      });
+    } catch (error) {
+      console.error("Erro ao buscar estatísticas:", error);
+      res.status(500).json({ error: "Erro interno" });
+    }
+  });
+
   // Endpoint para buscar comissões por afiliado
   app.get("/api/admin/affiliate-commissions", async (req, res) => {
     try {

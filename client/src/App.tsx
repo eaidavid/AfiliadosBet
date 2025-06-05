@@ -19,7 +19,7 @@ import AdminHouses from "@/pages/admin-houses";
 import AdminManage from "@/pages/admin-manage";
 import PostbackGeneratorProfessional from "@/pages/postback-generator-professional";
 import PostbackLogs from "@/pages/postback-logs";
-import AdminSettings from "@/pages/admin-settings";
+import AdminSettingsEnhanced from "@/pages/admin-settings-enhanced";
 import NotFound from "@/pages/not-found";
 import AdminPanelToggle from "@/components/admin-panel-toggle";
 
@@ -394,7 +394,7 @@ function AuthenticatedAdminSettings() {
 
   return (
     <div className="mobile-safe no-bounce">
-      <AdminSettings />
+      <AdminSettingsEnhanced />
       <AdminPanelToggle />
     </div>
   );
