@@ -145,7 +145,7 @@ export function useRegister() {
   
   return useMutation({
     mutationFn: async (userData: InsertUser) => {
-      const response = await apiRequest("POST", "/api/register", userData);
+      const response = await apiRequest("POST", "/api/auth/register", userData);
       return response.json();
     },
     onSuccess: (data) => {

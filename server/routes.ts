@@ -98,6 +98,53 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
+  // Register route
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const { username, email, password, fullName, cpf, birthDate } = req.body;
+
+      // Check if user already exists
+      const [existingUser] = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.email, email));
+
+      if (existingUser) {
+        return res.status(400).json({ error: "Email já cadastrado" });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create user
+      const [newUser] = await db
+        .insert(schema.users)
+        .values({
+          username,
+          email,
+          password: hashedPassword,
+          fullName,
+          cpf,
+          birthDate,
+          role: 'affiliate'
+        })
+        .returning();
+
+      res.json({ 
+        success: true, 
+        user: { 
+          id: newUser.id, 
+          email: newUser.email, 
+          role: newUser.role,
+          fullName: newUser.fullName 
+        } 
+      });
+    } catch (error) {
+      console.error("Registration error:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   // User profile routes with PIX data
   app.get("/api/user/profile", requireAuth, async (req, res) => {
     try {
