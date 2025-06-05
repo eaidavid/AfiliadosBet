@@ -270,9 +270,9 @@ export default function AdminDashboardResponsive() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-400">Total Pago</p>
+                    <p className="text-sm text-slate-400">Total Volume</p>
                     <p className="text-2xl font-bold text-green-400">
-                      R$ {(systemOverview?.totalPaidCommissions || 0).toLocaleString()}
+                      R$ {systemStats?.totalVolume || '0,00'}
                     </p>
                   </div>
                   <DollarSign className="h-8 w-8 text-green-400" />
@@ -284,9 +284,9 @@ export default function AdminDashboardResponsive() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-400">Pendente</p>
+                    <p className="text-sm text-slate-400">Total Comissões</p>
                     <p className="text-2xl font-bold text-orange-400">
-                      R$ {(systemOverview?.pendingCommissions || 0).toLocaleString()}
+                      R$ {systemStats?.totalCommissions || '0,00'}
                     </p>
                   </div>
                   <Activity className="h-8 w-8 text-orange-400" />
@@ -298,9 +298,9 @@ export default function AdminDashboardResponsive() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-400">Lucro Total</p>
+                    <p className="text-sm text-slate-400">Total Links</p>
                     <p className="text-2xl font-bold text-purple-400">
-                      R$ {(systemOverview?.totalProfit || 0).toLocaleString()}
+                      {systemStats?.totalLinks || 0}
                     </p>
                   </div>
                   <Award className="h-8 w-8 text-purple-400" />

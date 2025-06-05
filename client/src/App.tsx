@@ -17,7 +17,7 @@ import MyLinks from "@/pages/my-links";
 import AffiliateReports from "@/pages/affiliate-reports";
 import UserProfile from "@/pages/user-profile";
 import AffiliatePayments from "@/pages/affiliate-payments";
-import AdminDashboardSimple from "@/pages/admin-dashboard-simple";
+import AdminDashboard from "@/pages/admin-dashboard-responsive";
 
 import AdminCasas from "@/pages/admin-casas";
 
@@ -373,7 +373,7 @@ function AuthenticatedAdminDashboard() {
 
   return (
     <div className="mobile-safe no-bounce">
-      <AdminDashboardSimple />
+      <AdminDashboard />
       <AdminPanelToggle />
     </div>
   );
