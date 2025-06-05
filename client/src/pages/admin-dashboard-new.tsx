@@ -361,29 +361,29 @@ export default function AdminDashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <Card className="bg-[#1C1F26] border-[#1E293B] shadow-lg rounded-2xl">
+            <Card className="bg-slate-800 border-slate-700 ">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <MousePointer className="h-5 w-5 text-[#10B981]" />
+                  <MousePointer className="h-5 w-5 text-green-400" />
                   Últimos Cliques
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3 max-h-64 overflow-y-auto">
                   {recentActivity?.clicks?.map((click) => (
-                    <div key={click.id} className="flex items-center justify-between p-3 bg-[#1E293B]/50 rounded-lg">
+                    <div key={click.id} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg">
                       <div>
                         <div className="text-white font-medium">@{click.username}</div>
-                        <div className="text-sm text-[#94A3B8]">{click.houseName}</div>
+                        <div className="text-sm text-slate-400">{click.houseName}</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-xs text-[#94A3B8]">
+                        <div className="text-xs text-slate-400">
                           {new Date(click.clickedAt).toLocaleTimeString()}
                         </div>
                       </div>
                     </div>
                   )) || (
-                    <div className="text-center text-[#94A3B8] py-4">
+                    <div className="text-center text-slate-400 py-4">
                       Nenhum clique recente
                     </div>
                   )}
@@ -398,33 +398,33 @@ export default function AdminDashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <Card className="bg-[#1C1F26] border-[#1E293B] shadow-lg rounded-2xl">
+            <Card className="bg-slate-800 border-slate-700 ">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-[#00C39A]" />
+                  <TrendingUp className="h-5 w-5 text-emerald-400" />
                   Últimas Conversões
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3 max-h-64 overflow-y-auto">
                   {recentActivity?.conversions?.map((conversion) => (
-                    <div key={conversion.id} className="flex items-center justify-between p-3 bg-[#1E293B]/50 rounded-lg">
+                    <div key={conversion.id} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg">
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="text-white font-medium">@{conversion.username}</span>
                           <Badge variant="outline" className="text-xs">{conversion.type}</Badge>
                         </div>
-                        <div className="text-sm text-[#94A3B8]">{conversion.houseName}</div>
+                        <div className="text-sm text-slate-400">{conversion.houseName}</div>
                       </div>
                       <div className="text-right">
-                        <div className="text-[#00C39A] font-bold">R$ {conversion.commission.toLocaleString()}</div>
-                        <div className="text-xs text-[#94A3B8]">
+                        <div className="text-emerald-400 font-bold">R$ {conversion.commission.toLocaleString()}</div>
+                        <div className="text-xs text-slate-400">
                           {new Date(conversion.convertedAt).toLocaleTimeString()}
                         </div>
                       </div>
                     </div>
                   )) || (
-                    <div className="text-center text-[#94A3B8] py-4">
+                    <div className="text-center text-slate-400 py-4">
                       Nenhuma conversão recente
                     </div>
                   )}
@@ -440,7 +440,7 @@ export default function AdminDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <Card className="bg-[#1C1F26] border-[#1E293B] shadow-lg rounded-2xl">
+          <Card className="bg-slate-800 border-slate-700 ">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <Award className="h-5 w-5 text-[#F59E0B]" />
@@ -451,11 +451,11 @@ export default function AdminDashboard() {
               <Table>
                 <TableHeader>
                   <TableRow className="border-[#334155]">
-                    <TableHead className="text-[#94A3B8]">Posição</TableHead>
-                    <TableHead className="text-[#94A3B8]">Afiliado</TableHead>
-                    <TableHead className="text-[#94A3B8]">Total Comissão</TableHead>
-                    <TableHead className="text-[#94A3B8]">Conversões</TableHead>
-                    <TableHead className="text-[#94A3B8]">Leads</TableHead>
+                    <TableHead className="text-slate-400">Posição</TableHead>
+                    <TableHead className="text-slate-400">Afiliado</TableHead>
+                    <TableHead className="text-slate-400">Total Comissão</TableHead>
+                    <TableHead className="text-slate-400">Conversões</TableHead>
+                    <TableHead className="text-slate-400">Leads</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -469,10 +469,10 @@ export default function AdminDashboard() {
                       <TableCell>
                         <div>
                           <div className="text-white font-medium">{affiliate.fullName}</div>
-                          <div className="text-[#94A3B8] text-sm">@{affiliate.username}</div>
+                          <div className="text-slate-400 text-sm">@{affiliate.username}</div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-[#00C39A] font-bold">
+                      <TableCell className="text-emerald-400 font-bold">
                         R$ {affiliate.totalCommission.toLocaleString()}
                       </TableCell>
                       <TableCell className="text-white">{affiliate.totalConversions}</TableCell>
@@ -480,7 +480,7 @@ export default function AdminDashboard() {
                     </TableRow>
                   )) || (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-[#94A3B8] py-4">
+                      <TableCell colSpan={5} className="text-center text-slate-400 py-4">
                         Nenhum afiliado encontrado
                       </TableCell>
                     </TableRow>
@@ -497,7 +497,7 @@ export default function AdminDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <Card className="bg-[#1C1F26] border-[#1E293B] shadow-lg rounded-2xl">
+          <Card className="bg-slate-800 border-slate-700 ">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <Building2 className="h-5 w-5 text-[#8B5CF6]" />
@@ -508,12 +508,12 @@ export default function AdminDashboard() {
               <Table>
                 <TableHeader>
                   <TableRow className="border-[#334155]">
-                    <TableHead className="text-[#94A3B8]">Casa</TableHead>
-                    <TableHead className="text-[#94A3B8]">Cliques</TableHead>
-                    <TableHead className="text-[#94A3B8]">Registros</TableHead>
-                    <TableHead className="text-[#94A3B8]">Depósitos</TableHead>
-                    <TableHead className="text-[#94A3B8]">Lucro Gerado</TableHead>
-                    <TableHead className="text-[#94A3B8]">Comissão Total</TableHead>
+                    <TableHead className="text-slate-400">Casa</TableHead>
+                    <TableHead className="text-slate-400">Cliques</TableHead>
+                    <TableHead className="text-slate-400">Registros</TableHead>
+                    <TableHead className="text-slate-400">Depósitos</TableHead>
+                    <TableHead className="text-slate-400">Lucro Gerado</TableHead>
+                    <TableHead className="text-slate-400">Comissão Total</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -523,16 +523,16 @@ export default function AdminDashboard() {
                       <TableCell className="text-white">{house.totalClicks}</TableCell>
                       <TableCell className="text-white">{house.totalRegistrations}</TableCell>
                       <TableCell className="text-white">{house.totalDeposits}</TableCell>
-                      <TableCell className="text-[#3B82F6] font-bold">
+                      <TableCell className="text-blue-400 font-bold">
                         R$ {house.totalProfit.toLocaleString()}
                       </TableCell>
-                      <TableCell className="text-[#00C39A] font-bold">
+                      <TableCell className="text-emerald-400 font-bold">
                         R$ {house.totalCommission.toLocaleString()}
                       </TableCell>
                     </TableRow>
                   )) || (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center text-[#94A3B8] py-4">
+                      <TableCell colSpan={6} className="text-center text-slate-400 py-4">
                         Nenhuma casa encontrada
                       </TableCell>
                     </TableRow>
@@ -549,10 +549,10 @@ export default function AdminDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
         >
-          <Card className="bg-[#1C1F26] border-[#1E293B] shadow-lg rounded-2xl">
+          <Card className="bg-slate-800 border-slate-700 ">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <LinkIcon className="h-5 w-5 text-[#10B981]" />
+                <LinkIcon className="h-5 w-5 text-green-400" />
                 Resumo de Eventos por Casa (Postbacks)
               </CardTitle>
             </CardHeader>
@@ -560,10 +560,10 @@ export default function AdminDashboard() {
               <Table>
                 <TableHeader>
                   <TableRow className="border-[#334155]">
-                    <TableHead className="text-[#94A3B8]">Casa</TableHead>
-                    <TableHead className="text-[#94A3B8]">Evento</TableHead>
-                    <TableHead className="text-[#94A3B8]">Total Recebido</TableHead>
-                    <TableHead className="text-[#94A3B8]">Último Recebido</TableHead>
+                    <TableHead className="text-slate-400">Casa</TableHead>
+                    <TableHead className="text-slate-400">Evento</TableHead>
+                    <TableHead className="text-slate-400">Total Recebido</TableHead>
+                    <TableHead className="text-slate-400">Último Recebido</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -574,13 +574,13 @@ export default function AdminDashboard() {
                         <Badge variant="outline" className="text-xs">{summary.evento}</Badge>
                       </TableCell>
                       <TableCell className="text-white">{summary.totalReceived}</TableCell>
-                      <TableCell className="text-[#94A3B8]">
+                      <TableCell className="text-slate-400">
                         {new Date(summary.lastReceived).toLocaleDateString()}
                       </TableCell>
                     </TableRow>
                   )) || (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center text-[#94A3B8] py-4">
+                      <TableCell colSpan={4} className="text-center text-slate-400 py-4">
                         Nenhum postback encontrado
                       </TableCell>
                     </TableRow>
@@ -597,7 +597,7 @@ export default function AdminDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
         >
-          <Card className="bg-[#1C1F26] border-[#1E293B] shadow-lg rounded-2xl">
+          <Card className="bg-slate-800 border-slate-700 ">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <Wallet className="h-5 w-5 text-[#F59E0B]" />
@@ -608,13 +608,13 @@ export default function AdminDashboard() {
               <Table>
                 <TableHeader>
                   <TableRow className="border-[#334155]">
-                    <TableHead className="text-[#94A3B8]">Afiliado</TableHead>
-                    <TableHead className="text-[#94A3B8]">Valor</TableHead>
-                    <TableHead className="text-[#94A3B8]">Status</TableHead>
-                    <TableHead className="text-[#94A3B8]">Método</TableHead>
-                    <TableHead className="text-[#94A3B8]">Chave Pix</TableHead>
-                    <TableHead className="text-[#94A3B8]">Transação</TableHead>
-                    <TableHead className="text-[#94A3B8]">Pago em</TableHead>
+                    <TableHead className="text-slate-400">Afiliado</TableHead>
+                    <TableHead className="text-slate-400">Valor</TableHead>
+                    <TableHead className="text-slate-400">Status</TableHead>
+                    <TableHead className="text-slate-400">Método</TableHead>
+                    <TableHead className="text-slate-400">Chave Pix</TableHead>
+                    <TableHead className="text-slate-400">Transação</TableHead>
+                    <TableHead className="text-slate-400">Pago em</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -623,25 +623,25 @@ export default function AdminDashboard() {
                       <TableCell>
                         <div>
                           <div className="text-white font-medium">{payment.affiliateName}</div>
-                          <div className="text-[#94A3B8] text-sm">@{payment.username}</div>
+                          <div className="text-slate-400 text-sm">@{payment.username}</div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-[#00C39A] font-bold">
+                      <TableCell className="text-emerald-400 font-bold">
                         R$ {payment.amount.toLocaleString()}
                       </TableCell>
                       <TableCell>
                         <StatusBadge status={payment.status} />
                       </TableCell>
                       <TableCell className="text-white">{payment.method}</TableCell>
-                      <TableCell className="text-[#94A3B8]">{payment.pixKey || '-'}</TableCell>
-                      <TableCell className="text-[#94A3B8]">{payment.transactionId || '-'}</TableCell>
-                      <TableCell className="text-[#94A3B8]">
+                      <TableCell className="text-slate-400">{payment.pixKey || '-'}</TableCell>
+                      <TableCell className="text-slate-400">{payment.transactionId || '-'}</TableCell>
+                      <TableCell className="text-slate-400">
                         {payment.paidAt ? new Date(payment.paidAt).toLocaleDateString() : '-'}
                       </TableCell>
                     </TableRow>
                   )) || (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center text-[#94A3B8] py-4">
+                      <TableCell colSpan={7} className="text-center text-slate-400 py-4">
                         Nenhum pagamento encontrado
                       </TableCell>
                     </TableRow>
