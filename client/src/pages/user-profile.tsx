@@ -88,10 +88,31 @@ export default function UserProfile() {
     queryKey: ['/api/user/sessions'],
   });
 
+  // Initialize profile data when user profile is loaded
+  useEffect(() => {
+    if (userProfile && Object.keys(profileData).length === 0) {
+      setProfileData({
+        fullName: userProfile.fullName,
+        email: userProfile.email,
+        phone: userProfile.phone,
+        cpf: userProfile.cpf,
+        pixKeyType: userProfile.pixKeyType,
+        pixKeyValue: userProfile.pixKeyValue
+      });
+    }
+  }, [userProfile, profileData]);
+
   // Update profile mutation
   const updateProfileMutation = useMutation({
-    mutationFn: (data: Partial<UserProfile>) => 
-      apiRequest('/api/user/profile', { method: 'PUT', body: data }),
+    mutationFn: async (data: Partial<UserProfile>) => {
+      const response = await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Failed to update profile');
+      return response.json();
+    },
     onSuccess: () => {
       toast({
         title: "✅ Alterações salvas com sucesso!",
@@ -111,8 +132,15 @@ export default function UserProfile() {
 
   // Update password mutation
   const updatePasswordMutation = useMutation({
-    mutationFn: (data: typeof passwordData) => 
-      apiRequest('/api/user/password', { method: 'PUT', body: data }),
+    mutationFn: async (data: typeof passwordData) => {
+      const response = await fetch('/api/user/password', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Failed to update password');
+      return response.json();
+    },
     onSuccess: () => {
       toast({
         title: "✅ Senha alterada com sucesso!",
@@ -132,8 +160,15 @@ export default function UserProfile() {
 
   // Update PIX data mutation
   const updatePixMutation = useMutation({
-    mutationFn: (data: { pixKeyType: string; pixKeyValue: string }) => 
-      apiRequest('/api/user/pix', { method: 'PUT', body: data }),
+    mutationFn: async (data: { pixKeyType: string; pixKeyValue: string }) => {
+      const response = await fetch('/api/user/pix', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Failed to update PIX data');
+      return response.json();
+    },
     onSuccess: () => {
       toast({
         title: "✅ Dados de pagamento atualizados!",
@@ -153,7 +188,14 @@ export default function UserProfile() {
 
   // Terminate sessions mutation
   const terminateSessionsMutation = useMutation({
-    mutationFn: () => apiRequest('/api/user/sessions/terminate', { method: 'POST' }),
+    mutationFn: async () => {
+      const response = await fetch('/api/user/sessions/terminate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Failed to terminate sessions');
+      return response.json();
+    },
     onSuccess: () => {
       toast({
         title: "Sessões encerradas",
