@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLogout } from "@/hooks/use-auth";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { BarChart3, Users, Building, Link2, Webhook, DollarSign, PieChart, Settings, LogOut, Menu, X, ChevronLeft, ChevronRight, Activity } from "lucide-react";
+import { BarChart3, Users, Building, Link2, Webhook, DollarSign, PieChart, Settings, LogOut, Menu, X, ChevronLeft, ChevronRight, Activity, UserCheck } from "lucide-react";
 import logoPath from "@assets/Afiliados Bet positivo.png";
 
 interface AdminSidebarProps {
@@ -19,6 +19,7 @@ export function AdminSidebar({ currentPage, onPageChange }: AdminSidebarProps) {
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
     { id: "houses", label: "Administração de Casas", icon: Building },
     { id: "manage", label: "Administração de Afiliados", icon: Users },
+    { id: "leads", label: "Leads", icon: UserCheck },
     { id: "gerador-de-postbacks", label: "Gerador de Postbacks", icon: Webhook },
     { id: "logs-postbacks", label: "Logs de Postbacks", icon: Activity },
     { id: "admin-settings", label: "Configurações Avançadas", icon: Settings },
