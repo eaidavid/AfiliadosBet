@@ -868,7 +868,7 @@ export default function SimpleLanding() {
 
                     {/* O que você PODE fazer */}
                     <Card className="bg-gradient-to-br from-green-900/30 to-emerald-800/20 border-green-500/30">
-                      <CardContent className="p-8">
+                      <CardContent className="p-4 sm:p-6 lg:p-8">
                         <div className="flex items-center mb-6">
                           <div className="p-3 bg-green-500/20 rounded-full mr-4">
                             <span className="text-2xl">✅</span>
