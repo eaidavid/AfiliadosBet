@@ -72,16 +72,54 @@ function requireAffiliate(req: any, res: any, next: any) {
 export async function registerRoutes(app: express.Application) {
   
   // Auth routes
-  app.post("/api/auth/login", passport.authenticate('local'), (req, res) => {
-    res.json({ 
-      success: true, 
-      user: { 
-        id: (req.user as any).id, 
-        email: (req.user as any).email, 
-        role: (req.user as any).role,
-        fullName: (req.user as any).fullName 
-      } 
-    });
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        return res.status(400).json({ error: "Email e senha são obrigatórios" });
+      }
+
+      // Find user by email or username
+      const [user] = await db
+        .select()
+        .from(schema.users)
+        .where(or(
+          eq(schema.users.email, email),
+          eq(schema.users.username, email)
+        ));
+
+      if (!user) {
+        return res.status(401).json({ error: "Credenciais inválidas" });
+      }
+
+      // Verify password
+      const isValid = await bcrypt.compare(password, user.password);
+      if (!isValid) {
+        return res.status(401).json({ error: "Credenciais inválidas" });
+      }
+
+      // Create session manually
+      req.login(user, (err) => {
+        if (err) {
+          console.error("Login error:", err);
+          return res.status(500).json({ error: "Erro interno do servidor" });
+        }
+
+        res.json({ 
+          success: true, 
+          user: { 
+            id: user.id, 
+            email: user.email, 
+            role: user.role,
+            fullName: user.fullName 
+          } 
+        });
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
   });
 
   app.post("/api/auth/logout", (req, res) => {
