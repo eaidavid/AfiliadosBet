@@ -15,7 +15,7 @@ export default function AdminPanelToggle() {
   // Só mostra o botão para administradores
   if (!isAdmin) return null;
 
-  const isOnAdminPanel = location === "/admin";
+  const isOnAdminPanel = location.startsWith("/admin");
 
   const handleToggle = () => {
     if (isOnAdminPanel) {
