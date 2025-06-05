@@ -17,7 +17,7 @@ import MyLinks from "@/pages/my-links";
 import AffiliateReports from "@/pages/affiliate-reports";
 import UserProfile from "@/pages/user-profile";
 import AffiliatePayments from "@/pages/affiliate-payments";
-import AdminDashboard from "@/pages/admin-dashboard-new";
+import AdminDashboard from "@/pages/admin-dashboard-responsive";
 import AdminLeadsManagement from "@/pages/admin-leads-management";
 import AdminCasas from "@/pages/admin-casas";
 

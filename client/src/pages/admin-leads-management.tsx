@@ -201,7 +201,7 @@ const LeadDetailDialog = ({ customerId, trigger }: { customerId: string; trigger
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-[#00C39A] font-bold">R$ {event.commission.toLocaleString()}</div>
+                        <div className="text-[#00C39A] font-bold">R$ {(event.commission || 0).toLocaleString()}</div>
                         <div className="text-xs text-[#94A3B8]">
                           {new Date(event.convertedAt).toLocaleDateString()}
                         </div>
