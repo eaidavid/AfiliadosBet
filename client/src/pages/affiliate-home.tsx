@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { StandardLayout } from '@/components/StandardLayout';
+import { AffiliateSidebar } from '@/components/affiliate-sidebar';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import {
@@ -167,8 +167,9 @@ export default function AffiliateHome() {
   ) || [];
 
   return (
-    <StandardLayout>
-      <div className="min-h-screen bg-slate-950 text-white p-6">
+    <div className="min-h-screen bg-slate-950 text-white">
+      <AffiliateSidebar />
+      <div className="ml-72 p-6">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Header */}
           <div className="space-y-4">
@@ -583,6 +584,6 @@ export default function AffiliateHome() {
           </Tabs>
         </div>
       </div>
-    </StandardLayout>
+    </div>
   );
 }

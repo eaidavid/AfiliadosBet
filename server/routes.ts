@@ -45,6 +45,7 @@ function requireAuth(req: any, res: any, next: any) {
   if (!req.session?.user) {
     return res.status(401).json({ message: "Authentication required" });
   }
+  req.user = req.session.user;
   next();
 }
 
@@ -65,6 +66,7 @@ function requireAdmin(req: any, res: any, next: any) {
     return res.status(403).json({ message: "Admin access required" });
   }
   
+  req.user = req.session.user;
   console.log("Admin access autorizado");
   next();
 }
