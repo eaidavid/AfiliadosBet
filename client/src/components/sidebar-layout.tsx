@@ -73,13 +73,15 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
 
   return (
     <div className="flex h-screen bg-[#101D33] overflow-hidden">
-      {/* Mobile Menu Button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 left-4 z-[60] sm:hidden bg-[#0E1B2B]/90 backdrop-blur-sm border border-slate-700/50 rounded-xl p-3 text-white hover:bg-[#0E1B2B] transition-all duration-200 shadow-lg"
-      >
-        {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </button>
+      {/* Mobile Menu Button - Only show when menu is closed */}
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="fixed top-4 left-4 z-[60] sm:hidden bg-[#0E1B2B]/90 backdrop-blur-sm border border-slate-700/50 rounded-xl p-3 text-white hover:bg-[#0E1B2B] transition-all duration-200 shadow-lg"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+      )}
 
       {/* Backdrop Overlay */}
       {isOpen && (
@@ -101,16 +103,27 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="p-6 border-b border-slate-800/50">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">AB</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">AB</span>
+                </div>
+                <div>
+                  <h2 className="text-white font-semibold text-lg">AfiliadosBet</h2>
+                  <p className="text-slate-400 text-xs">
+                    {isOnAdminRoute ? 'Painel Admin' : 'Painel Afiliado'}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-white font-semibold text-lg">AfiliadosBet</h2>
-                <p className="text-slate-400 text-xs">
-                  {isOnAdminRoute ? 'Painel Admin' : 'Painel Afiliado'}
-                </p>
-              </div>
+              {/* Close button for mobile - Only show when menu is open */}
+              {isOpen && (
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="sm:hidden bg-slate-800/50 hover:bg-slate-700/50 rounded-lg p-2 text-slate-300 hover:text-white transition-all duration-200"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              )}
             </div>
           </div>
 
