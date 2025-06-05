@@ -745,21 +745,29 @@ export default function PostbackGeneratorProfessional() {
                       <SelectValue placeholder="Selecione um tipo de evento" />
                     </SelectTrigger>
                     <SelectContent className="bg-slate-800 border-slate-600">
-                      {eventTypes && eventTypes.length > 0 && eventTypes
-                        .filter((eventType: string) => {
-                          if (!manualSelectedHouse) return false;
-                          return postbacks?.some((p: RegisteredPostback) => 
+                      {manualSelectedHouse && postbacks && Array.isArray(postbacks) && 
+                        postbacks
+                          .filter((p: RegisteredPostback) => 
                             p && 
                             p.house_id?.toString() === manualSelectedHouse && 
-                            p.event_type === eventType &&
-                            p.is_active
-                          );
-                        })
-                        .map((eventType: string) => (
-                          <SelectItem key={eventType} value={eventType} className="text-white hover:bg-slate-700">
-                            ⚡ {eventType}
-                          </SelectItem>
-                        ))}
+                            p.is_active &&
+                            p.event_type
+                          )
+                          .map((p: RegisteredPostback) => p.event_type)
+                          .filter((eventType: string, index: number, arr: string[]) => 
+                            arr.indexOf(eventType) === index
+                          )
+                          .map((eventType: string) => (
+                            <SelectItem key={eventType} value={eventType} className="text-white hover:bg-slate-700">
+                              ⚡ {eventType}
+                            </SelectItem>
+                          ))
+                      }
+                      {(!manualSelectedHouse || !postbacks || postbacks.length === 0) && (
+                        <SelectItem value="no-events" disabled className="text-slate-400">
+                          Selecione uma casa primeiro
+                        </SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
