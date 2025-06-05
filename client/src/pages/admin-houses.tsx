@@ -414,8 +414,7 @@ export default function AdminHouses() {
           window.location.href = "/admin/settings";
         }
       }} />
-      
-      <div className="flex-1 p-2 sm:p-4 lg:p-8 ml-0 lg:ml-72 overflow-x-hidden">
+      <div className="flex-1 p-2 sm:p-4 lg:p-8 lg:ml-72 overflow-x-hidden ml-[13px] mr-[13px] mt-[62px] mb-[62px]">
         <div className="max-w-full lg:max-w-[1400px] mx-auto space-y-4 sm:space-y-6 lg:space-y-8">
           {/* Page Header */}
           <motion.div
@@ -784,7 +783,6 @@ export default function AdminHouses() {
           </motion.div>
         </div>
       </div>
-
       {/* Form Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-[95vw] lg:max-w-4xl max-h-[90vh] overflow-y-auto mx-4 lg:mx-0">
@@ -1157,7 +1155,6 @@ export default function AdminHouses() {
           </Form>
         </DialogContent>
       </Dialog>
-
       {/* Enhanced View Details Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -1377,7 +1374,6 @@ export default function AdminHouses() {
           )}
         </DialogContent>
       </Dialog>
-
       {/* Postback Management Modal */}
       <Dialog open={isPostbackModalOpen} onOpenChange={setIsPostbackModalOpen}>
         <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-4xl max-h-[80vh] overflow-y-auto">
@@ -1519,7 +1515,6 @@ export default function AdminHouses() {
           </div>
         </DialogContent>
       </Dialog>
-
     </div>
   );
 }
