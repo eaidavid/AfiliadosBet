@@ -181,7 +181,7 @@ export default function AdminSettingsEnhanced() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-slate-950">
       <AdminSidebar currentPage="admin-settings" onPageChange={(page) => {
         if (page === "dashboard") {
           window.location.href = "/admin";
@@ -197,8 +197,8 @@ export default function AdminSettingsEnhanced() {
           window.location.href = "/admin/settings";
         }
       }} />
-      <div className="lg:ml-72 px-4 md:px-6 lg:px-8 max-w-[1600px] mx-auto transition-all duration-300 pt-[62px] pb-[62px]"
-           style={{ paddingTop: 'max(1.5rem, env(safe-area-inset-top))' }}>
+      <div className="ml-20">
+        <main className="p-4 lg:p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -834,6 +834,7 @@ export default function AdminSettingsEnhanced() {
             </div>
           </TabsContent>
         </Tabs>
+        </main>
       </div>
     </div>
   );

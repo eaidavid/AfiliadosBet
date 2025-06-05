@@ -398,7 +398,7 @@ export default function AdminHouses() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-slate-950">
       <AdminSidebar currentPage="houses" onPageChange={(page) => {
         if (page === "dashboard") {
           window.location.href = "/admin";
@@ -414,7 +414,8 @@ export default function AdminHouses() {
           window.location.href = "/admin/settings";
         }
       }} />
-      <div className="flex-1 p-2 sm:p-4 lg:p-8 lg:ml-72 overflow-x-hidden ml-[13px] mr-[13px] mt-[62px] mb-[62px]">
+      <div className="ml-20">
+        <main className="p-4 lg:p-6 space-y-6">
         <div className="max-w-full lg:max-w-[1400px] mx-auto space-y-4 sm:space-y-6 lg:space-y-8">
           {/* Page Header */}
           <motion.div
@@ -1515,6 +1516,8 @@ export default function AdminHouses() {
           </div>
         </DialogContent>
       </Dialog>
+        </main>
+      </div>
     </div>
   );
 }
