@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "@/hooks/use-toast";
-import { Copy, Send, Download, Filter, Zap, Globe, Code, CheckCircle, XCircle, AlertTriangle, RefreshCw, Settings, Clock, ChevronDown, ChevronRight, ExternalLink, Building2, Activity } from "lucide-react";
+import { Copy, Send, Download, Filter, Zap, Globe, Code, CheckCircle, XCircle, AlertTriangle, RefreshCw, Settings, Clock, ChevronDown, ChevronRight, ExternalLink, Building2, Activity, Link } from "lucide-react";
 import AdminSidebar from "@/components/admin/sidebar";
 
 interface BettingHouse {
@@ -470,6 +470,102 @@ export default function PostbackGeneratorProfessional() {
             </CardContent>
           </Card>
 
+          {/* Dynamic Test Links Section */}
+          <Card className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border-purple-500/50">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Link className="w-5 h-5 text-purple-400" />
+                Links Dinâmicos de Teste
+              </CardTitle>
+              <CardDescription className="text-purple-200">
+                Links prontos para teste com parâmetros preenchidos automaticamente
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {filteredPostbacks && filteredPostbacks.length > 0 ? (
+                <div className="space-y-4">
+                  {filteredPostbacks.map((postback: RegisteredPostback) => (
+                    <div key={`dynamic-link-${postback.id}`} className="bg-slate-800/60 p-4 rounded-lg border border-slate-600 hover:border-purple-500/50 transition-all">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <Badge variant={postback.is_active ? "default" : "secondary"} className="text-xs">
+                            {postback.is_active ? "✓ Ativo" : "⚠ Inativo"}
+                          </Badge>
+                          <span className="font-medium text-white">{postback.name}</span>
+                          <span className="text-blue-400 text-sm">• {postback.house_name}</span>
+                          <span className="text-purple-400 text-sm">• {postback.event_type}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div>
+                          <Label className="text-xs text-slate-400 mb-1 block">Link Dinâmico Gerado:</Label>
+                          <div className="bg-slate-900/80 p-3 rounded-lg border border-slate-700">
+                            <code className="text-green-300 text-sm font-mono break-all leading-relaxed">
+                              {generateTestUrl(postback)}
+                            </code>
+                          </div>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            onClick={() => {
+                              const testUrl = generateTestUrl(postback);
+                              navigator.clipboard.writeText(testUrl);
+                              toast({ 
+                                title: "✓ Link copiado!", 
+                                description: `Link de teste do ${postback.name} copiado` 
+                              });
+                            }}
+                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            <Copy className="w-3 h-3 mr-1" />
+                            Copiar Link
+                          </Button>
+                          
+                          <Button
+                            onClick={() => window.open(generateTestUrl(postback), '_blank')}
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                          >
+                            <ExternalLink className="w-3 h-3 mr-1" />
+                            Testar Agora
+                          </Button>
+                          
+                          <Button
+                            onClick={() => handleTest(postback)}
+                            size="sm"
+                            variant="outline"
+                            className="border-purple-500 text-purple-400 hover:bg-purple-600 hover:text-white"
+                          >
+                            <Settings className="w-3 h-3 mr-1" />
+                            Configurar Parâmetros
+                          </Button>
+                        </div>
+                        
+                        {detectParameters(postback.url).length > 0 && (
+                          <div className="p-2 bg-slate-700/50 rounded text-xs">
+                            <span className="text-slate-400">Parâmetros detectados: </span>
+                            <span className="text-yellow-300 font-medium">
+                              {detectParameters(postback.url).join(', ')}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <AlertTriangle className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-white mb-2">Nenhum link dinâmico disponível</h3>
+                  <p className="text-slate-400">Configure postbacks primeiro para gerar links de teste</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Available Postbacks */}
           <Card className="bg-slate-900/50 border-slate-700">
             <CardHeader>
@@ -506,6 +602,43 @@ export default function PostbackGeneratorProfessional() {
                         <p className="text-xs text-slate-300 font-mono bg-slate-900/50 p-2 rounded break-all mt-1 max-h-20 overflow-y-auto">
                           {postback.url}
                         </p>
+                      </div>
+
+                      {/* Dynamic Test Link Preview */}
+                      <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 p-3 rounded-lg border border-blue-500/30">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Link className="w-4 h-4 text-blue-400" />
+                          <Label className="text-xs text-blue-400 font-medium">Link de Teste Dinâmico</Label>
+                        </div>
+                        <div className="bg-slate-900/80 p-2 rounded border border-slate-700 mb-2">
+                          <p className="text-xs text-green-300 font-mono break-all">
+                            {generateTestUrl(postback)}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => {
+                              const testUrl = generateTestUrl(postback);
+                              navigator.clipboard.writeText(testUrl);
+                              toast({ title: "Copiado!", description: "Link de teste copiado para área de transferência" });
+                            }}
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 h-7 text-xs bg-blue-600 border-blue-500 text-white hover:bg-blue-700"
+                          >
+                            <Copy className="w-3 h-3 mr-1" />
+                            Copiar
+                          </Button>
+                          <Button
+                            onClick={() => window.open(generateTestUrl(postback), '_blank')}
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 h-7 text-xs bg-green-600 border-green-500 text-white hover:bg-green-700"
+                          >
+                            <ExternalLink className="w-3 h-3 mr-1" />
+                            Testar
+                          </Button>
+                        </div>
                       </div>
                       
                       {postback.description && (
