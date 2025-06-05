@@ -326,13 +326,13 @@ export async function registerRoutes(app: express.Application) {
           ilike(schema.users.email, `%${search}%`),
           ilike(schema.users.fullName, `%${search}%`)
         );
-        finalCondition = and(finalCondition, searchCondition);
+        finalCondition = and(finalCondition, searchCondition!);
       }
       
       if (status === 'active') {
-        finalCondition = and(finalCondition, eq(schema.users.isActive, true));
+        finalCondition = and(finalCondition, eq(schema.users.isActive, true))!;
       } else if (status === 'inactive') {
-        finalCondition = and(finalCondition, eq(schema.users.isActive, false));
+        finalCondition = and(finalCondition, eq(schema.users.isActive, false))!;
       }
       
       if (date) {
@@ -342,9 +342,9 @@ export async function registerRoutes(app: express.Application) {
         
         finalCondition = and(
           finalCondition,
-          gte(schema.users.createdAt, targetDate),
-          lt(schema.users.createdAt, nextDay)
-        );
+          gte(schema.users.createdAt, targetDate)!,
+          lt(schema.users.createdAt, nextDay)!
+        )!;
       }
       
       const users = await db
@@ -357,7 +357,7 @@ export async function registerRoutes(app: express.Application) {
           createdAt: schema.users.createdAt,
         })
         .from(schema.users)
-        .where(whereCondition)
+        .where(finalCondition)
         .orderBy(desc(schema.users.createdAt));
       
       // Para cada usuário, buscar estatísticas
