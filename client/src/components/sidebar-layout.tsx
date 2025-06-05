@@ -25,9 +25,10 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
   const logout = useLogout();
 
   const isAdmin = user?.role === 'admin';
+  const isOnAdminRoute = location.startsWith('/admin');
 
-  // Menu items based on user role
-  const menuItems: MenuItem[] = isAdmin ? [
+  // Menu items based on current route context (not just user role)
+  const menuItems: MenuItem[] = isOnAdminRoute ? [
     { icon: BarChart3, label: "Dashboard", path: "/admin" },
     { icon: Building, label: "Casas", path: "/admin/houses" },
     { icon: Users, label: "Afiliados", path: "/admin/manage" },
@@ -107,7 +108,7 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
               <div>
                 <h2 className="text-white font-semibold text-lg">AfiliadosBet</h2>
                 <p className="text-slate-400 text-xs">
-                  {isAdmin ? 'Painel Admin' : 'Painel Afiliado'}
+                  {isOnAdminRoute ? 'Painel Admin' : 'Painel Afiliado'}
                 </p>
               </div>
             </div>
