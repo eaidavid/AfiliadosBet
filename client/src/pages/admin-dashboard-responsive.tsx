@@ -142,34 +142,19 @@ export default function AdminDashboardResponsive() {
   const [currentPage, setCurrentPage] = useState("dashboard");
   const [timeRange, setTimeRange] = useState("7d");
 
-  // Data fetching queries
-  const { data: systemOverview, isLoading: isLoadingOverview } = useQuery<SystemOverview>({
-    queryKey: ['/api/admin/system-overview'],
+  // Data fetching queries - usando apenas dados reais do banco
+  const { data: systemStats, isLoading: isLoadingStats } = useQuery({
+    queryKey: ['/api/stats/admin'],
     refetchInterval: 30000,
   });
 
-  const { data: recentActivity, isLoading: isLoadingActivity } = useQuery<RecentActivity>({
-    queryKey: ['/api/admin/recent-activity'],
-    refetchInterval: 15000,
-  });
-
-  const { data: topAffiliates, isLoading: isLoadingAffiliates } = useQuery<TopAffiliate[]>({
-    queryKey: ['/api/admin/top-affiliates'],
+  const { data: affiliates, isLoading: isLoadingAffiliates } = useQuery({
+    queryKey: ['/api/admin/affiliates'],
     refetchInterval: 30000,
   });
 
-  const { data: housePerformance, isLoading: isLoadingHouses } = useQuery<HousePerformance[]>({
-    queryKey: ['/api/admin/house-performance'],
-    refetchInterval: 30000,
-  });
-
-  const { data: postbackSummary, isLoading: isLoadingPostbacks } = useQuery<PostbackSummary[]>({
-    queryKey: ['/api/admin/postback-summary'],
-    refetchInterval: 30000,
-  });
-
-  const { data: recentPayments, isLoading: isLoadingPayments } = useQuery<RecentPayment[]>({
-    queryKey: ['/api/admin/recent-payments'],
+  const { data: bettingHouses } = useQuery({
+    queryKey: ['/api/admin/betting-houses'],
     refetchInterval: 30000,
   });
 
@@ -216,7 +201,7 @@ export default function AdminDashboardResponsive() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-slate-400">Afiliados Ativos</p>
-                      <p className="text-2xl font-bold text-white">{systemOverview?.activeAffiliates || 0}</p>
+                      <p className="text-2xl font-bold text-white">{systemStats?.totalAffiliates || 0}</p>
                     </div>
                     <Users className="h-8 w-8 text-blue-400" />
                   </div>
@@ -234,7 +219,7 @@ export default function AdminDashboardResponsive() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-slate-400">Casas Ativas</p>
-                      <p className="text-2xl font-bold text-white">{systemOverview?.activeHouses || 0}</p>
+                      <p className="text-2xl font-bold text-white">{systemStats?.totalHouses || 0}</p>
                     </div>
                     <Building2 className="h-8 w-8 text-green-400" />
                   </div>
@@ -251,8 +236,8 @@ export default function AdminDashboardResponsive() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-slate-400">Total Cliques</p>
-                      <p className="text-2xl font-bold text-white">{systemOverview?.totalClicks || 0}</p>
+                      <p className="text-sm text-slate-400">Total Links</p>
+                      <p className="text-2xl font-bold text-white">{systemStats?.totalLinks || 0}</p>
                     </div>
                     <MousePointer className="h-8 w-8 text-purple-400" />
                   </div>
@@ -270,7 +255,7 @@ export default function AdminDashboardResponsive() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-slate-400">Conversões</p>
-                      <p className="text-2xl font-bold text-white">{systemOverview?.totalConversions || 0}</p>
+                      <p className="text-2xl font-bold text-white">{systemStats?.totalConversions || 0}</p>
                     </div>
                     <TrendingUp className="h-8 w-8 text-emerald-400" />
                   </div>
