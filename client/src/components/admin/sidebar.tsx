@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLogout } from "@/hooks/use-auth";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { BarChart3, Users, Building, Link2, Webhook, DollarSign, PieChart, Settings, LogOut, Menu, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { BarChart3, Users, Building, Link2, Webhook, DollarSign, PieChart, Settings, LogOut, Menu, X, ChevronLeft, ChevronRight, Activity } from "lucide-react";
 import logoPath from "@assets/Afiliados Bet positivo.png";
 
 interface AdminSidebarProps {
@@ -20,7 +20,7 @@ export default function AdminSidebar({ currentPage, onPageChange }: AdminSidebar
     { id: "houses", label: "Administração de Casas", icon: Building },
     { id: "manage", label: "Administração de Afiliados", icon: Users },
     { id: "gerador-de-postbacks", label: "Gerador de Postbacks", icon: Webhook },
-    { id: "postbacks", label: "Logs de Postbacks", icon: Webhook },
+    { id: "logs-postbacks", label: "Logs de Postbacks", icon: Activity },
     { id: "settings", label: "Configurações", icon: Settings },
   ];
 
@@ -39,6 +39,8 @@ export default function AdminSidebar({ currentPage, onPageChange }: AdminSidebar
       window.location.href = "/admin/manage";
     } else if (page === "gerador-de-postbacks") {
       window.location.href = "/admin/postback-generator";
+    } else if (page === "logs-postbacks") {
+      window.location.href = "/admin/postback-logs";
     } else if (page === "leads") {
       window.location.href = "/admin/leads";
     }

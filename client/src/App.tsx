@@ -18,6 +18,7 @@ import AdminCasas from "@/pages/admin-casas";
 import AdminHouses from "@/pages/admin-houses";
 import AdminManage from "@/pages/admin-manage";
 import PostbackGeneratorProfessional from "@/pages/postback-generator-professional";
+import PostbackLogs from "@/pages/postback-logs";
 import NotFound from "@/pages/not-found";
 import AdminPanelToggle from "@/components/admin-panel-toggle";
 
