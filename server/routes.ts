@@ -2322,6 +2322,220 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // Admin dashboard system overview
+  app.get("/api/admin/system-overview", requireAdmin, async (req: any, res) => {
+    try {
+      // Count active affiliates
+      const [activeAffiliatesResult] = await db.select({ count: sql<number>`count(*)` })
+        .from(schema.users)
+        .where(and(eq(schema.users.role, 'user'), eq(schema.users.isActive, true)));
+
+      // Count active houses
+      const [activeHousesResult] = await db.select({ count: sql<number>`count(*)` })
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.isActive, true));
+
+      // Count total affiliate links
+      const [totalLinksResult] = await db.select({ count: sql<number>`count(*)` })
+        .from(schema.affiliateLinks);
+
+      // Count total conversions
+      const [totalConversionsResult] = await db.select({ count: sql<number>`count(*)` })
+        .from(schema.conversions);
+
+      // Count total clicks
+      const [totalClicksResult] = await db.select({ count: sql<number>`count(*)` })
+        .from(schema.clickTracking);
+
+      // Calculate total commissions
+      const [totalCommissionsResult] = await db.select({ 
+        total: sql<string>`sum(${schema.conversions.commission})` 
+      }).from(schema.conversions);
+
+      res.json({
+        activeAffiliates: Number(activeAffiliatesResult.count || 0),
+        activeHouses: Number(activeHousesResult.count || 0),
+        totalAffiliateLinks: Number(totalLinksResult.count || 0),
+        totalConversions: Number(totalConversionsResult.count || 0),
+        totalClicks: Number(totalClicksResult.count || 0),
+        totalPaidCommissions: parseFloat(totalCommissionsResult.total || '0'),
+        pendingCommissions: 0,
+        totalProfit: parseFloat(totalCommissionsResult.total || '0')
+      });
+    } catch (error) {
+      console.error("Erro ao buscar overview do sistema:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Admin recent activity
+  app.get("/api/admin/recent-activity", requireAdmin, async (req: any, res) => {
+    try {
+      // Get recent postbacks
+      const recentPostbacks = await db.select({
+        id: schema.postbackLogs.id,
+        casa: schema.bettingHouses.name,
+        evento: schema.postbackLogs.eventType,
+        valor: schema.postbackLogs.value,
+        status: schema.postbackLogs.status,
+        timestamp: schema.postbackLogs.createdAt
+      })
+        .from(schema.postbackLogs)
+        .leftJoin(schema.bettingHouses, eq(schema.postbackLogs.houseId, schema.bettingHouses.id))
+        .orderBy(desc(schema.postbackLogs.createdAt))
+        .limit(5);
+
+      // Get recent clicks
+      const recentClicks = await db.select({
+        id: schema.clickTracking.id,
+        casa: schema.bettingHouses.name,
+        timestamp: schema.clickTracking.clickedAt,
+        ip: schema.clickTracking.ipAddress
+      })
+        .from(schema.clickTracking)
+        .leftJoin(schema.affiliateLinks, eq(schema.clickTracking.affiliateLinkId, schema.affiliateLinks.id))
+        .leftJoin(schema.bettingHouses, eq(schema.affiliateLinks.houseId, schema.bettingHouses.id))
+        .orderBy(desc(schema.clickTracking.clickedAt))
+        .limit(5);
+
+      // Get recent conversions
+      const recentConversions = await db.select({
+        id: schema.conversions.id,
+        casa: schema.bettingHouses.name,
+        tipo: schema.conversions.type,
+        valor: schema.conversions.amount,
+        comissao: schema.conversions.commission,
+        timestamp: schema.conversions.convertedAt
+      })
+        .from(schema.conversions)
+        .leftJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
+        .orderBy(desc(schema.conversions.convertedAt))
+        .limit(5);
+
+      res.json({
+        postbacks: recentPostbacks,
+        clicks: recentClicks,
+        conversions: recentConversions
+      });
+    } catch (error) {
+      console.error("Erro ao buscar atividade recente:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Admin top affiliates
+  app.get("/api/admin/top-affiliates", requireAdmin, async (req: any, res) => {
+    try {
+      const topAffiliates = await db.select({
+        id: schema.users.id,
+        fullName: schema.users.fullName,
+        username: schema.users.username,
+        totalCommission: sql<string>`sum(${schema.conversions.commission})`,
+        totalConversions: sql<number>`count(${schema.conversions.id})`,
+        totalLeads: sql<number>`count(${schema.conversions.id})`
+      })
+        .from(schema.users)
+        .leftJoin(schema.conversions, eq(schema.users.id, schema.conversions.userId))
+        .where(eq(schema.users.role, 'user'))
+        .groupBy(schema.users.id, schema.users.fullName, schema.users.username)
+        .orderBy(desc(sql<string>`sum(${schema.conversions.commission})`))
+        .limit(10);
+
+      res.json(topAffiliates.map(affiliate => ({
+        ...affiliate,
+        totalCommission: parseFloat(affiliate.totalCommission || '0'),
+        totalConversions: Number(affiliate.totalConversions || 0),
+        totalLeads: Number(affiliate.totalLeads || 0)
+      })));
+    } catch (error) {
+      console.error("Erro ao buscar top afiliados:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Admin house performance
+  app.get("/api/admin/house-performance", requireAdmin, async (req: any, res) => {
+    try {
+      const housePerformance = await db.select({
+        houseName: schema.bettingHouses.name,
+        totalClicks: sql<number>`count(distinct ${schema.clickTracking.id})`,
+        totalRegistrations: sql<number>`count(distinct case when ${schema.conversions.type} = 'registration' then ${schema.conversions.id} end)`,
+        totalDeposits: sql<number>`count(distinct case when ${schema.conversions.type} = 'deposit' then ${schema.conversions.id} end)`,
+        totalProfit: sql<string>`sum(${schema.conversions.commission})`,
+        totalCommission: sql<string>`sum(${schema.conversions.commission})`
+      })
+        .from(schema.bettingHouses)
+        .leftJoin(schema.affiliateLinks, eq(schema.bettingHouses.id, schema.affiliateLinks.houseId))
+        .leftJoin(schema.clickTracking, eq(schema.affiliateLinks.id, schema.clickTracking.affiliateLinkId))
+        .leftJoin(schema.conversions, eq(schema.bettingHouses.id, schema.conversions.houseId))
+        .groupBy(schema.bettingHouses.id, schema.bettingHouses.name)
+        .orderBy(desc(sql<string>`sum(${schema.conversions.commission})`));
+
+      res.json(housePerformance.map(house => ({
+        ...house,
+        totalClicks: Number(house.totalClicks || 0),
+        totalRegistrations: Number(house.totalRegistrations || 0),
+        totalDeposits: Number(house.totalDeposits || 0),
+        totalProfit: parseFloat(house.totalProfit || '0'),
+        totalCommission: parseFloat(house.totalCommission || '0')
+      })));
+    } catch (error) {
+      console.error("Erro ao buscar performance das casas:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Admin postback summary
+  app.get("/api/admin/postback-summary", requireAdmin, async (req: any, res) => {
+    try {
+      const postbackSummary = await db.select({
+        casa: schema.bettingHouses.name,
+        evento: schema.postbackLogs.eventType,
+        totalReceived: sql<number>`count(*)`,
+        lastReceived: sql<string>`max(${schema.postbackLogs.createdAt})`
+      })
+        .from(schema.postbackLogs)
+        .leftJoin(schema.bettingHouses, eq(schema.postbackLogs.houseId, schema.bettingHouses.id))
+        .groupBy(schema.bettingHouses.name, schema.postbackLogs.eventType)
+        .orderBy(desc(sql<number>`count(*)`));
+
+      res.json(postbackSummary.map(item => ({
+        ...item,
+        totalReceived: Number(item.totalReceived || 0)
+      })));
+    } catch (error) {
+      console.error("Erro ao buscar resumo de postbacks:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Admin recent payments
+  app.get("/api/admin/recent-payments", requireAdmin, async (req: any, res) => {
+    try {
+      const recentPayments = await db.select({
+        id: schema.payments.id,
+        affiliateName: schema.users.fullName,
+        username: schema.users.username,
+        amount: schema.payments.amount,
+        status: schema.payments.status,
+        method: schema.payments.method,
+        pixKey: schema.payments.pixKey,
+        transactionId: schema.payments.transactionId,
+        paidAt: schema.payments.paidAt,
+        createdAt: schema.payments.createdAt
+      })
+        .from(schema.payments)
+        .leftJoin(schema.users, eq(schema.payments.userId, schema.users.id))
+        .orderBy(desc(schema.payments.createdAt))
+        .limit(10);
+
+      res.json(recentPayments);
+    } catch (error) {
+      console.error("Erro ao buscar pagamentos recentes:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   // Function to generate secure token
   function generateSecureToken(houseIdentifier: string, eventType: string): string {
     const timestamp = Date.now();
