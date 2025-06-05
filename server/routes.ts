@@ -1422,6 +1422,229 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // === AFFILIATE HOME PAGE API ENDPOINTS ===
+  
+  // Get user statistics for home page
+  app.get("/api/user/stats", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      // Get conversions count by type
+      const clicksCount = await db.select({ count: sql<number>`count(*)` })
+        .from(schema.conversions)
+        .where(and(
+          eq(schema.conversions.userId, userId),
+          eq(schema.conversions.type, 'click')
+        ));
+      
+      const registrationsCount = await db.select({ count: sql<number>`count(*)` })
+        .from(schema.conversions)
+        .where(and(
+          eq(schema.conversions.userId, userId),
+          eq(schema.conversions.type, 'registration')
+        ));
+      
+      const depositsCount = await db.select({ count: sql<number>`count(*)` })
+        .from(schema.conversions)
+        .where(and(
+          eq(schema.conversions.userId, userId),
+          eq(schema.conversions.type, 'deposit')
+        ));
+      
+      // Get total commission
+      const commissionResult = await db.select({ 
+        total: sql<number>`COALESCE(SUM(CAST(commission AS DECIMAL(10,2))), 0)` 
+      })
+        .from(schema.conversions)
+        .where(and(
+          eq(schema.conversions.userId, userId),
+          isNotNull(schema.conversions.commission)
+        ));
+      
+      const totalClicks = clicksCount[0]?.count || 0;
+      const totalRegistrations = registrationsCount[0]?.count || 0;
+      const totalDeposits = depositsCount[0]?.count || 0;
+      const totalCommission = commissionResult[0]?.total || 0;
+      
+      const conversionRate = totalClicks > 0 ? (totalRegistrations / totalClicks) * 100 : 0;
+      
+      res.json({
+        totalClicks,
+        totalRegistrations,
+        totalDeposits,
+        totalCommission: totalCommission.toFixed(2),
+        conversionRate: parseFloat(conversionRate.toFixed(2))
+      });
+      
+    } catch (error) {
+      console.error("Erro ao buscar estatísticas do usuário:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+  
+  // Get available betting houses for affiliate
+  app.get("/api/betting-houses/available", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      // Get all active betting houses
+      const houses = await db.select({
+        id: schema.bettingHouses.id,
+        name: schema.bettingHouses.name,
+        logoUrl: schema.bettingHouses.logoUrl,
+        commissionType: schema.bettingHouses.commissionType,
+        commissionValue: schema.bettingHouses.commissionValue,
+        minDeposit: schema.bettingHouses.minDeposit,
+        paymentMethods: schema.bettingHouses.paymentMethods,
+        isActive: schema.bettingHouses.isActive,
+        createdAt: schema.bettingHouses.createdAt
+      })
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.isActive, true));
+      
+      // Check which houses the user is already affiliated with
+      const affiliateLinks = await db.select({
+        houseId: schema.affiliateLinks.houseId
+      })
+        .from(schema.affiliateLinks)
+        .where(eq(schema.affiliateLinks.userId, userId));
+      
+      const affiliatedHouseIds = new Set(affiliateLinks.map(link => link.houseId));
+      
+      const housesWithAffiliation = houses.map(house => ({
+        ...house,
+        isAffiliated: affiliatedHouseIds.has(house.id)
+      }));
+      
+      res.json(housesWithAffiliation);
+      
+    } catch (error) {
+      console.error("Erro ao buscar casas disponíveis:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+  
+  // Get user's affiliate links
+  app.get("/api/affiliate-links", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      const links = await db.select({
+        id: schema.affiliateLinks.id,
+        houseId: schema.affiliateLinks.houseId,
+        generatedUrl: schema.affiliateLinks.generatedUrl,
+        createdAt: schema.affiliateLinks.createdAt,
+        houseName: schema.bettingHouses.name
+      })
+        .from(schema.affiliateLinks)
+        .leftJoin(schema.bettingHouses, eq(schema.affiliateLinks.houseId, schema.bettingHouses.id))
+        .where(eq(schema.affiliateLinks.userId, userId))
+        .orderBy(desc(schema.affiliateLinks.createdAt));
+      
+      res.json(links);
+      
+    } catch (error) {
+      console.error("Erro ao buscar links de afiliado:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+  
+  // Get recent conversions for user
+  app.get("/api/conversions/recent", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      const conversions = await db.select({
+        id: schema.conversions.id,
+        type: schema.conversions.type,
+        commission: schema.conversions.commission,
+        customerId: schema.conversions.customerId,
+        convertedAt: schema.conversions.convertedAt,
+        houseName: schema.bettingHouses.name
+      })
+        .from(schema.conversions)
+        .leftJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
+        .where(eq(schema.conversions.userId, userId))
+        .orderBy(desc(schema.conversions.convertedAt))
+        .limit(10);
+      
+      res.json(conversions);
+      
+    } catch (error) {
+      console.error("Erro ao buscar conversões recentes:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+  
+  // Get recent postbacks for user
+  app.get("/api/postbacks/recent", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      // Get user's affiliate links to filter postbacks
+      const userLinks = await db.select({
+        id: schema.affiliateLinks.id
+      })
+        .from(schema.affiliateLinks)
+        .where(eq(schema.affiliateLinks.userId, userId));
+      
+      if (userLinks.length === 0) {
+        res.json([]);
+        return;
+      }
+      
+      const linkIds = userLinks.map(link => link.id);
+      
+      const postbacks = await db.select({
+        id: schema.postbackLogs.id,
+        eventType: schema.postbackLogs.eventType,
+        value: schema.postbackLogs.value,
+        status: schema.postbackLogs.status,
+        createdAt: schema.postbackLogs.createdAt,
+        houseName: schema.bettingHouses.name
+      })
+        .from(schema.postbackLogs)
+        .leftJoin(schema.bettingHouses, eq(schema.postbackLogs.houseId, schema.bettingHouses.id))
+        .where(
+          sql`${schema.postbackLogs.affiliateLinkId} IN (${sql.join(linkIds.map(id => sql`${id}`), sql`, `)})`
+        )
+        .orderBy(desc(schema.postbackLogs.createdAt))
+        .limit(5);
+      
+      res.json(postbacks);
+      
+    } catch (error) {
+      console.error("Erro ao buscar postbacks recentes:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+  
+  // Get monthly stats for user
+  app.get("/api/user/monthly-stats", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      const monthlyStats = await db.select({
+        month: sql<string>`TO_CHAR(converted_at, 'YYYY-MM')`,
+        commission: sql<number>`COALESCE(SUM(CAST(commission AS DECIMAL(10,2))), 0)`
+      })
+        .from(schema.conversions)
+        .where(and(
+          eq(schema.conversions.userId, userId),
+          isNotNull(schema.conversions.commission),
+          sql`converted_at >= NOW() - INTERVAL '6 months'`
+        ))
+        .groupBy(sql`TO_CHAR(converted_at, 'YYYY-MM')`)
+        .orderBy(sql`TO_CHAR(converted_at, 'YYYY-MM')`);
+      
+      res.json(monthlyStats);
+      
+    } catch (error) {
+      console.error("Erro ao buscar estatísticas mensais:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   // Function to generate secure token
   function generateSecureToken(houseIdentifier: string, eventType: string): string {
     const timestamp = Date.now();

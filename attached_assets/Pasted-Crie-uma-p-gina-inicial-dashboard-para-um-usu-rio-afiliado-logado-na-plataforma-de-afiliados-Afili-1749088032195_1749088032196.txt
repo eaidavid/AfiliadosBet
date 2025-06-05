@@ -1,0 +1,160 @@
+Crie uma página inicial (dashboard) para um usuário afiliado logado na plataforma de afiliados AfiliadosBet. A página deve apresentar informações detalhadas, úteis e dinâmicas com base nos dados do banco. Use um visual moderno, escuro (dark mode), profissional e intuitivo. O design deve ser responsivo e incluir painéis interativos, cards informativos, tabelas e componentes de fácil navegação.
+
+🔧 ESTRUTURA DA INTERFACE
+🧾 1. Cabeçalho (Header)
+Saudação dinâmica:
+"Bem-vindo, {nome_do_afiliado} 👋"
+
+Subtexto:
+"Gerencie seus links de afiliado, acompanhe seus resultados e maximize seus ganhos."
+
+Status da conta:
+"Conta Ativa" ou "Conta Inativa" com ícone correspondente (verde/cinza)
+
+📊 2. Resumo de Desempenho (Dashboard Cards)
+Extraído da tabela conversions com user_id atual
+
+Métrica	Fonte	Detalhe
+Total de Cliques	type = 'click'	Número de cliques únicos em seus links
+Registros	type = 'registration'	Número de usuários cadastrados
+Depósitos	type = 'deposit'	Número de depósitos confirmados
+Comissão Total	SUM(commission)	Valor total em comissões recebidas
+
+Use ícones amigáveis (mouse, usuário, moeda, cifrão)
+
+Cores de destaque por tipo de métrica
+
+Cards com animação ao carregar ou ao passar o mouse
+
+🏦 3. Casas de Apostas Disponíveis
+Dados da tabela betting_houses com is_active = true
+
+Para cada casa:
+
+Nome e logotipo
+
+Comissão principal:
+
+commission_type: CPA ou RevShare
+
+commission_value
+
+CPA e RevShare (mostrar ambos se existirem)
+
+Depósito mínimo (min_deposit)
+
+Métodos de pagamento (payment_methods)
+
+Status da casa (ativo/inativo)
+
+Data de ativação (created_at)
+
+Verificação de afiliação via affiliate_links (para esse user_id):
+
+Mostrar botão "Se Afiliar" ou "Ver Link" (se já afiliado)
+
+💡 Diferenciais visuais:
+
+Mostrar tags ou badges como:
+
+🔥 “Alta Comissão”
+
+💎 “Casa Premium”
+
+📈 “Popular entre afiliados”
+
+🔗 4. Meus Links Ativos
+Dados da tabela affiliate_links para o afiliado atual
+
+Exibir em formato de tabela ou lista:
+
+Nome da Casa
+
+Link de afiliado (generated_url)
+
+Data de criação
+
+Botões:
+
+"Copiar Link"
+
+"Ver Estatísticas"
+
+"Desafiliar"
+
+🔍 Campo de busca por nome da casa
+
+📈 5. Relatório de Conversões Recentes
+Últimas 10 entradas da tabela conversions para o afiliado
+
+Tabela com colunas:
+
+Data (converted_at)
+
+Tipo (type: click, registration, deposit, profit)
+
+Casa de Apostas (house_id ou nome)
+
+Comissão Recebida (commission)
+
+Cliente (se tiver customer_id)
+
+Ícone representando o tipo (🎯 registro, 💰 depósito, etc.)
+
+📅 6. Resumo Mensal (Gráfico opcional)
+Agrupamento mensal da comissão (SUM(commission)) por mês
+
+Gráfico de barras ou linha com total de comissão por mês nos últimos 6 meses
+
+Destaque para mês atual
+
+📥 7. Postbacks Recentes Recebidos
+Tabela postback_logs com subid correspondente ao afiliado
+
+Mostrar os 5 postbacks mais recentes:
+
+Data (criado_em)
+
+Casa
+
+Evento
+
+Valor
+
+Status (success, failed)
+
+📬 8. Notificações ou Alertas
+Avisos de casas novas disponíveis
+
+Comissões em análise
+
+Status de pagamentos pendentes
+
+🎨 ESTILO E UX/UI
+Dark mode elegante com tons de azul, cinza escuro, verde e roxo
+
+Tipografia moderna, botões com ícones e hover animado
+
+Painéis com glassmorphism leve e border-radius grande
+
+Ícones minimalistas (Lucide, FontAwesome ou Heroicons)
+
+Layout em grid flexível
+
+Versão mobile responsiva com cards empilhados
+
+🧠 INTELIGÊNCIA DINÂMICA
+Todos os dados devem vir dinamicamente das seguintes tabelas:
+
+users: nome, status, dados pessoais
+
+affiliate_links: links ativos do afiliado
+
+betting_houses: detalhes das casas
+
+conversions: métricas por tipo e comissão
+
+postback_logs: atividades externas
+
+payments: comissões pagas ou pendentes
+
