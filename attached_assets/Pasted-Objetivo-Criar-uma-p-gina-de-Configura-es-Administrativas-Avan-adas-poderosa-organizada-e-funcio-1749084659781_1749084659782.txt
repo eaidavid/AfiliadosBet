@@ -1,0 +1,113 @@
+Objetivo: Criar uma página de Configurações Administrativas Avançadas, poderosa, organizada e funcional, baseada no banco de dados AfiliadosBet, com foco em ajudar o admin a monitorar, testar, diagnosticar e otimizar o sistema.
+
+⚙️ Nome da Página:
+"Administração e Configurações"
+
+🧱 Base de Dados:
+Utilizar as seguintes tabelas para todas as funções:
+
+users
+
+betting_houses
+
+affiliate_links
+
+postback_logs
+
+registered_postbacks
+
+conversions
+
+payments
+
+system_config (criar se necessário)
+
+audit_logs (criar se necessário)
+
+📌 Funcionalidades a serem implementadas:
+1. 🔍 Busca Global
+Permitir busca por nome, e-mail, subID, nome da casa ou URL.
+
+A busca deve percorrer users, affiliate_links, postback_logs, registered_postbacks e betting_houses.
+
+2. 🛠️ Painel de Diagnóstico
+Listar problemas comuns do sistema.
+
+Verificar se existem casas sem tokens, casas sem postbacks, postbacks com falha, links inativos, comissões mal configuradas, etc.
+
+Usar agrupamentos e indicadores visuais (como cards com alertas).
+
+3. 🔁 Reexecutar Postback
+Criar opção para reenviar um postback a partir dos dados registrados em postback_logs.
+
+Deve mostrar a URL, parâmetros e permitir simulação como teste.
+
+4. 📊 Dashboard Analítico
+Gráficos com volume de postbacks, falhas, sucesso, CPA/RevShare e últimos 7 dias.
+
+Basear em dados da postback_logs e conversions.
+
+5. 📤 Exportação de Relatórios
+Permitir exportação de logs e dados de comissão em CSV ou Excel com base em filtros.
+
+Usar dados da postback_logs e payments.
+
+6. 🧪 Simulador de Postbacks
+Criar simulador onde o admin pode escolher a casa, evento e preencher os parâmetros manualmente.
+
+Mostrar resposta em tempo real.
+
+Registrar na postback_logs com is_test = true.
+
+7. 🔄 Atualização Automática
+Opção para ativar/desativar atualização automática dos dados com intervalo ajustável (ex: 15s, 30s, 60s).
+
+8. 🚨 Modo de Manutenção
+Criar controle para ativar/desativar o modo de manutenção geral.
+
+Deve utilizar a tabela system_config com chave maintenance_mode.
+
+9. 🧩 Sugestões Automáticas de Otimização
+Listar sugestões automáticas como:
+
+Casas sem postbacks
+
+Casas sem links ativos
+
+Casas com alto índice de falhas
+
+10. 📜 Histórico de Ações (Audit Trail)
+Registrar alterações críticas feitas por admins (ex: edição de casas, comissões, usuários).
+
+Armazenar antes e depois das mudanças em tabela audit_logs.
+
+11. 📬 Central de Notificações
+Exibir alertas de falhas, novos afiliados, erros recentes.
+
+Notificações devem ser dinâmicas e exibidas no topo da página.
+
+12. 🔐 Gerenciamento de Permissões (Avançado)
+Permitir definir permissões por função (ex: admin, suporte, financeiro).
+
+Criar controle para determinar quem pode acessar ou editar cada módulo.
+
+🎨 Design:
+Usar tema escuro
+
+Componentes modernos com ShadCN UI
+
+Ícones interativos com lucide-react
+
+Layout com grid
+
+Mobile first e responsivo
+
+🧠 Extras:
+Adicionar a página no menu lateral
+
+Validar todos os dados antes de salvar
+
+Feedback visual para sucesso, erro e loading
+
+Garantir que não haja XSS ou conteúdo malicioso nos logs/respostas
+

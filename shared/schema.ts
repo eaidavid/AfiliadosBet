@@ -215,7 +215,50 @@ export const postbackLogsRelations = relations(postbackLogs, ({ one }) => ({
   }),
 }));
 
-// Registered postbacks table is already defined elsewhere in this file
+// System configuration table
+export const systemConfig = pgTable("system_config", {
+  id: serial("id").primaryKey(),
+  key: text("key").notNull().unique(),
+  value: text("value").notNull(),
+  description: text("description"),
+  updated_at: timestamp("updated_at").defaultNow(),
+  updated_by: integer("updated_by").references(() => users.id),
+});
+
+// Audit logs table for tracking administrative actions
+export const auditLogs = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
+  user_id: integer("user_id").references(() => users.id).notNull(),
+  action: text("action").notNull(), // CREATE, UPDATE, DELETE
+  table_name: text("table_name").notNull(),
+  record_id: text("record_id").notNull(),
+  old_values: text("old_values"), // JSON string
+  new_values: text("new_values"), // JSON string
+  ip_address: text("ip_address"),
+  user_agent: text("user_agent"),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+// Relations
+export const systemConfigRelations = relations(systemConfig, ({ one }) => ({
+  updatedBy: one(users, {
+    fields: [systemConfig.updated_by],
+    references: [users.id],
+  }),
+}));
+
+export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
+  user: one(users, {
+    fields: [auditLogs.user_id],
+    references: [users.id],
+  }),
+}));
+
+// Type exports
+export type SystemConfig = typeof systemConfig.$inferSelect;
+export type InsertSystemConfig = typeof systemConfig.$inferInsert;
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type InsertAuditLog = typeof auditLogs.$inferInsert;
 
 // Zod schemas for validation
 export const insertUserSchema = createInsertSchema(users).omit({

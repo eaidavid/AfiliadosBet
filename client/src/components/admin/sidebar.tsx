@@ -21,7 +21,7 @@ export default function AdminSidebar({ currentPage, onPageChange }: AdminSidebar
     { id: "manage", label: "Administração de Afiliados", icon: Users },
     { id: "gerador-de-postbacks", label: "Gerador de Postbacks", icon: Webhook },
     { id: "logs-postbacks", label: "Logs de Postbacks", icon: Activity },
-    { id: "settings", label: "Configurações", icon: Settings },
+    { id: "admin-settings", label: "Configurações Avançadas", icon: Settings },
   ];
 
   const handlePageChange = (page: string) => {
@@ -41,6 +41,8 @@ export default function AdminSidebar({ currentPage, onPageChange }: AdminSidebar
       window.location.href = "/admin/postback-generator";
     } else if (page === "logs-postbacks") {
       window.location.href = "/admin/postback-logs";
+    } else if (page === "admin-settings") {
+      window.location.href = "/admin/settings";
     } else if (page === "leads") {
       window.location.href = "/admin/leads";
     }

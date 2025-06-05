@@ -19,6 +19,7 @@ import AdminHouses from "@/pages/admin-houses";
 import AdminManage from "@/pages/admin-manage";
 import PostbackGeneratorProfessional from "@/pages/postback-generator-professional";
 import PostbackLogs from "@/pages/postback-logs";
+import AdminSettings from "@/pages/admin-settings";
 import NotFound from "@/pages/not-found";
 import AdminPanelToggle from "@/components/admin-panel-toggle";
 
@@ -363,6 +364,36 @@ function AuthenticatedPostbackLogs() {
   return (
     <div className="mobile-safe no-bounce">
       <PostbackLogs />
+      <AdminPanelToggle />
+    </div>
+  );
+}
+
+function AuthenticatedAdminSettings() {
+  const { isAuthenticated, isLoading, isAdmin } = useAuth();
+  const [location, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading && (!isAuthenticated || !isAdmin)) {
+      setLocation("/login");
+    }
+  }, [isAuthenticated, isLoading, isAdmin, setLocation]);
+
+  if (isLoading) {
+    return (
+      <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce">
+        <div className="text-emerald-500 text-xl">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !isAdmin) {
+    return null;
+  }
+
+  return (
+    <div className="mobile-safe no-bounce">
+      <AdminSettings />
       <AdminPanelToggle />
     </div>
   );
