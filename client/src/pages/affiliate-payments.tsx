@@ -189,7 +189,7 @@ export default function AffiliatePayments() {
 
   return (
     <SidebarLayout>
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="p-6 max-w-7xl mx-auto pt-[67px] pb-[67px]">
         <div className="space-y-8">
           {/* Header */}
           <div className="space-y-4">

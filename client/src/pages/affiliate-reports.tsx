@@ -183,7 +183,7 @@ export default function AffiliateReports() {
                       Comece criando seus links de afiliado para ver as estatísticas aparecerem aqui.
                     </p>
                   </div>
-                  <div className="flex gap-4">
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <Button asChild className="bg-blue-600 hover:bg-blue-700">
                       <a href="/betting-houses">
                         <Building2 className="h-4 w-4 mr-2" />
@@ -408,7 +408,7 @@ export default function AffiliateReports() {
 
               {/* Footer Links */}
               <div className="text-center py-8 space-y-4">
-                <div className="flex justify-center gap-4">
+                <div className="flex flex-col sm:flex-row justify-center gap-4">
                   <Button asChild variant="outline" className="border-slate-600 hover:bg-slate-800">
                     <a href="/my-links">
                       <ExternalLink className="h-4 w-4 mr-2" />
