@@ -10,7 +10,7 @@ import SimpleLanding from "@/pages/simple-landing";
 import Register from "@/pages/register";
 import Login from "@/pages/login";
 import UserDashboardComplete from "@/pages/user-dashboard-complete";
-import UserReports from "@/pages/user-reports-clean";
+import UserReports from "@/pages/archived/user-reports-clean";
 import AffiliateHome from "@/pages/affiliate-home";
 import BettingHouses from "@/pages/betting-houses";
 import MyLinks from "@/pages/my-links";
