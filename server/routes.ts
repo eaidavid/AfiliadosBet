@@ -1645,6 +1645,124 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // Get affiliate stats for betting houses page
+  app.get("/api/affiliate/stats", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      // Get total houses count
+      const totalHousesResult = await db.select({ count: sql<number>`count(*)` })
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.isActive, true));
+      
+      // Get affiliated houses count
+      const affiliatedHousesResult = await db.select({ count: sql<number>`count(*)` })
+        .from(schema.affiliateLinks)
+        .where(eq(schema.affiliateLinks.userId, userId));
+      
+      const totalHouses = totalHousesResult[0]?.count || 0;
+      const affiliatedHouses = affiliatedHousesResult[0]?.count || 0;
+      
+      res.json({
+        totalHouses,
+        affiliatedHouses,
+        averageCommission: "0.00"
+      });
+      
+    } catch (error) {
+      console.error("Erro ao buscar estatísticas de afiliado:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Get available betting houses with affiliate status
+  app.get("/api/betting-houses/available", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      // Get all active betting houses
+      const houses = await db.select()
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.isActive, true))
+        .orderBy(desc(schema.bettingHouses.createdAt));
+      
+      // Get user's affiliate links
+      const userAffiliateLinks = await db.select()
+        .from(schema.affiliateLinks)
+        .where(eq(schema.affiliateLinks.userId, userId));
+      
+      // Map houses with affiliate status
+      const housesWithAffiliateStatus = houses.map(house => {
+        const affiliateLink = userAffiliateLinks.find(link => link.houseId === house.id);
+        
+        return {
+          ...house,
+          isAffiliated: !!affiliateLink,
+          affiliateLink: affiliateLink?.generatedUrl || null
+        };
+      });
+      
+      res.json(housesWithAffiliateStatus);
+      
+    } catch (error) {
+      console.error("Erro ao buscar casas de apostas:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Join affiliate program
+  app.post("/api/affiliate/join/:houseId", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const houseId = parseInt(req.params.houseId);
+      
+      // Check if already affiliated
+      const existingLink = await db.select()
+        .from(schema.affiliateLinks)
+        .where(and(
+          eq(schema.affiliateLinks.userId, userId),
+          eq(schema.affiliateLinks.houseId, houseId)
+        ));
+      
+      if (existingLink.length > 0) {
+        return res.status(400).json({ error: "Já afiliado a esta casa" });
+      }
+      
+      // Get house details
+      const house = await db.select()
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.id, houseId))
+        .limit(1);
+      
+      if (house.length === 0) {
+        return res.status(404).json({ error: "Casa de apostas não encontrada" });
+      }
+      
+      // Generate affiliate link
+      const affiliateCode = `${userId}_${houseId}_${Date.now()}`;
+      const generatedUrl = `${house[0].baseUrl}?${house[0].primaryParam}=${affiliateCode}`;
+      
+      // Create affiliate link
+      const [newLink] = await db.insert(schema.affiliateLinks).values({
+        userId,
+        houseId,
+        affiliateCode,
+        generatedUrl,
+        isActive: true,
+        createdAt: new Date()
+      }).returning();
+      
+      res.json({
+        message: "Afiliação realizada com sucesso",
+        affiliateLink: newLink
+      });
+      
+    } catch (error) {
+      console.error("Erro ao realizar afiliação:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   // Function to generate secure token
   function generateSecureToken(houseIdentifier: string, eventType: string): string {
     const timestamp = Date.now();

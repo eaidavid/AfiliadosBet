@@ -1,0 +1,131 @@
+Crie uma página chamada “Casas de Apostas” (/houses), voltada para afiliados, com visual moderno, escuro (dark mode), interface responsiva, e que utilize os dados existentes no banco de dados. O objetivo da página é exibir, destacar e incentivar o afiliado a se conectar com casas de apostas disponíveis, apresentando os detalhes mais relevantes de forma clara, chamativa e confiável.
+
+🔗 Dados dinâmicos usados (já existentes no banco):
+betting_houses: nome, logo, data de ativação, comissão, tipo de comissão (CPA, RevShare), valor mínimo de depósito, formas de pagamento, descrição, status
+
+commission_plans: comissão separada por tipo (ex: CPA = R$75, RevShare = 30%), permite múltiplos tipos
+
+affiliate_links: status do afiliado com a casa (já afiliado ou não), data de afiliação
+
+users: para cruzar a afiliação atual
+
+payments: formas aceitas pela casa (Pix, Cartão, etc)
+
+tracking_data (opcional futuro): para mostrar dados reais de conversão, cliques etc
+
+🧩 Cada card de casa de apostas deve conter:
+🏠 1. Header
+Ícone ou logo da casa (do banco)
+
+Nome da casa
+
+Tag: Ativa desde DD/MM/YYYY
+
+Tag lateral com status do afiliado:
+
+✅ Afiliado (caso link exista)
+
+⚠️ Não afiliado
+
+💰 2. Painel de Comissão
+Busque da commission_plans:
+
+CPA: R$ 75,00
+
+RevShare: 30%
+
+Exibir ambos os tipos se disponíveis, com ícones e badges distintos
+
+Ex: 💵 CPA, 📈 RevShare
+
+Usar cores diferenciadas (verde para CPA, azul para RevShare)
+
+Se for performance híbrida (CPA + RevShare), destacar como vantagem!
+
+🏦 3. Dados Financeiros
+Depósito mínimo: R$ X ou R$ 0
+
+Pagamentos disponíveis: use ícones pequenos para:
+
+Pix 🟢, Cartão 💳, Boleto 📄, Cripto 🪙 etc
+
+Frequência de pagamento (se tiver no banco): exibir como
+
+Pagamentos: Semanal, Mensal, Via Pix
+
+📝 4. Descrição curta (do banco)
+Exibir trecho da description (máx. 2 linhas)
+
+Se houver campo separado tipo highlights, exibir como badges:
+
+🔥 Alta conversão
+
+💼 Pagamento garantido
+
+🌎 Casa internacional
+
+🔒 Licença verificada
+
+📈 5. Informações extras (opcional futuro)
+Se houver dados de desempenho no futuro (em tracking_data):
+
+Conversão média da casa
+
+Rendimento médio por afiliado
+
+Ex: “Afiliados estão ganhando em média R$ 347/mês”
+
+✅ 6. Botão de Afiliação
+Dinamicamente renderizado:
+
+Se não afiliado: botão Se Afiliar
+
+Se já afiliado: botão Ver Meu Link
+
+Botão com gradiente chamativo (ex: roxo → azul ou verde limão)
+
+Hover com animação leve
+
+Ícone de link 🔗 ou pessoa 🧑‍💼
+
+Redirecionar ou abrir modal de confirmação
+
+🧰 Filtros e Ferramentas na Página
+Campo de busca por nome da casa
+
+Filtros dinâmicos:
+
+Tipo de comissão (CPA, RevShare, Ambos)
+
+Pagamento (Pix, Cartão, Cripto)
+
+Valor mínimo de depósito
+
+Mostrar: apenas afiliadas / apenas não afiliadas
+
+Exibir número total de casas disponíveis e total afiliadas
+
+📣 Banner Promocional (acima dos cards)
+Mostrar 1 ou 2 casas em destaque promocional (comissão maior ou ativação recente)
+
+Exemplo:
+
+"💥 Novidade: Bet365 agora com R$ 75 de CPA – Afilie-se já!"
+
+🎨 Estilo Visual
+Dark mode com tons de azul petróleo e roxo
+
+Cards com cantos arredondados (rounded-2xl)
+
+Tipografia profissional (ex: Inter, Poppins)
+
+Sombras suaves (shadow-md) e transições ao passar o mouse (hover:scale-105)
+
+Ícones vetoriais (Lucide ou Heroicons)
+
+📱 Responsividade
+Cards empilhados verticalmente no mobile
+
+Botões sempre acessíveis
+
+Filtros em menu tipo drawer lateral ou dropdown

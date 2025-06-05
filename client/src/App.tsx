@@ -12,6 +12,7 @@ import Login from "@/pages/login";
 import UserDashboardComplete from "@/pages/user-dashboard-complete";
 import UserReports from "@/pages/user-reports-clean";
 import AffiliateHome from "@/pages/affiliate-home";
+import BettingHouses from "@/pages/betting-houses";
 import AdminDashboard from "@/pages/admin-dashboard-new";
 import AdminLeadsManagement from "@/pages/admin-leads-management";
 import AdminCasas from "@/pages/admin-casas";
@@ -87,6 +88,8 @@ function Router() {
       <Route path="/register" component={Register} />
       <Route path="/dashboard" component={AuthenticatedUserDashboard} />
       <Route path="/affiliate-home" component={AuthenticatedAffiliateHome} />
+      <Route path="/betting-houses" component={AuthenticatedBettingHouses} />
+      <Route path="/houses" component={AuthenticatedBettingHouses} />
       <Route path="/reports" component={AuthenticatedUserReports} />
       <Route path="/admin" component={AuthenticatedAdminDashboard} />
       <Route path="/admin/leads" component={AuthenticatedAdminLeads} />
@@ -185,6 +188,36 @@ function AuthenticatedAffiliateHome() {
   return (
     <div className="mobile-safe no-bounce">
       <AffiliateHome />
+      <AdminPanelToggle />
+    </div>
+  );
+}
+
+function AuthenticatedBettingHouses() {
+  const { isAuthenticated, isLoading } = useAuth();
+  const [location, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      setLocation("/login");
+    }
+  }, [isAuthenticated, isLoading, setLocation]);
+
+  if (isLoading) {
+    return (
+      <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce">
+        <div className="text-emerald-500 text-xl">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  return (
+    <div className="mobile-safe no-bounce">
+      <BettingHouses />
       <AdminPanelToggle />
     </div>
   );
