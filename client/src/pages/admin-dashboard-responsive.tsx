@@ -178,7 +178,7 @@ export default function AdminDashboardResponsive() {
       <div className="flex">
         <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
         
-        <main className="flex-1 p-4 lg:p-6 lg:ml-64 space-y-6">
+        <main className="flex-1 p-4 lg:p-6 lg:ml-64 space-y-6 mt-[61px] mb-[61px]">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
