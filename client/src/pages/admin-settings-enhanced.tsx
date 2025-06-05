@@ -197,8 +197,7 @@ export default function AdminSettingsEnhanced() {
           window.location.href = "/admin/settings";
         }
       }} />
-      
-      <div className="lg:ml-72 px-4 md:px-6 lg:px-8 pt-6 pb-8 max-w-[1600px] mx-auto transition-all duration-300"
+      <div className="lg:ml-72 px-4 md:px-6 lg:px-8 max-w-[1600px] mx-auto transition-all duration-300 pt-[62px] pb-[62px]"
            style={{ paddingTop: 'max(1.5rem, env(safe-area-inset-top))' }}>
         {/* Header */}
         <div className="flex items-center justify-between">
