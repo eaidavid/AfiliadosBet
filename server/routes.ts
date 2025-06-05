@@ -1660,8 +1660,8 @@ export async function registerRoutes(app: any): Promise<Server> {
           createdAt: schema.users.createdAt,
           isActive: schema.users.isActive,
           updatedAt: schema.users.updatedAt,
-          pixKeyType: sql<string>`NULL`.as('pixKeyType'),
-          pixKeyValue: sql<string>`NULL`.as('pixKeyValue'),
+          pixKeyType: schema.users.pixKeyType,
+          pixKeyValue: schema.users.pixKeyValue,
           avatarUrl: sql<string>`NULL`.as('avatarUrl'),
           lastLoginAt: sql<string>`NULL`.as('lastLoginAt')
         })
@@ -1751,8 +1751,18 @@ export async function registerRoutes(app: any): Promise<Server> {
       const userId = req.user.id;
       const { pixKeyType, pixKeyValue } = req.body;
 
-      // For now, we'll store PIX data in user table or create a separate PIX table
-      // Since the schema doesn't have PIX fields, we'll simulate the update
+      console.log('Atualizando dados PIX para usuário:', userId, { pixKeyType, pixKeyValue });
+
+      // Atualizar dados PIX na tabela de usuários
+      await db.update(schema.users)
+        .set({ 
+          pixKeyType: pixKeyType || null,
+          pixKeyValue: pixKeyValue || null,
+          updatedAt: new Date()
+        })
+        .where(eq(schema.users.id, userId));
+
+      console.log('Dados PIX atualizados com sucesso para usuário:', userId);
       
       res.json({ success: true, message: 'Dados PIX atualizados com sucesso' });
     } catch (error) {
