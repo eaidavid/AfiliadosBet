@@ -233,9 +233,9 @@ export default function UserDashboard() {
     <div className="min-h-screen bg-slate-950">
       <UserSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
       
-      <div className={isMobile ? "w-full" : "ml-72"}>
+      <div className="lg:ml-72 transition-all duration-300">
         <UserTopBar onPageChange={setCurrentPage} />
-        <main className={isMobile ? "p-4 pt-16" : "p-6"}>
+        <main className="px-4 md:px-6 lg:px-8 pt-6 pb-8">
           {renderContent()}
         </main>
       </div>

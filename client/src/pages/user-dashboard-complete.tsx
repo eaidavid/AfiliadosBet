@@ -317,10 +317,10 @@ export default function UserDashboardComplete() {
       <UserSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
       
       {/* Área principal com responsividade melhorada */}
-      <div className={`transition-all duration-300 ${!isMobile ? "ml-72" : ""}`}>
+      <div className="lg:ml-72 transition-all duration-300">
         <UserTopBar onPageChange={setCurrentPage} />
         
-        <main className={`safe-area overflow-x-hidden ${isMobile ? "pt-16 px-4 pb-4" : "p-6"}`}>
+        <main className="px-4 md:px-6 lg:px-8 pt-6 pb-8">
           <div className="w-full max-w-none">
             {renderCurrentPage()}
           </div>
