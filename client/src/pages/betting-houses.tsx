@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { StandardLayout } from '@/components/StandardLayout';
+import { AffiliateSidebar } from '@/components/affiliate-sidebar';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import {
@@ -70,6 +70,57 @@ export default function BettingHouses() {
   const [selectedHouse, setSelectedHouse] = useState<BettingHouse | null>(null);
   const [showAffiliateDialog, setShowAffiliateDialog] = useState(false);
 
+  const getCommissionDisplay = (house: BettingHouse) => {
+    switch (house.commissionType) {
+      case 'CPA':
+        return (
+          <div className="text-sm">
+            <span className="font-medium text-emerald-400">CPA:</span>
+            <span className="text-slate-300 ml-1">R$ {house.cpaValue || house.commissionValue}</span>
+          </div>
+        );
+      case 'RevShare':
+        return (
+          <div className="text-sm">
+            <span className="font-medium text-blue-400">RevShare:</span>
+            <span className="text-slate-300 ml-1">{house.revshareValue || house.commissionValue}</span>
+          </div>
+        );
+      case 'Hybrid':
+        return (
+          <div className="text-sm space-y-1">
+            <div>
+              <span className="font-medium text-emerald-400">CPA:</span>
+              <span className="text-slate-300 ml-1">R$ {house.cpaValue}</span>
+            </div>
+            <div>
+              <span className="font-medium text-blue-400">RevShare:</span>
+              <span className="text-slate-300 ml-1">{house.revshareValue}</span>
+            </div>
+          </div>
+        );
+      default:
+        return (
+          <div className="text-sm text-slate-400">
+            {house.commissionValue || 'Não especificado'}
+          </div>
+        );
+    }
+  };
+
+  const getCommissionBadge = (house: BettingHouse) => {
+    switch (house.commissionType) {
+      case 'Hybrid':
+        return { text: '💎 Híbrido', color: 'bg-purple-500' };
+      case 'RevShare':
+        return { text: '📊 RevShare', color: 'bg-blue-500' };
+      case 'CPA':
+        return { text: '💰 CPA', color: 'bg-emerald-500' };
+      default:
+        return { text: '📈 Popular', color: 'bg-gray-500' };
+    }
+  };
+
   // Fetch betting houses
   const { data: bettingHouses, isLoading: housesLoading } = useQuery<BettingHouse[]>({
     queryKey: ['/api/betting-houses/available'],
@@ -102,7 +153,7 @@ export default function BettingHouses() {
     }
   });
 
-  const getCommissionDisplay = (house: BettingHouse) => {
+  const getCommissionDisplayArray = (house: BettingHouse) => {
     const commissions = [];
     
     if (house.cpaValue) {
@@ -154,7 +205,7 @@ export default function BettingHouses() {
 
   const getHouseHighlights = (house: BettingHouse) => {
     const highlights = [];
-    const commissions = getCommissionDisplay(house);
+    const commissions = getCommissionDisplayArray(house);
     
     if (commissions.length === 2) {
       highlights.push({ text: 'Comissão Híbrida', icon: '🔥', color: 'bg-orange-500' });
@@ -219,8 +270,9 @@ export default function BettingHouses() {
   };
 
   return (
-    <StandardLayout>
-      <div className="min-h-screen bg-slate-950 text-white p-6">
+    <div className="flex min-h-screen bg-slate-950 text-white">
+      <AffiliateSidebar />
+      <div className="flex-1 ml-72 transition-all duration-300 p-6">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Header */}
           <div className="space-y-4">
@@ -541,6 +593,6 @@ export default function BettingHouses() {
           </DialogContent>
         </Dialog>
       </div>
-    </StandardLayout>
+    </div>
   );
 }
