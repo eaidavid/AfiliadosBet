@@ -214,7 +214,7 @@ export default function AffiliateHome() {
 
   return (
     <SidebarLayout>
-      <div className="p-6">
+      <div className="p-6 pt-[62px] pb-[62px]">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Header */}
           <div className="space-y-4">
