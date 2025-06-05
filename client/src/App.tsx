@@ -92,6 +92,7 @@ function Router() {
       <Route path="/admin/houses" component={AuthenticatedAdminHouses} />
       <Route path="/admin/manage" component={AuthenticatedAdminManage} />
       <Route path="/admin/postback-generator" component={AuthenticatedPostbackGenerator} />
+      <Route path="/admin/postback-logs" component={AuthenticatedPostbackLogs} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -332,6 +333,36 @@ function AuthenticatedPostbackGenerator() {
   return (
     <div className="mobile-safe no-bounce">
       <PostbackGeneratorProfessional />
+      <AdminPanelToggle />
+    </div>
+  );
+}
+
+function AuthenticatedPostbackLogs() {
+  const { isAuthenticated, isLoading, isAdmin } = useAuth();
+  const [location, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading && (!isAuthenticated || !isAdmin)) {
+      setLocation("/login");
+    }
+  }, [isAuthenticated, isLoading, isAdmin, setLocation]);
+
+  if (isLoading) {
+    return (
+      <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce">
+        <div className="text-emerald-500 text-xl">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !isAdmin) {
+    return null;
+  }
+
+  return (
+    <div className="mobile-safe no-bounce">
+      <PostbackLogs />
       <AdminPanelToggle />
     </div>
   );
