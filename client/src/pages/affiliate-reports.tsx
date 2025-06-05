@@ -118,7 +118,7 @@ export default function AffiliateReports() {
 
   return (
     <SidebarLayout>
-      <div className="p-6">
+      <div className="p-6 pt-[62px] pb-[62px] pl-[30px] pr-[30px]">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Header */}
           <div className="space-y-4">
