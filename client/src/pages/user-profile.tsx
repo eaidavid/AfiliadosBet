@@ -23,6 +23,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { AffiliateSidebar } from '@/components/affiliate-sidebar';
+import { ResponsiveLayout } from '@/components/responsive-layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

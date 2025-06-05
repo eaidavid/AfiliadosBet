@@ -31,6 +31,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { AffiliateSidebar } from '@/components/affiliate-sidebar';
+import { ResponsiveLayout } from '@/components/responsive-layout';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Payment {
   id: number;
@@ -78,6 +80,7 @@ const STATUS_CONFIG = {
 export default function AffiliatePayments() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const isMobile = useIsMobile();
   const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
   const [withdrawalData, setWithdrawalData] = useState({
     amount: '',
@@ -108,7 +111,7 @@ export default function AffiliatePayments() {
     },
     onSuccess: () => {
       toast({
-        title: "✅ Solicitação enviada!",
+        title: "Solicitação enviada!",
         description: "Sua solicitação de saque foi registrada e será processada em breve.",
       });
       setShowWithdrawalModal(false);
@@ -169,30 +172,28 @@ export default function AffiliatePayments() {
 
   if (summaryLoading || paymentsLoading) {
     return (
-      <div className="flex min-h-screen bg-slate-950 text-white">
+      <div className="min-h-screen bg-slate-950 text-white">
         <AffiliateSidebar />
-        <div className="flex-1 ml-72 transition-all duration-300 p-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="animate-pulse space-y-6">
-              <div className="h-12 bg-slate-800 rounded-lg"></div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-32 bg-slate-800 rounded-lg"></div>
-                ))}
-              </div>
-              <div className="h-96 bg-slate-800 rounded-lg"></div>
+        <ResponsiveLayout>
+          <div className="animate-pulse space-y-6">
+            <div className="h-12 bg-slate-800 rounded-lg"></div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-32 bg-slate-800 rounded-lg"></div>
+              ))}
             </div>
+            <div className="h-96 bg-slate-800 rounded-lg"></div>
           </div>
-        </div>
+        </ResponsiveLayout>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-slate-950 text-white">
       <AffiliateSidebar />
-      <div className="flex-1 ml-72 transition-all duration-300 p-6">
-        <div className="max-w-7xl mx-auto space-y-8">
+      <ResponsiveLayout>
+        <div className="space-y-8">
           {/* Header */}
           <div className="space-y-4">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
@@ -498,7 +499,7 @@ export default function AffiliatePayments() {
             </DialogContent>
           </Dialog>
         </div>
-      </div>
+      </ResponsiveLayout>
     </div>
   );
 }
