@@ -172,9 +172,24 @@ export function useLogout() {
       return response.json();
     },
     onSuccess: () => {
-      // Clear all cache and redirect
+      // Clear all cached auth data
+      localStorage.removeItem('auth_user');
+      localStorage.removeItem('auth_timestamp');
+      
+      // Clear all React Query cache
+      queryClient.clear();
+      
+      // Force page reload to clear all state
+      window.location.href = "/";
+      window.location.reload();
+    },
+    onError: () => {
+      // Even if logout fails on server, clear local data
+      localStorage.removeItem('auth_user');
+      localStorage.removeItem('auth_timestamp');
       queryClient.clear();
       window.location.href = "/";
-    },
+      window.location.reload();
+    }
   });
 }

@@ -123,8 +123,23 @@ export async function registerRoutes(app: express.Application) {
   });
 
   app.post("/api/auth/logout", (req, res) => {
-    req.logout(() => {
-      res.json({ success: true });
+    req.logout((err) => {
+      if (err) {
+        console.error("Logout error:", err);
+        return res.status(500).json({ error: "Erro no logout" });
+      }
+      
+      // Destroy session completely
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Session destroy error:", err);
+          return res.status(500).json({ error: "Erro ao destruir sessão" });
+        }
+        
+        // Clear session cookie
+        res.clearCookie('connect.sid');
+        res.json({ success: true });
+      });
     });
   });
 
