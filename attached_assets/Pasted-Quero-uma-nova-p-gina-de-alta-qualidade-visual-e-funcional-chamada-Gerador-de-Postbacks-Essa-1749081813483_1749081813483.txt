@@ -1,0 +1,75 @@
+Quero uma nova página de alta qualidade visual e funcional chamada **"Gerador de Postbacks "**. Essa página deve utilizar os dados reais do meu banco para:
+
+1. **Listar todos os postbacks registrados** (tabela: `registered_postbacks`) de forma visual, filtrável e interativa.
+2. **Montar automaticamente o link de teste** com os parâmetros reais definidos na URL de cada postback, substituindo por valores fictícios (subid, valor, evento, etc.).
+3. Permitir **testar o postback diretamente da interface**, com botão de envio GET e retorno visível (JSON, HTML, erro ou sucesso).
+4. Usar a identidade visual moderna que já existe no sistema (fundo escuro, cards coloridos, cantos arredondados, tipografia bonita).
+
+---
+
+### 💠 Estrutura desejada da página:
+
+#### 1. 🔎 Filtros Interativos
+- Dropdown de "Casa de Apostas" (com `logo` e `name`)
+- Dropdown de "Tipo de Evento" (`event_type`)
+- Botão "Limpar Filtros"
+- Botão "Exportar Logs"
+
+#### 2. 📦 Lista de Postbacks
+- Card para cada postback com:
+  - Nome do evento (event_type)
+  - URL base (`url`)
+  - Casa vinculada (house_name)
+  - Status (ativo/inativo)
+  - Botão “🔧 Gerar Link de Teste”
+
+#### 3. ⚙️ Modal de Geração de Link
+- Ao clicar em "Gerar Link de Teste":
+  - Detecta os parâmetros da URL (`{subid}`, `{valor}`, `{event}`, etc.)
+  - Gera inputs dinâmicos preenchíveis (valores fictícios por padrão)
+  - Mostra a **URL final montada**
+  - Botões:
+    - Copiar Link
+    - Enviar Teste (GET)
+    - Ver Resposta (raw body + status)
+
+#### 4. 📄 Histórico de Testes (Colapsável)
+- Mostra últimos links testados, status, horário
+- Salvar opcionalmente em `postback_logs` com status "test" (ou ignorar)
+
+---
+
+### 🔄 BACKEND
+- Os dados devem vir da tabela `registered_postbacks`, relacionada com `betting_houses`.
+- A substituição dos tokens da URL (`{}`) deve ser feita automaticamente, com valores padrão.
+- Exemplo de substituição:
+
+---
+
+### 🎨 ESTILO
+- Interface escura, moderna
+- Cards arredondados
+- Feedbacks visuais com ícones (sucesso, erro, carregando)
+- Responsivo
+- Sidebar lateral sempre visível (correção: ela está oculta atualmente)
+
+---
+
+### 🛠 FRAMEWORKS DESEJADOS
+Se for código:
+- React + TailwindCSS
+- Pode usar ShadCN/UI ou outros componentes modernos
+- Suporte a modais, notificações (ex: toast), loading spinner
+
+---
+
+### 🔚 Extras (se possível)
+- Modo escuro já ativo
+- Suporte a copiar link com clique
+- Testar postback sem precisar backend manual (requisição GET na própria UI)
+
+---
+
+### Observação:
+Já existem postbacks registrados no banco, então a listagem e links devem ser gerados automaticamente com base neles.
+
