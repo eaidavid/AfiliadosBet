@@ -18,7 +18,7 @@ import AffiliateReports from "@/pages/affiliate-reports";
 import UserProfile from "@/pages/user-profile";
 import AffiliatePayments from "@/pages/affiliate-payments";
 import AdminDashboard from "@/pages/admin-dashboard-responsive";
-import AdminLeadsManagement from "@/pages/admin-leads-management";
+
 import AdminCasas from "@/pages/admin-casas";
 
 import AdminHouses from "@/pages/admin-houses";
@@ -99,7 +99,6 @@ function Router() {
       <Route path="/profile" component={AuthenticatedProfile} />
       <Route path="/payments" component={AuthenticatedPayments} />
       <Route path="/admin" component={AuthenticatedAdminDashboard} />
-      <Route path="/admin/leads" component={AuthenticatedAdminLeads} />
       <Route path="/admin/casas" component={AuthenticatedAdminCasas} />
 
       <Route path="/admin/houses" component={AuthenticatedAdminHouses} />
@@ -375,36 +374,6 @@ function AuthenticatedAdminDashboard() {
   return (
     <div className="mobile-safe no-bounce">
       <AdminDashboard />
-      <AdminPanelToggle />
-    </div>
-  );
-}
-
-function AuthenticatedAdminLeads() {
-  const { isAuthenticated, isLoading, isAdmin } = useAuth();
-  const [location, setLocation] = useLocation();
-
-  useEffect(() => {
-    if (!isLoading && (!isAuthenticated || !isAdmin)) {
-      setLocation("/login");
-    }
-  }, [isAuthenticated, isLoading, isAdmin, setLocation]);
-
-  if (isLoading) {
-    return (
-      <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce">
-        <div className="text-emerald-500 text-xl">Carregando...</div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated || !isAdmin) {
-    return null;
-  }
-
-  return (
-    <div className="mobile-safe no-bounce">
-      <AdminLeadsManagement />
       <AdminPanelToggle />
     </div>
   );
