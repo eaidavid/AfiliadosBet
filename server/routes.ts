@@ -62,6 +62,13 @@ function requireAdmin(req: any, res: any, next: any) {
   res.status(403).json({ error: "Admin access required" });
 }
 
+function requireAffiliate(req: any, res: any, next: any) {
+  if (req.isAuthenticated && req.isAuthenticated() && (req.user?.role === 'affiliate' || req.user?.role === 'admin')) {
+    return next();
+  }
+  res.status(403).json({ error: "Affiliate access required" });
+}
+
 export async function registerRoutes(app: express.Application) {
   
   // Auth routes
@@ -126,7 +133,8 @@ export async function registerRoutes(app: express.Application) {
           fullName,
           cpf,
           birthDate,
-          role: 'affiliate'
+          role: 'affiliate', // Sempre criar como afiliado
+          isActive: true
         })
         .returning();
 
@@ -146,7 +154,7 @@ export async function registerRoutes(app: express.Application) {
   });
 
   // User profile routes with PIX data
-  app.get("/api/user/profile", requireAuth, async (req, res) => {
+  app.get("/api/user/profile", requireAffiliate, async (req, res) => {
     try {
       const [user] = await db
         .select()
@@ -173,7 +181,7 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
-  app.put("/api/user/profile", requireAuth, async (req, res) => {
+  app.put("/api/user/profile", requireAffiliate, async (req, res) => {
     try {
       const { fullName, cpf, phone } = req.body;
 
@@ -189,7 +197,7 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
-  app.put("/api/user/pix", requireAuth, async (req, res) => {
+  app.put("/api/user/pix", requireAffiliate, async (req, res) => {
     try {
       const { pixKeyType, pixKeyValue } = req.body;
 
@@ -352,7 +360,7 @@ export async function registerRoutes(app: express.Application) {
   });
 
   // User stats
-  app.get("/api/stats/user", requireAuth, async (req, res) => {
+  app.get("/api/stats/user", requireAffiliate, async (req, res) => {
     try {
       const userId = (req.user as any).id;
       
@@ -391,8 +399,8 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
-  // Betting houses
-  app.get("/api/betting-houses", async (req, res) => {
+  // Betting houses (accessible by affiliates and admins)
+  app.get("/api/betting-houses", requireAffiliate, async (req, res) => {
     try {
       const houses = await db.select().from(schema.bettingHouses);
       res.json(houses);
@@ -402,8 +410,8 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
-  // Get user links
-  app.get("/api/my-links", requireAuth, async (req, res) => {
+  // Get user links (affiliate route)
+  app.get("/api/my-links", requireAffiliate, async (req, res) => {
     try {
       const userId = (req.user as any).id;
       
