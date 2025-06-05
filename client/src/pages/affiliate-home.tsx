@@ -158,10 +158,54 @@ export default function AffiliateHome() {
   };
 
   const getHouseBadge = (house: BettingHouse) => {
-    const commissionValue = parseFloat(house.commissionValue || '0');
-    if (commissionValue >= 50) return { text: '🔥 Alta Comissão', color: 'bg-red-500' };
-    if (commissionValue >= 30) return { text: '💎 Casa Premium', color: 'bg-purple-500' };
-    return { text: '📈 Popular', color: 'bg-blue-500' };
+    switch (house.commissionType) {
+      case 'Hybrid':
+        return { text: '💎 Híbrido', color: 'bg-purple-500' };
+      case 'RevShare':
+        return { text: '📊 RevShare', color: 'bg-blue-500' };
+      case 'CPA':
+        return { text: '💰 CPA', color: 'bg-emerald-500' };
+      default:
+        return { text: '📈 Popular', color: 'bg-gray-500' };
+    }
+  };
+
+  const getCommissionDisplay = (house: BettingHouse) => {
+    switch (house.commissionType) {
+      case 'CPA':
+        return (
+          <div className="text-sm">
+            <span className="font-medium text-emerald-400">CPA:</span>
+            <span className="text-slate-300 ml-1">R$ {house.cpaValue || house.commissionValue}</span>
+          </div>
+        );
+      case 'RevShare':
+        return (
+          <div className="text-sm">
+            <span className="font-medium text-blue-400">RevShare:</span>
+            <span className="text-slate-300 ml-1">{house.revshareValue || house.commissionValue}</span>
+          </div>
+        );
+      case 'Hybrid':
+        return (
+          <div className="text-sm space-y-1">
+            <div>
+              <span className="font-medium text-emerald-400">CPA:</span>
+              <span className="text-slate-300 ml-1">R$ {house.cpaValue}</span>
+            </div>
+            <div>
+              <span className="font-medium text-blue-400">RevShare:</span>
+              <span className="text-slate-300 ml-1">{house.revshareValue}</span>
+            </div>
+          </div>
+        );
+      default:
+        return (
+          <div className="text-sm text-slate-400">
+            {house.commissionValue || 'Não especificado'}
+          </div>
+        );
+    }
   };
 
   const filteredHouses = bettingHouses?.filter(house =>
@@ -332,11 +376,11 @@ export default function AffiliateHome() {
                           </CardHeader>
                           <CardContent className="space-y-3">
                             <div className="space-y-2">
-                              <div className="flex justify-between items-center">
+                              <div className="flex justify-between items-start">
                                 <span className="text-sm text-slate-400">Comissão:</span>
-                                <span className="text-sm font-medium text-emerald-400">
-                                  {house.commissionType === 'percentage' ? `${house.commissionValue}%` : `R$ ${house.commissionValue}`}
-                                </span>
+                                <div className="text-right">
+                                  {getCommissionDisplay(house)}
+                                </div>
                               </div>
                               {house.minDeposit && (
                                 <div className="flex justify-between items-center">

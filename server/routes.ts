@@ -1463,7 +1463,7 @@ export async function registerRoutes(app: any): Promise<Server> {
       const totalClicks = clicksCount[0]?.count || 0;
       const totalRegistrations = registrationsCount[0]?.count || 0;
       const totalDeposits = depositsCount[0]?.count || 0;
-      const totalCommission = commissionResult[0]?.total || 0;
+      const totalCommission = Number(commissionResult[0]?.total || 0);
       
       const conversionRate = totalClicks > 0 ? (totalRegistrations / totalClicks) * 100 : 0;
       
@@ -1695,7 +1695,18 @@ export async function registerRoutes(app: any): Promise<Server> {
         const affiliateLink = userAffiliateLinks.find(link => link.houseId === house.id);
         
         return {
-          ...house,
+          id: house.id,
+          name: house.name,
+          description: house.description,
+          logoUrl: house.logoUrl,
+          commissionType: house.commissionType,
+          commissionValue: house.commissionValue,
+          cpaValue: house.cpaValue,
+          revshareValue: house.revshareValue,
+          minDeposit: house.minDeposit,
+          paymentMethods: house.paymentMethods,
+          isActive: house.isActive,
+          createdAt: house.createdAt,
           isAffiliated: !!affiliateLink,
           affiliateLink: affiliateLink?.generatedUrl || null
         };
