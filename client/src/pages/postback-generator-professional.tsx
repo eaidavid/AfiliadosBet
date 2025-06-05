@@ -416,7 +416,7 @@ export default function PostbackGeneratorProfessional() {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
-      <div className="lg:ml-72 px-4 md:px-6 lg:px-8 max-w-[1600px] mx-auto transition-all duration-300 pt-[65px] pb-[65px] ml-[100px] mr-[100px]">
+      <div className="lg:ml-72 px-4 md:px-6 lg:px-8 max-w-[1600px] mx-auto transition-all duration-300 pt-[65px] pb-[65px] ml-[110px] mr-[110px]">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between">
