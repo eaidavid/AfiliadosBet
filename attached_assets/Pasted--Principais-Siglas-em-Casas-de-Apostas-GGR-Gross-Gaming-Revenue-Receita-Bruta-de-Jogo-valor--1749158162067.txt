@@ -1,0 +1,75 @@
+📝 Principais Siglas em Casas de Apostas
+GGR (Gross Gaming Revenue)
+Receita Bruta de Jogo — valor total que os jogadores perdem antes de qualquer desconto.
+
+NGR (Net Gaming Revenue)
+Receita Líquida de Jogo — valor que sobra para a casa após descontar bônus, taxas e custos operacionais. É a base para cálculo das comissões no modelo Revenue Share.
+
+FTD (First Time Deposit)
+Primeiro Depósito — o primeiro depósito real feito pelo jogador após o cadastro.
+
+CPA (Cost Per Acquisition)
+Custo por Aquisição — comissão fixa paga ao afiliado por cada novo jogador que se cadastra e realiza o depósito.
+
+Revenue Share
+Modelo de comissão onde o afiliado recebe uma porcentagem do lucro líquido gerado pelos jogadores indicados.
+
+ROI (Return on Investment)
+Retorno sobre Investimento — mede o lucro obtido em relação ao valor investido.
+
+CR (Conversion Rate)
+Taxa de Conversão — percentual de visitantes que realizam uma ação desejada, como cadastro ou depósito.
+
+KYC (Know Your Customer)
+Conheça Seu Cliente — processo de verificação de identidade para garantir segurança e conformidade.
+
+AML (Anti-Money Laundering)
+Prevenção à Lavagem de Dinheiro — conjunto de medidas para evitar o uso da plataforma em atividades ilegais.
+
+
+
+----
+
+
+📊 Entenda de Forma Simples: O que é GGR e NGR?
+Se você quer ganhar dinheiro como afiliado em uma casa de apostas, é importante conhecer dois termos muito usados: GGR e NGR. Mas calma! A explicação é simples:
+
+💼 GGR (Gross Gaming Revenue)
+GGR é a Receita Bruta de Jogo — ou seja, quanto os jogadores perderam no total, antes de qualquer desconto.
+
+📌 Exemplo prático:
+Um jogador apostou R$ 500
+
+Ganhou de volta R$ 100
+
+Perdeu R$ 400
+
+✅ Nesse caso:
+👉 GGR = R$ 400
+
+🧾 NGR (Net Gaming Revenue)
+NGR é a Receita Líquida de Jogo — o valor que realmente fica com a casa de apostas, depois de descontar:
+
+🎁 Bônus dados aos jogadores
+
+💳 Taxas de pagamento
+
+🏢 Custos operacionais (normalmente entre 15% e 20%)
+
+📌 Exemplo com base no GGR acima:
+GGR = R$ 400
+
+Custos e descontos totais: R$ 80
+
+✅ NGR = R$ 320
+
+👉 É sobre o NGR que sua comissão é calculada no modelo Revenue Share!
+
+🔁 Resumo Rápido
+Termo	Significado	O que representa	Exemplo prático
+GGR	Receita Bruta de Jogo	Total perdido pelos jogadores (sem descontos)	R$ 400
+NGR	Receita Líquida de Jogo	GGR – custos da casa (bônus, taxas, etc.)	R$ 320
+
+💡 Dica de afiliado: Entender a diferença entre GGR e NGR é essencial para calcular seus ganhos e escolher as melhores oportunidades!
+
+📲 Junte-se agora ao nosso programa de afiliados e tenha acesso a um dos melhores planos de comissão do mercado!

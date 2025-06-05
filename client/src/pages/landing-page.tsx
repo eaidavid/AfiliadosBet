@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   TrendingUp, 
   Users, 
@@ -33,7 +34,14 @@ import {
   TrendingDown,
   MessageSquare,
   Lock,
-  Wallet
+  Wallet,
+  BookOpen,
+  FileText,
+  Info,
+  Calculator,
+  PieChart,
+  TrendingUpIcon,
+  Coins
 } from "lucide-react";
 import logoPath from "@assets/Afiliados Bet positivo.png";
 
@@ -350,6 +358,309 @@ export default function LandingPage() {
                 </div>
               </motion.div>
             </div>
+          </div>
+        </section>
+
+        {/* Seção de Abas Informativas */}
+        <section id="informacoes" className="py-20 bg-white/10 dark:bg-gray-900/40 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                Informações Importantes
+              </h2>
+              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                Tudo que você precisa saber para começar a ganhar dinheiro como afiliado
+              </p>
+            </div>
+            
+            <Tabs defaultValue="comissao" className="w-full">
+              <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 bg-gray-800/50 dark:bg-gray-900/50 rounded-xl p-1 mb-8">
+                <TabsTrigger 
+                  value="comissao" 
+                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-3 px-6 rounded-lg"
+                >
+                  <Calculator className="mr-2 h-4 w-4" />
+                  Sobre sua comissão
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="termos" 
+                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-3 px-6 rounded-lg"
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  Termos Técnicos
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="direitos" 
+                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-gray-300 hover:text-white transition-all duration-200 py-3 px-6 rounded-lg"
+                >
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  Direitos e Deveres
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="comissao" className="mt-8">
+                <Card className="bg-gray-800/30 dark:bg-gray-900/50 border-gray-700/50 backdrop-blur-sm">
+                  <CardContent className="p-8">
+                    {/* Principais Siglas */}
+                    <div className="mb-12">
+                      <div className="flex items-center mb-6">
+                        <Info className="h-6 w-6 text-blue-400 mr-3" />
+                        <h3 className="text-2xl font-bold text-white">Principais Siglas em Casas de Apostas</h3>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <Card className="bg-gray-900/50 border-blue-500/20 hover:border-blue-500/40 transition-colors">
+                          <CardContent className="p-6">
+                            <div className="flex items-center mb-3">
+                              <TrendingUp className="h-5 w-5 text-green-400 mr-2" />
+                              <h4 className="text-lg font-semibold text-white">GGR (Gross Gaming Revenue)</h4>
+                            </div>
+                            <p className="text-gray-300 text-sm leading-relaxed">
+                              Receita Bruta de Jogo — valor total que os jogadores perdem antes de qualquer desconto.
+                            </p>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="bg-gray-900/50 border-blue-500/20 hover:border-blue-500/40 transition-colors">
+                          <CardContent className="p-6">
+                            <div className="flex items-center mb-3">
+                              <PieChart className="h-5 w-5 text-blue-400 mr-2" />
+                              <h4 className="text-lg font-semibold text-white">NGR (Net Gaming Revenue)</h4>
+                            </div>
+                            <p className="text-gray-300 text-sm leading-relaxed">
+                              Receita Líquida de Jogo — valor que sobra para a casa após descontar bônus, taxas e custos operacionais. É a base para cálculo das comissões no modelo Revenue Share.
+                            </p>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="bg-gray-900/50 border-blue-500/20 hover:border-blue-500/40 transition-colors">
+                          <CardContent className="p-6">
+                            <div className="flex items-center mb-3">
+                              <Wallet className="h-5 w-5 text-yellow-400 mr-2" />
+                              <h4 className="text-lg font-semibold text-white">FTD (First Time Deposit)</h4>
+                            </div>
+                            <p className="text-gray-300 text-sm leading-relaxed">
+                              Primeiro Depósito — o primeiro depósito real feito pelo jogador após o cadastro.
+                            </p>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="bg-gray-900/50 border-blue-500/20 hover:border-blue-500/40 transition-colors">
+                          <CardContent className="p-6">
+                            <div className="flex items-center mb-3">
+                              <DollarSign className="h-5 w-5 text-green-400 mr-2" />
+                              <h4 className="text-lg font-semibold text-white">CPA (Cost Per Acquisition)</h4>
+                            </div>
+                            <p className="text-gray-300 text-sm leading-relaxed">
+                              Custo por Aquisição — comissão fixa paga ao afiliado por cada novo jogador que se cadastra e realiza o depósito.
+                            </p>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="bg-gray-900/50 border-blue-500/20 hover:border-blue-500/40 transition-colors">
+                          <CardContent className="p-6">
+                            <div className="flex items-center mb-3">
+                              <BarChart3 className="h-5 w-5 text-purple-400 mr-2" />
+                              <h4 className="text-lg font-semibold text-white">Revenue Share</h4>
+                            </div>
+                            <p className="text-gray-300 text-sm leading-relaxed">
+                              Modelo de comissão onde o afiliado recebe uma porcentagem do lucro líquido gerado pelos jogadores indicados.
+                            </p>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="bg-gray-900/50 border-blue-500/20 hover:border-blue-500/40 transition-colors">
+                          <CardContent className="p-6">
+                            <div className="flex items-center mb-3">
+                              <TrendingUpIcon className="h-5 w-5 text-emerald-400 mr-2" />
+                              <h4 className="text-lg font-semibold text-white">ROI (Return on Investment)</h4>
+                            </div>
+                            <p className="text-gray-300 text-sm leading-relaxed">
+                              Retorno sobre Investimento — mede o lucro obtido em relação ao valor investido.
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </div>
+
+                    <Separator className="bg-gray-700/50 my-8" />
+
+                    {/* Explicação Simples GGR e NGR */}
+                    <div className="mb-12">
+                      <div className="flex items-center mb-6">
+                        <Calculator className="h-6 w-6 text-green-400 mr-3" />
+                        <h3 className="text-2xl font-bold text-white">Entenda de Forma Simples: O que é GGR e NGR?</h3>
+                      </div>
+                      
+                      <p className="text-gray-300 mb-8 text-lg leading-relaxed">
+                        Se você quer ganhar dinheiro como afiliado em uma casa de apostas, é importante conhecer dois termos muito usados: GGR e NGR. Mas calma! A explicação é simples:
+                      </p>
+
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                        {/* GGR Card */}
+                        <Card className="bg-gradient-to-br from-green-900/30 to-green-800/20 border-green-500/30">
+                          <CardContent className="p-8">
+                            <div className="flex items-center mb-4">
+                              <div className="p-3 bg-green-500/20 rounded-full mr-4">
+                                <Coins className="h-8 w-8 text-green-400" />
+                              </div>
+                              <h4 className="text-2xl font-bold text-white">GGR (Gross Gaming Revenue)</h4>
+                            </div>
+                            <p className="text-gray-300 mb-6 leading-relaxed">
+                              GGR é a Receita Bruta de Jogo — ou seja, quanto os jogadores perderam no total, antes de qualquer desconto.
+                            </p>
+                            
+                            <div className="bg-gray-900/50 rounded-lg p-4 mb-4">
+                              <h5 className="text-green-400 font-semibold mb-2">📌 Exemplo prático:</h5>
+                              <ul className="text-gray-300 space-y-1 text-sm">
+                                <li>• Um jogador apostou R$ 500</li>
+                                <li>• Ganhou de volta R$ 100</li>
+                                <li>• Perdeu R$ 400</li>
+                              </ul>
+                            </div>
+                            
+                            <div className="bg-green-900/30 rounded-lg p-4">
+                              <p className="text-green-400 font-semibold">✅ Nesse caso:</p>
+                              <p className="text-white text-lg font-bold">👉 GGR = R$ 400</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        {/* NGR Card */}
+                        <Card className="bg-gradient-to-br from-blue-900/30 to-blue-800/20 border-blue-500/30">
+                          <CardContent className="p-8">
+                            <div className="flex items-center mb-4">
+                              <div className="p-3 bg-blue-500/20 rounded-full mr-4">
+                                <PieChart className="h-8 w-8 text-blue-400" />
+                              </div>
+                              <h4 className="text-2xl font-bold text-white">NGR (Net Gaming Revenue)</h4>
+                            </div>
+                            <p className="text-gray-300 mb-6 leading-relaxed">
+                              NGR é a Receita Líquida de Jogo — o valor que realmente fica com a casa de apostas, depois de descontar:
+                            </p>
+                            
+                            <div className="space-y-3 mb-6">
+                              <div className="flex items-center text-gray-300">
+                                <span className="text-yellow-400 mr-2">🎁</span>
+                                <span>Bônus dados aos jogadores</span>
+                              </div>
+                              <div className="flex items-center text-gray-300">
+                                <span className="text-blue-400 mr-2">💳</span>
+                                <span>Taxas de pagamento</span>
+                              </div>
+                              <div className="flex items-center text-gray-300">
+                                <span className="text-purple-400 mr-2">🏢</span>
+                                <span>Custos operacionais (normalmente entre 15% e 20%)</span>
+                              </div>
+                            </div>
+                            
+                            <div className="bg-gray-900/50 rounded-lg p-4 mb-4">
+                              <h5 className="text-blue-400 font-semibold mb-2">📌 Exemplo com base no GGR acima:</h5>
+                              <ul className="text-gray-300 space-y-1 text-sm">
+                                <li>• GGR = R$ 400</li>
+                                <li>• Custos e descontos totais: R$ 80</li>
+                              </ul>
+                            </div>
+                            
+                            <div className="bg-blue-900/30 rounded-lg p-4">
+                              <p className="text-blue-400 font-semibold">✅ NGR = R$ 320</p>
+                              <p className="text-yellow-400 text-sm mt-2">👉 É sobre o NGR que sua comissão é calculada no modelo Revenue Share!</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      {/* Tabela Resumo */}
+                      <Card className="bg-gray-900/50 border-gray-700/50">
+                        <CardHeader>
+                          <CardTitle className="text-white flex items-center">
+                            <BarChart3 className="h-5 w-5 text-blue-400 mr-2" />
+                            🔁 Resumo Rápido
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                              <thead>
+                                <tr className="border-b border-gray-700">
+                                  <th className="text-blue-400 py-3 px-4 font-semibold">Termo</th>
+                                  <th className="text-blue-400 py-3 px-4 font-semibold">Significado</th>
+                                  <th className="text-blue-400 py-3 px-4 font-semibold">O que representa</th>
+                                  <th className="text-blue-400 py-3 px-4 font-semibold">Exemplo prático</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr className="border-b border-gray-800/50">
+                                  <td className="text-white py-4 px-4 font-semibold">GGR</td>
+                                  <td className="text-gray-300 py-4 px-4">Receita Bruta de Jogo</td>
+                                  <td className="text-gray-300 py-4 px-4">Total perdido pelos jogadores (sem descontos)</td>
+                                  <td className="text-green-400 py-4 px-4 font-semibold">R$ 400</td>
+                                </tr>
+                                <tr>
+                                  <td className="text-white py-4 px-4 font-semibold">NGR</td>
+                                  <td className="text-gray-300 py-4 px-4">Receita Líquida de Jogo</td>
+                                  <td className="text-gray-300 py-4 px-4">GGR – custos da casa (bônus, taxas, etc.)</td>
+                                  <td className="text-blue-400 py-4 px-4 font-semibold">R$ 320</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Call to Action */}
+                      <div className="mt-8 text-center">
+                        <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-xl p-6 border border-blue-500/30">
+                          <div className="flex items-center justify-center mb-4">
+                            <Trophy className="h-6 w-6 text-yellow-400 mr-2" />
+                            <p className="text-yellow-400 font-semibold text-lg">💡 Dica de afiliado:</p>
+                          </div>
+                          <p className="text-gray-300 mb-6 text-lg">
+                            Entender a diferença entre GGR e NGR é essencial para calcular seus ganhos e escolher as melhores oportunidades!
+                          </p>
+                          <Button 
+                            size="lg" 
+                            onClick={() => setLocation("/register")}
+                            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-4 text-lg font-semibold"
+                          >
+                            <Rocket className="mr-2 h-5 w-5" />
+                            📲 Junte-se agora ao nosso programa de afiliados
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="termos" className="mt-8">
+                <Card className="bg-gray-800/30 dark:bg-gray-900/50 border-gray-700/50 backdrop-blur-sm">
+                  <CardContent className="p-8">
+                    <div className="text-center py-16">
+                      <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-2xl font-bold text-white mb-4">Termos Técnicos</h3>
+                      <p className="text-gray-400 text-lg">
+                        Conteúdo em desenvolvimento. Em breve você terá acesso a todos os termos técnicos importantes.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="direitos" className="mt-8">
+                <Card className="bg-gray-800/30 dark:bg-gray-900/50 border-gray-700/50 backdrop-blur-sm">
+                  <CardContent className="p-8">
+                    <div className="text-center py-16">
+                      <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-2xl font-bold text-white mb-4">Direitos e Deveres do Afiliado</h3>
+                      <p className="text-gray-400 text-lg">
+                        Conteúdo em desenvolvimento. Em breve você terá acesso a todas as informações sobre direitos e deveres.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </div>
         </section>
 
