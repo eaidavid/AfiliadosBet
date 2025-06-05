@@ -533,7 +533,7 @@ export default function AdminHouses() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-orange-400 text-sm font-medium">Total Afiliações</p>
-                      <p className="text-2xl font-bold text-white">
+                      <p className="text-2xl font-bold text-[#1a2537]">
                         {houses.reduce((acc, house) => acc + (house._count?.affiliateLinks || 0), 0)}
                       </p>
                       <p className="text-xs text-slate-400 mt-1">
