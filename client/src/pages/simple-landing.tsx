@@ -47,13 +47,12 @@ export default function SimpleLanding() {
         <div className="absolute top-10 right-1/4 w-48 h-48 bg-cyan-500 rounded-full blur-2xl opacity-30 animate-pulse" style={{ animationDuration: '2.5s', animationDelay: '1s' }}></div>
         <div className="absolute bottom-10 left-1/4 w-64 h-64 bg-yellow-500 rounded-full blur-2xl opacity-20 animate-bounce" style={{ animationDuration: '3.5s', animationDelay: '0.5s' }}></div>
       </div>
-
       {/* Navigation */}
       <nav className="relative z-10 bg-slate-800/50 backdrop-blur-md border-b border-blue-800/30">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <img src={logoPath} alt="AfiliadosBet" className="h-10 w-10" />
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-green-400 bg-clip-text text-transparent">
+            <span className="font-bold bg-gradient-to-r from-blue-400 to-green-400 bg-clip-text text-transparent text-[16px]">
               AfiliadosBet
             </span>
           </div>
@@ -73,7 +72,6 @@ export default function SimpleLanding() {
           </div>
         </div>
       </nav>
-
       {/* Hero Section */}
       <div className="relative z-10 container mx-auto px-6 py-20">
         <div className="text-center">
@@ -156,7 +154,6 @@ export default function SimpleLanding() {
           </div>
         </div>
       </div>
-
       {/* Features Section */}
       <div className="relative z-10 bg-slate-800/30 backdrop-blur-sm py-20">
         <div className="container mx-auto px-6">
@@ -193,7 +190,6 @@ export default function SimpleLanding() {
           </div>
         </div>
       </div>
-
       {/* Como Funciona */}
       <div className="relative z-10 py-20">
         <div className="container mx-auto px-6">
@@ -233,7 +229,6 @@ export default function SimpleLanding() {
           </div>
         </div>
       </div>
-
       {/* Depoimentos */}
       <div className="relative z-10 bg-slate-800/30 backdrop-blur-sm py-20">
         <div className="container mx-auto px-6">
@@ -285,7 +280,6 @@ export default function SimpleLanding() {
           </div>
         </div>
       </div>
-
       {/* Vantagens Exclusivas */}
       <div className="relative z-10 py-20">
         <div className="container mx-auto px-6">
@@ -365,7 +359,6 @@ export default function SimpleLanding() {
           </div>
         </div>
       </div>
-
       {/* FAQ */}
       <div className="relative z-10 bg-slate-800/30 backdrop-blur-sm py-20">
         <div className="container mx-auto px-6">
@@ -409,7 +402,6 @@ export default function SimpleLanding() {
           </div>
         </div>
       </div>
-
       {/* Urgência e Escassez */}
       <div className="relative z-10 bg-gradient-to-r from-red-900/30 to-orange-900/30 py-16">
         <div className="container mx-auto px-6 text-center">
@@ -433,7 +425,6 @@ export default function SimpleLanding() {
           </div>
         </div>
       </div>
-
       {/* CTA Final */}
       <div className="relative z-10 bg-gradient-to-r from-green-900/50 to-blue-900/50 py-20">
         <div className="container mx-auto px-6 text-center">
