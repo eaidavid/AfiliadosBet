@@ -112,7 +112,7 @@ export function useLogin() {
   
   return useMutation({
     mutationFn: async (credentials: LoginData) => {
-      const response = await apiRequest("POST", "/api/login", {
+      const response = await apiRequest("POST", "/api/auth/login", {
         email: credentials.usernameOrEmail,
         password: credentials.password
       });
