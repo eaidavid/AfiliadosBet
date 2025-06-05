@@ -1431,13 +1431,10 @@ export async function registerRoutes(app: any): Promise<Server> {
     try {
       const userId = req.user.id;
       
-      // Get conversions count by type
+      // Get clicks count from click_tracking table
       const clicksCount = await db.select({ count: sql<number>`count(*)` })
-        .from(schema.conversions)
-        .where(and(
-          eq(schema.conversions.userId, userId),
-          eq(schema.conversions.type, 'click')
-        ));
+        .from(schema.clickTracking)
+        .where(eq(schema.clickTracking.userId, userId));
       
       const registrationsCount = await db.select({ count: sql<number>`count(*)` })
         .from(schema.conversions)
