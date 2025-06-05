@@ -483,7 +483,7 @@ export default function AdminHouses() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-green-400 text-sm font-medium">Casas Ativas</p>
-                      <p className="text-2xl font-bold text-white">
+                      <p className="text-2xl font-bold text-[#1a2436]">
                         {houses.filter(h => h.isActive).length}
                       </p>
                       <p className="text-xs text-slate-400 mt-1">
