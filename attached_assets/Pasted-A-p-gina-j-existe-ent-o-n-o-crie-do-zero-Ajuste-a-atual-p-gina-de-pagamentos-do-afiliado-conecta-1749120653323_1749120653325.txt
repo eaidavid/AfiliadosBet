@@ -1,0 +1,83 @@
+A página já existe, então não crie do zero. Ajuste a atual página de pagamentos do afiliado, conectando os elementos visuais com os dados reais do banco.
+
+Transforme a página simples em um painel financeiro completo e motivador, com foco em transparência, metas e histórico de ganhos.
+
+🔗 Tabela-alvo: payments
+Use a coluna user_id da sessão logada para filtrar os pagamentos do afiliado.
+
+🧱 Estrutura recomendada da nova página
+✅ 1. Resumo Financeiro (Cards no topo)
+Mostre os saldos e indicadores de forma clara e dinâmica:
+
+Card	Lógica SQL	Observações
+💰 Saldo disponível para saque	SUM(commission) - SUM(paid) com status pendente/aprovado	Total que ele pode sacar
+📥 Total já pago	SELECT SUM(amount) FROM payments WHERE user_id = ? AND status = 'paid'	Valor total transferido
+🕒 Pagamentos pendentes	SELECT SUM(amount) FROM payments WHERE user_id = ? AND status = 'pending'	Requisições aguardando
+📈 Ganhos no mês atual	Soma de commission nas conversões do mês atual (type IN ('deposit', 'profit'))	Use filtro por mês
+
+Sugestão de visual: cards coloridos com ícone, valor e badge de variação semanal/mensal.
+
+Adicione um pequeno gráfico de barra ou linha com evolução por semana, se possível.
+
+✅ 2. Tabela de Histórico de Pagamentos
+Tabela responsiva, com colunas:
+
+Data do Pagamento	Valor	Método	Status	PIX / Dados	Código Transação
+paid_at	amount	method	status (badge)	pix_key ou info bancária	transaction_id
+
+Status com cores: pendente (amarelo), processando (azul), pago (verde), cancelado (vermelho)
+
+Adicione ícone de copiar para pix_key ou transaction_id
+
+Adicione um botão “ver mais” que exibe o JSON da transação (se disponível)
+
+✅ 3. Solicitação de Pagamento
+Área abaixo da tabela com um botão e modal:
+
+Botão: 💸 Solicitar Saque
+Verifica se o saldo é suficiente (saldo >= mínimo)
+
+Abre um modal com:
+
+Valor a solicitar (pré-preenchido com saldo)
+
+Método de pagamento (pix, transferência)
+
+Chave Pix
+
+Botão "Confirmar Solicitação"
+
+🔐 A solicitação cria um novo registro em payments com status = 'pending'.
+
+✅ 4. Alertas e Informações
+Bloco inferior com:
+
+Último pagamento recebido (paid_at)
+
+Média de dias entre pagamentos
+
+Regras de saque: mínimo, dias úteis, prazos
+
+💄 Design/UX (sugestões visuais)
+Cards com ícones: 💰 📥 📈 📊
+
+Badge por status (.bg-green-100, .bg-yellow-100, etc)
+
+Loading esquelético nos dados
+
+Alternância entre modo escuro/claro
+
+Tooltip explicando cada métrica
+
+Paginação na tabela
+
+🔄 Dados Dinâmicos
+Use os seguintes dados da base:
+
+payments: valores, status, datas, método
+
+conversions: soma de comissões (por período)
+
+users: chave pix ou preferências, se você decidir armazenar lá
+
+Use também dados de clicks, registrations e conversions para enriquecer o painel com contexto financeiro.

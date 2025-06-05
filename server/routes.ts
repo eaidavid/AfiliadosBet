@@ -1794,6 +1794,173 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // Get affiliate financial summary
+  app.get('/api/affiliate/financial-summary', requireAuth, async (req: any, res: any) => {
+    try {
+      const userId = req.user.id;
+      
+      // Get all payments for the affiliate
+      const payments = await db
+        .select()
+        .from(schema.payments)
+        .where(eq(schema.payments.userId, userId));
+
+      // Get all conversions with commissions for the affiliate
+      const conversions = await db
+        .select()
+        .from(schema.conversions)
+        .where(eq(schema.conversions.userId, userId));
+
+      // Calculate financial metrics
+      const totalPaid = payments
+        .filter(p => p.status === 'paid')
+        .reduce((sum, p) => sum + parseFloat(p.amount), 0);
+
+      const pendingPayments = payments
+        .filter(p => p.status === 'pending')
+        .reduce((sum, p) => sum + parseFloat(p.amount), 0);
+
+      const totalEarned = conversions
+        .reduce((sum, c) => sum + parseFloat(c.commission || '0'), 0);
+
+      const availableBalance = totalEarned - totalPaid - pendingPayments;
+
+      // Calculate monthly earnings (current month)
+      const currentMonth = new Date();
+      const startOfCurrentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+      const monthlyEarnings = conversions
+        .filter(c => c.convertedAt && new Date(c.convertedAt) >= startOfCurrentMonth)
+        .reduce((sum, c) => sum + parseFloat(c.commission || '0'), 0);
+
+      // Calculate weekly growth
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      const lastWeekEarnings = conversions
+        .filter(c => c.convertedAt && new Date(c.convertedAt) >= oneWeekAgo)
+        .reduce((sum, c) => sum + parseFloat(c.commission || '0'), 0);
+
+      const twoWeeksAgo = new Date();
+      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+      const previousWeekEarnings = conversions
+        .filter(c => c.convertedAt && new Date(c.convertedAt) >= twoWeeksAgo && new Date(c.convertedAt) < oneWeekAgo)
+        .reduce((sum, c) => sum + parseFloat(c.commission || '0'), 0);
+
+      const weeklyGrowth = previousWeekEarnings > 0 
+        ? ((lastWeekEarnings - previousWeekEarnings) / previousWeekEarnings) * 100 
+        : 0;
+
+      const financialSummary = {
+        availableBalance: Math.max(0, availableBalance),
+        totalPaid,
+        pendingPayments,
+        monthlyEarnings,
+        weeklyGrowth: Math.round(weeklyGrowth * 100) / 100
+      };
+
+      res.json(financialSummary);
+    } catch (error) {
+      console.error('Erro ao buscar resumo financeiro:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Get affiliate payments history
+  app.get('/api/affiliate/payments', requireAuth, async (req: any, res: any) => {
+    try {
+      const userId = req.user.id;
+
+      const payments = await db
+        .select({
+          id: schema.payments.id,
+          amount: schema.payments.amount,
+          method: schema.payments.method,
+          status: schema.payments.status,
+          pixKey: schema.payments.pixKey,
+          transactionId: schema.payments.transactionId,
+          paidAt: schema.payments.paidAt,
+          createdAt: schema.payments.createdAt,
+          requestedAt: schema.payments.createdAt
+        })
+        .from(schema.payments)
+        .where(eq(schema.payments.userId, userId))
+        .orderBy(desc(schema.payments.createdAt));
+
+      res.json(payments);
+    } catch (error) {
+      console.error('Erro ao buscar histórico de pagamentos:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Request withdrawal
+  app.post('/api/affiliate/request-withdrawal', requireAuth, async (req: any, res: any) => {
+    try {
+      const userId = req.user.id;
+      const { amount, method, pixKey } = req.body;
+
+      // Validate input
+      if (!amount || !method || !pixKey) {
+        return res.status(400).json({ error: 'Dados incompletos' });
+      }
+
+      const withdrawalAmount = parseFloat(amount);
+      if (withdrawalAmount <= 0 || withdrawalAmount < 50) {
+        return res.status(400).json({ error: 'Valor mínimo para saque é R$ 50,00' });
+      }
+
+      // Calculate available balance
+      const payments = await db
+        .select()
+        .from(schema.payments)
+        .where(eq(schema.payments.userId, userId));
+
+      const conversions = await db
+        .select()
+        .from(schema.conversions)
+        .where(eq(schema.conversions.userId, userId));
+
+      const totalPaid = payments
+        .filter(p => p.status === 'paid')
+        .reduce((sum, p) => sum + parseFloat(p.amount), 0);
+
+      const pendingPayments = payments
+        .filter(p => p.status === 'pending')
+        .reduce((sum, p) => sum + parseFloat(p.amount), 0);
+
+      const totalEarned = conversions
+        .reduce((sum, c) => sum + parseFloat(c.commission || '0'), 0);
+
+      const availableBalance = totalEarned - totalPaid - pendingPayments;
+
+      if (withdrawalAmount > availableBalance) {
+        return res.status(400).json({ error: 'Saldo insuficiente' });
+      }
+
+      // Create withdrawal request
+      const [newPayment] = await db
+        .insert(schema.payments)
+        .values({
+          userId,
+          amount: amount.toString(),
+          method,
+          status: 'pending',
+          pixKey,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+
+      res.json({ 
+        success: true, 
+        message: 'Solicitação de saque criada com sucesso',
+        paymentId: newPayment.id 
+      });
+    } catch (error) {
+      console.error('Erro ao solicitar saque:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
   // Get affiliate analytics data
   app.get('/api/affiliate/analytics', requireAuth, async (req: any, res: any) => {
     try {
