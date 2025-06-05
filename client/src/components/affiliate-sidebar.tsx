@@ -39,9 +39,9 @@ const navigationItems = [
   },
   {
     title: 'Meus Links',
-    href: '/affiliate-links',
+    href: '/my-links',
     icon: Link2,
-    description: 'Gerenciar links de afiliado'
+    description: 'Visualizar e gerenciar meus links'
   },
   {
     title: 'Relatórios',

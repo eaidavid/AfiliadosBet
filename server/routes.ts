@@ -1644,6 +1644,101 @@ export async function registerRoutes(app: any): Promise<Server> {
     }
   });
 
+  // Get affiliate links with performance data
+  app.get('/api/affiliate/my-links', requireAuth, async (req: any, res: any) => {
+    try {
+      const userId = req.user.id;
+
+      // Get affiliate links with house information
+      const affiliateLinks = await db
+        .select({
+          id: schema.affiliateLinks.id,
+          userId: schema.affiliateLinks.userId,
+          houseId: schema.affiliateLinks.houseId,
+          generatedUrl: schema.affiliateLinks.generatedUrl,
+          isActive: schema.affiliateLinks.isActive,
+          createdAt: schema.affiliateLinks.createdAt,
+          houseName: schema.bettingHouses.name,
+          houseLogo: schema.bettingHouses.logoUrl,
+          houseCommissionType: schema.bettingHouses.commissionType,
+          houseCpaValue: schema.bettingHouses.cpaValue,
+          houseRevshareValue: schema.bettingHouses.revshareValue,
+        })
+        .from(schema.affiliateLinks)
+        .leftJoin(schema.bettingHouses, eq(schema.affiliateLinks.houseId, schema.bettingHouses.id))
+        .where(and(
+          eq(schema.affiliateLinks.userId, userId),
+          eq(schema.affiliateLinks.isActive, true)
+        ))
+        .orderBy(desc(schema.affiliateLinks.createdAt));
+
+      // Get click counts for each link
+      const clickCounts = await db
+        .select({
+          affiliateLinkId: schema.clickTracking.affiliateLinkId,
+          count: sql<number>`count(*)`.as('count')
+        })
+        .from(schema.clickTracking)
+        .where(
+          inArray(
+            schema.clickTracking.affiliateLinkId,
+            affiliateLinks.map(link => link.id)
+          )
+        )
+        .groupBy(schema.clickTracking.affiliateLinkId);
+
+      // Get conversion counts and total commission for each link
+      const conversionData = await db
+        .select({
+          affiliateLinkId: schema.conversions.affiliateLinkId,
+          count: sql<number>`count(*)`.as('count'),
+          totalCommission: sql<string>`sum(${schema.conversions.commission})`.as('totalCommission')
+        })
+        .from(schema.conversions)
+        .where(
+          and(
+            inArray(
+              schema.conversions.affiliateLinkId,
+              affiliateLinks.map(link => link.id)
+            ),
+            isNotNull(schema.conversions.affiliateLinkId)
+          )
+        )
+        .groupBy(schema.conversions.affiliateLinkId);
+
+      // Combine data
+      const linksWithPerformance = affiliateLinks.map(link => {
+        const clickData = clickCounts.find(c => c.affiliateLinkId === link.id);
+        const conversionInfo = conversionData.find(c => c.affiliateLinkId === link.id);
+
+        return {
+          id: link.id,
+          userId: link.userId,
+          houseId: link.houseId,
+          generatedUrl: link.generatedUrl,
+          isActive: link.isActive,
+          createdAt: link.createdAt,
+          house: {
+            id: link.houseId,
+            name: link.houseName,
+            logoUrl: link.houseLogo,
+            commissionType: link.houseCommissionType,
+            cpaValue: link.houseCpaValue,
+            revshareValue: link.houseRevshareValue,
+          },
+          clickCount: clickData?.count || 0,
+          conversionCount: conversionInfo?.count || 0,
+          totalCommission: conversionInfo?.totalCommission || '0',
+        };
+      });
+
+      res.json(linksWithPerformance);
+    } catch (error) {
+      console.error('Erro ao buscar links do afiliado:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
   // Get affiliate stats for betting houses page
   app.get("/api/affiliate/stats", requireAuth, async (req: any, res) => {
     try {

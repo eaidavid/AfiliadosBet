@@ -1,0 +1,162 @@
+Perfeito, agora que esclareceu que a criação de novos links só pode ser feita na página de casas de apostas, vamos focar exclusivamente em uma experiência de visualização rica, funcional e envolvente para a página “Meus Links” no painel do afiliado.
+
+Aqui está o novo prompt definitivo, com criatividade direcionada, estilo visual profissional, e dados totalmente alinhados ao banco AFILIADOSBET:
+
+🧾 PROMPT DEFINITIVO: Página “Meus Links” do Painel do Afiliado (AFILIADOSBET)
+
+🎯 Objetivo
+
+Criar uma página 100% voltada à visualização e acompanhamento dos links de afiliação já gerados pelo usuário. Não há criação de links aqui — o foco é entender o desempenho, copiar URLs e sentir orgulho da performance em uma interface visualmente poderosa.
+
+🎨 Estilo Visual
+
+Tema: Dark elegante com predominância de tons azul escuro, preto e azul vibrante como cor de ação
+
+
+
+🧱 Base de Dados
+
+Use dados reais das seguintes tabelas:
+
+affiliate_links (links do afiliado logado)
+
+betting_houses (informações da casa)
+
+click_tracking (cliques por link_id)
+
+conversions (por affiliate_link_id)
+
+Todos os dados devem estar filtrados por:
+
+affiliate_links.user_id = sessão do usuário
+
+affiliate_links.is_active = true
+
+🧩 Layout da Página
+
+1. ✅ Cabeçalho Fixo
+
+Título: "Meus Links de Afiliação"
+
+Subtítulo (menor): “Veja o desempenho dos seus links já gerados nas casas de apostas”
+
+Ícone: corrente (🔗) ou similar
+
+2. 📋 Cards por Link Gerado
+
+Cada link do afiliado será apresentado em um card horizontal ou vertical com os seguintes dados extraídos diretamente do banco:
+
+Informações
+
+Origem
+
+Casa de aposta
+
+betting_houses.name
+
+Logo da casa
+
+betting_houses.logo_url
+
+URL completa do link
+
+affiliate_links.generated_url
+
+Cliques totais
+
+COUNT de click_tracking por link_id
+
+Conversões
+
+COUNT de conversions por affiliate_link_id
+
+Comissão acumulada
+
+SUM de conversions.commission
+
+Data de criação do link
+
+affiliate_links.created_at
+
+3. ⚙️ Funcionalidades Visuais do Card
+
+Cada card deve conter:
+
+Logo da casa no topo ou canto esquerdo
+
+Título com nome da casa
+
+Botão “Copiar Link” (ação visual com tooltip “Copiado!”)
+
+Se houver performance:
+
+🎯 12 cliques
+
+⭐ 3 conversões
+
+💸 R$ 185,00 de comissão
+
+Caso o link não tenha desempenho:
+
+Texto: “Sem cliques ou conversões ainda”
+
+Ícone ou badge suave: “Inativo no momento”
+
+Botão “Ver na casa” (abre a generated_url em nova aba)
+
+4. 🔍 Filtros e Busca
+
+Campo de busca: por nome da casa (betting_houses.name)
+
+Filtro dropdown (opcional): por desempenho
+
+“Todos”
+
+“Com conversões”
+
+“Sem conversões”
+
+Ordenação opcional: mais recentes, mais cliques, mais comissão
+
+5. 🧾 Rodapé / Aviso Importante
+
+Texto discreto, cinza claro:
+
+“Novos links devem ser gerados na página Casas de Apostas.”
+
+Ícone de seta ou link direto para a página de criação
+
+📭 Empty State (sem links criados ainda)
+
+Ícone estilizado de corrente quebrada ou link ausente
+
+Texto: “Você ainda não gerou nenhum link de afiliação.”
+
+Botão azul: "Explorar Casas de Apostas"
+
+Leva para a página de geração de links
+
+📱 Responsividade
+
+Mobile: 1 coluna de cards empilhados
+
+Tablet: 2 colunas
+
+Desktop: até 3 colunas
+
+Cards clicáveis, com toques amplos e botões acessíveis
+
+✨ Extras de UX
+
+Tooltip nos ícones de dados: "Clique total", "Conversões", "Comissão"
+
+Animações suaves nos cards ao hover
+
+Confirmação visual ao copiar (ícone vira “check” por 2 segundos)
+
+Exibir números com formatação correta:
+
+R$ em pt-BR (ex: R$ 1.252,45)
+
+Datas em formato: “05 de junho de 2025”
+
