@@ -433,7 +433,7 @@ export default function PostbackGeneratorProfessional() {
               <Badge variant="outline" className="text-green-400 border-green-400">
                 {activePostbacks.length} postback(s) ativos
               </Badge>
-              <Badge variant="outline" className="text-blue-400 border-blue-400">
+              <Badge variant="outline" className="text-blue-400 border-blue-400 text-[14px] pt-[9px] pb-[9px]">
                 {filteredPostbacks.length} total
               </Badge>
             </div>

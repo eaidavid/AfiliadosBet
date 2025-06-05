@@ -322,8 +322,7 @@ export default function PostbackLogs() {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
-      
-      <div className="lg:ml-72 px-4 md:px-6 lg:px-8 pt-6 pb-8 max-w-[1600px] mx-auto transition-all duration-300">
+      <div className="lg:ml-72 px-4 md:px-6 lg:px-8 max-w-[1600px] mx-auto transition-all duration-300 mt-[0px] mb-[0px] pt-[62px] pb-[62px]">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -708,7 +707,6 @@ export default function PostbackLogs() {
           </Card>
         </motion.div>
       </div>
-
       {/* Log Details Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
