@@ -176,7 +176,7 @@ export default function AdminDashboardResponsive() {
   return (
     <div className="min-h-screen bg-slate-950">
       <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
-      <div className="ml-20"> {/* Fixed margin for collapsed sidebar */}
+      <div className="ml-20 lg:ml-[110px] lg:mr-[110px]"> {/* Fixed margin for collapsed sidebar */}
         
         <main className="p-4 lg:p-6 space-y-6">
           {/* Header */}
