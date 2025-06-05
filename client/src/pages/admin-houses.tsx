@@ -399,7 +399,21 @@ export default function AdminHouses() {
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <AdminSidebar currentPage="houses" onPageChange={() => {}} />
+      <AdminSidebar currentPage="houses" onPageChange={(page) => {
+        if (page === "dashboard") {
+          window.location.href = "/admin";
+        } else if (page === "houses") {
+          window.location.href = "/admin/houses";
+        } else if (page === "manage") {
+          window.location.href = "/admin/manage";
+        } else if (page === "gerador-de-postbacks") {
+          window.location.href = "/admin/postback-generator";
+        } else if (page === "logs-postbacks") {
+          window.location.href = "/admin/postback-logs";
+        } else if (page === "admin-settings") {
+          window.location.href = "/admin/settings";
+        }
+      }} />
       
       <div className="flex-1 p-4 lg:p-8 ml-0 lg:ml-64">
         <div className="max-w-[1400px] mx-auto space-y-8">

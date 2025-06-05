@@ -182,7 +182,21 @@ export default function AdminSettingsEnhanced() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      <AdminSidebar currentPage="admin-settings" onPageChange={(page) => console.log('Navigate to:', page)} />
+      <AdminSidebar currentPage="admin-settings" onPageChange={(page) => {
+        if (page === "dashboard") {
+          window.location.href = "/admin";
+        } else if (page === "houses") {
+          window.location.href = "/admin/houses";
+        } else if (page === "manage") {
+          window.location.href = "/admin/manage";
+        } else if (page === "gerador-de-postbacks") {
+          window.location.href = "/admin/postback-generator";
+        } else if (page === "logs-postbacks") {
+          window.location.href = "/admin/postback-logs";
+        } else if (page === "admin-settings") {
+          window.location.href = "/admin/settings";
+        }
+      }} />
       
       <div className="lg:ml-72 px-4 md:px-6 lg:px-8 pt-6 pb-8 max-w-[1600px] mx-auto transition-all duration-300"
            style={{ paddingTop: 'max(1.5rem, env(safe-area-inset-top))' }}>
