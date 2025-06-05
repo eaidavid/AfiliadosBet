@@ -49,7 +49,7 @@ export default function SimpleLanding() {
       setStatsCount(prev => ({
         earnings: Math.min(prev.earnings + 150, 15000),
         affiliates: Math.min(prev.affiliates + 28, 2847),
-        commission: Math.min(prev.commission + 0.5, 45)
+        commission: Math.min(prev.commission + 0.5, 50)
       }));
     }, 20);
 
@@ -115,7 +115,7 @@ export default function SimpleLanding() {
           {/* Subtitle */}
           <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed">
             Ganhe até <span className="text-green-400 font-bold">R$ 15.000+ por mês</span> como afiliado das melhores casas de apostas do mercado. 
-            Sistema completo com comissões de até <span className="text-blue-400 font-bold">45%</span> e pagamentos garantidos.
+            Sistema completo com comissões de até <span className="text-blue-400 font-bold">50%</span> e pagamentos garantidos.
           </p>
 
           {/* CTA Buttons */}
@@ -179,7 +179,7 @@ export default function SimpleLanding() {
               </div>
               <p className="text-gray-300">Comissão Máxima</p>
               <div className="w-full bg-slate-700 rounded-full h-2 mt-3 overflow-hidden">
-                <div className="bg-gradient-to-r from-emerald-500 to-green-500 h-2 rounded-full transition-all duration-1000 animate-pulse" style={{ width: `${(statsCount.commission / 45) * 100}%`, animationDuration: '3.5s' }}></div>
+                <div className="bg-gradient-to-r from-emerald-500 to-green-500 h-2 rounded-full transition-all duration-1000 animate-pulse" style={{ width: `${(statsCount.commission / 50) * 100}%`, animationDuration: '3.5s' }}></div>
               </div>
             </div>
           </div>
@@ -202,7 +202,7 @@ export default function SimpleLanding() {
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-8 border border-green-800/30 hover:border-green-500/50 transition-all duration-500 group hover:scale-110 transform cursor-pointer hover:shadow-2xl hover:shadow-green-900/30">
               <div className="text-6xl mb-6 group-hover:animate-bounce animate-pulse" style={{ animationDuration: '3s' }}>💰</div>
               <h3 className="text-2xl font-bold text-green-400 mb-4 group-hover:animate-pulse">Comissões Altas</h3>
-              <p className="text-gray-300">Ganhe até 45% de comissão sobre cada apostador que trouxer. Sem limites de ganhos.</p>
+              <p className="text-gray-300">Ganhe até 50% de comissão sobre cada apostador que trouxer. Sem limites de ganhos.</p>
             </div>
 
             {/* Feature 2 */}
@@ -255,7 +255,7 @@ export default function SimpleLanding() {
                 <span className="text-3xl font-bold text-white">3</span>
               </div>
               <h3 className="text-2xl font-bold text-emerald-400 mb-4">Receba Comissões</h3>
-              <p className="text-gray-300 text-lg">Ganhe automaticamente até 45% de comissão por cada apostador que se cadastrar através dos seus links.</p>
+              <p className="text-gray-300 text-lg">Ganhe automaticamente até 50% de comissão por cada apostador que se cadastrar através dos seus links.</p>
             </div>
           </div>
         </div>
