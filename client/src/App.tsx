@@ -94,6 +94,7 @@ function Router() {
       <Route path="/admin/manage" component={AuthenticatedAdminManage} />
       <Route path="/admin/postback-generator" component={AuthenticatedPostbackGenerator} />
       <Route path="/admin/postback-logs" component={AuthenticatedPostbackLogs} />
+      <Route path="/admin/settings" component={AuthenticatedAdminSettings} />
       <Route component={NotFound} />
     </Switch>
   );
