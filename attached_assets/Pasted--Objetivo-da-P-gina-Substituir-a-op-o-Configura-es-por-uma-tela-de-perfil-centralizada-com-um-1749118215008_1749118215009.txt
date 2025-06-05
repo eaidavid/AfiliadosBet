@@ -1,0 +1,146 @@
+🎯 Objetivo da Página
+Substituir a opção “Configurações” por uma tela de perfil centralizada, com um design moderno e funcional. O usuário poderá:
+
+Visualizar seus dados de cadastro
+
+Editar suas informações pessoais (nome, e-mail, etc.)
+
+Atualizar senha com segurança
+
+Visualizar sessões ativas e dados importantes vinculados à conta
+
+🧱 Base de Dados Utilizada
+Use os dados da tabela:
+
+users
+Campo	Usado para
+id	Identificador do usuário
+name	Nome completo do afiliado
+email	E-mail (login)
+created_at	Data de cadastro
+document	CPF ou CNPJ
+phone	Telefone do afiliado
+status	Ativo/Inativo
+last_login_at	Último acesso
+affiliate_code	Código do afiliado
+pix_key_type + pix_key_value	Dados de pagamento
+avatar_url	(Opcional) Foto do usuário
+
+🎨 Estilo Visual
+Tema escuro premium (dark azul + cinza grafite)
+
+Detalhes em azul vibrante para campos ativos, botões e highlights
+
+Fontes com boa legibilidade e espaçamento
+
+Ícones modernos em cada seção (usando lucide ou phosphor style)
+
+🧩 Estrutura da Página
+1. 🧍‍♂️ Cabeçalho
+Título: "Meu Perfil"
+
+Subtítulo: “Gerencie suas informações pessoais e de conta”
+
+Ícone sugestão: 👤
+
+2. 🧾 Sessão: Informações da Conta
+Exibe e permite editar:
+
+Campo	Editável?	Exibe
+Nome completo (name)	✅	
+E-mail de login (email)	✅	
+Telefone (phone)	✅	
+Documento (document)	✅	
+Código do afiliado (affiliate_code)	❌ (somente leitura)	
+Data de cadastro (created_at)	❌	
+Último login (last_login_at)	❌	
+Status da conta (status)	❌ com badge colorido: “Ativo” ou “Inativo”	
+
+Botão de ação: Salvar alterações
+
+3. 💳 Sessão: Dados de Pagamento (PIX)
+Permite editar:
+
+Tipo de chave PIX (pix_key_type)
+
+CPF / CNPJ / E-mail / Telefone / Aleatória
+
+Valor da chave PIX (pix_key_value)
+
+Validação: Exibir erros claros caso a chave não esteja correta
+Botão: Atualizar Dados de Pagamento
+
+4. 🔐 Sessão: Alterar Senha
+Mini formulário com 3 campos:
+
+Senha atual
+
+Nova senha
+
+Confirmar nova senha
+
+Regras básicas de segurança:
+
+Mínimo de 6 caracteres
+
+Confirmação obrigatória
+
+Botão de ação: Alterar Senha
+
+5. 🧭 Sessão: Sessões Ativas
+Exibe uma tabela com:
+
+Info	Origem
+IP	(coletado da sessão)
+Navegador	(user-agent)
+Último acesso	(timestamp)
+Localização (se possível)	(IP geolocalizado)
+
+Botão: Encerrar outras sessões (desloga tudo exceto a atual)
+
+6. 🖼️ Avatar (opcional)
+Se avatar_url existir, mostrar imagem no topo com botão "Alterar Foto"
+Caso contrário, mostrar avatar gerado com as iniciais
+
+7. 🧠 Experiência e Usabilidade
+Inputs com feedback em tempo real
+
+Campos desativados com ícones de cadeado
+
+Mensagens de sucesso com check verde animado
+
+Feedback visual ao salvar: “✅ Alterações salvas com sucesso!”
+
+Campos atualizáveis devem ter botão “Editar” ao lado, que vira botão “Salvar” quando ativado
+
+Dados sensíveis como senha nunca aparecem visíveis
+
+📱 Responsividade
+Mobile: Uma coluna com cards empilhados
+
+Tablet/Desktop: 2 colunas (perfil + ações)
+
+Botões fixos no final para facilitar toques em telas menores
+
+🧭 Navegação Sugerida
+Substituir "Configurações" do menu por "Perfil" com ícone 👤
+
+Link de retorno para Dashboard
+
+Sugestão discreta no rodapé:
+
+“Deseja sair da conta? [Sair]”
+
+📭 Empty States e Restrições
+Se algum dado obrigatório não existir (ex: pix), mostrar:
+
+“Você ainda não cadastrou sua chave PIX”
+
+Se o usuário for inativo:
+
+Mostrar um alerta superior vermelho:
+
+“Sua conta está inativa. Entre em contato com o suporte.”
+
+✨ Frase de Engajamento Final
+“Mantenha seus dados atualizados para receber suas comissões sem atrasos.”

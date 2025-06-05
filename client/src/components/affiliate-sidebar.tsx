@@ -56,10 +56,10 @@ const navigationItems = [
     description: 'Histórico de pagamentos'
   },
   {
-    title: 'Configurações',
-    href: '/settings',
-    icon: Settings,
-    description: 'Configurações da conta'
+    title: 'Perfil',
+    href: '/profile',
+    icon: User,
+    description: 'Gerenciar perfil e configurações'
   }
 ];
 
