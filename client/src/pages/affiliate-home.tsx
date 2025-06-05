@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -90,6 +90,7 @@ interface MonthlyStats {
 
 export default function AffiliateHome() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
 
   // Fetch user stats
@@ -121,6 +122,42 @@ export default function AffiliateHome() {
   const { data: monthlyStats, isLoading: monthlyLoading } = useQuery<MonthlyStats[]>({
     queryKey: ['/api/user/monthly-stats'],
   });
+
+  // Join affiliate mutation
+  const joinAffiliateMutation = useMutation({
+    mutationFn: async (houseId: number) => {
+      const response = await fetch(`/api/affiliate/join/${houseId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erro ao se afiliar');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Afiliação realizada com sucesso!",
+        description: "Você agora é afiliado desta casa de apostas.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/betting-houses/available'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/affiliate-links'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao se afiliar",
+        description: error.message || "Não foi possível realizar a afiliação.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleJoinAffiliate = (houseId: number) => {
+    joinAffiliateMutation.mutate(houseId);
+  };
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -402,9 +439,14 @@ export default function AffiliateHome() {
                                   Ver Link
                                 </Button>
                               ) : (
-                                <Button className="w-full bg-emerald-600 hover:bg-emerald-700" size="sm">
+                                <Button 
+                                  className="w-full bg-emerald-600 hover:bg-emerald-700" 
+                                  size="sm"
+                                  onClick={() => handleJoinAffiliate(house.id)}
+                                  disabled={joinAffiliateMutation.isPending}
+                                >
                                   <Zap className="h-4 w-4 mr-2" />
-                                  Se Afiliar
+                                  {joinAffiliateMutation.isPending ? 'Afiliando...' : 'Se Afiliar'}
                                 </Button>
                               )}
                             </div>
