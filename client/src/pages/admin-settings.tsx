@@ -618,7 +618,7 @@ export default function AdminSettings() {
                     <Download className="h-4 w-4" />
                     <div className="text-left">
                       <p className="font-medium">Logs de Postbacks</p>
-                      <p className="text-sm text-slate-400">Exportar todos os logs</p>
+                      <p className="text-sm text-slate-300">Exportar todos os logs</p>
                     </div>
                   </Button>
 
@@ -631,7 +631,7 @@ export default function AdminSettings() {
                     <Download className="h-4 w-4" />
                     <div className="text-left">
                       <p className="font-medium">Usuários</p>
-                      <p className="text-sm text-slate-400">Lista de todos os usuários</p>
+                      <p className="text-sm text-slate-300">Lista de todos os usuários</p>
                     </div>
                   </Button>
 
@@ -644,7 +644,7 @@ export default function AdminSettings() {
                     <Download className="h-4 w-4" />
                     <div className="text-left">
                       <p className="font-medium">Casas de Apostas</p>
-                      <p className="text-sm text-slate-400">Dados das casas cadastradas</p>
+                      <p className="text-sm text-slate-300">Dados das casas cadastradas</p>
                     </div>
                   </Button>
 
@@ -657,7 +657,7 @@ export default function AdminSettings() {
                     <Download className="h-4 w-4" />
                     <div className="text-left">
                       <p className="font-medium">Conversões</p>
-                      <p className="text-sm text-slate-400">Relatório de conversões</p>
+                      <p className="text-sm text-slate-300">Relatório de conversões</p>
                     </div>
                   </Button>
 
@@ -670,7 +670,7 @@ export default function AdminSettings() {
                     <Download className="h-4 w-4" />
                     <div className="text-left">
                       <p className="font-medium">Pagamentos</p>
-                      <p className="text-sm text-slate-400">Histórico de pagamentos</p>
+                      <p className="text-sm text-slate-300">Histórico de pagamentos</p>
                     </div>
                   </Button>
 
@@ -683,7 +683,7 @@ export default function AdminSettings() {
                     <Download className="h-4 w-4" />
                     <div className="text-left">
                       <p className="font-medium">Relatório Analítico</p>
-                      <p className="text-sm text-slate-400">Dados analíticos completos</p>
+                      <p className="text-sm text-slate-300">Dados analíticos completos</p>
                     </div>
                   </Button>
                 </div>
