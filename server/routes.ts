@@ -722,6 +722,107 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
+  // Registered postbacks routes
+  app.get("/api/admin/registered-postbacks", requireAdmin, async (req, res) => {
+    try {
+      const postbacks = await db
+        .select({
+          id: schema.registeredPostbacks.id,
+          name: schema.registeredPostbacks.name,
+          url: schema.registeredPostbacks.url,
+          house_id: schema.registeredPostbacks.houseId,
+          houseName: schema.bettingHouses.name,
+          event_type: schema.registeredPostbacks.eventType,
+          description: schema.registeredPostbacks.description,
+          is_active: schema.registeredPostbacks.isActive,
+          created_at: schema.registeredPostbacks.createdAt,
+          updated_at: schema.registeredPostbacks.updatedAt,
+        })
+        .from(schema.registeredPostbacks)
+        .leftJoin(schema.bettingHouses, eq(schema.registeredPostbacks.houseId, schema.bettingHouses.id))
+        .orderBy(desc(schema.registeredPostbacks.createdAt));
+
+      res.json(postbacks);
+    } catch (error) {
+      console.error("❌ Erro ao buscar postbacks registrados:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  app.post("/api/admin/registered-postbacks", requireAdmin, async (req, res) => {
+    try {
+      const { name, url, houseId, eventType, description, isActive } = req.body;
+
+      if (!name || !url || !houseId || !eventType) {
+        return res.status(400).json({ error: "Nome, URL, casa e tipo de evento são obrigatórios" });
+      }
+
+      const [postback] = await db
+        .insert(schema.registeredPostbacks)
+        .values({
+          name,
+          url,
+          houseId: parseInt(houseId),
+          eventType,
+          description: description || null,
+          isActive: isActive !== undefined ? isActive : true,
+        })
+        .returning();
+
+      res.json(postback);
+    } catch (error) {
+      console.error("❌ Erro ao criar postback:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  app.put("/api/admin/registered-postbacks/:id", requireAdmin, async (req, res) => {
+    try {
+      const postbackId = parseInt(req.params.id);
+      
+      if (isNaN(postbackId)) {
+        return res.status(400).json({ error: "ID inválido" });
+      }
+
+      const updateData = req.body;
+      delete updateData.id;
+
+      const [updatedPostback] = await db
+        .update(schema.registeredPostbacks)
+        .set(updateData)
+        .where(eq(schema.registeredPostbacks.id, postbackId))
+        .returning();
+
+      if (!updatedPostback) {
+        return res.status(404).json({ error: "Postback não encontrado" });
+      }
+
+      res.json(updatedPostback);
+    } catch (error) {
+      console.error("❌ Erro ao atualizar postback:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  app.delete("/api/admin/registered-postbacks/:id", requireAdmin, async (req, res) => {
+    try {
+      const postbackId = parseInt(req.params.id);
+      
+      if (isNaN(postbackId)) {
+        return res.status(400).json({ error: "ID inválido" });
+      }
+
+      await db
+        .delete(schema.registeredPostbacks)
+        .where(eq(schema.registeredPostbacks.id, postbackId));
+
+      res.json({ success: true, message: "Postback excluído com sucesso" });
+    } catch (error) {
+      console.error("❌ Erro ao excluir postback:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   // Get user links (affiliate route)
   app.get("/api/my-links", requireAffiliate, async (req, res) => {
     try {
