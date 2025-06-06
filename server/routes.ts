@@ -603,6 +603,125 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
+  // Admin betting houses routes
+  app.get("/api/admin/betting-houses", requireAdmin, async (req, res) => {
+    try {
+      const houses = await db.select().from(schema.bettingHouses);
+      res.json(houses);
+    } catch (error) {
+      console.error("Erro ao buscar casas de apostas:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  app.post("/api/admin/betting-houses", requireAdmin, async (req, res) => {
+    try {
+      console.log("📋 Dados recebidos para criar casa:", req.body);
+      
+      const { name, description, logoUrl, baseUrl, primaryParam, additionalParams, commissionType, commissionValue, minDeposit, paymentMethods, isActive } = req.body;
+
+      if (!name || !baseUrl) {
+        return res.status(400).json({ error: "Nome e URL base são obrigatórios" });
+      }
+
+      // Generate identifier and security token
+      const identifier = name.toLowerCase().replace(/[^a-z0-9]/g, '') + Date.now();
+      const securityToken = `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+      const houseData = {
+        name,
+        description: description || null,
+        logoUrl: logoUrl || null,
+        baseUrl,
+        identifier,
+        securityToken,
+        primaryParam: primaryParam || "subid",
+        additionalParams: additionalParams || null,
+        commissionType: commissionType || "RevShare",
+        commissionValue: commissionValue || "30",
+        minDeposit: minDeposit || "100",
+        paymentMethods: paymentMethods || "Pix",
+        parameterMapping: {
+          subid: "subid",
+          amount: "amount",
+          customer_id: "customer_id"
+        },
+        enabledPostbacks: [],
+        isActive: isActive !== undefined ? isActive : true,
+      };
+
+      console.log("💾 Dados que serão inseridos:", houseData);
+
+      const [house] = await db
+        .insert(schema.bettingHouses)
+        .values(houseData)
+        .returning();
+
+      console.log("✅ Casa criada com sucesso:", house);
+      res.json(house);
+    } catch (error) {
+      console.error("❌ Erro ao criar casa:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  app.put("/api/admin/betting-houses/:id", requireAdmin, async (req, res) => {
+    try {
+      const houseId = parseInt(req.params.id);
+      
+      if (isNaN(houseId)) {
+        return res.status(400).json({ error: "ID inválido" });
+      }
+
+      const updateData = req.body;
+      delete updateData.id; // Remove ID from update data
+
+      const [updatedHouse] = await db
+        .update(schema.bettingHouses)
+        .set(updateData)
+        .where(eq(schema.bettingHouses.id, houseId))
+        .returning();
+
+      if (!updatedHouse) {
+        return res.status(404).json({ error: "Casa não encontrada" });
+      }
+
+      res.json(updatedHouse);
+    } catch (error) {
+      console.error("❌ Erro ao atualizar casa:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  app.delete("/api/admin/betting-houses/:id", requireAdmin, async (req, res) => {
+    try {
+      const houseId = parseInt(req.params.id);
+      
+      if (isNaN(houseId)) {
+        return res.status(400).json({ error: "ID inválido" });
+      }
+
+      // Check if house has any links before deleting
+      const links = await db
+        .select()
+        .from(schema.affiliateLinks)
+        .where(eq(schema.affiliateLinks.houseId, houseId));
+
+      if (links.length > 0) {
+        return res.status(400).json({ error: "Não é possível excluir casa com links ativos" });
+      }
+
+      await db
+        .delete(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.id, houseId));
+
+      res.json({ success: true, message: "Casa excluída com sucesso" });
+    } catch (error) {
+      console.error("❌ Erro ao excluir casa:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   // Get user links (affiliate route)
   app.get("/api/my-links", requireAffiliate, async (req, res) => {
     try {
