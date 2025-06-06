@@ -317,37 +317,8 @@ export async function registerRoutes(app: express.Application) {
       
       console.log('🔍 Listando afiliados com filtros:', { search, status, house, date });
       
-      // Base condition: only affiliate users
-      let baseCondition = eq(schema.users.role, 'affiliate');
-      let finalCondition = baseCondition;
-      
-      if (search && typeof search === 'string') {
-        const searchTerm = `%${search}%`;
-        const searchCondition = or(
-          ilike(schema.users.email, searchTerm),
-          ilike(schema.users.fullName, searchTerm),
-          ilike(schema.users.username, searchTerm)
-        );
-        finalCondition = and(finalCondition, searchCondition!);
-      }
-      
-      if (status === 'active') {
-        finalCondition = and(finalCondition, eq(schema.users.isActive, true))!;
-      } else if (status === 'inactive') {
-        finalCondition = and(finalCondition, eq(schema.users.isActive, false))!;
-      }
-      
-      if (date) {
-        const targetDate = new Date(date as string);
-        const nextDay = new Date(targetDate);
-        nextDay.setDate(nextDay.getDate() + 1);
-        
-        finalCondition = and(
-          finalCondition,
-          gte(schema.users.createdAt, targetDate)!,
-          lt(schema.users.createdAt, nextDay)!
-        )!;
-      }
+      // Simple query without complex conditions for now
+      let whereClause = eq(schema.users.role, 'affiliate');
       
       const users = await db
         .select({
@@ -359,7 +330,7 @@ export async function registerRoutes(app: express.Application) {
           createdAt: schema.users.createdAt,
         })
         .from(schema.users)
-        .where(finalCondition)
+        .where(whereClause)
         .orderBy(desc(schema.users.createdAt));
       
       // Para cada afiliado, buscar estatísticas
