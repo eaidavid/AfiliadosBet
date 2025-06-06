@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Users, Search, Eye, Edit, Trash2 } from 'lucide-react';
 import AdminSidebar from '@/components/admin/sidebar';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
+import { useLocation } from 'wouter';
 
 const SIDEBAR_PROPS = {
   currentPage: 'manage',
@@ -29,6 +32,8 @@ interface Affiliate {
 
 export default function AdminManageSimple() {
   const [search, setSearch] = useState('');
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
 
   // Fetch affiliates
   const { data: affiliates = [], isLoading, error } = useQuery<Affiliate[]>({
