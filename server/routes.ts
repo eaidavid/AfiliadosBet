@@ -415,6 +415,50 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
+  // Delete affiliate
+  app.delete("/api/admin/affiliates/:id", requireAdmin, async (req, res) => {
+    try {
+      const affiliateId = parseInt(req.params.id);
+      
+      if (isNaN(affiliateId)) {
+        return res.status(400).json({ error: 'ID inválido' });
+      }
+
+      // Verificar se o afiliado existe
+      const existingAffiliate = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.id, affiliateId))
+        .limit(1);
+
+      if (existingAffiliate.length === 0) {
+        return res.status(404).json({ error: 'Afiliado não encontrado' });
+      }
+
+      // Deletar links do afiliado primeiro (referências)
+      await db
+        .delete(schema.affiliateLinks)
+        .where(eq(schema.affiliateLinks.userId, affiliateId));
+
+      // Deletar conversões do afiliado
+      await db
+        .delete(schema.conversions)
+        .where(eq(schema.conversions.userId, affiliateId));
+
+      // Deletar o afiliado
+      await db
+        .delete(schema.users)
+        .where(eq(schema.users.id, affiliateId));
+
+      console.log(`✅ Afiliado ${affiliateId} excluído com sucesso`);
+      res.json({ success: true, message: 'Afiliado excluído com sucesso' });
+      
+    } catch (error) {
+      console.error('❌ Erro ao excluir afiliado:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
   // User stats
   app.get("/api/stats/user", requireAffiliate, async (req, res) => {
     try {

@@ -60,6 +60,51 @@ export default function AdminManageSimple() {
     }
   };
 
+  // Mutation para deletar afiliado
+  const deleteAffiliateMutation = useMutation({
+    mutationFn: async (affiliateId: number) => {
+      const response = await fetch(`/api/admin/affiliates/${affiliateId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to delete affiliate');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Sucesso",
+        description: "Afiliado excluído com sucesso!",
+      });
+      // Refetch a lista de afiliados
+      window.location.reload();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: "Erro ao excluir afiliado: " + (error.message || 'Erro desconhecido'),
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Função para visualizar afiliado
+  const handleViewAffiliate = (affiliate: Affiliate) => {
+    alert(`Visualizar Afiliado:\n\nNome: ${affiliate.fullName}\nUsuário: ${affiliate.username}\nEmail: ${affiliate.email}\nComissões: R$ ${affiliate.totalCommissions}\nCliques: ${affiliate.totalClicks}\nRegistros: ${affiliate.totalRegistrations}\nDepósitos: ${affiliate.totalDeposits}\nStatus: ${affiliate.isActive ? 'Ativo' : 'Inativo'}\nCriado em: ${formatDate(affiliate.createdAt)}`);
+  };
+
+  // Função para editar afiliado
+  const handleEditAffiliate = (affiliateId: number) => {
+    setLocation(`/admin/manage/${affiliateId}/edit`);
+  };
+
+  // Função para excluir afiliado
+  const handleDeleteAffiliate = (affiliate: Affiliate) => {
+    const confirmDelete = confirm(`Tem certeza que deseja excluir o afiliado "${affiliate.fullName}" (${affiliate.username})?\n\nEsta ação não pode ser desfeita.`);
+    
+    if (confirmDelete) {
+      deleteAffiliateMutation.mutate(affiliate.id);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex h-screen bg-slate-950">
@@ -196,6 +241,8 @@ export default function AdminManageSimple() {
                                 size="sm"
                                 variant="outline"
                                 className="border-slate-600 hover:bg-slate-700"
+                                onClick={() => handleViewAffiliate(affiliate)}
+                                title="Visualizar dados do afiliado"
                               >
                                 <Eye className="h-4 w-4" />
                               </Button>
@@ -203,6 +250,8 @@ export default function AdminManageSimple() {
                                 size="sm"
                                 variant="outline"
                                 className="border-slate-600 hover:bg-slate-700"
+                                onClick={() => handleEditAffiliate(affiliate.id)}
+                                title="Editar afiliado"
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -210,6 +259,9 @@ export default function AdminManageSimple() {
                                 size="sm"
                                 variant="outline"
                                 className="border-red-600 text-red-400 hover:bg-red-900/20"
+                                onClick={() => handleDeleteAffiliate(affiliate)}
+                                disabled={deleteAffiliateMutation.isPending}
+                                title="Excluir afiliado"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
