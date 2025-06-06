@@ -153,14 +153,14 @@ export default function AdminEditAffiliate() {
   }
 
   return (
-    <div className="flex h-screen bg-slate-950">
+    <div className="min-h-screen bg-slate-950">
       <AdminSidebar {...SIDEBAR_PROPS} />
-      <div className="flex-1 ml-64 p-6 overflow-auto">
+      <div className="lg:ml-64 p-4 sm:p-6 lg:p-8 overflow-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="max-w-2xl mx-auto space-y-6"
+          className="max-w-2xl mx-auto space-y-4 lg:space-y-6"
         >
           {/* Header */}
           <div className="flex items-center gap-4">

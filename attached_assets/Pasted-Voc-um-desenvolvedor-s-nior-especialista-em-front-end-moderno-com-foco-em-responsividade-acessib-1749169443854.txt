@@ -1,0 +1,77 @@
+Você é um desenvolvedor sênior especialista em front-end moderno com foco em responsividade, acessibilidade, performance e design elegante. O projeto é um sistema de afiliados que já está funcional, com rotas separadas para admin (/admin/*) e afiliados (/home, /betting-houses, /my-links, etc.).
+
+## OBJETIVO:
+Melhorar a responsividade e experiência do usuário em todo o sistema. A aplicação deve se comportar perfeitamente em:
+- Celulares (320px+)
+- Tablets (768px+)
+- Laptops (1024px+)
+- Monitores grandes (1440px+)
+
+---
+
+## 🎯 INSTRUÇÕES PARA A RESPONSIVIDADE GLOBAL:
+
+### 1. 🔄 Layouts adaptáveis
+- Use `flex` e `grid` com `gap` e `auto-fit/minmax` em `TailwindCSS` para containers.
+- Evite valores fixos (`w-[300px]`, `h-[400px]`), prefira `w-full`, `max-w-*`, `aspect-video`, etc.
+- Use `container mx-auto px-4 sm:px-6 lg:px-8` como base de layout.
+
+### 2. 📱 Navbar e Sidebar
+- Sidebar fixa em telas grandes (>=1024px) e collapsável em mobile.
+- Menu hamburguer para mobile com transição suave (framer-motion ou Tailwind transitions).
+- Ícones com tooltips visíveis apenas em desktop (e escondidos no mobile).
+- Responsivo com `hidden lg:block` e `block lg:hidden` para controle de visibilidade.
+
+### 3. 📊 Tabelas
+- Em mobile, usar `overflow-x-auto` com `min-w-[600px]` em tabelas.
+- Alternativamente, exibir dados em cards (grid ou stack) com colapsadores (`Disclosure` ou `Accordion`).
+- As colunas importantes devem ter `text-xs sm:text-sm lg:text-base`.
+
+### 4. 🧩 Componentes
+- Todos os componentes devem ser mobile-first e adaptáveis com breakpoints (`sm`, `md`, `lg`, `xl`, `2xl`).
+- `Cards`, `Forms`, `Toasts`, `Modals`, `Tables`, `Buttons`, `Menus` devem ser testados em várias resoluções.
+- Elementos devem ter `rounded`, `shadow`, `p-4`, e `gap-4` por padrão, adaptando com breakpoints.
+
+### 5. 🖥 Dashboard e KPIs
+- KPIs devem ser organizados em `grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`.
+- Ícones e textos devem escalar bem: `text-base md:text-lg xl:text-xl`.
+- Evite excesso de colunas em monitores pequenos.
+
+### 6. ✨ Formulários
+- Inputs com `w-full`, labels em cima ou flutuantes.
+- Grids para campos lado a lado em telas grandes: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`.
+- Botões adaptáveis com `text-xs sm:text-sm md:text-base`.
+
+### 7. 🌙 Dark Mode
+- Garantir contraste e legibilidade em todos os breakpoints.
+- Classes condicionais com `dark:bg-*` e `dark:text-*`.
+
+### 8. 📈 Performance & UX
+- Use `lazy loading` em imagens e componentes pesados.
+- Use `@media` queries somente quando necessário, priorize utilitários do Tailwind.
+- Evite scroll horizontal com cuidado: `overflow-x-hidden` nos layouts base.
+- Componentes como `<Drawer />`, `<BottomSheet />`, `<DropdownMenu />` devem se adaptar conforme o device.
+
+---
+
+## 🧠 EXTRA:
+- Usar Tailwind `screen` breakpoints: `sm`, `md`, `lg`, `xl`, `2xl`.
+- Utilizar plugins como `@tailwindcss/aspect-ratio`, `@tailwindcss/forms`, `@tailwindcss/typography`.
+- Testar com DevTools nas larguras: 375px, 768px, 1024px, 1440px, 1920px.
+- Garantir que textos não quebrem nem virem `...` sem tooltip.
+- Modais e alertas centralizados verticalmente com comportamento consistente.
+
+---
+
+## 💼 PAGINAS QUE DEVEM SER TESTADAS:
+- `/login`, `/register`
+- `/home`, `/betting-houses`, `/my-links`, `/profile`, `/payments`, `/reports`
+- `/admin`, `/admin/manage`, `/admin/bettings`, `/admin/payments`, `/admin/dashboard`
+
+---
+
+## 🔧 TECNOLOGIAS:
+- TailwindCSS 3+
+- React (ou framework atual)
+- Suporte a dark mode (via classe ou sistema preferencial)
+- Sistema modular e componentizado

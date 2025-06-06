@@ -119,11 +119,11 @@ export default function AdminManageSimple() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen bg-slate-950">
+      <div className="min-h-screen bg-slate-950">
         <AdminSidebar {...SIDEBAR_PROPS} />
-        <div className="flex-1 ml-64 p-6">
-          <div className="flex items-center justify-center h-full">
-            <div className="text-slate-400">Carregando...</div>
+        <div className="lg:ml-64 p-4 sm:p-6 lg:p-8">
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-slate-400 text-sm sm:text-base">Carregando...</div>
           </div>
         </div>
       </div>
@@ -132,11 +132,11 @@ export default function AdminManageSimple() {
 
   if (error) {
     return (
-      <div className="flex h-screen bg-slate-950">
+      <div className="min-h-screen bg-slate-950">
         <AdminSidebar {...SIDEBAR_PROPS} />
-        <div className="flex-1 ml-64 p-6">
-          <div className="flex items-center justify-center h-full">
-            <div className="text-red-400">Erro ao carregar dados</div>
+        <div className="lg:ml-64 p-4 sm:p-6 lg:p-8">
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-red-400 text-sm sm:text-base">Erro ao carregar dados</div>
           </div>
         </div>
       </div>
@@ -144,35 +144,35 @@ export default function AdminManageSimple() {
   }
 
   return (
-    <div className="flex h-screen bg-slate-950">
+    <div className="min-h-screen bg-slate-950">
       <AdminSidebar {...SIDEBAR_PROPS} />
-      <div className="flex-1 ml-64 p-6 overflow-auto">
-        <div className="space-y-6">
+      <div className="lg:ml-64 p-4 sm:p-6 lg:p-8">
+        <div className="space-y-4 lg:space-y-6">
           {/* Header */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3">
-              <Users className="h-8 w-8 text-blue-400" />
+              <Users className="h-6 w-6 sm:h-8 sm:w-8 text-blue-400" />
               <div>
-                <h1 className="text-2xl font-bold text-slate-100">Gerenciar Afiliados</h1>
-                <p className="text-slate-400">Gerencie todos os afiliados da plataforma</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-slate-100">Gerenciar Afiliados</h1>
+                <p className="text-sm sm:text-base text-slate-400">Gerencie todos os afiliados da plataforma</p>
               </div>
             </div>
           </div>
 
           {/* Search */}
           <Card className="bg-slate-900/50 border-slate-800">
-            <CardHeader>
-              <CardTitle className="text-slate-100">Filtros</CardTitle>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base sm:text-lg text-slate-100">Filtros</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <Input
                     placeholder="Buscar por nome ou email..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="pl-10 bg-slate-800 border-slate-700 text-slate-100"
+                    className="pl-10 bg-slate-800 border-slate-700 text-slate-100 text-sm sm:text-base"
                   />
                 </div>
               </div>
@@ -182,25 +182,120 @@ export default function AdminManageSimple() {
           {/* Users Table */}
           <Card className="bg-slate-900/50 border-slate-800">
             <CardHeader>
-              <CardTitle className="text-slate-100">
+              <CardTitle className="text-base sm:text-lg text-slate-100">
                 Afiliados ({affiliates.length})
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
+              {/* Mobile Cards View */}
+              <div className="block lg:hidden space-y-4">
+                {affiliates.length === 0 ? (
+                  <div className="text-center text-slate-400 py-8">
+                    Nenhum afiliado encontrado
+                  </div>
+                ) : (
+                  affiliates.map((affiliate) => (
+                    <Card key={affiliate.id} className="bg-slate-800 border-slate-700">
+                      <CardContent className="p-4">
+                        <div className="space-y-3">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-sm font-medium text-slate-100 truncate">
+                                {affiliate.fullName}
+                              </h3>
+                              <p className="text-xs text-slate-400 truncate">
+                                @{affiliate.username}
+                              </p>
+                              <p className="text-xs text-slate-400 truncate">
+                                {affiliate.email}
+                              </p>
+                            </div>
+                            <Badge 
+                              variant={affiliate.isActive ? "default" : "secondary"}
+                              className={`text-xs ${
+                                affiliate.isActive 
+                                  ? "bg-green-600 hover:bg-green-700" 
+                                  : "bg-red-600 hover:bg-red-700"
+                              } text-white`}
+                            >
+                              {affiliate.isActive ? 'Ativo' : 'Inativo'}
+                            </Badge>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-3 text-xs">
+                            <div>
+                              <span className="text-slate-400">Cliques:</span>
+                              <span className="text-slate-200 ml-1">{affiliate.totalClicks}</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-400">Registros:</span>
+                              <span className="text-slate-200 ml-1">{affiliate.totalRegistrations}</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-400">Depósitos:</span>
+                              <span className="text-slate-200 ml-1">{affiliate.totalDeposits}</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-400">Comissão:</span>
+                              <span className="text-slate-200 ml-1">R$ {affiliate.totalCommissions}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="text-xs text-slate-400">
+                            Cadastro: {formatDate(affiliate.createdAt)}
+                          </div>
+                          
+                          <div className="flex gap-2 pt-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex-1 border-slate-600 hover:bg-slate-700 text-xs"
+                              onClick={() => handleViewAffiliate(affiliate)}
+                            >
+                              <Eye className="h-3 w-3 mr-1" />
+                              Ver
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex-1 border-slate-600 hover:bg-slate-700 text-xs"
+                              onClick={() => handleEditAffiliate(affiliate.id)}
+                            >
+                              <Edit className="h-3 w-3 mr-1" />
+                              Editar
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-red-600 text-red-400 hover:bg-red-900/20 text-xs px-2"
+                              onClick={() => handleDeleteAffiliate(affiliate)}
+                              disabled={deleteAffiliateMutation.isPending}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden lg:block overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow className="border-slate-800">
-                      <TableHead className="text-slate-300">Nome</TableHead>
-                      <TableHead className="text-slate-300">Email</TableHead>
-                      <TableHead className="text-slate-300">Username</TableHead>
-                      <TableHead className="text-slate-300">Status</TableHead>
-                      <TableHead className="text-slate-300">Cliques</TableHead>
-                      <TableHead className="text-slate-300">Registros</TableHead>
-                      <TableHead className="text-slate-300">Depósitos</TableHead>
-                      <TableHead className="text-slate-300">Comissão</TableHead>
-                      <TableHead className="text-slate-300">Cadastro</TableHead>
-                      <TableHead className="text-slate-300">Ações</TableHead>
+                      <TableHead className="text-slate-300 text-sm">Nome</TableHead>
+                      <TableHead className="text-slate-300 text-sm">Email</TableHead>
+                      <TableHead className="text-slate-300 text-sm">Username</TableHead>
+                      <TableHead className="text-slate-300 text-sm">Status</TableHead>
+                      <TableHead className="text-slate-300 text-sm">Cliques</TableHead>
+                      <TableHead className="text-slate-300 text-sm">Registros</TableHead>
+                      <TableHead className="text-slate-300 text-sm">Depósitos</TableHead>
+                      <TableHead className="text-slate-300 text-sm">Comissão</TableHead>
+                      <TableHead className="text-slate-300 text-sm">Cadastro</TableHead>
+                      <TableHead className="text-slate-300 text-sm">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
