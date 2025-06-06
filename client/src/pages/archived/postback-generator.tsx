@@ -69,7 +69,7 @@ export default function PostbackGenerator() {
 
   // Fetch betting houses
   const { data: bettingHouses = [], isLoading: housesLoading } = useQuery({
-    queryKey: ['/api/betting-houses'],
+    queryKey: ['/api/admin/betting-houses'],
   });
 
   // Fetch registered postbacks

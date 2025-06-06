@@ -77,7 +77,7 @@ export default function PostbackGeneratorProfessional() {
 
   // Fetch betting houses
   const { data: bettingHouses = [], isLoading: housesLoading } = useQuery({
-    queryKey: ['/api/betting-houses'],
+    queryKey: ['/api/admin/betting-houses'],
   });
 
   // Fetch registered postbacks
@@ -110,7 +110,7 @@ export default function PostbackGeneratorProfessional() {
       .filter((p: RegisteredPostback) => p && p.event_type)
       .map((p: RegisteredPostback) => p.event_type)
       .filter(Boolean);
-    return [...new Set(events)];
+    return Array.from(new Set(events));
   }, [postbacks]);
 
   // Dynamic parameter detection from URL
