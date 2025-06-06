@@ -109,7 +109,7 @@ export default function AdminManageSimple() {
     return (
       <div className="flex h-screen bg-slate-950">
         <AdminSidebar {...SIDEBAR_PROPS} />
-        <div className="flex-1 p-6">
+        <div className="flex-1 ml-64 p-6">
           <div className="flex items-center justify-center h-full">
             <div className="text-slate-400">Carregando...</div>
           </div>
@@ -122,7 +122,7 @@ export default function AdminManageSimple() {
     return (
       <div className="flex h-screen bg-slate-950">
         <AdminSidebar {...SIDEBAR_PROPS} />
-        <div className="flex-1 p-6">
+        <div className="flex-1 ml-64 p-6">
           <div className="flex items-center justify-center h-full">
             <div className="text-red-400">Erro ao carregar dados</div>
           </div>
@@ -134,7 +134,7 @@ export default function AdminManageSimple() {
   return (
     <div className="flex h-screen bg-slate-950">
       <AdminSidebar {...SIDEBAR_PROPS} />
-      <div className="flex-1 p-6 overflow-auto">
+      <div className="flex-1 ml-64 p-6 overflow-auto">
         <div className="space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between">

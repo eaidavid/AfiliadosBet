@@ -88,7 +88,7 @@ export default function AdminDashboardFixed() {
   return (
     <div className="min-h-screen bg-slate-950">
       <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
-      <div className="ml-20 lg:ml-[110px] lg:mr-[110px]">
+      <div className="ml-64 p-4 lg:p-6">
         
         <main className="p-4 lg:p-6 space-y-6">
           {/* Header */}
