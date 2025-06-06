@@ -8,8 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Users, Search, Eye, Edit, Trash2 } from 'lucide-react';
 import AdminSidebar from '@/components/admin/sidebar';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
 import { useLocation } from 'wouter';
+import { ViewAffiliateModal } from '@/components/admin/view-affiliate-modal';
+import { DeleteAffiliateDialog } from '@/components/admin/delete-affiliate-dialog';
 
 const SIDEBAR_PROPS = {
   currentPage: 'manage',
@@ -34,6 +35,10 @@ export default function AdminManageSimple() {
   const [search, setSearch] = useState('');
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedAffiliateId, setSelectedAffiliateId] = useState<number | null>(null);
+  const [affiliateToDelete, setAffiliateToDelete] = useState<Affiliate | null>(null);
 
   // Fetch affiliates
   const { data: affiliates = [], isLoading, error } = useQuery<Affiliate[]>({
@@ -74,6 +79,8 @@ export default function AdminManageSimple() {
         title: "Sucesso",
         description: "Afiliado excluído com sucesso!",
       });
+      setDeleteDialogOpen(false);
+      setAffiliateToDelete(null);
       // Refetch a lista de afiliados
       window.location.reload();
     },
@@ -88,7 +95,8 @@ export default function AdminManageSimple() {
 
   // Função para visualizar afiliado
   const handleViewAffiliate = (affiliate: Affiliate) => {
-    alert(`Visualizar Afiliado:\n\nNome: ${affiliate.fullName}\nUsuário: ${affiliate.username}\nEmail: ${affiliate.email}\nComissões: R$ ${affiliate.totalCommissions}\nCliques: ${affiliate.totalClicks}\nRegistros: ${affiliate.totalRegistrations}\nDepósitos: ${affiliate.totalDeposits}\nStatus: ${affiliate.isActive ? 'Ativo' : 'Inativo'}\nCriado em: ${formatDate(affiliate.createdAt)}`);
+    setSelectedAffiliateId(affiliate.id);
+    setViewModalOpen(true);
   };
 
   // Função para editar afiliado
@@ -98,10 +106,14 @@ export default function AdminManageSimple() {
 
   // Função para excluir afiliado
   const handleDeleteAffiliate = (affiliate: Affiliate) => {
-    const confirmDelete = confirm(`Tem certeza que deseja excluir o afiliado "${affiliate.fullName}" (${affiliate.username})?\n\nEsta ação não pode ser desfeita.`);
-    
-    if (confirmDelete) {
-      deleteAffiliateMutation.mutate(affiliate.id);
+    setAffiliateToDelete(affiliate);
+    setDeleteDialogOpen(true);
+  };
+
+  // Função para confirmar exclusão
+  const handleConfirmDelete = () => {
+    if (affiliateToDelete) {
+      deleteAffiliateMutation.mutate(affiliateToDelete.id);
     }
   };
 
@@ -276,6 +288,27 @@ export default function AdminManageSimple() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Modals */}
+        <ViewAffiliateModal
+          affiliateId={selectedAffiliateId}
+          isOpen={viewModalOpen}
+          onClose={() => {
+            setViewModalOpen(false);
+            setSelectedAffiliateId(null);
+          }}
+        />
+
+        <DeleteAffiliateDialog
+          isOpen={deleteDialogOpen}
+          onClose={() => {
+            setDeleteDialogOpen(false);
+            setAffiliateToDelete(null);
+          }}
+          onConfirm={handleConfirmDelete}
+          affiliateName={affiliateToDelete?.fullName || ''}
+          isDeleting={deleteAffiliateMutation.isPending}
+        />
       </div>
     </div>
   );

@@ -459,6 +459,128 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
+  // Get single affiliate
+  app.get("/api/admin/affiliates/:id", requireAdmin, async (req, res) => {
+    try {
+      const affiliateId = parseInt(req.params.id);
+      
+      if (isNaN(affiliateId)) {
+        return res.status(400).json({ error: 'ID inválido' });
+      }
+
+      const affiliate = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.id, affiliateId))
+        .limit(1);
+
+      if (affiliate.length === 0) {
+        return res.status(404).json({ error: 'Afiliado não encontrado' });
+      }
+
+      // Get statistics
+      const userLinks = await db
+        .select()
+        .from(schema.affiliateLinks)
+        .where(eq(schema.affiliateLinks.userId, affiliateId));
+
+      const userConversions = await db
+        .select()
+        .from(schema.conversions)
+        .where(eq(schema.conversions.userId, affiliateId));
+
+      const totalClicks = userLinks.length;
+      const totalRegistrations = userConversions.filter(c => c.type === 'registration').length;
+      const totalDeposits = userConversions.filter(c => c.type === 'deposit').length;
+      
+      const totalCommission = userConversions.reduce((sum, conversion) => {
+        return sum + parseFloat(conversion.commission || '0');
+      }, 0);
+
+      const result = {
+        ...affiliate[0],
+        totalClicks,
+        totalRegistrations,
+        totalDeposits,
+        totalCommissions: totalCommission.toFixed(2),
+        houses: []
+      };
+
+      res.json(result);
+      
+    } catch (error) {
+      console.error('❌ Erro ao buscar afiliado:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Update affiliate
+  app.patch("/api/admin/affiliates/:id", requireAdmin, async (req, res) => {
+    try {
+      const affiliateId = parseInt(req.params.id);
+      
+      if (isNaN(affiliateId)) {
+        return res.status(400).json({ error: 'ID inválido' });
+      }
+
+      const { fullName, email, username, isActive } = req.body;
+
+      // Verificar se o afiliado existe
+      const existingAffiliate = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.id, affiliateId))
+        .limit(1);
+
+      if (existingAffiliate.length === 0) {
+        return res.status(404).json({ error: 'Afiliado não encontrado' });
+      }
+
+      // Verificar se username e email são únicos (se foram alterados)
+      if (username && username !== existingAffiliate[0].username) {
+        const usernameExists = await db
+          .select()
+          .from(schema.users)
+          .where(eq(schema.users.username, username))
+          .limit(1);
+
+        if (usernameExists.length > 0) {
+          return res.status(400).json({ error: 'Username já está em uso' });
+        }
+      }
+
+      if (email && email !== existingAffiliate[0].email) {
+        const emailExists = await db
+          .select()
+          .from(schema.users)
+          .where(eq(schema.users.email, email))
+          .limit(1);
+
+        if (emailExists.length > 0) {
+          return res.status(400).json({ error: 'Email já está em uso' });
+        }
+      }
+
+      // Atualizar afiliado
+      await db
+        .update(schema.users)
+        .set({
+          fullName: fullName || existingAffiliate[0].fullName,
+          email: email || existingAffiliate[0].email,
+          username: username || existingAffiliate[0].username,
+          isActive: isActive !== undefined ? isActive : existingAffiliate[0].isActive,
+        })
+        .where(eq(schema.users.id, affiliateId));
+
+      console.log(`✅ Afiliado ${affiliateId} atualizado com sucesso`);
+      res.json({ success: true, message: 'Afiliado atualizado com sucesso' });
+      
+    } catch (error) {
+      console.error('❌ Erro ao atualizar afiliado:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
   // User stats
   app.get("/api/stats/user", requireAffiliate, async (req, res) => {
     try {

@@ -1,0 +1,76 @@
+Você é um desenvolvedor sênior de front-end e back-end, com domínio em React, Tailwind CSS, TypeScript, Express, PostgreSQL e Drizzle ORM.
+
+## CONTEXTO:
+Estou construindo um painel administrativo para meu sistema de afiliados. Na rota /admin/manage, exibo uma tabela com todos os afiliados cadastrados. Cada linha tem três botões de ação: "Ver", "Editar", "Excluir".
+
+## PROBLEMAS ATUAIS:
+1. O botão "Ver" não busca dados atualizados do banco e mostra um modal genérico ou repetido.
+2. O botão "Editar" leva a uma rota inexistente (/admin/manage/[id]/edit → erro 404).
+3. O botão "Excluir" não faz nenhuma ação ou não confirma antes de deletar.
+4. A interface é funcionalmente fraca e não oferece feedback de sucesso ou erro.
+5. A tabela carrega dados inconsistentes (problema de sincronização com o backend).
+
+## OBJETIVO:
+Corrigir e aprimorar todos os três botões com integração real ao banco, UX moderna e código limpo, seguindo boas práticas.
+
+---
+
+## 🔧 FUNCIONALIDADES ESPERADAS POR BOTÃO:
+
+### 1. 👁 Botão "Ver":
+- Ao clicar, abrir um modal moderno (`shadcn/ui` ou componente customizado).
+- O modal busca os dados atualizados do afiliado (`GET /admin/affiliates/:id`) e exibe:
+  - Nome completo
+  - Usuário
+  - E-mail
+  - Data de cadastro
+  - Comissão acumulada
+  - Quantidade de cliques, registros e depósitos
+  - Status (ativo/inativo)
+- Modal com botão "Fechar", bem centralizado e com animação suave.
+
+### 2. ✏️ Botão "Editar":
+- Redireciona para uma página real `/admin/manage/[id]/edit` (criar essa página se não existir).
+- A página contém um formulário com os campos editáveis (nome, status, email, etc).
+- Ao salvar, envia `PATCH /admin/affiliates/:id` e retorna toast de sucesso.
+
+### 3. 🗑 Botão "Excluir":
+- Abre um dialog de confirmação (`Você tem certeza que deseja excluir o afiliado?`).
+- Se confirmado, chama `DELETE /admin/affiliates/:id`.
+- Após sucesso, atualiza automaticamente a tabela.
+- Exibir toast visual de confirmação com ícone e cor indicativa.
+
+---
+
+## 💻 PADRONIZAÇÃO TÉCNICA:
+
+### FRONT-END:
+- React + Tailwind + TypeScript
+- Componentes reutilizáveis (`<ActionButtons />`, `<ViewModal />`, `<EditAffiliateForm />`)
+- Responsivo e compatível com dark mode
+- Animações suaves (framer-motion ou classes Tailwind)
+
+### BACK-END:
+- Node.js + Express + Drizzle ORM
+- Rotas protegidas com middleware de admin
+- Endpoints:
+  - GET `/admin/affiliates/:id`
+  - PATCH `/admin/affiliates/:id`
+  - DELETE `/admin/affiliates/:id`
+
+### UX/UI:
+- Hover e foco acessíveis
+- Ícones com `aria-label` e tooltips para acessibilidade
+- Feedback visual com `toast`, `spinner`, ou `badge`
+- Layout limpo, sem poluição visual
+
+---
+
+## EXTRA:
+- Validar erros com Zod no frontend e backend
+- Exibir status de carregamento (`loading...`) enquanto busca dados
+- Todos os dados devem vir diretamente do banco (sem cache hardcoded)
+
+---
+
+Com esse prompt, quero que a IA construa uma **experiência moderna, robusta e funcional para o admin gerenciar afiliados com fluidez, precisão e segurança**. Todo código deve ser modular, reutilizável e elegante.
