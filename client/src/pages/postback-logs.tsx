@@ -34,18 +34,22 @@ import { motion } from "framer-motion";
 
 interface PostbackLog {
   id: number;
-  betting_house_id: number;
+  house_id: number;
   event_type: string;
-  url_disparada: string;
-  resposta: string;
+  url_disparada?: string;
+  resposta?: string;
   status_code: number;
-  executado_em: string;
-  parametros_utilizados: string;
+  created_at: string;
+  parametros_utilizados?: string;
   subid: string;
-  valor: number;
-  tipo_comissao: string;
-  is_test: boolean;
-  house_name?: string;
+  amount: string;
+  commission: string;
+  casa: string;
+  customer_id: string;
+  ip: string;
+  status: string;
+  user_id: number;
+  conversion_data?: any;
 }
 
 interface BettingHouse {
@@ -105,10 +109,10 @@ export default function PostbackLogs() {
     const validLogs = logs.filter((log: PostbackLog) => log && typeof log === 'object');
     const successLogs = validLogs.filter((log: PostbackLog) => log.status_code >= 200 && log.status_code < 300);
     const failureLogs = validLogs.filter((log: PostbackLog) => log.status_code < 200 || log.status_code >= 300);
-    const testLogs = validLogs.filter((log: PostbackLog) => log.is_test);
+    const testLogs = validLogs.filter((log: PostbackLog) => log.event_type === 'test');
     
     const sortedLogs = validLogs.sort((a: PostbackLog, b: PostbackLog) => 
-      new Date(b.executado_em).getTime() - new Date(a.executado_em).getTime()
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
     
     return {
@@ -117,7 +121,7 @@ export default function PostbackLogs() {
       failure: failureLogs.length,
       tests: testLogs.length,
       lastExecution: sortedLogs.length > 0 
-        ? new Date(sortedLogs[0].executado_em).toLocaleString('pt-BR')
+        ? new Date(sortedLogs[0].created_at).toLocaleString('pt-BR')
         : "Nenhuma execução"
     };
   }, [logs]);
@@ -125,18 +129,18 @@ export default function PostbackLogs() {
   // Get unique values for filters
   const uniqueEventTypes = useMemo(() => {
     if (!logs || !Array.isArray(logs)) return [];
-    return [...new Set(logs
+    return Array.from(new Set(logs
       .filter((log: PostbackLog) => log && log.event_type)
       .map((log: PostbackLog) => log.event_type)
-    )];
+    ));
   }, [logs]);
 
   const uniqueCommissionTypes = useMemo(() => {
     if (!logs || !Array.isArray(logs)) return [];
-    return [...new Set(logs
-      .filter((log: PostbackLog) => log && log.tipo_comissao)
-      .map((log: PostbackLog) => log.tipo_comissao)
-    )];
+    return Array.from(new Set(logs
+      .filter((log: PostbackLog) => log && log.commission)
+      .map((log: PostbackLog) => log.commission)
+    ));
   }, [logs]);
 
   // Filter logs based on current filters
@@ -635,19 +639,13 @@ export default function PostbackLogs() {
                         return (
                           <TableRow key={log.id} className="border-slate-700 hover:bg-slate-800/50">
                             <TableCell className="text-slate-300 font-mono text-sm">
-                              {new Date(log.executado_em).toLocaleString('pt-BR')}
+                              {new Date(log.created_at).toLocaleString('pt-BR')}
                             </TableCell>
                             <TableCell className="text-white">
-                              {log.house_name || 'N/A'}
+                              {log.casa || 'N/A'}
                             </TableCell>
                             <TableCell className="text-slate-300">
                               <div className="flex items-center gap-2">
-                                {log.is_test && (
-                                  <Badge variant="outline" className="text-purple-400 border-purple-400 text-xs">
-                                    <TestTube className="w-3 h-3 mr-1" />
-                                    Teste
-                                  </Badge>
-                                )}
                                 {log.event_type}
                               </div>
                             </TableCell>
@@ -655,10 +653,10 @@ export default function PostbackLogs() {
                               {log.subid || 'N/A'}
                             </TableCell>
                             <TableCell className="text-slate-300">
-                              {log.tipo_comissao || 'N/A'}
+                              {log.commission ? `R$ ${log.commission}` : 'R$ 0,00'}
                             </TableCell>
                             <TableCell className="text-slate-300">
-                              {log.valor ? `R$ ${log.valor}` : 'N/A'}
+                              {log.amount ? `R$ ${log.amount}` : 'R$ 0,00'}
                             </TableCell>
                             <TableCell>
                               <Badge variant={statusBadge.variant} className="flex items-center gap-1">
@@ -669,10 +667,10 @@ export default function PostbackLogs() {
                             <TableCell className="max-w-xs">
                               <div className="flex items-center gap-2">
                                 <span className="truncate text-slate-400 font-mono text-sm">
-                                  {log.url_disparada}
+                                  Postback automático
                                 </span>
                                 <Button
-                                  onClick={() => copyToClipboard(log.url_disparada)}
+                                  onClick={() => copyToClipboard(`${window.location.origin}/postback/${log.event_type}?token=***&subid=${log.subid}&customer_id=${log.customer_id}`)}
                                   variant="ghost"
                                   size="sm"
                                   className="h-6 w-6 p-0 hover:bg-slate-700"
@@ -683,7 +681,7 @@ export default function PostbackLogs() {
                             </TableCell>
                             <TableCell className="text-slate-400 max-w-xs">
                               <span className="truncate">
-                                {formatResponse(log.resposta)}
+                                Sem resposta
                               </span>
                             </TableCell>
                             <TableCell>
