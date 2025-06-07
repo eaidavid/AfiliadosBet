@@ -243,6 +243,7 @@ export default function AdminHouses() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: "include",
       });
       if (!response.ok) throw new Error("Erro ao criar casa");
       return response.json();
@@ -285,8 +286,12 @@ export default function AdminHouses() {
     mutationFn: async (id: number) => {
       const response = await fetch(`/api/admin/betting-houses/${id}`, {
         method: "DELETE",
+        credentials: "include",
       });
-      if (!response.ok) throw new Error("Erro ao deletar casa");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Erro desconhecido" }));
+        throw new Error(errorData.error || "Erro ao deletar casa");
+      }
       return response.json();
     },
     onSuccess: () => {
