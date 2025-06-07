@@ -16,7 +16,7 @@ export default function PostbackGenerator({ onPageChange }: PostbackGeneratorPro
   const [testingUrl, setTestingUrl] = useState<string>("");
 
   const { data: houses = [] } = useQuery({
-    queryKey: ['/api/admin/houses'],
+    queryKey: ['/api/admin/betting-houses'],
   });
 
   const housesList = Array.isArray(houses) ? houses : [];
@@ -103,7 +103,7 @@ export default function PostbackGenerator({ onPageChange }: PostbackGeneratorPro
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="text-center md:text-left">
         <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">

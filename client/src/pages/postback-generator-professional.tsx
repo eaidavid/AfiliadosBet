@@ -12,8 +12,8 @@ export default function PostbackGeneratorProfessional() {
   return (
     <div className="flex h-screen bg-slate-950">
       <AdminSidebar currentPage={currentPage} onPageChange={handlePageChange} />
-      <main className="flex-1 overflow-auto">
-        <div className="p-6">
+      <main className="flex-1 overflow-auto ml-64">
+        <div className="p-4 md:p-6 lg:p-8">
           <PostbackGenerator onPageChange={handlePageChange} />
         </div>
       </main>
