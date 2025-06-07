@@ -60,6 +60,14 @@ interface AffiliateStats {
   averageCommission: string;
 }
 
+interface AffiliateLink {
+  id: number;
+  houseName: string;
+  generatedUrl: string;
+  createdAt: string;
+  houseId: number;
+}
+
 export default function BettingHouses() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -132,7 +140,7 @@ export default function BettingHouses() {
   });
 
   // Fetch affiliate links
-  const { data: affiliateLinks } = useQuery<AffiliateLink[]>({
+  const { data: affiliateLinks = [] } = useQuery({
     queryKey: ['/api/affiliate/links'],
   });
 
@@ -523,7 +531,7 @@ export default function BettingHouses() {
                               className="w-full" 
                               onClick={() => {
                                 // Find the user's affiliate link for this house
-                                const userLink = affiliateLinks?.find(link => link.houseId === house.id);
+                                const userLink = Array.isArray(affiliateLinks) ? affiliateLinks.find((link: any) => link.houseId === house.id) : null;
                                 if (userLink) {
                                   copyAffiliateLink(userLink.generatedUrl);
                                 } else {
@@ -544,7 +552,7 @@ export default function BettingHouses() {
                               size="sm"
                               onClick={() => {
                                 // Show statistics for this house
-                                const userLink = affiliateLinks?.find(link => link.houseId === house.id);
+                                const userLink = Array.isArray(affiliateLinks) ? affiliateLinks.find((link: any) => link.houseId === house.id) : null;
                                 if (userLink) {
                                   toast({
                                     title: "Estatísticas",
@@ -598,7 +606,7 @@ export default function BettingHouses() {
                 <div className="bg-slate-800 p-4 rounded-lg">
                   <h4 className="font-medium text-slate-200 mb-2">Detalhes da Afiliação:</h4>
                   <div className="space-y-2 text-sm">
-                    {getCommissionDisplay(selectedHouse).map((commission, idx) => (
+                    {getCommissionDisplayArray(selectedHouse).map((commission, idx) => (
                       <div key={idx} className="flex justify-between">
                         <span className="text-slate-400">{commission.type}:</span>
                         <span className="text-slate-200">{commission.value}</span>
