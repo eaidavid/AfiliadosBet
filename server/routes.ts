@@ -1800,5 +1800,168 @@ export async function registerRoutes(app: express.Application) {
   // API de teste para demonstração
   app.use('/api/v1', testApiRouter);
 
+  // Smartico Conversions API Routes
+  
+  // Get conversions with filters and pagination
+  app.get("/api/conversions", requireAdmin, async (req, res) => {
+    try {
+      const { 
+        date_from, 
+        date_to, 
+        user_id, 
+        house_id, 
+        page = 1, 
+        limit = 50 
+      } = req.query;
+
+      const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
+      
+      let query = db
+        .select({
+          id: schema.conversions.id,
+          type: schema.conversions.type,
+          amount: schema.conversions.amount,
+          commission: schema.conversions.commission,
+          convertedAt: schema.conversions.convertedAt,
+          userId: schema.conversions.userId,
+          houseId: schema.conversions.houseId,
+          affiliateName: schema.users.fullName,
+          affiliateUsername: schema.users.username,
+          houseName: schema.bettingHouses.name,
+        })
+        .from(schema.conversions)
+        .leftJoin(schema.users, eq(schema.conversions.userId, schema.users.id))
+        .leftJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id));
+
+      const conditions = [];
+      
+      if (date_from) {
+        conditions.push(gte(schema.conversions.convertedAt, new Date(date_from as string)));
+      }
+      
+      if (date_to) {
+        const endDate = new Date(date_to as string);
+        endDate.setHours(23, 59, 59, 999);
+        conditions.push(lt(schema.conversions.convertedAt, endDate));
+      }
+      
+      if (user_id) {
+        conditions.push(eq(schema.conversions.userId, parseInt(user_id as string)));
+      }
+      
+      if (house_id) {
+        conditions.push(eq(schema.conversions.houseId, parseInt(house_id as string)));
+      }
+
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+
+      const conversions = await query
+        .orderBy(desc(schema.conversions.convertedAt))
+        .limit(parseInt(limit as string))
+        .offset(offset);
+
+      // Get totals
+      const totalsQuery = db
+        .select({
+          totalClick: sql<number>`COUNT(CASE WHEN ${schema.conversions.type} = 'click' THEN 1 END)`,
+          totalRegistration: sql<number>`COUNT(CASE WHEN ${schema.conversions.type} = 'registration' THEN 1 END)`,
+          totalDeposit: sql<number>`COUNT(CASE WHEN ${schema.conversions.type} = 'deposit' THEN 1 END)`,
+          totalProfit: sql<number>`COUNT(CASE WHEN ${schema.conversions.type} = 'profit' THEN 1 END)`,
+          totalCommissions: sql<number>`COALESCE(SUM(CASE WHEN ${schema.conversions.commission} IS NOT NULL THEN CAST(${schema.conversions.commission} AS DECIMAL) END), 0)`,
+          totalAmount: sql<number>`COALESCE(SUM(CASE WHEN ${schema.conversions.amount} IS NOT NULL THEN CAST(${schema.conversions.amount} AS DECIMAL) END), 0)`,
+        })
+        .from(schema.conversions);
+
+      if (conditions.length > 0) {
+        totalsQuery.where(and(...conditions));
+      }
+
+      const [totals] = await totalsQuery;
+
+      res.json({
+        success: true,
+        data: conversions,
+        pagination: {
+          page: parseInt(page as string),
+          limit: parseInt(limit as string),
+          hasMore: conversions.length === parseInt(limit as string)
+        },
+        totals
+      });
+    } catch (error) {
+      console.error("Erro ao buscar conversões:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Get affiliates for filter dropdown
+  app.get("/api/conversions/affiliates", requireAdmin, async (req, res) => {
+    try {
+      const affiliates = await db
+        .select({
+          id: schema.users.id,
+          name: schema.users.fullName,
+          username: schema.users.username,
+        })
+        .from(schema.users)
+        .where(eq(schema.users.role, 'affiliate'))
+        .orderBy(schema.users.fullName);
+
+      res.json({
+        success: true,
+        data: affiliates
+      });
+    } catch (error) {
+      console.error("Erro ao buscar afiliados:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Get houses for filter dropdown
+  app.get("/api/conversions/houses", requireAdmin, async (req, res) => {
+    try {
+      const houses = await db
+        .select({
+          id: schema.bettingHouses.id,
+          name: schema.bettingHouses.name,
+        })
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.isActive, true))
+        .orderBy(schema.bettingHouses.name);
+
+      res.json({
+        success: true,
+        data: houses
+      });
+    } catch (error) {
+      console.error("Erro ao buscar casas:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Manual sync endpoint
+  app.post("/api/conversions/sync", requireAdmin, async (req, res) => {
+    try {
+      // Import here to avoid circular dependencies
+      const { SmarticoFetcher } = await import('./services/smarticoFetcher');
+      
+      const fetcher = new SmarticoFetcher();
+      await fetcher.syncAllHouses();
+      
+      res.json({
+        success: true,
+        message: "Sincronização concluída com sucesso"
+      });
+    } catch (error) {
+      console.error("Erro na sincronização manual:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Erro na sincronização" 
+      });
+    }
+  });
+
   console.log("✅ Rotas registradas com sucesso");
 }

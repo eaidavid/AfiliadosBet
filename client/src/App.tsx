@@ -30,6 +30,7 @@ import PostbackLogs from "@/pages/postback-logs";
 import AdminApiManagement from "@/pages/admin-api-management";
 
 import AdminSettingsEnhanced from "@/pages/admin-settings-enhanced";
+import SmarticoDashboard from "@/pages/smartico-dashboard";
 import NotFound from "@/pages/not-found";
 import AdminPanelToggle from "@/components/admin-panel-toggle";
 
