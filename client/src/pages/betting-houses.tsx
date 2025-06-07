@@ -131,6 +131,11 @@ export default function BettingHouses() {
     queryKey: ['/api/stats/user'],
   });
 
+  // Fetch affiliate links
+  const { data: affiliateLinks } = useQuery<AffiliateLink[]>({
+    queryKey: ['/api/affiliate/links'],
+  });
+
   // Affiliate mutation
   const affiliateMutation = useMutation({
     mutationFn: async (houseId: number) => {
@@ -516,12 +521,44 @@ export default function BettingHouses() {
                             <Button 
                               variant="outline" 
                               className="w-full" 
-                              onClick={() => house.affiliateLink && copyAffiliateLink(house.affiliateLink)}
+                              onClick={() => {
+                                // Find the user's affiliate link for this house
+                                const userLink = affiliateLinks?.find(link => link.houseId === house.id);
+                                if (userLink) {
+                                  copyAffiliateLink(userLink.generatedUrl);
+                                } else {
+                                  toast({
+                                    title: "Link não encontrado",
+                                    description: "Não foi possível encontrar seu link de afiliado para esta casa.",
+                                    variant: "destructive",
+                                  });
+                                }
+                              }}
                             >
                               <Copy className="h-4 w-4 mr-2" />
                               Copiar Meu Link
                             </Button>
-                            <Button variant="ghost" className="w-full text-slate-400" size="sm">
+                            <Button 
+                              variant="ghost" 
+                              className="w-full text-slate-400" 
+                              size="sm"
+                              onClick={() => {
+                                // Show statistics for this house
+                                const userLink = affiliateLinks?.find(link => link.houseId === house.id);
+                                if (userLink) {
+                                  toast({
+                                    title: "Estatísticas",
+                                    description: `Link criado em: ${format(new Date(userLink.createdAt), 'dd/MM/yyyy HH:mm', { locale: ptBR })}`,
+                                  });
+                                } else {
+                                  toast({
+                                    title: "Sem estatísticas",
+                                    description: "Nenhuma estatística disponível para esta casa.",
+                                    variant: "destructive",
+                                  });
+                                }
+                              }}
+                            >
                               <ExternalLink className="h-4 w-4 mr-2" />
                               Ver Estatísticas
                             </Button>
