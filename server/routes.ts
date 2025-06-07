@@ -595,8 +595,24 @@ export async function registerRoutes(app: express.Application) {
   // Betting houses (accessible by affiliates and admins)
   app.get("/api/betting-houses", requireAffiliate, async (req, res) => {
     try {
+      const userId = (req.user as any).id;
       const houses = await db.select().from(schema.bettingHouses);
-      res.json(houses);
+      
+      // Get user's affiliate links to determine which houses they're affiliated with
+      const userLinks = await db
+        .select({ houseId: schema.affiliateLinks.houseId })
+        .from(schema.affiliateLinks)
+        .where(eq(schema.affiliateLinks.userId, userId));
+      
+      const affiliatedHouseIds = new Set(userLinks.map(link => link.houseId));
+      
+      // Add isAffiliated field to each house
+      const housesWithAffiliationStatus = houses.map(house => ({
+        ...house,
+        isAffiliated: affiliatedHouseIds.has(house.id)
+      }));
+      
+      res.json(housesWithAffiliationStatus);
     } catch (error) {
       console.error("Erro ao buscar casas:", error);
       res.status(500).json({ error: "Erro interno do servidor" });
@@ -880,7 +896,175 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
-  // Get user links (affiliate route)
+  // Join affiliate program - Create affiliate link
+  app.post("/api/affiliate/join", requireAffiliate, async (req, res) => {
+    try {
+      const { houseId } = req.body;
+      const userId = (req.user as any).id;
+
+      if (!houseId) {
+        return res.status(400).json({ error: "ID da casa é obrigatório" });
+      }
+
+      // Check if house exists
+      const [house] = await db
+        .select()
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.id, houseId));
+
+      if (!house) {
+        return res.status(404).json({ error: "Casa de apostas não encontrada" });
+      }
+
+      // Check if user already has a link for this house
+      const existingLink = await db
+        .select()
+        .from(schema.affiliateLinks)
+        .where(and(
+          eq(schema.affiliateLinks.userId, userId),
+          eq(schema.affiliateLinks.houseId, houseId)
+        ));
+
+      if (existingLink.length > 0) {
+        return res.status(400).json({ error: "Você já possui um link para esta casa" });
+      }
+
+      // Generate affiliate link
+      const baseUrl = house.baseUrl;
+      const userIdStr = userId.toString().padStart(6, '0');
+      const generatedUrl = baseUrl.replace('VALUE', userIdStr);
+
+      // Create affiliate link record
+      const [newLink] = await db
+        .insert(schema.affiliateLinks)
+        .values({
+          userId,
+          houseId,
+          generatedUrl,
+          isActive: true,
+        })
+        .returning();
+
+      console.log(`✅ Link de afiliação criado para usuário ${userId} na casa ${house.name}`);
+      res.json({ success: true, link: newLink });
+    } catch (error) {
+      console.error("❌ Erro ao criar link de afiliação:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Get affiliate links
+  app.get("/api/affiliate/links", requireAffiliate, async (req, res) => {
+    try {
+      const userId = (req.user as any).id;
+      
+      const links = await db
+        .select({
+          id: schema.affiliateLinks.id,
+          generatedUrl: schema.affiliateLinks.generatedUrl,
+          createdAt: schema.affiliateLinks.createdAt,
+          houseName: schema.bettingHouses.name,
+          houseId: schema.affiliateLinks.houseId,
+        })
+        .from(schema.affiliateLinks)
+        .leftJoin(schema.bettingHouses, eq(schema.affiliateLinks.houseId, schema.bettingHouses.id))
+        .where(eq(schema.affiliateLinks.userId, userId))
+        .orderBy(desc(schema.affiliateLinks.createdAt));
+
+      res.json(links);
+    } catch (error) {
+      console.error("Erro ao buscar links:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Get affiliate stats
+  app.get("/api/affiliate/stats", requireAffiliate, async (req, res) => {
+    try {
+      const userId = (req.user as any).id;
+      
+      // Get conversions for this user
+      const conversions = await db
+        .select()
+        .from(schema.conversions)
+        .where(eq(schema.conversions.userId, userId));
+
+      const totalClicks = conversions.filter(c => c.type === 'click').length;
+      const totalRegistrations = conversions.filter(c => c.type === 'registration').length;
+      const totalDeposits = conversions.filter(c => c.type === 'deposit').length;
+      const totalCommission = conversions.reduce((sum, c) => sum + parseFloat(c.commission || '0'), 0);
+      const conversionRate = totalClicks > 0 ? (totalRegistrations / totalClicks) * 100 : 0;
+
+      const stats = {
+        totalClicks,
+        totalRegistrations,
+        totalDeposits,
+        totalCommission: totalCommission.toFixed(2),
+        conversionRate: Math.round(conversionRate)
+      };
+
+      res.json(stats);
+    } catch (error) {
+      console.error("Erro ao buscar estatísticas do afiliado:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Get affiliate conversions
+  app.get("/api/affiliate/conversions", requireAffiliate, async (req, res) => {
+    try {
+      const userId = (req.user as any).id;
+      
+      const conversions = await db
+        .select({
+          id: schema.conversions.id,
+          type: schema.conversions.type,
+          commission: schema.conversions.commission,
+          customerId: schema.conversions.customerId,
+          convertedAt: schema.conversions.createdAt,
+          houseName: schema.bettingHouses.name,
+        })
+        .from(schema.conversions)
+        .leftJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
+        .where(eq(schema.conversions.userId, userId))
+        .orderBy(desc(schema.conversions.createdAt))
+        .limit(10);
+
+      res.json(conversions);
+    } catch (error) {
+      console.error("Erro ao buscar conversões:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Get affiliate postbacks
+  app.get("/api/affiliate/postbacks", requireAffiliate, async (req, res) => {
+    try {
+      const userId = (req.user as any).id;
+      
+      const postbacks = await db
+        .select({
+          id: schema.postbackLogs.id,
+          houseName: schema.bettingHouses.name,
+          eventType: schema.postbackLogs.eventType,
+          value: schema.postbackLogs.amount,
+          status: schema.postbackLogs.status,
+          createdAt: schema.postbackLogs.createdAt,
+        })
+        .from(schema.postbackLogs)
+        .leftJoin(schema.bettingHouses, eq(schema.postbackLogs.houseId, schema.bettingHouses.id))
+        .where(eq(schema.postbackLogs.userId, userId))
+        .orderBy(desc(schema.postbackLogs.createdAt))
+        .limit(5);
+
+      res.json(postbacks);
+    } catch (error) {
+      console.error("Erro ao buscar postbacks:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Get user links (affiliate route) - Legacy endpoint
   app.get("/api/my-links", requireAffiliate, async (req, res) => {
     try {
       const userId = (req.user as any).id;
