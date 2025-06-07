@@ -1,4 +1,4 @@
-import { DatabaseStorage } from '../storage';
+import { db } from '../db';
 import { bettingHouses, users, conversions } from '../../shared/schema';
 import { eq, and } from 'drizzle-orm';
 
@@ -14,14 +14,14 @@ interface SmarticoApiResponse {
 }
 
 export class SmarticoFetcher {
-  constructor(private storage: DatabaseStorage) {}
+  constructor() {}
 
   async syncAllHouses(): Promise<void> {
     console.log('🔄 Iniciando sincronização com API Smartico...');
     
     try {
       // Buscar casas com modo_recebimento = 'api'
-      const apiHouses = await this.storage.db
+      const apiHouses = await db
         .select()
         .from(bettingHouses)
         .where(eq(bettingHouses.modoRecebimento, 'api'));
@@ -93,7 +93,7 @@ export class SmarticoFetcher {
     const { affiliate_id, visit_count, registration_count, deposit_total, commissions_total, date } = data;
     
     // Buscar afiliado pelo username (affiliate_id)
-    const affiliate = await this.storage.db
+    const affiliate = await db
       .select()
       .from(users)
       .where(eq(users.username, affiliate_id))
@@ -162,7 +162,7 @@ export class SmarticoFetcher {
   private async saveConversion(userId: number, houseId: number, type: string, amount: string | null, commission: string | null, convertedAt: Date): Promise<void> {
     try {
       // Verificar se já existe conversão para evitar duplicação
-      const existing = await this.storage.db
+      const existing = await db
         .select()
         .from(conversions)
         .where(
@@ -176,7 +176,7 @@ export class SmarticoFetcher {
         .limit(1);
 
       if (existing.length === 0) {
-        await this.storage.db.insert(conversions).values({
+        await db.insert(conversions).values({
           userId,
           houseId,
           type,
