@@ -63,8 +63,8 @@ export default function AdminPostbackDisplay() {
     );
   }
 
-  const totalPostbacks = houses.length * 4; // 4 events per house
-  const activePostbacks = houses.filter(h => h.isActive).length * 4;
+  const totalPostbacks = housesList.length * 4; // 4 events per house
+  const activePostbacks = housesList.filter((h: any) => h.isActive).length * 4;
 
   return (
     <div className="space-y-6">
@@ -110,7 +110,7 @@ export default function AdminPostbackDisplay() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-slate-400 text-sm">Casas Cadastradas</p>
-                <p className="text-2xl font-bold text-white">{houses.length}</p>
+                <p className="text-2xl font-bold text-white">{housesList.length}</p>
                 <p className="text-slate-500 text-xs">casas registradas</p>
               </div>
               <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center">
@@ -123,7 +123,7 @@ export default function AdminPostbackDisplay() {
 
       {/* Postbacks List */}
       <div className="space-y-4">
-        {houses.length === 0 ? (
+        {housesList.length === 0 ? (
           <Card className="bg-slate-800 border-slate-700">
             <CardContent className="p-12 text-center">
               <AlertTriangle className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
@@ -132,7 +132,7 @@ export default function AdminPostbackDisplay() {
             </CardContent>
           </Card>
         ) : (
-          houses.map((house: any) => {
+          housesList.map((house: any) => {
             const postbackEvents = [
               { 
                 name: 'Click', 
