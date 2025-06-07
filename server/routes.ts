@@ -1,7 +1,7 @@
 import express from 'express';
 import { db } from "./db";
 import * as schema from "../shared/schema";
-import { eq, desc, and, or, ilike, gte, lt, inArray } from "drizzle-orm";
+import { eq, desc, and, or, ilike, gte, lt, inArray, sql, ne, count } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
@@ -979,7 +979,164 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
-  // Get affiliate links with complete data
+  // Click tracking endpoint - registra cliques nos links de afiliados
+  app.get("/track/:linkId", async (req, res) => {
+    try {
+      const { linkId } = req.params;
+      
+      // Buscar dados do link de afiliado
+      const [linkData] = await db
+        .select({
+          id: schema.affiliateLinks.id,
+          userId: schema.affiliateLinks.userId,
+          houseId: schema.affiliateLinks.houseId,
+          generatedUrl: schema.affiliateLinks.generatedUrl,
+          isActive: schema.affiliateLinks.isActive,
+          houseName: schema.bettingHouses.name,
+          houseBaseUrl: schema.bettingHouses.baseUrl,
+        })
+        .from(schema.affiliateLinks)
+        .leftJoin(schema.bettingHouses, eq(schema.affiliateLinks.houseId, schema.bettingHouses.id))
+        .where(eq(schema.affiliateLinks.id, parseInt(linkId)));
+
+      if (!linkData || !linkData.isActive) {
+        return res.status(404).json({ error: "Link não encontrado ou inativo" });
+      }
+
+      // Capturar dados do clique
+      const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
+      const userAgent = req.get('User-Agent') || 'unknown';
+
+      // Registrar o clique
+      await db.insert(schema.clickTracking).values({
+        linkId: linkData.id,
+        userId: linkData.userId,
+        houseId: linkData.houseId,
+        ipAddress,
+        userAgent,
+      });
+
+      // Registrar conversão de clique
+      await db.insert(schema.conversions).values({
+        userId: linkData.userId,
+        houseId: linkData.houseId,
+        affiliateLinkId: linkData.id,
+        type: 'click',
+        amount: "0",
+        commission: "0",
+        conversionData: { ipAddress, userAgent, source: 'affiliate_link' },
+      });
+
+      console.log(`📊 Clique registrado: Afiliado ${linkData.userId} → Casa ${linkData.houseName} (IP: ${ipAddress})`);
+
+      // Redirecionar para a casa de apostas
+      res.redirect(linkData.generatedUrl);
+    } catch (error) {
+      console.error("❌ Erro ao registrar clique:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Get detailed click analytics for affiliate
+  app.get("/api/affiliate/analytics", requireAffiliate, async (req, res) => {
+    try {
+      const userId = (req.user as any).id;
+      const { period = '7d' } = req.query;
+
+      // Calculate date range
+      const now = new Date();
+      let startDate = new Date();
+      
+      switch (period) {
+        case '24h':
+          startDate.setDate(now.getDate() - 1);
+          break;
+        case '7d':
+          startDate.setDate(now.getDate() - 7);
+          break;
+        case '30d':
+          startDate.setDate(now.getDate() - 30);
+          break;
+        case '90d':
+          startDate.setDate(now.getDate() - 90);
+          break;
+        default:
+          startDate.setDate(now.getDate() - 7);
+      }
+
+      // Get click data with details
+      const clickData = await db
+        .select({
+          id: schema.clickTracking.id,
+          linkId: schema.clickTracking.linkId,
+          ipAddress: schema.clickTracking.ipAddress,
+          userAgent: schema.clickTracking.userAgent,
+          clickedAt: schema.clickTracking.clickedAt,
+          houseName: schema.bettingHouses.name,
+          houseId: schema.bettingHouses.id,
+        })
+        .from(schema.clickTracking)
+        .leftJoin(schema.bettingHouses, eq(schema.clickTracking.houseId, schema.bettingHouses.id))
+        .where(and(
+          eq(schema.clickTracking.userId, userId),
+          gte(schema.clickTracking.clickedAt, startDate)
+        ))
+        .orderBy(desc(schema.clickTracking.clickedAt));
+
+      // Get conversion data
+      const conversionData = await db
+        .select({
+          id: schema.conversions.id,
+          type: schema.conversions.type,
+          amount: schema.conversions.amount,
+          commission: schema.conversions.commission,
+          convertedAt: schema.conversions.convertedAt,
+          houseName: schema.bettingHouses.name,
+          customerId: schema.conversions.customerId,
+        })
+        .from(schema.conversions)
+        .leftJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
+        .where(and(
+          eq(schema.conversions.userId, userId),
+          gte(schema.conversions.convertedAt, startDate)
+        ))
+        .orderBy(desc(schema.conversions.convertedAt));
+
+      // Group clicks by day for chart data
+      const clicksByDay = clickData.reduce((acc, click) => {
+        const day = click.clickedAt.toISOString().split('T')[0];
+        acc[day] = (acc[day] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      // Group clicks by house
+      const clicksByHouse = clickData.reduce((acc, click) => {
+        const house = click.houseName || 'Unknown';
+        acc[house] = (acc[house] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      // Calculate summary stats
+      const stats = {
+        totalClicks: clickData.length,
+        totalConversions: conversionData.filter(c => c.type !== 'click').length,
+        totalCommission: conversionData.reduce((sum, c) => sum + parseFloat(c.commission), 0),
+        conversionRate: clickData.length > 0 ? 
+          (conversionData.filter(c => c.type !== 'click').length / clickData.length * 100) : 0,
+        clicksByDay,
+        clicksByHouse,
+        recentClicks: clickData.slice(0, 20), // Last 20 clicks
+        recentConversions: conversionData.slice(0, 10), // Last 10 conversions
+      };
+
+      res.json(stats);
+    } catch (error) {
+      console.error("Erro ao buscar analytics:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Get affiliate links with complete data and click statistics
   app.get("/api/affiliate/links", requireAffiliate, async (req, res) => {
     try {
       const userId = (req.user as any).id;
@@ -999,7 +1156,31 @@ export async function registerRoutes(app: express.Application) {
         .where(eq(schema.affiliateLinks.userId, userId))
         .orderBy(desc(schema.affiliateLinks.createdAt));
 
-      res.json(links);
+      // Get click counts for each link
+      const linksWithStats = await Promise.all(
+        links.map(async (link) => {
+          const clickCount = await db
+            .select({ count: count() })
+            .from(schema.clickTracking)
+            .where(eq(schema.clickTracking.linkId, link.id));
+
+          const conversionCount = await db
+            .select({ count: count() })
+            .from(schema.conversions)
+            .where(and(
+              eq(schema.conversions.userId, userId),
+              eq(schema.conversions.houseId, link.houseId)
+            ));
+
+          return {
+            ...link,
+            clickCount: clickCount[0]?.count || 0,
+            conversionCount: conversionCount[0]?.count || 0,
+          };
+        })
+      );
+
+      res.json(linksWithStats);
     } catch (error) {
       console.error("Erro ao buscar links:", error);
       res.status(500).json({ error: "Erro interno do servidor" });
