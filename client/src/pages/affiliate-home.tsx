@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
@@ -91,6 +92,7 @@ export default function AffiliateHome() {
   const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, navigate] = useLocation();
 
   // Fetch user stats
   const { data: userStats, isLoading: statsLoading } = useQuery<UserStats>({
@@ -417,19 +419,7 @@ export default function AffiliateHome() {
                                   variant="outline" 
                                   className="w-full h-9 sm:h-10 text-sm touch-manipulation" 
                                   size="sm"
-                                  onClick={() => {
-                                    // Find the user's link for this house
-                                    const userLink = affiliateLinks?.find(link => link.houseId === house.id);
-                                    if (userLink) {
-                                      copyToClipboard(userLink.generatedUrl);
-                                    } else {
-                                      toast({
-                                        title: "Link não encontrado",
-                                        description: "Não foi possível encontrar seu link de afiliado para esta casa.",
-                                        variant: "destructive",
-                                      });
-                                    }
-                                  }}
+                                  onClick={() => navigate('/houses')}
                                 >
                                   <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                                   Ver Link
