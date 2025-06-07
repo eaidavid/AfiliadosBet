@@ -95,32 +95,35 @@ export default function AffiliateHome() {
 
   // Fetch user stats
   const { data: userStats, isLoading: statsLoading } = useQuery<UserStats>({
-    queryKey: ['/api/user/stats'],
+    queryKey: ['/api/stats/user'],
   });
 
   // Fetch betting houses
   const { data: bettingHouses, isLoading: housesLoading } = useQuery<BettingHouse[]>({
-    queryKey: ['/api/betting-houses/available'],
+    queryKey: ['/api/betting-houses'],
   });
 
   // Fetch affiliate links
   const { data: affiliateLinks, isLoading: linksLoading } = useQuery<AffiliateLink[]>({
-    queryKey: ['/api/affiliate-links'],
+    queryKey: ['/api/my-links'],
   });
 
-  // Fetch recent conversions
-  const { data: recentConversions, isLoading: conversionsLoading } = useQuery<Conversion[]>({
-    queryKey: ['/api/conversions/recent'],
+  // Fetch recent conversions - using empty array for now
+  const { data: recentConversions = [], isLoading: conversionsLoading } = useQuery<Conversion[]>({
+    queryKey: ['/api/stats/user'],
+    select: () => [], // Return empty array since we don't have conversions endpoint yet
   });
 
-  // Fetch recent postbacks
-  const { data: recentPostbacks, isLoading: postbacksLoading } = useQuery<PostbackLog[]>({
-    queryKey: ['/api/postbacks/recent'],
+  // Fetch recent postbacks - using empty array for now  
+  const { data: recentPostbacks = [], isLoading: postbacksLoading } = useQuery<PostbackLog[]>({
+    queryKey: ['/api/stats/user'],
+    select: () => [], // Return empty array since we don't have postbacks endpoint yet
   });
 
-  // Fetch monthly stats
-  const { data: monthlyStats, isLoading: monthlyLoading } = useQuery<MonthlyStats[]>({
-    queryKey: ['/api/user/monthly-stats'],
+  // Fetch monthly stats - using default data for now
+  const { data: monthlyStats = [], isLoading: monthlyLoading } = useQuery<MonthlyStats[]>({
+    queryKey: ['/api/stats/user'],
+    select: () => [], // Return empty array since we don't have monthly stats endpoint yet
   });
 
   // Join affiliate mutation
@@ -143,8 +146,8 @@ export default function AffiliateHome() {
         title: "Afiliação realizada com sucesso!",
         description: "Você agora é afiliado desta casa de apostas.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/betting-houses/available'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/affiliate-links'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/betting-houses'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/my-links'] });
     },
     onError: (error: any) => {
       toast({
