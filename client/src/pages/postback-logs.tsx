@@ -151,7 +151,7 @@ export default function PostbackLogs() {
       if (!log) return false;
 
       // House filter
-      if (filterHouse !== "all" && log.betting_house_id?.toString() !== filterHouse) {
+      if (filterHouse !== "all" && log.house_id?.toString() !== filterHouse) {
         return false;
       }
 
@@ -168,13 +168,13 @@ export default function PostbackLogs() {
         if (filterStatus === "failure" && (log.status_code >= 200 && log.status_code < 300)) {
           return false;
         }
-        if (filterStatus === "test" && !log.is_test) {
+        if (filterStatus === "test" && log.event_type !== "test") {
           return false;
         }
       }
 
       // Commission type filter
-      if (filterCommissionType !== "all" && log.tipo_comissao !== filterCommissionType) {
+      if (filterCommissionType !== "all" && log.commission !== filterCommissionType) {
         return false;
       }
 
@@ -185,13 +185,13 @@ export default function PostbackLogs() {
 
       // Date range filter
       if (filterDateFrom) {
-        const logDate = new Date(log.executado_em);
+        const logDate = new Date(log.created_at);
         const fromDate = new Date(filterDateFrom);
         if (logDate < fromDate) return false;
       }
 
       if (filterDateTo) {
-        const logDate = new Date(log.executado_em);
+        const logDate = new Date(log.created_at);
         const toDate = new Date(filterDateTo + "T23:59:59");
         if (logDate > toDate) return false;
       }
@@ -202,9 +202,9 @@ export default function PostbackLogs() {
         const searchableFields = [
           log.subid,
           log.event_type,
-          log.house_name,
-          log.url_disparada,
-          log.tipo_comissao
+          log.casa,
+          log.customer_id,
+          log.commission
         ].filter(Boolean);
         
         if (!searchableFields.some(field => 
@@ -252,15 +252,15 @@ export default function PostbackLogs() {
     }
 
     const csvData = filteredLogs.map((log: PostbackLog) => ({
-      'Data/Hora': new Date(log.executado_em).toLocaleString('pt-BR'),
-      'Casa': log.house_name || '',
+      'Data/Hora': new Date(log.created_at).toLocaleString('pt-BR'),
+      'Casa': log.casa || '',
       'Tipo de Evento': log.event_type || '',
       'SubID': log.subid || '',
-      'Tipo de Comissão': log.tipo_comissao || '',
-      'Valor': log.valor || '',
+      'Comissão': log.commission || '',
+      'Valor': log.amount || '',
       'Status': log.status_code || '',
-      'URL': log.url_disparada || '',
-      'É Teste': log.is_test ? 'Sim' : 'Não'
+      'Customer ID': log.customer_id || '',
+      'IP': log.ip || ''
     }));
 
     const csvContent = [
@@ -626,8 +626,8 @@ export default function PostbackLogs() {
                         <TableHead className="text-slate-300">Comissão</TableHead>
                         <TableHead className="text-slate-300">Valor</TableHead>
                         <TableHead className="text-slate-300">Status</TableHead>
-                        <TableHead className="text-slate-300">URL</TableHead>
-                        <TableHead className="text-slate-300">Resposta</TableHead>
+                        <TableHead className="text-slate-300">Customer ID</TableHead>
+                        <TableHead className="text-slate-300">IP</TableHead>
                         <TableHead className="text-slate-300">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -664,25 +664,11 @@ export default function PostbackLogs() {
                                 {log.status_code}
                               </Badge>
                             </TableCell>
-                            <TableCell className="max-w-xs">
-                              <div className="flex items-center gap-2">
-                                <span className="truncate text-slate-400 font-mono text-sm">
-                                  Postback automático
-                                </span>
-                                <Button
-                                  onClick={() => copyToClipboard(`${window.location.origin}/postback/${log.event_type}?token=***&subid=${log.subid}&customer_id=${log.customer_id}`)}
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-6 w-6 p-0 hover:bg-slate-700"
-                                >
-                                  <Copy className="w-3 h-3" />
-                                </Button>
-                              </div>
+                            <TableCell className="text-slate-300 font-mono">
+                              {log.customer_id || 'N/A'}
                             </TableCell>
-                            <TableCell className="text-slate-400 max-w-xs">
-                              <span className="truncate">
-                                Sem resposta
-                              </span>
+                            <TableCell className="text-slate-400 font-mono">
+                              {log.ip || 'N/A'}
                             </TableCell>
                             <TableCell>
                               <Button
@@ -725,22 +711,16 @@ export default function PostbackLogs() {
                 <div>
                   <Label className="text-slate-300">Data/Hora de Execução</Label>
                   <p className="text-white font-mono">
-                    {new Date(selectedLog.executado_em).toLocaleString('pt-BR')}
+                    {new Date(selectedLog.created_at).toLocaleString('pt-BR')}
                   </p>
                 </div>
                 <div>
                   <Label className="text-slate-300">Casa de Apostas</Label>
-                  <p className="text-white">{selectedLog.house_name || 'N/A'}</p>
+                  <p className="text-white">{selectedLog.casa || 'N/A'}</p>
                 </div>
                 <div>
                   <Label className="text-slate-300">Tipo de Evento</Label>
                   <div className="flex items-center gap-2">
-                    {selectedLog.is_test && (
-                      <Badge variant="outline" className="text-purple-400 border-purple-400 text-xs">
-                        <TestTube className="w-3 h-3 mr-1" />
-                        Teste
-                      </Badge>
-                    )}
                     <span className="text-white">{selectedLog.event_type}</span>
                   </div>
                 </div>
@@ -749,26 +729,34 @@ export default function PostbackLogs() {
                   <p className="text-white font-mono">{selectedLog.subid || 'N/A'}</p>
                 </div>
                 <div>
-                  <Label className="text-slate-300">Tipo de Comissão</Label>
-                  <p className="text-white">{selectedLog.tipo_comissao || 'N/A'}</p>
+                  <Label className="text-slate-300">Comissão</Label>
+                  <p className="text-white">{selectedLog.commission ? `R$ ${selectedLog.commission}` : 'R$ 0,00'}</p>
                 </div>
                 <div>
                   <Label className="text-slate-300">Valor</Label>
-                  <p className="text-white">{selectedLog.valor ? `R$ ${selectedLog.valor}` : 'N/A'}</p>
+                  <p className="text-white">{selectedLog.amount ? `R$ ${selectedLog.amount}` : 'R$ 0,00'}</p>
+                </div>
+                <div>
+                  <Label className="text-slate-300">Customer ID</Label>
+                  <p className="text-white font-mono">{selectedLog.customer_id || 'N/A'}</p>
+                </div>
+                <div>
+                  <Label className="text-slate-300">IP</Label>
+                  <p className="text-white font-mono">{selectedLog.ip || 'N/A'}</p>
                 </div>
               </div>
 
               {/* URL */}
               <div>
-                <Label className="text-slate-300">URL Disparada</Label>
+                <Label className="text-slate-300">URL Postback</Label>
                 <div className="flex items-center gap-2 mt-1">
                   <div className="flex-1 bg-slate-800/50 p-3 rounded border border-slate-600">
                     <p className="text-green-400 font-mono text-sm break-all">
-                      {selectedLog.url_disparada}
+                      {`${window.location.origin}/postback/${selectedLog.event_type}?token=***&subid=${selectedLog.subid}&customer_id=${selectedLog.customer_id}&value=${selectedLog.amount}`}
                     </p>
                   </div>
                   <Button
-                    onClick={() => copyToClipboard(selectedLog.url_disparada)}
+                    onClick={() => copyToClipboard(`${window.location.origin}/postback/${selectedLog.event_type}?token=***&subid=${selectedLog.subid}&customer_id=${selectedLog.customer_id}&value=${selectedLog.amount}`)}
                     variant="outline"
                     size="sm"
                     className="bg-slate-800 border-slate-600 text-white hover:bg-slate-700 flex-shrink-0"
