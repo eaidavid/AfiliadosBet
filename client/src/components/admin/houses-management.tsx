@@ -704,7 +704,7 @@ export default function AdminHousesManagement({ onPageChange }: AdminHousesManag
       </div>
 
       {/* Postback Configuration Modal */}
-      {selectedHouseId && isPostbackModalOpen && (
+      {selectedHouseId && isPostbackModalOpen && houses && (
         <SimplePostbackConfig
           house={houses.find(h => h.id === selectedHouseId)}
           onClose={() => {

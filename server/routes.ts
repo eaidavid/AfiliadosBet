@@ -1451,10 +1451,25 @@ export async function registerRoutes(app: express.Application) {
         });
       }
 
+      // Find house by security token
+      const [house] = await db
+        .select()
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.securityToken, token as string))
+        .limit(1);
+
+      if (!house) {
+        console.log(`❌ Casa não encontrada para token: ${token}`);
+        return res.status(404).json({ 
+          status: 'error', 
+          message: 'Token de segurança inválido' 
+        });
+      }
+
       // Register click conversion
       await db.insert(schema.conversions).values({
         userId: affiliate.id,
-        houseId: 1, // Default house or find by token
+        houseId: house.id,
         type: 'click',
         amount: (value as string) || "0",
         commission: "0",
@@ -1464,6 +1479,7 @@ export async function registerRoutes(app: express.Application) {
           ip,
           token,
           timestamp: new Date().toISOString(),
+          houseName: house.name,
         },
       });
 
@@ -1513,10 +1529,25 @@ export async function registerRoutes(app: express.Application) {
         });
       }
 
+      // Find house by security token
+      const [house] = await db
+        .select()
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.securityToken, token as string))
+        .limit(1);
+
+      if (!house) {
+        console.log(`❌ Casa não encontrada para token: ${token}`);
+        return res.status(404).json({ 
+          status: 'error', 
+          message: 'Token de segurança inválido' 
+        });
+      }
+
       // Register registration conversion
       await db.insert(schema.conversions).values({
         userId: affiliate.id,
-        houseId: 1, // Default house or find by token
+        houseId: house.id,
         type: 'registration',
         amount: "0",
         commission: "0",
@@ -1526,6 +1557,7 @@ export async function registerRoutes(app: express.Application) {
           ip,
           token,
           timestamp: new Date().toISOString(),
+          houseName: house.name,
         },
       });
 
@@ -1583,10 +1615,25 @@ export async function registerRoutes(app: express.Application) {
         commission = 150; // CPA value
       }
 
+      // Find house by security token
+      const [house] = await db
+        .select()
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.securityToken, token as string))
+        .limit(1);
+
+      if (!house) {
+        console.log(`❌ Casa não encontrada para token: ${token}`);
+        return res.status(404).json({ 
+          status: 'error', 
+          message: 'Token de segurança inválido' 
+        });
+      }
+
       // Register deposit conversion
       await db.insert(schema.conversions).values({
         userId: affiliate.id,
-        houseId: 1, // Default house or find by token
+        houseId: house.id,
         type: 'deposit',
         amount: depositAmount.toString(),
         commission: commission.toString(),
@@ -1596,6 +1643,7 @@ export async function registerRoutes(app: express.Application) {
           ip,
           token,
           timestamp: new Date().toISOString(),
+          houseName: house.name,
         },
       });
 

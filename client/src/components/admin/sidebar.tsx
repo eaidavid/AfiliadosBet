@@ -42,6 +42,8 @@ export function AdminSidebar({ currentPage, onPageChange }: AdminSidebarProps) {
       window.location.href = "/admin/postback-generator";
     } else if (page === "logs-postbacks") {
       window.location.href = "/admin/postback-logs";
+    } else if (page === "postback-display") {
+      window.location.href = "/admin/postback-display";
     } else if (page === "admin-settings") {
       window.location.href = "/admin/settings";
     }
