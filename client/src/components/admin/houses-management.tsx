@@ -639,7 +639,7 @@ export default function AdminHousesManagement({ onPageChange }: AdminHousesManag
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => navigator.clipboard.writeText(window.location.origin + `/api/postback/click?house=${house.name.toLowerCase()}&subid={subid}&customer_id={customer_id}`)}
+                            onClick={() => navigator.clipboard.writeText(`${window.location.origin}/postback/click?token=${house.securityToken}&subid={username}&customer_id={customer_id}`)}
                             className="h-6 w-6 p-0 text-slate-400 hover:text-white"
                           >
                             <ExternalLink className="h-3 w-3" />
@@ -653,7 +653,7 @@ export default function AdminHousesManagement({ onPageChange }: AdminHousesManag
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => navigator.clipboard.writeText(window.location.origin + `/api/postback/registration?house=${house.name.toLowerCase()}&subid={subid}&customer_id={customer_id}`)}
+                            onClick={() => navigator.clipboard.writeText(`${window.location.origin}/postback/register?token=${house.securityToken}&subid={username}&customer_id={customer_id}`)}
                             className="h-6 w-6 p-0 text-slate-400 hover:text-white"
                           >
                             <ExternalLink className="h-3 w-3" />
@@ -667,7 +667,7 @@ export default function AdminHousesManagement({ onPageChange }: AdminHousesManag
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => navigator.clipboard.writeText(window.location.origin + `/api/postback/deposit?house=${house.name.toLowerCase()}&subid={subid}&amount={amount}&customer_id={customer_id}`)}
+                            onClick={() => navigator.clipboard.writeText(`${window.location.origin}/postback/deposit?token=${house.securityToken}&subid={username}&customer_id={customer_id}&value={amount}`)}
                             className="h-6 w-6 p-0 text-slate-400 hover:text-white"
                           >
                             <ExternalLink className="h-3 w-3" />
@@ -675,27 +675,13 @@ export default function AdminHousesManagement({ onPageChange }: AdminHousesManag
                         </div>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-slate-400">Recurring Deposit:</span>
+                        <span className="text-slate-400">Revenue:</span>
                         <div className="flex items-center space-x-2">
                           <span className="text-emerald-400 text-xs">Ativo</span>
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => navigator.clipboard.writeText(window.location.origin + `/api/postback/recurring-deposit?house=${house.name.toLowerCase()}&subid={subid}&amount={amount}&customer_id={customer_id}`)}
-                            className="h-6 w-6 p-0 text-slate-400 hover:text-white"
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-400">Profit:</span>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-emerald-400 text-xs">Ativo</span>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => navigator.clipboard.writeText(window.location.origin + `/api/postback/profit?house=${house.name.toLowerCase()}&subid={subid}&amount={amount}&customer_id={customer_id}`)}
+                            onClick={() => navigator.clipboard.writeText(`${window.location.origin}/postback/revenue?token=${house.securityToken}&subid={username}&customer_id={customer_id}&value={amount}`)}
                             className="h-6 w-6 p-0 text-slate-400 hover:text-white"
                           >
                             <ExternalLink className="h-3 w-3" />

@@ -38,22 +38,20 @@ export default function PostbackGenerator({ onPageChange }: PostbackGeneratorPro
   ];
 
   const generatePostbackUrl = () => {
-    if (!selectedHouse || !eventType) return '';
+    if (!eventType) return '';
 
     const selectedEvent = eventTypes.find(e => e.value === eventType);
     const housesArray = Array.isArray(houses) ? houses : [];
     const house = housesArray.find((h: any) => h.id.toString() === selectedHouse);
     
-    if (!house) return '';
-
-    // Usar o identificador da casa ou nome em lowercase
-    const houseIdentifier = house.identifier || house.name.toLowerCase();
-    let url = `${baseUrl}/api/postback/${houseIdentifier}/${eventType}`;
+    // Use the new simplified postback routes
+    let url = `${baseUrl}/postback/${eventType}`;
     
     const params = [];
+    params.push(`token=${house?.securityToken || 'your_token_here'}`);
     if (subid) params.push(`subid=${subid}`);
     if (customerId) params.push(`customer_id=${customerId}`);
-    if (amount && selectedEvent?.needsAmount) params.push(`amount=${amount}`);
+    if (amount && selectedEvent?.needsAmount) params.push(`value=${amount}`);
     
     if (params.length > 0) {
       url += `?${params.join('&')}`;
