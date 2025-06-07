@@ -17,6 +17,7 @@ import MyLinks from "@/pages/my-links";
 import AffiliateReports from "@/pages/affiliate-reports";
 import UserProfile from "@/pages/user-profile";
 import AffiliatePayments from "@/pages/affiliate-payments";
+import ClickAnalytics from "@/pages/click-analytics";
 import AdminDashboardFixed from "@/pages/admin-dashboard-fixed";
 
 import AdminCasas from "@/pages/admin-casas";
@@ -96,6 +97,7 @@ function Router() {
       <Route path="/betting-houses" component={AuthenticatedBettingHouses} />
       <Route path="/houses" component={AuthenticatedBettingHouses} />
       <Route path="/my-links" component={AuthenticatedMyLinks} />
+      <Route path="/analytics" component={AuthenticatedClickAnalytics} />
       <Route path="/reports" component={AuthenticatedReports} />
       <Route path="/profile" component={AuthenticatedProfile} />
       <Route path="/payments" component={AuthenticatedPayments} />
@@ -256,6 +258,36 @@ function AuthenticatedMyLinks() {
   return (
     <div className="mobile-safe no-bounce">
       <MyLinks />
+      <AdminPanelToggle />
+    </div>
+  );
+}
+
+function AuthenticatedClickAnalytics() {
+  const { isAuthenticated, isLoading } = useAuth();
+  const [location, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      setLocation("/login");
+    }
+  }, [isAuthenticated, isLoading, setLocation]);
+
+  if (isLoading) {
+    return (
+      <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce">
+        <div className="text-emerald-500 text-xl">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  return (
+    <div className="mobile-safe no-bounce">
+      <ClickAnalytics />
       <AdminPanelToggle />
     </div>
   );

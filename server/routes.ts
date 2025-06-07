@@ -1104,8 +1104,10 @@ export async function registerRoutes(app: express.Application) {
 
       // Group clicks by day for chart data
       const clicksByDay = clickData.reduce((acc, click) => {
-        const day = click.clickedAt.toISOString().split('T')[0];
-        acc[day] = (acc[day] || 0) + 1;
+        if (click.clickedAt) {
+          const day = click.clickedAt.toISOString().split('T')[0];
+          acc[day] = (acc[day] || 0) + 1;
+        }
         return acc;
       }, {} as Record<string, number>);
 
@@ -1120,7 +1122,7 @@ export async function registerRoutes(app: express.Application) {
       const stats = {
         totalClicks: clickData.length,
         totalConversions: conversionData.filter(c => c.type !== 'click').length,
-        totalCommission: conversionData.reduce((sum, c) => sum + parseFloat(c.commission), 0),
+        totalCommission: conversionData.reduce((sum, c) => sum + parseFloat(c.commission || '0'), 0),
         conversionRate: clickData.length > 0 ? 
           (conversionData.filter(c => c.type !== 'click').length / clickData.length * 100) : 0,
         clicksByDay,
