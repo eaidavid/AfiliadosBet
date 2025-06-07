@@ -125,11 +125,14 @@ export function useLogin() {
   
   return useMutation({
     mutationFn: async (credentials: LoginData) => {
-      const response = await apiRequest("POST", "/api/auth/login", {
-        email: credentials.usernameOrEmail,
-        password: credentials.password
+      const response = await apiRequest("/api/auth/login", {
+        method: "POST",
+        body: {
+          email: credentials.usernameOrEmail,
+          password: credentials.password
+        }
       });
-      return response.json();
+      return response;
     },
     onSuccess: (data) => {
       // Invalidar cache para atualizar estado de autenticação
@@ -158,8 +161,11 @@ export function useRegister() {
   
   return useMutation({
     mutationFn: async (userData: InsertUser) => {
-      const response = await apiRequest("POST", "/api/auth/register", userData);
-      return response.json();
+      const response = await apiRequest("/api/auth/register", {
+        method: "POST",
+        body: userData
+      });
+      return response;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
@@ -181,8 +187,10 @@ export function useLogout() {
   
   return useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/auth/logout");
-      return response.json();
+      const response = await apiRequest("/api/auth/logout", {
+        method: "POST"
+      });
+      return response;
     },
     onSuccess: () => {
       // Clear all cached auth data
