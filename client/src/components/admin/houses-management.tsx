@@ -66,27 +66,10 @@ export default function AdminHousesManagement({ onPageChange }: AdminHousesManag
 
   const createHouseMutation = useMutation({
     mutationFn: async (data: InsertBettingHouse) => {
-      try {
-        console.log("Enviando dados da casa:", data);
-        const response = await apiRequest("POST", "/api/admin/betting-houses", data);
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          let errorData;
-          try {
-            errorData = JSON.parse(errorText);
-          } catch {
-            errorData = { message: `Erro HTTP ${response.status}: ${errorText}` };
-          }
-          throw new Error(errorData.message || `Erro HTTP ${response.status}`);
-        }
-        
-        const result = await response.json();
-        return result;
-      } catch (error: any) {
-        console.error("Erro na requisição:", error);
-        throw error;
-      }
+      return await apiRequest("/api/admin/betting-houses", {
+        method: "POST",
+        body: data,
+      });
     },
     onSuccess: (data) => {
       console.log("Casa criada com sucesso:", data);
@@ -111,8 +94,10 @@ export default function AdminHousesManagement({ onPageChange }: AdminHousesManag
 
   const updateHouseMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<InsertBettingHouse> }) => {
-      const response = await apiRequest("PUT", `/api/admin/betting-houses/${id}`, data);
-      return response.json();
+      return await apiRequest(`/api/admin/betting-houses/${id}`, {
+        method: "PUT",
+        body: data,
+      });
     },
     onSuccess: () => {
       toast({
@@ -134,12 +119,10 @@ export default function AdminHousesManagement({ onPageChange }: AdminHousesManag
 
   const deleteHouseMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/admin/betting-houses/${id}`);
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Falha ao remover casa de apostas");
-      }
-      return response.json();
+      const response = await apiRequest(`/api/admin/betting-houses/${id}`, {
+        method: "DELETE",
+      });
+      return response;
     },
     onSuccess: () => {
       toast({
@@ -150,7 +133,7 @@ export default function AdminHousesManagement({ onPageChange }: AdminHousesManag
     },
     onError: (error: any) => {
       toast({
-        title: "Não é possível excluir",
+        title: "Erro ao deletar casa",
         description: error.message || "Falha ao remover casa de apostas",
         variant: "destructive",
       });
