@@ -294,7 +294,7 @@ export class ApiIntegrationManager {
     } catch (error) {
       return {
         success: false,
-        message: `Erro de conexão: ${error.message}`,
+        message: `Erro de conexão: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
       };
     }
   }
@@ -320,7 +320,7 @@ export function setupApiIntegrationRoutes(app: any) {
     } catch (error) {
       res.status(500).json({
         success: false,
-        error: error.message,
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
       });
     }
   });
@@ -336,7 +336,7 @@ export function setupApiIntegrationRoutes(app: any) {
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: error.message,
+        message: error instanceof Error ? error.message : 'Erro desconhecido',
       });
     }
   });
@@ -355,7 +355,7 @@ export function setupApiIntegrationRoutes(app: any) {
     } catch (error) {
       res.status(500).json({
         success: false,
-        error: error.message,
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
       });
     }
   });
