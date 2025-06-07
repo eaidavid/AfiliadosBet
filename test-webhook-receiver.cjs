@@ -35,7 +35,7 @@ async function testWebhookReceiver() {
 
   const baseOptions = {
     hostname: 'localhost',
-    port: 5000,
+    port: 3001,
     headers: {
       'X-API-Key': 'casa_demo_123',
       'Content-Type': 'application/json',
