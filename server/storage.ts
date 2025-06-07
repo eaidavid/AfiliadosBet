@@ -98,6 +98,32 @@ export interface IStorage {
   deleteUser(id: number): Promise<void>;
   validatePassword(password: string, hashedPassword: string): Promise<boolean>;
 
+  // API Key operations
+  createApiKey(apiKey: InsertApiKey): Promise<ApiKey>;
+  getApiKeyByValue(keyValue: string): Promise<ApiKey | undefined>;
+  getApiKeysByHouseId(houseId: number): Promise<ApiKey[]>;
+  updateApiKeyLastUsed(id: number): Promise<void>;
+  deactivateApiKey(id: number): Promise<void>;
+
+  // API Request logging
+  createApiRequestLog(log: InsertApiRequestLog): Promise<ApiRequestLog>;
+  getApiRequestLogs(apiKeyId?: number): Promise<ApiRequestLog[]>;
+
+  // Webhook operations
+  createWebhookConfig(webhook: InsertWebhookConfig): Promise<WebhookConfig>;
+  getWebhooksByHouseId(houseId: number): Promise<WebhookConfig[]>;
+  updateWebhookConfig(id: number, updates: Partial<WebhookConfig>): Promise<WebhookConfig>;
+  deleteWebhookConfig(id: number): Promise<void>;
+
+  // Webhook delivery logging
+  createWebhookDeliveryLog(log: InsertWebhookDeliveryLog): Promise<WebhookDeliveryLog>;
+  getWebhookDeliveryLogs(webhookConfigId?: number): Promise<WebhookDeliveryLog[]>;
+
+  // Extended operations for API integration
+  getAffiliatesForHouse(houseId: number, options: { page: number; limit: number; status: string }): Promise<User[]>;
+  createConversionLog(log: any): Promise<any>;
+  getHouseStats(houseId: number, options: { startDate?: string; endDate?: string }): Promise<any>;
+
   // Postback operations
   getPostbackUrl(houseId: number): Promise<string>;
   generateSecurityToken(): string;
@@ -836,6 +862,134 @@ export class DatabaseStorage implements IStorage {
 
   async validatePassword(password: string, hashedPassword: string): Promise<boolean> {
     return bcrypt.compare(password, hashedPassword);
+  }
+
+  // API Key operations implementation
+  async createApiKey(apiKey: InsertApiKey): Promise<ApiKey> {
+    const [newApiKey] = await db.insert(apiKeys).values(apiKey).returning();
+    return newApiKey;
+  }
+
+  async getApiKeyByValue(keyValue: string): Promise<ApiKey | undefined> {
+    return await db.select().from(apiKeys).where(eq(apiKeys.keyValue, keyValue)).limit(1).then(rows => rows[0]);
+  }
+
+  async getApiKeysByHouseId(houseId: number): Promise<ApiKey[]> {
+    return await db.select().from(apiKeys).where(eq(apiKeys.houseId, houseId));
+  }
+
+  async updateApiKeyLastUsed(id: number): Promise<void> {
+    await db.update(apiKeys).set({ lastUsed: new Date() }).where(eq(apiKeys.id, id));
+  }
+
+  async deactivateApiKey(id: number): Promise<void> {
+    await db.update(apiKeys).set({ isActive: false }).where(eq(apiKeys.id, id));
+  }
+
+  // API Request logging implementation
+  async createApiRequestLog(log: InsertApiRequestLog): Promise<ApiRequestLog> {
+    const [newLog] = await db.insert(apiRequestLogs).values(log).returning();
+    return newLog;
+  }
+
+  async getApiRequestLogs(apiKeyId?: number): Promise<ApiRequestLog[]> {
+    let query = db.select().from(apiRequestLogs);
+    if (apiKeyId) {
+      query = query.where(eq(apiRequestLogs.apiKeyId, apiKeyId));
+    }
+    return await query.orderBy(desc(apiRequestLogs.createdAt)).limit(100);
+  }
+
+  // Webhook operations implementation
+  async createWebhookConfig(webhook: InsertWebhookConfig): Promise<WebhookConfig> {
+    const [newWebhook] = await db.insert(webhookConfigs).values(webhook).returning();
+    return newWebhook;
+  }
+
+  async getWebhooksByHouseId(houseId: number): Promise<WebhookConfig[]> {
+    return await db.select().from(webhookConfigs).where(eq(webhookConfigs.houseId, houseId));
+  }
+
+  async updateWebhookConfig(id: number, updates: Partial<WebhookConfig>): Promise<WebhookConfig> {
+    const [updatedWebhook] = await db.update(webhookConfigs).set(updates).where(eq(webhookConfigs.id, id)).returning();
+    return updatedWebhook;
+  }
+
+  async deleteWebhookConfig(id: number): Promise<void> {
+    await db.delete(webhookConfigs).where(eq(webhookConfigs.id, id));
+  }
+
+  // Webhook delivery logging implementation
+  async createWebhookDeliveryLog(log: InsertWebhookDeliveryLog): Promise<WebhookDeliveryLog> {
+    const [newLog] = await db.insert(webhookDeliveryLogs).values(log).returning();
+    return newLog;
+  }
+
+  async getWebhookDeliveryLogs(webhookConfigId?: number): Promise<WebhookDeliveryLog[]> {
+    let query = db.select().from(webhookDeliveryLogs);
+    if (webhookConfigId) {
+      query = query.where(eq(webhookDeliveryLogs.webhookConfigId, webhookConfigId));
+    }
+    return await query.orderBy(desc(webhookDeliveryLogs.createdAt)).limit(100);
+  }
+
+  // Extended operations for API integration
+  async getAffiliatesForHouse(houseId: number, options: { page: number; limit: number; status: string }): Promise<User[]> {
+    const offset = (options.page - 1) * options.limit;
+    
+    let query = db.select({
+      id: users.id,
+      username: users.username,
+      email: users.email,
+      fullName: users.fullName,
+      cpf: users.cpf,
+      phone: users.phone,
+      role: users.role,
+      isActive: users.isActive,
+      createdAt: users.createdAt
+    })
+    .from(users)
+    .innerJoin(affiliateLinks, eq(users.id, affiliateLinks.userId))
+    .where(eq(affiliateLinks.houseId, houseId));
+
+    if (options.status === 'active') {
+      query = query.where(and(eq(affiliateLinks.houseId, houseId), eq(users.isActive, true)));
+    }
+
+    return await query.offset(offset).limit(options.limit);
+  }
+
+  async createConversionLog(log: any): Promise<any> {
+    return await db.insert(conversions).values({
+      userId: log.user_id,
+      houseId: log.house_id,
+      customerId: log.customer_id,
+      type: log.event_type,
+      amount: log.amount,
+      commission: log.commission,
+      conversionData: log.conversion_data
+    }).returning().then(rows => rows[0]);
+  }
+
+  async getHouseStats(houseId: number, options: { startDate?: string; endDate?: string }): Promise<any> {
+    let query = db.select({
+      totalConversions: count(),
+      totalAmount: sql<number>`sum(CAST(${conversions.amount} AS DECIMAL))`,
+      totalCommission: sql<number>`sum(CAST(${conversions.commission} AS DECIMAL))`
+    })
+    .from(conversions)
+    .where(eq(conversions.houseId, houseId));
+
+    if (options.startDate && options.endDate) {
+      query = query.where(and(
+        eq(conversions.houseId, houseId),
+        sql`${conversions.convertedAt} >= ${options.startDate}`,
+        sql`${conversions.convertedAt} <= ${options.endDate}`
+      ));
+    }
+
+    const result = await query;
+    return result[0] || { totalConversions: 0, totalAmount: 0, totalCommission: 0 };
   }
 
   async getAllAffiliates(): Promise<Array<User & { affiliateHouses?: number; totalConversions?: number; totalCommission?: number }>> {
