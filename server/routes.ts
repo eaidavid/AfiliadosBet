@@ -5,6 +5,7 @@ import { eq, desc, and, or, ilike, gte, lt, inArray, sql, ne, count } from "driz
 import bcrypt from "bcrypt";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
+import testApiRouter from './test-api';
 
 // Authentication configuration
 passport.use(new LocalStrategy(
@@ -1790,6 +1791,9 @@ export async function registerRoutes(app: express.Application) {
       res.status(500).json({ error: "Erro interno do servidor" });
     }
   });
+
+  // API de teste para demonstração
+  app.use('/api/v1', testApiRouter);
 
   console.log("✅ Rotas registradas com sucesso");
 }
