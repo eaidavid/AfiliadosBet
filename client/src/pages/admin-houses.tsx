@@ -266,6 +266,7 @@ export default function AdminHouses() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updateData),
+        credentials: "include",
       });
       if (!response.ok) throw new Error("Erro ao atualizar casa");
       return response.json();
@@ -307,6 +308,7 @@ export default function AdminHouses() {
     mutationFn: async (id: number) => {
       const response = await fetch(`/api/admin/betting-houses/${id}/toggle`, {
         method: "PATCH",
+        credentials: "include",
       });
       if (!response.ok) throw new Error("Erro ao alterar status");
       return response.json();
