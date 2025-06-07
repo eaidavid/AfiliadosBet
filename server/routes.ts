@@ -1111,7 +1111,8 @@ export async function registerRoutes(app: express.Application) {
         const date = new Date();
         date.setDate(date.getDate() - i);
         const dayClicks = clicks.filter(c => {
-          const clickDate = new Date(c.clickedAt);
+          if (!c.clickedAt) return false;
+          const clickDate = new Date(c.clickedAt.toString());
           return clickDate.toDateString() === date.toDateString();
         }).length;
         
