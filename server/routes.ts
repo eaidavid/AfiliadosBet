@@ -979,7 +979,7 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
-  // Get affiliate links
+  // Get affiliate links with complete data
   app.get("/api/affiliate/links", requireAffiliate, async (req, res) => {
     try {
       const userId = (req.user as any).id;
@@ -987,10 +987,12 @@ export async function registerRoutes(app: express.Application) {
       const links = await db
         .select({
           id: schema.affiliateLinks.id,
+          userId: schema.affiliateLinks.userId,
+          houseId: schema.affiliateLinks.houseId,
           generatedUrl: schema.affiliateLinks.generatedUrl,
+          isActive: schema.affiliateLinks.isActive,
           createdAt: schema.affiliateLinks.createdAt,
           houseName: schema.bettingHouses.name,
-          houseId: schema.affiliateLinks.houseId,
         })
         .from(schema.affiliateLinks)
         .leftJoin(schema.bettingHouses, eq(schema.affiliateLinks.houseId, schema.bettingHouses.id))
