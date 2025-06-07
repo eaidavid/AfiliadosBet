@@ -1,0 +1,88 @@
+Crie um sistema completo em Node.js + React + PostgreSQL, com o seguinte comportamento:
+
+⚠️ MUITO IMPORTANTE:
+O sistema NÃO envia dados para a API da Smartico. Ele APENAS consulta os dados usando requisição GET e salva localmente.  
+Qualquer lógica de envio (POST, criação de afiliados, pagamento via API) deve ser ignorada.  
+Comece do zero, desconsiderando qualquer implementação anterior que enviava dados.
+
+🧩 BACK-END (Node.js + Express):
+1. Criar agendador (cron job) que roda a cada 30 minutos e:
+   - Consulta a tabela `betting_houses` (casas) com campo `modo_recebimento = 'api'`
+   - Usa a coluna `api_key` de cada casa para fazer requisição GET para:
+     `https://boapi.smartico.ai/api/af2_media_report_op`
+   - Parâmetros:
+     - aggregation_period=DAY
+     - group_by=affiliate_id
+     - date_from e date_to = hoje
+     - Authorization: api_key da casa
+2. Para cada item retornado da API:
+   - Verifica se existe o afiliado correspondente na tabela `users`
+   - Para cada evento detectado:
+     - Se `visit_count > 0`, salva evento do tipo `click`
+     - Se `registration_count > 0`, evento `registration`
+     - Se `deposit_total > 0`, evento `deposit`
+     - Se `commissions_total > 0`, evento `profit`
+   - Inserir na tabela `conversions`:
+     - user_id
+     - house_id
+     - type (click, registration, deposit, profit)
+     - amount (valor bruto do evento)
+     - commission (calculada com base na casa: `commission_type` + `commission_value`)
+     - converted_at (data do evento)
+   - Verificar se já existe conversão do mesmo tipo/afiliado/casa/dia antes de inserir (para evitar duplicação)
+3. Criar rota:
+   `GET /api/conversions`
+   - Filtros opcionais: `date_from`, `date_to`, `user_id`, `house_id`
+   - Retorna dados da tabela `conversions` com JOIN nos afiliados (`users`) e casas (`betting_houses`)
+
+🧱 BANCO DE DADOS (PostgreSQL):
+- Usar estrutura já existente:
+  - `users`
+  - `betting_houses`
+  - `conversions`
+- Adicionar se necessário:
+  - `modo_recebimento` e `api_key` em `betting_houses`
+
+🎨 FRONT-END (React + Tailwind ou Bootstrap):
+1. Criar página visual:
+   - Filtros por data (`date_from`, `date_to`)
+   - Filtro por afiliado (dropdown com nome dos users)
+   - Filtro por casa (dropdown com nome das casas)
+   - Botão “Buscar dados”
+2. Ao clicar, faz requisição `GET /api/conversions` com os filtros
+3. Exibir tabela com colunas:
+   - Data (`converted_at`)
+   - Nome do afiliado
+   - Nome da casa
+   - Tipo de evento
+   - Valor do evento (`amount`)
+   - Comissão gerada
+4. Ao final da tabela, mostrar totais:
+   - Total de clicks, registros, depósitos, profit
+   - Total geral de comissões
+
+📦 ESTRUTURA DO PROJETO:
+- `/backend`
+  - `server.js`
+  - `routes/conversions.js`
+  - `services/smarticoFetcher.js` (chama API e salva eventos)
+  - `cron/smarticoSync.js`
+- `/frontend`
+  - `App.jsx` ou `Relatorio.jsx`
+  - Usa Axios para buscar dados
+  - Tabela com filtros e dados visuais
+
+🔐 Segurança:
+- O painel é só para visualização interna (admin), não precisa de login
+- Sanitizar filtros para evitar SQL Injection
+- Tratar falhas da API Smartico com logs
+
+🎯 Objetivo:
+Ver visualmente, via painel, que os dados da API Smartico estão sendo coletados e salvos corretamente no sistema.
+
+⚠️ REFORÇANDO:
+- NÃO criar rotas ou funções que POSTEM dados na Smartico
+- NÃO usar a API para registrar afiliados, pagamentos ou links
+- SOMENTE consultar via GET, processar e exibir
+
+Gere o projeto completo, com back-end, banco, e front-end, pronto para rodar localmente.

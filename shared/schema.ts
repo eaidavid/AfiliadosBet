@@ -59,6 +59,8 @@ export const bettingHouses = pgTable("betting_houses", {
   // Configurações para integração por API
   integrationType: text("integration_type").notNull().default("postback"), // 'postback' ou 'api'
   apiConfig: jsonb("api_config").default({}), // Configurações específicas da API
+  modoRecebimento: text("modo_recebimento").default("postback"), // 'postback' ou 'api'
+  apiKey: text("api_key"), // API Key para consultas Smartico
   
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
