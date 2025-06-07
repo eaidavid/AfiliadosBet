@@ -743,20 +743,33 @@ export async function registerRoutes(app: express.Application) {
         return res.status(400).json({ error: "ID inválido" });
       }
 
-      // Check if house has any links before deleting
-      const links = await db
-        .select()
-        .from(schema.affiliateLinks)
-        .where(eq(schema.affiliateLinks.houseId, houseId));
+      // First, delete all related data to avoid foreign key constraints
+      console.log(`🗑️ Iniciando exclusão da casa ID: ${houseId}`);
 
-      if (links.length > 0) {
-        return res.status(400).json({ error: "Não é possível excluir casa com links ativos" });
-      }
-
+      // Delete conversions related to this house
       await db
+        .delete(schema.conversions)
+        .where(eq(schema.conversions.houseId, houseId));
+      console.log(`✅ Conversões da casa ${houseId} removidas`);
+
+      // Delete affiliate links related to this house
+      await db
+        .delete(schema.affiliateLinks)
+        .where(eq(schema.affiliateLinks.houseId, houseId));
+      console.log(`✅ Links de afiliados da casa ${houseId} removidos`);
+
+      // Delete registered postbacks related to this house
+      await db
+        .delete(schema.registeredPostbacks)
+        .where(eq(schema.registeredPostbacks.houseId, houseId));
+      console.log(`✅ Postbacks registrados da casa ${houseId} removidos`);
+
+      // Finally, delete the betting house itself
+      const deletedRows = await db
         .delete(schema.bettingHouses)
         .where(eq(schema.bettingHouses.id, houseId));
 
+      console.log(`✅ Casa de apostas ${houseId} excluída com sucesso`);
       res.json({ success: true, message: "Casa excluída com sucesso" });
     } catch (error) {
       console.error("❌ Erro ao excluir casa:", error);
