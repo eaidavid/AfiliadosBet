@@ -5,6 +5,10 @@ import {
   conversions,
   payments,
   clickTracking,
+  apiKeys,
+  apiRequestLogs,
+  webhookConfigs,
+  webhookDeliveryLogs,
   type User,
   type InsertUser,
   type BettingHouse,
@@ -17,6 +21,14 @@ import {
   type InsertPayment,
   type ClickTracking,
   type LoginData,
+  type ApiKey,
+  type InsertApiKey,
+  type ApiRequestLog,
+  type InsertApiRequestLog,
+  type WebhookConfig,
+  type InsertWebhookConfig,
+  type WebhookDeliveryLog,
+  type InsertWebhookDeliveryLog,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, count } from "drizzle-orm";

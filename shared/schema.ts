@@ -149,6 +149,64 @@ export const registeredPostbacks = pgTable("registered_postbacks", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// API Keys table for external integrations
+export const apiKeys = pgTable("api_keys", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  keyValue: text("key_value").notNull().unique(),
+  houseId: integer("house_id").references(() => bettingHouses.id),
+  permissions: jsonb("permissions").default(['read', 'write']),
+  isActive: boolean("is_active").default(true),
+  lastUsed: timestamp("last_used"),
+  createdAt: timestamp("created_at").defaultNow(),
+  expiresAt: timestamp("expires_at"),
+});
+
+// API Request logs for monitoring
+export const apiRequestLogs = pgTable("api_request_logs", {
+  id: serial("id").primaryKey(),
+  apiKeyId: integer("api_key_id").references(() => apiKeys.id),
+  endpoint: text("endpoint").notNull(),
+  method: text("method").notNull(),
+  statusCode: integer("status_code").notNull(),
+  responseTime: integer("response_time"), // in milliseconds
+  userAgent: text("user_agent"),
+  ipAddress: text("ip_address"),
+  requestData: jsonb("request_data"),
+  responseData: jsonb("response_data"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Webhook configurations
+export const webhookConfigs = pgTable("webhook_configs", {
+  id: serial("id").primaryKey(),
+  houseId: integer("house_id").references(() => bettingHouses.id),
+  name: text("name").notNull(),
+  url: text("url").notNull(),
+  events: jsonb("events").default(['conversion', 'click', 'registration']),
+  secret: text("secret").notNull(),
+  isActive: boolean("is_active").default(true),
+  maxRetries: integer("max_retries").default(3),
+  timeoutSeconds: integer("timeout_seconds").default(30),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Webhook delivery logs
+export const webhookDeliveryLogs = pgTable("webhook_delivery_logs", {
+  id: serial("id").primaryKey(),
+  webhookConfigId: integer("webhook_config_id").references(() => webhookConfigs.id),
+  eventType: text("event_type").notNull(),
+  payload: jsonb("payload").notNull(),
+  httpStatus: integer("http_status"),
+  responseBody: text("response_body"),
+  responseTime: integer("response_time"),
+  attempt: integer("attempt").default(1),
+  success: boolean("success").default(false),
+  errorMessage: text("error_message"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   affiliateLinks: many(affiliateLinks),
@@ -163,6 +221,24 @@ export const bettingHousesRelations = relations(bettingHouses, ({ many }) => ({
   clicks: many(clickTracking),
   postbackLogs: many(postbackLogs),
   registeredPostbacks: many(registeredPostbacks),
+  apiKeys: many(apiKeys),
+  webhookConfigs: many(webhookConfigs),
+}));
+
+export const apiKeysRelations = relations(apiKeys, ({ one, many }) => ({
+  house: one(bettingHouses, {
+    fields: [apiKeys.houseId],
+    references: [bettingHouses.id],
+  }),
+  requestLogs: many(apiRequestLogs),
+}));
+
+export const webhookConfigsRelations = relations(webhookConfigs, ({ one, many }) => ({
+  house: one(bettingHouses, {
+    fields: [webhookConfigs.houseId],
+    references: [bettingHouses.id],
+  }),
+  deliveryLogs: many(webhookDeliveryLogs),
 }));
 
 export const affiliateLinksRelations = relations(affiliateLinks, ({ one, many }) => ({
@@ -287,6 +363,14 @@ export type SystemSettings = typeof systemSettings.$inferSelect;
 export type InsertSystemSettings = typeof systemSettings.$inferInsert;
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type InsertAuditLog = typeof auditLogs.$inferInsert;
+export type ApiKey = typeof apiKeys.$inferSelect;
+export type InsertApiKey = typeof apiKeys.$inferInsert;
+export type ApiRequestLog = typeof apiRequestLogs.$inferSelect;
+export type InsertApiRequestLog = typeof apiRequestLogs.$inferInsert;
+export type WebhookConfig = typeof webhookConfigs.$inferSelect;
+export type InsertWebhookConfig = typeof webhookConfigs.$inferInsert;
+export type WebhookDeliveryLog = typeof webhookDeliveryLogs.$inferSelect;
+export type InsertWebhookDeliveryLog = typeof webhookDeliveryLogs.$inferInsert;
 
 // Zod schemas for validation
 export const insertUserSchema = createInsertSchema(users).omit({
@@ -343,6 +427,29 @@ export const insertPaymentSchema = createInsertSchema(payments).omit({
   id: true,
   createdAt: true,
   paidAt: true,
+});
+
+// API Integration schemas
+export const insertApiKeySchema = createInsertSchema(apiKeys).omit({
+  id: true,
+  createdAt: true,
+  lastUsed: true,
+});
+
+export const insertWebhookConfigSchema = createInsertSchema(webhookConfigs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertApiRequestLogSchema = createInsertSchema(apiRequestLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertWebhookDeliveryLogSchema = createInsertSchema(webhookDeliveryLogs).omit({
+  id: true,
+  createdAt: true,
 });
 
 // Types
