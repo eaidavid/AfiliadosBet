@@ -574,18 +574,18 @@ export default function AffiliateHome() {
             </TabsContent>
 
             {/* Recent Conversions */}
-            <TabsContent value="conversions" className="space-y-6">
+            <TabsContent value="conversions" className="space-y-4 sm:space-y-6">
               <Card className="bg-slate-900/50 border-slate-700">
-                <CardHeader>
-                  <CardTitle className="text-xl text-emerald-400 flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="text-lg sm:text-xl text-emerald-400 flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
                     Conversões Recentes
                   </CardTitle>
-                  <CardDescription className="text-slate-400">
+                  <CardDescription className="text-slate-400 text-sm">
                     Últimas 10 conversões registradas
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 sm:p-6 pt-0">
                   {conversionsLoading ? (
                     <div className="space-y-4">
                       {Array.from({ length: 5 }).map((_, i) => (
@@ -593,16 +593,50 @@ export default function AffiliateHome() {
                       ))}
                     </div>
                   ) : recentConversions && recentConversions.length > 0 ? (
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="border-slate-700">
-                          <TableHead className="text-slate-300">Tipo</TableHead>
-                          <TableHead className="text-slate-300">Casa</TableHead>
-                          <TableHead className="text-slate-300">Comissão</TableHead>
-                          <TableHead className="text-slate-300">Data</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
+                    <div className="space-y-4">
+                      {/* Mobile view - cards */}
+                      <div className="block sm:hidden space-y-3">
+                        {recentConversions.map((conversion) => (
+                          <Card key={conversion.id} className="bg-slate-800/50 border-slate-600">
+                            <CardContent className="p-4">
+                              <div className="flex justify-between items-start">
+                                <div className="flex items-center gap-2">
+                                  {getTypeIcon(conversion.type)}
+                                  <div>
+                                    <div className="font-medium text-slate-100 capitalize">
+                                      {conversion.type === 'click' ? 'Clique' : 
+                                       conversion.type === 'registration' ? 'Registro' :
+                                       conversion.type === 'deposit' ? 'Depósito' : conversion.type}
+                                    </div>
+                                    <div className="text-xs text-slate-400">{conversion.houseName}</div>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-sm font-medium text-emerald-400">
+                                    {conversion.commission ? `R$ ${conversion.commission}` : '-'}
+                                  </div>
+                                  <div className="text-xs text-slate-400">
+                                    {format(new Date(conversion.convertedAt), 'dd/MM/yyyy', { locale: ptBR })}
+                                  </div>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                      
+                      {/* Desktop view - table */}
+                      <div className="hidden sm:block">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="border-slate-700">
+                              <TableHead className="text-slate-300">Tipo</TableHead>
+                              <TableHead className="text-slate-300">Casa</TableHead>
+                              <TableHead className="text-slate-300">Comissão</TableHead>
+                              <TableHead className="text-slate-300">Data</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
                         {recentConversions.map((conversion) => (
                           <TableRow key={conversion.id} className="border-slate-700">
                             <TableCell>
@@ -625,9 +659,11 @@ export default function AffiliateHome() {
                               {format(new Date(conversion.convertedAt), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
                             </TableCell>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
                   ) : (
                     <div className="text-center py-8 text-slate-400">
                       <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -640,18 +676,18 @@ export default function AffiliateHome() {
             </TabsContent>
 
             {/* Recent Postbacks */}
-            <TabsContent value="postbacks" className="space-y-6">
+            <TabsContent value="postbacks" className="space-y-4 sm:space-y-6">
               <Card className="bg-slate-900/50 border-slate-700">
-                <CardHeader>
-                  <CardTitle className="text-xl text-emerald-400 flex items-center gap-2">
-                    <Bell className="h-5 w-5" />
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="text-lg sm:text-xl text-emerald-400 flex items-center gap-2">
+                    <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
                     Postbacks Recentes
                   </CardTitle>
-                  <CardDescription className="text-slate-400">
+                  <CardDescription className="text-slate-400 text-sm">
                     Últimos 5 postbacks recebidos
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 sm:p-6 pt-0">
                   {postbacksLoading ? (
                     <div className="space-y-4">
                       {Array.from({ length: 5 }).map((_, i) => (
@@ -659,47 +695,81 @@ export default function AffiliateHome() {
                       ))}
                     </div>
                   ) : recentPostbacks && recentPostbacks.length > 0 ? (
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="border-slate-700">
-                          <TableHead className="text-slate-300">Casa</TableHead>
-                          <TableHead className="text-slate-300">Evento</TableHead>
-                          <TableHead className="text-slate-300">Valor</TableHead>
-                          <TableHead className="text-slate-300">Status</TableHead>
-                          <TableHead className="text-slate-300">Data</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
+                    <div className="space-y-4">
+                      {/* Mobile view - cards */}
+                      <div className="block sm:hidden space-y-3">
                         {recentPostbacks.map((postback) => (
-                          <TableRow key={postback.id} className="border-slate-700">
-                            <TableCell className="text-slate-300 font-medium">
-                              {postback.houseName}
-                            </TableCell>
-                            <TableCell className="text-slate-300">
-                              {postback.eventType}
-                            </TableCell>
-                            <TableCell className="text-emerald-400">
-                              {postback.value ? `R$ ${postback.value}` : '-'}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                {postback.status === 'success' ? (
-                                  <CheckCircle className="h-4 w-4 text-emerald-400" />
-                                ) : (
-                                  <XCircle className="h-4 w-4 text-red-400" />
-                                )}
-                                <span className={getStatusColor(postback.status)}>
-                                  {postback.status === 'success' ? 'Sucesso' : 'Falha'}
-                                </span>
+                          <Card key={postback.id} className="bg-slate-800/50 border-slate-600">
+                            <CardContent className="p-4">
+                              <div className="space-y-3">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <div className="font-medium text-slate-100">{postback.houseName}</div>
+                                    <div className="text-xs text-slate-400 capitalize">{postback.eventType}</div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className={`text-xs font-medium ${getStatusColor(postback.status)}`}>
+                                      {postback.status === 'success' ? 'Sucesso' : 'Erro'}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <div className="text-sm text-slate-300">R$ {postback.value}</div>
+                                  <div className="text-xs text-slate-400">
+                                    {format(new Date(postback.createdAt), 'dd/MM/yyyy', { locale: ptBR })}
+                                  </div>
+                                </div>
                               </div>
-                            </TableCell>
-                            <TableCell className="text-slate-300">
-                              {format(new Date(postback.createdAt), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
-                            </TableCell>
-                          </TableRow>
+                            </CardContent>
+                          </Card>
                         ))}
-                      </TableBody>
-                    </Table>
+                      </div>
+                      
+                      {/* Desktop view - table */}
+                      <div className="hidden sm:block">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="border-slate-700">
+                              <TableHead className="text-slate-300">Casa</TableHead>
+                              <TableHead className="text-slate-300">Evento</TableHead>
+                              <TableHead className="text-slate-300">Valor</TableHead>
+                              <TableHead className="text-slate-300">Status</TableHead>
+                              <TableHead className="text-slate-300">Data</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {recentPostbacks.map((postback) => (
+                              <TableRow key={postback.id} className="border-slate-700">
+                                <TableCell className="text-slate-300 font-medium">
+                                  {postback.houseName}
+                                </TableCell>
+                                <TableCell className="text-slate-300">
+                                  {postback.eventType}
+                                </TableCell>
+                                <TableCell className="text-emerald-400">
+                                  {postback.value ? `R$ ${postback.value}` : '-'}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    {postback.status === 'success' ? (
+                                      <CheckCircle className="h-4 w-4 text-emerald-400" />
+                                    ) : (
+                                      <XCircle className="h-4 w-4 text-red-400" />
+                                    )}
+                                    <span className={getStatusColor(postback.status)}>
+                                      {postback.status === 'success' ? 'Sucesso' : 'Falha'}
+                                    </span>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-slate-300">
+                                  {format(new Date(postback.createdAt), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
                   ) : (
                     <div className="text-center py-8 text-slate-400">
                       <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
