@@ -27,6 +27,7 @@ import AdminManageSimple from "@/pages/admin-manage-simple";
 import AdminEditAffiliate from "@/pages/admin-edit-affiliate";
 import PostbackGeneratorProfessional from "@/pages/postback-generator-professional";
 import PostbackLogs from "@/pages/postback-logs";
+import AdminPostbackDisplay from "@/pages/admin-postback-display";
 import AdminSettingsEnhanced from "@/pages/admin-settings-enhanced";
 import NotFound from "@/pages/not-found";
 import AdminPanelToggle from "@/components/admin-panel-toggle";
@@ -109,6 +110,7 @@ function Router() {
       <Route path="/admin/manage/:id/edit" component={AuthenticatedAdminEditAffiliate} />
       <Route path="/admin/postback-generator" component={AuthenticatedPostbackGenerator} />
       <Route path="/admin/postback-logs" component={AuthenticatedPostbackLogs} />
+      <Route path="/admin/postback-display" component={AuthenticatedPostbackDisplay} />
       <Route path="/admin/settings" component={AuthenticatedAdminSettings} />
       <Route component={NotFound} />
     </Switch>
@@ -590,6 +592,36 @@ function AuthenticatedPostbackLogs() {
   return (
     <div className="mobile-safe no-bounce">
       <PostbackLogs />
+      <AdminPanelToggle />
+    </div>
+  );
+}
+
+function AuthenticatedPostbackDisplay() {
+  const { isAuthenticated, isLoading, isAdmin } = useAuth();
+  const [location, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading && (!isAuthenticated || !isAdmin)) {
+      setLocation("/login");
+    }
+  }, [isAuthenticated, isLoading, isAdmin, setLocation]);
+
+  if (isLoading) {
+    return (
+      <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce">
+        <div className="text-emerald-500 text-xl">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !isAdmin) {
+    return null;
+  }
+
+  return (
+    <div className="mobile-safe no-bounce">
+      <AdminPostbackDisplay />
       <AdminPanelToggle />
     </div>
   );
