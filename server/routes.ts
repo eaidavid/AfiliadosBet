@@ -1793,8 +1793,9 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
-  // Webhooks para receber dados das casas de apostas
-  app.use('/webhook', webhookRouter);
+  // Webhook receiver for betting houses
+  const webhookApp = await import('./webhook-receiver');
+  app.use('/webhook', webhookApp.default);
   
   // API de teste para demonstração
   app.use('/api/v1', testApiRouter);
