@@ -1751,5 +1751,45 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
+  // Postback logs API endpoint
+  app.get("/api/admin/postback-logs", requireAdmin, async (req, res) => {
+    try {
+      const { casa, status, limit = 50, offset = 0 } = req.query;
+      
+      // Get conversions with house and user information
+      const logs = await db
+        .select()
+        .from(schema.conversions)
+        .leftJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
+        .leftJoin(schema.users, eq(schema.conversions.userId, schema.users.id))
+        .orderBy(desc(schema.conversions.convertedAt))
+        .limit(parseInt(limit as string))
+        .offset(parseInt(offset as string));
+
+      // Transform data for frontend
+      const transformedLogs = logs.map(log => ({
+        id: log.conversions.id,
+        event_type: log.conversions.type,
+        subid: log.users?.username || 'unknown',
+        casa: log.betting_houses?.name || 'unknown',
+        customer_id: log.conversions.customerId,
+        amount: log.conversions.amount,
+        commission: log.conversions.commission,
+        status: 'success',
+        status_code: 200,
+        created_at: log.conversions.convertedAt,
+        ip: (log.conversions.conversionData as any)?.ip || 'unknown',
+        house_id: log.conversions.houseId,
+        user_id: log.conversions.userId,
+        conversion_data: log.conversions.conversionData,
+      }));
+
+      res.json(transformedLogs);
+    } catch (error) {
+      console.error("❌ Erro ao buscar logs de postback:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   console.log("✅ Rotas registradas com sucesso");
 }
