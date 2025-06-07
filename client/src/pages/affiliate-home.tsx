@@ -345,11 +345,11 @@ export default function AffiliateHome() {
             </TabsList>
 
             {/* Betting Houses */}
-            <TabsContent value="houses" className="space-y-6">
+            <TabsContent value="houses" className="space-y-4 sm:space-y-6">
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                  <h2 className="text-2xl font-bold text-emerald-400 flex items-center gap-2">
-                    <Award className="h-6 w-6" />
+                  <h2 className="text-xl sm:text-2xl font-bold text-emerald-400 flex items-center gap-2">
+                    <Award className="h-5 w-5 sm:h-6 sm:w-6" />
                     Casas de Apostas Disponíveis
                   </h2>
                   <div className="relative w-full sm:w-80">
@@ -358,12 +358,12 @@ export default function AffiliateHome() {
                       placeholder="Buscar casa de apostas..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 bg-slate-900 border-slate-700"
+                      className="pl-10 bg-slate-900 border-slate-700 text-sm sm:text-base"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {housesLoading ? (
                     Array.from({ length: 6 }).map((_, i) => (
                       <Card key={i} className="bg-slate-900/50 border-slate-700 animate-pulse">
@@ -378,23 +378,23 @@ export default function AffiliateHome() {
                     filteredHouses.map((house) => {
                       const badge = getHouseBadge(house);
                       return (
-                        <Card key={house.id} className="bg-slate-900/50 border-slate-700 hover:bg-slate-900/70 transition-all duration-200">
-                          <CardHeader className="pb-3">
+                        <Card key={house.id} className="bg-slate-900/50 border-slate-700 hover:bg-slate-900/70 transition-all duration-200 touch-manipulation">
+                          <CardHeader className="pb-3 p-4 sm:p-6">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
                                 {house.logoUrl ? (
                                   <img 
                                     src={house.logoUrl} 
                                     alt={house.name}
-                                    className="h-12 w-12 rounded-lg object-cover"
+                                    className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg object-cover"
                                   />
                                 ) : (
-                                  <div className="h-12 w-12 bg-slate-700 rounded-lg flex items-center justify-center">
-                                    <Crown className="h-6 w-6 text-emerald-400" />
+                                  <div className="h-10 w-10 sm:h-12 sm:w-12 bg-slate-700 rounded-lg flex items-center justify-center">
+                                    <Crown className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-400" />
                                   </div>
                                 )}
                                 <div>
-                                  <CardTitle className="text-lg text-slate-100">{house.name}</CardTitle>
+                                  <CardTitle className="text-base sm:text-lg text-slate-100">{house.name}</CardTitle>
                                   <Badge className={`${badge.color} text-white text-xs mt-1`}>
                                     {badge.text}
                                   </Badge>
@@ -402,23 +402,23 @@ export default function AffiliateHome() {
                               </div>
                             </div>
                           </CardHeader>
-                          <CardContent className="space-y-3">
+                          <CardContent className="space-y-3 p-4 sm:p-6 pt-0">
                             <div className="space-y-2">
                               <div className="flex justify-between items-start">
-                                <span className="text-sm text-slate-400">Comissão:</span>
+                                <span className="text-xs sm:text-sm text-slate-400">Comissão:</span>
                                 <div className="text-right">
                                   {getCommissionDisplay(house)}
                                 </div>
                               </div>
                               {house.minDeposit && (
                                 <div className="flex justify-between items-center">
-                                  <span className="text-sm text-slate-400">Depósito Min:</span>
-                                  <span className="text-sm text-slate-300">R$ {house.minDeposit}</span>
+                                  <span className="text-xs sm:text-sm text-slate-400">Depósito Min:</span>
+                                  <span className="text-xs sm:text-sm text-slate-300">R$ {house.minDeposit}</span>
                                 </div>
                               )}
                               <div className="flex justify-between items-center">
-                                <span className="text-sm text-slate-400">Status:</span>
-                                <Badge variant={house.isActive ? "default" : "secondary"}>
+                                <span className="text-xs sm:text-sm text-slate-400">Status:</span>
+                                <Badge variant={house.isActive ? "default" : "secondary"} className="text-xs">
                                   {house.isActive ? "Ativo" : "Inativo"}
                                 </Badge>
                               </div>
@@ -426,18 +426,18 @@ export default function AffiliateHome() {
                             
                             <div className="pt-3 border-t border-slate-700">
                               {house.isAffiliated ? (
-                                <Button variant="outline" className="w-full" size="sm">
-                                  <Eye className="h-4 w-4 mr-2" />
+                                <Button variant="outline" className="w-full h-9 sm:h-10 text-sm touch-manipulation" size="sm">
+                                  <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                                   Ver Link
                                 </Button>
                               ) : (
                                 <Button 
-                                  className="w-full bg-emerald-600 hover:bg-emerald-700" 
+                                  className="w-full bg-emerald-600 hover:bg-emerald-700 h-9 sm:h-10 text-sm touch-manipulation" 
                                   size="sm"
                                   onClick={() => handleJoinAffiliate(house.id)}
                                   disabled={joinAffiliateMutation.isPending}
                                 >
-                                  <Zap className="h-4 w-4 mr-2" />
+                                  <Zap className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                                   {joinAffiliateMutation.isPending ? 'Afiliando...' : 'Se Afiliar'}
                                 </Button>
                               )}
@@ -452,18 +452,18 @@ export default function AffiliateHome() {
             </TabsContent>
 
             {/* Affiliate Links */}
-            <TabsContent value="links" className="space-y-6">
+            <TabsContent value="links" className="space-y-4 sm:space-y-6">
               <Card className="bg-slate-900/50 border-slate-700">
-                <CardHeader>
-                  <CardTitle className="text-xl text-emerald-400 flex items-center gap-2">
-                    <ExternalLink className="h-5 w-5" />
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="text-lg sm:text-xl text-emerald-400 flex items-center gap-2">
+                    <ExternalLink className="h-4 w-4 sm:h-5 sm:w-5" />
                     Meus Links Ativos
                   </CardTitle>
-                  <CardDescription className="text-slate-400">
+                  <CardDescription className="text-slate-400 text-sm">
                     Gerencie e acompanhe seus links de afiliado
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 sm:p-6 pt-0">
                   {linksLoading ? (
                     <div className="space-y-4">
                       {Array.from({ length: 3 }).map((_, i) => (
@@ -471,47 +471,97 @@ export default function AffiliateHome() {
                       ))}
                     </div>
                   ) : affiliateLinks && affiliateLinks.length > 0 ? (
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="border-slate-700">
-                          <TableHead className="text-slate-300">Casa</TableHead>
-                          <TableHead className="text-slate-300">Link</TableHead>
-                          <TableHead className="text-slate-300">Criado em</TableHead>
-                          <TableHead className="text-slate-300">Ações</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
+                    <div className="space-y-4">
+                      {/* Mobile view - cards */}
+                      <div className="block sm:hidden space-y-3">
                         {affiliateLinks.map((link) => (
-                          <TableRow key={link.id} className="border-slate-700">
-                            <TableCell className="text-slate-100 font-medium">
-                              {link.houseName}
-                            </TableCell>
-                            <TableCell className="max-w-xs">
-                              <code className="text-xs bg-slate-800 px-2 py-1 rounded text-emerald-400 truncate block">
-                                {link.generatedUrl}
-                              </code>
-                            </TableCell>
-                            <TableCell className="text-slate-300">
-                              {format(new Date(link.createdAt), 'dd/MM/yyyy', { locale: ptBR })}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => copyToClipboard(link.generatedUrl)}
-                                >
-                                  <Copy className="h-4 w-4" />
-                                </Button>
-                                <Button variant="outline" size="sm">
-                                  <BarChart3 className="h-4 w-4" />
-                                </Button>
+                          <Card key={link.id} className="bg-slate-800/50 border-slate-600">
+                            <CardContent className="p-4">
+                              <div className="space-y-3">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <div className="font-medium text-slate-100">{link.houseName}</div>
+                                    <div className="text-xs text-slate-400">
+                                      {format(new Date(link.createdAt), 'dd/MM/yyyy', { locale: ptBR })}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="space-y-2">
+                                  <div className="text-xs text-slate-400">Link:</div>
+                                  <code className="text-xs bg-slate-700 px-2 py-1 rounded text-emerald-400 block break-all">
+                                    {link.generatedUrl}
+                                  </code>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1 h-8 text-xs touch-manipulation"
+                                    onClick={() => copyToClipboard(link.generatedUrl)}
+                                  >
+                                    <Copy className="h-3 w-3 mr-1" />
+                                    Copiar
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 text-xs touch-manipulation"
+                                    onClick={() => window.open(link.generatedUrl, '_blank')}
+                                  >
+                                    <ExternalLink className="h-3 w-3" />
+                                  </Button>
+                                </div>
                               </div>
-                            </TableCell>
-                          </TableRow>
+                            </CardContent>
+                          </Card>
                         ))}
-                      </TableBody>
-                    </Table>
+                      </div>
+                      
+                      {/* Desktop view - table */}
+                      <div className="hidden sm:block">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="border-slate-700">
+                              <TableHead className="text-slate-300">Casa</TableHead>
+                              <TableHead className="text-slate-300">Link</TableHead>
+                              <TableHead className="text-slate-300">Criado em</TableHead>
+                              <TableHead className="text-slate-300">Ações</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {affiliateLinks.map((link) => (
+                              <TableRow key={link.id} className="border-slate-700">
+                                <TableCell className="text-slate-100 font-medium">
+                                  {link.houseName}
+                                </TableCell>
+                                <TableCell className="max-w-xs">
+                                  <code className="text-xs bg-slate-800 px-2 py-1 rounded text-emerald-400 truncate block">
+                                    {link.generatedUrl}
+                                  </code>
+                                </TableCell>
+                                <TableCell className="text-slate-300">
+                                  {format(new Date(link.createdAt), 'dd/MM/yyyy', { locale: ptBR })}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => copyToClipboard(link.generatedUrl)}
+                                    >
+                                      <Copy className="h-4 w-4" />
+                                    </Button>
+                                    <Button variant="outline" size="sm">
+                                      <BarChart3 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
                   ) : (
                     <div className="text-center py-8 text-slate-400">
                       <ExternalLink className="h-12 w-12 mx-auto mb-4 opacity-50" />
