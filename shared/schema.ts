@@ -55,6 +55,11 @@ export const bettingHouses = pgTable("betting_houses", {
   enabledPostbacks: jsonb("enabled_postbacks").default([]), // eventos habilitados: ['registration', 'deposit', etc.]
   securityToken: text("security_token").notNull(), // token de segurança para validação
   parameterMapping: jsonb("parameter_mapping").default({}), // mapeamento de parâmetros: { "subid": "subid", "valor": "amount" }
+  
+  // Configurações para integração por API
+  integrationType: text("integration_type").notNull().default("postback"), // 'postback' ou 'api'
+  apiConfig: jsonb("api_config").default({}), // Configurações específicas da API
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
