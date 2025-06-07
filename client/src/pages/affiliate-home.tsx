@@ -119,15 +119,19 @@ export default function AffiliateHome() {
     queryKey: ['/api/affiliate/postbacks'],
   });
 
-  // Join affiliate mutation
+  // Join affiliate mutation with proper credentials
   const joinAffiliateMutation = useMutation({
     mutationFn: async (houseId: number) => {
       const response = await fetch('/api/affiliate/join', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ houseId }),
       });
-      if (!response.ok) throw new Error('Failed to join affiliate program');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to join affiliate program');
+      }
       return response.json();
     },
     onSuccess: () => {

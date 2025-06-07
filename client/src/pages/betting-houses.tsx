@@ -162,7 +162,16 @@ export default function BettingHouses() {
   // Affiliate mutation
   const affiliateMutation = useMutation({
     mutationFn: async (houseId: number) => {
-      const response = await apiRequest('POST', `/api/affiliate/join/${houseId}`);
+      const response = await fetch('/api/affiliate/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ houseId }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to join affiliate program');
+      }
       return response.json();
     },
     onSuccess: () => {
@@ -170,13 +179,14 @@ export default function BettingHouses() {
         title: "Afiliação realizada!",
         description: "Você agora está afiliado a esta casa de apostas.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/betting-houses/available'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/betting-houses'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/affiliate/links'] });
       setShowAffiliateDialog(false);
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "Erro na afiliação",
-        description: "Não foi possível realizar a afiliação. Tente novamente.",
+        description: error.message || "Não foi possível realizar a afiliação. Tente novamente.",
         variant: "destructive",
       });
     }
