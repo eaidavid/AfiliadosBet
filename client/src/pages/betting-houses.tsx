@@ -123,19 +123,20 @@ export default function BettingHouses() {
 
   // Fetch betting houses
   const { data: bettingHouses, isLoading: housesLoading } = useQuery<BettingHouse[]>({
-    queryKey: ['/api/betting-houses/available'],
+    queryKey: ['/api/betting-houses'],
   });
 
   // Fetch affiliate stats
   const { data: stats, isLoading: statsLoading } = useQuery<AffiliateStats>({
-    queryKey: ['/api/affiliate/stats'],
+    queryKey: ['/api/stats/user'],
   });
 
   // Affiliate mutation
   const affiliateMutation = useMutation({
-    mutationFn: (houseId: number) => apiRequest(`/api/affiliate/join/${houseId}`, {
-      method: 'POST'
-    }),
+    mutationFn: async (houseId: number) => {
+      const response = await apiRequest('POST', `/api/affiliate/join/${houseId}`);
+      return response.json();
+    },
     onSuccess: () => {
       toast({
         title: "Afiliação realizada!",

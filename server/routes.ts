@@ -823,6 +823,63 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
+  // Create affiliate link
+  app.post("/api/affiliate/join/:houseId", requireAffiliate, async (req, res) => {
+    try {
+      const userId = (req.user as any).id;
+      const houseId = parseInt(req.params.houseId);
+      
+      if (isNaN(houseId)) {
+        return res.status(400).json({ error: "ID da casa inválido" });
+      }
+
+      // Check if house exists
+      const [house] = await db
+        .select()
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.id, houseId));
+
+      if (!house) {
+        return res.status(404).json({ error: "Casa não encontrada" });
+      }
+
+      // Check if user already has a link for this house
+      const existingLink = await db
+        .select()
+        .from(schema.affiliateLinks)
+        .where(and(
+          eq(schema.affiliateLinks.userId, userId),
+          eq(schema.affiliateLinks.houseId, houseId)
+        ));
+
+      if (existingLink.length > 0) {
+        return res.status(400).json({ error: "Você já possui um link para esta casa" });
+      }
+
+      // Generate affiliate link
+      const baseUrl = house.baseUrl;
+      const userIdStr = userId.toString().padStart(6, '0');
+      const generatedUrl = baseUrl.replace('VALUE', userIdStr);
+
+      // Create affiliate link record
+      const [newLink] = await db
+        .insert(schema.affiliateLinks)
+        .values({
+          userId,
+          houseId,
+          generatedUrl,
+          isActive: true,
+        })
+        .returning();
+
+      console.log(`✅ Link de afiliação criado para usuário ${userId} na casa ${house.name}`);
+      res.json({ success: true, link: newLink });
+    } catch (error) {
+      console.error("❌ Erro ao criar link de afiliação:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   // Get user links (affiliate route)
   app.get("/api/my-links", requireAffiliate, async (req, res) => {
     try {
@@ -834,6 +891,7 @@ export async function registerRoutes(app: express.Application) {
           generatedUrl: schema.affiliateLinks.generatedUrl,
           createdAt: schema.affiliateLinks.createdAt,
           houseName: schema.bettingHouses.name,
+          houseId: schema.affiliateLinks.houseId,
         })
         .from(schema.affiliateLinks)
         .leftJoin(schema.bettingHouses, eq(schema.affiliateLinks.houseId, schema.bettingHouses.id))
