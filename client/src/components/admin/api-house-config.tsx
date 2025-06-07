@@ -23,7 +23,7 @@ import {
   TestTube, 
   CheckCircle, 
   XCircle, 
-  Sync,
+  RefreshCw,
   AlertTriangle,
   Eye,
   EyeOff
@@ -162,14 +162,14 @@ export function ApiHouseConfig({ house, onSave, onCancel }: ApiHouseConfigProps)
       };
 
       if (house?.id) {
-        return apiRequest(`/api/admin/houses/${house.id}`, {
-          method: "PATCH",
-          body: JSON.stringify(payload),
+        return apiRequest(`/api/admin/betting-houses/${house.id}`, {
+          method: "PUT",
+          body: payload,
         });
       } else {
-        return apiRequest("/api/admin/houses", {
+        return apiRequest("/api/admin/betting-houses", {
           method: "POST",
-          body: JSON.stringify(payload),
+          body: payload,
         });
       }
     },
@@ -1006,7 +1006,7 @@ export function ApiHouseConfig({ house, onSave, onCancel }: ApiHouseConfigProps)
                         >
                           {isTestingConnection ? (
                             <>
-                              <Sync className="w-4 h-4 mr-2 animate-spin" />
+                              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
                               Testando...
                             </>
                           ) : (
@@ -1080,7 +1080,7 @@ export function ApiHouseConfig({ house, onSave, onCancel }: ApiHouseConfigProps)
             >
               {saveMutation.isPending ? (
                 <>
-                  <Sync className="w-4 h-4 mr-2 animate-spin" />
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
                   Salvando...
                 </>
               ) : (

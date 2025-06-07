@@ -17,7 +17,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertBettingHouseSchema, type InsertBettingHouse, type BettingHouse } from "@shared/schema";
 import { useLocation } from "wouter";
-import PostbackConfigModal from "./postback-config-modal";
+import SimplePostbackConfig from "./simple-postback-config";
 
 interface BettingHouseWithStats extends BettingHouse {
   stats?: {
@@ -704,14 +704,13 @@ export default function AdminHousesManagement({ onPageChange }: AdminHousesManag
       </div>
 
       {/* Postback Configuration Modal */}
-      {selectedHouseId && (
-        <PostbackConfigModal
-          isOpen={isPostbackModalOpen}
+      {selectedHouseId && isPostbackModalOpen && (
+        <SimplePostbackConfig
+          house={houses.find(h => h.id === selectedHouseId)}
           onClose={() => {
             setIsPostbackModalOpen(false);
             setSelectedHouseId(null);
           }}
-          houseId={selectedHouseId}
         />
       )}
     </div>
