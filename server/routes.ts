@@ -158,6 +158,23 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
+  // Session check endpoint for data persistence
+  app.get("/api/user/session", (req, res) => {
+    if (req.isAuthenticated && req.isAuthenticated()) {
+      res.json({
+        authenticated: true,
+        user: {
+          id: (req.user as any).id,
+          email: (req.user as any).email,
+          fullName: (req.user as any).fullName,
+          role: (req.user as any).role
+        }
+      });
+    } else {
+      res.json({ authenticated: false });
+    }
+  });
+
   // Register route
   app.post("/api/auth/register", async (req, res) => {
     try {
@@ -592,27 +609,36 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
-  // Betting houses (accessible by affiliates and admins)
-  app.get("/api/betting-houses", requireAffiliate, async (req, res) => {
+  // Betting houses (accessible by affiliates and admins) - with fallback for unauthenticated users
+  app.get("/api/betting-houses", async (req, res) => {
     try {
-      const userId = (req.user as any).id;
       const houses = await db.select().from(schema.bettingHouses);
       
-      // Get user's affiliate links to determine which houses they're affiliated with
-      const userLinks = await db
-        .select({ houseId: schema.affiliateLinks.houseId })
-        .from(schema.affiliateLinks)
-        .where(eq(schema.affiliateLinks.userId, userId));
-      
-      const affiliatedHouseIds = new Set(userLinks.map(link => link.houseId));
-      
-      // Add isAffiliated field to each house
-      const housesWithAffiliationStatus = houses.map(house => ({
-        ...house,
-        isAffiliated: affiliatedHouseIds.has(house.id)
-      }));
-      
-      res.json(housesWithAffiliationStatus);
+      // If user is authenticated, get their affiliate status
+      if (req.user) {
+        const userId = (req.user as any).id;
+        const userLinks = await db
+          .select({ houseId: schema.affiliateLinks.houseId })
+          .from(schema.affiliateLinks)
+          .where(eq(schema.affiliateLinks.userId, userId));
+        
+        const affiliatedHouseIds = new Set(userLinks.map(link => link.houseId));
+        
+        const housesWithAffiliationStatus = houses.map(house => ({
+          ...house,
+          isAffiliated: affiliatedHouseIds.has(house.id)
+        }));
+        
+        res.json(housesWithAffiliationStatus);
+      } else {
+        // Return houses without affiliation status for unauthenticated users
+        const housesWithoutAffiliation = houses.map(house => ({
+          ...house,
+          isAffiliated: false
+        }));
+        
+        res.json(housesWithoutAffiliation);
+      }
     } catch (error) {
       console.error("Erro ao buscar casas:", error);
       res.status(500).json({ error: "Erro interno do servidor" });
