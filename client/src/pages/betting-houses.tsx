@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 import SidebarLayout from '@/components/sidebar-layout';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -31,7 +33,17 @@ import {
   ChevronRight,
   Shield,
   Globe,
-  Smartphone
+  Smartphone,
+  BarChart3,
+  TrendingDown,
+  Eye,
+  MousePointer,
+  UserPlus,
+  Banknote,
+  Timer,
+  Activity,
+  PieChart,
+  LineChart
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -77,6 +89,8 @@ export default function BettingHouses() {
   const [affiliationFilter, setAffiliationFilter] = useState('all');
   const [selectedHouse, setSelectedHouse] = useState<BettingHouse | null>(null);
   const [showAffiliateDialog, setShowAffiliateDialog] = useState(false);
+  const [showStatsDialog, setShowStatsDialog] = useState(false);
+  const [selectedStatsHouse, setSelectedStatsHouse] = useState<BettingHouse | null>(null);
 
   const getCommissionDisplay = (house: BettingHouse) => {
     switch (house.commissionType) {
@@ -281,6 +295,32 @@ export default function BettingHouses() {
         variant: "destructive",
       });
     }
+  };
+
+  const showHouseStatistics = (house: BettingHouse) => {
+    setSelectedStatsHouse(house);
+    setShowStatsDialog(true);
+  };
+
+  // Fetch house-specific statistics
+  const { data: houseStats } = useQuery({
+    queryKey: ['/api/stats/house', selectedStatsHouse?.id],
+    enabled: !!selectedStatsHouse,
+  });
+
+  const getPerformanceMetrics = () => {
+    if (!houseStats) return null;
+    
+    const stats = houseStats as any;
+    const conversionRate = stats.totalClicks > 0 ? (stats.totalRegistrations / stats.totalClicks * 100) : 0;
+    const avgCommission = stats.totalCommission > 0 ? (stats.totalCommission / stats.totalRegistrations) : 0;
+    
+    return {
+      conversionRate,
+      avgCommission,
+      performance: conversionRate > 5 ? 'Excelente' : conversionRate > 2 ? 'Bom' : 'Regular',
+      trend: stats.monthlyGrowth > 0 ? 'up' : 'down'
+    };
   };
 
   return (
@@ -550,22 +590,7 @@ export default function BettingHouses() {
                               variant="ghost" 
                               className="w-full text-slate-400" 
                               size="sm"
-                              onClick={() => {
-                                // Show statistics for this house
-                                const userLink = Array.isArray(affiliateLinks) ? affiliateLinks.find((link: any) => link.houseId === house.id) : null;
-                                if (userLink) {
-                                  toast({
-                                    title: "Estatísticas",
-                                    description: `Link criado em: ${format(new Date(userLink.createdAt), 'dd/MM/yyyy HH:mm', { locale: ptBR })}`,
-                                  });
-                                } else {
-                                  toast({
-                                    title: "Sem estatísticas",
-                                    description: "Nenhuma estatística disponível para esta casa.",
-                                    variant: "destructive",
-                                  });
-                                }
-                              }}
+                              onClick={() => showHouseStatistics(house)}
                             >
                               <ExternalLink className="h-4 w-4 mr-2" />
                               Ver Estatísticas
@@ -633,6 +658,293 @@ export default function BettingHouses() {
                 className="bg-emerald-600 hover:bg-emerald-700"
               >
                 {affiliateMutation.isPending ? 'Processando...' : 'Confirmar Afiliação'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Statistics Dialog */}
+        <Dialog open={showStatsDialog} onOpenChange={setShowStatsDialog}>
+          <DialogContent className="bg-slate-900 border-slate-700 max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-emerald-400 flex items-center gap-2">
+                <BarChart3 className="h-5 w-5" />
+                Análise Completa - {selectedStatsHouse?.name}
+              </DialogTitle>
+              <DialogDescription className="text-slate-300">
+                Estatísticas detalhadas de performance e conversão para esta casa de apostas
+              </DialogDescription>
+            </DialogHeader>
+
+            {selectedStatsHouse && (
+              <div className="space-y-6">
+                {/* Performance Overview */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <Card className="bg-slate-800 border-slate-700">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-slate-400 text-xs">Total de Cliques</p>
+                          <p className="text-2xl font-bold text-emerald-400">
+                            {houseStats ? (houseStats as any).totalClicks || 0 : 0}
+                          </p>
+                        </div>
+                        <MousePointer className="h-8 w-8 text-emerald-400" />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-slate-800 border-slate-700">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-slate-400 text-xs">Registros</p>
+                          <p className="text-2xl font-bold text-blue-400">
+                            {houseStats ? (houseStats as any).totalRegistrations || 0 : 0}
+                          </p>
+                        </div>
+                        <UserPlus className="h-8 w-8 text-blue-400" />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-slate-800 border-slate-700">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-slate-400 text-xs">Depósitos</p>
+                          <p className="text-2xl font-bold text-purple-400">
+                            {houseStats ? (houseStats as any).totalDeposits || 0 : 0}
+                          </p>
+                        </div>
+                        <Banknote className="h-8 w-8 text-purple-400" />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-slate-800 border-slate-700">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-slate-400 text-xs">Comissão Total</p>
+                          <p className="text-2xl font-bold text-yellow-400">
+                            R$ {houseStats ? (houseStats as any).totalCommission?.toFixed(2) || '0.00' : '0.00'}
+                          </p>
+                        </div>
+                        <DollarSign className="h-8 w-8 text-yellow-400" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Tabs defaultValue="overview" className="w-full">
+                  <TabsList className="grid w-full grid-cols-4 bg-slate-800">
+                    <TabsTrigger value="overview" className="data-[state=active]:bg-emerald-600">
+                      Visão Geral
+                    </TabsTrigger>
+                    <TabsTrigger value="performance" className="data-[state=active]:bg-emerald-600">
+                      Performance
+                    </TabsTrigger>
+                    <TabsTrigger value="trends" className="data-[state=active]:bg-emerald-600">
+                      Tendências
+                    </TabsTrigger>
+                    <TabsTrigger value="details" className="data-[state=active]:bg-emerald-600">
+                      Detalhes
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="overview" className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Conversion Rate */}
+                      <Card className="bg-slate-800 border-slate-700">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm text-slate-300 flex items-center gap-2">
+                            <Target className="h-4 w-4" />
+                            Taxa de Conversão
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-2xl font-bold text-emerald-400">
+                                {houseStats ? ((houseStats as any).conversionRate || 0).toFixed(2) : '0.00'}%
+                              </span>
+                              {(() => {
+                                const metrics = getPerformanceMetrics();
+                                return metrics?.trend === 'up' ? (
+                                  <TrendingUp className="h-5 w-5 text-emerald-400" />
+                                ) : (
+                                  <TrendingDown className="h-5 w-5 text-red-400" />
+                                );
+                              })()}
+                            </div>
+                            <Progress 
+                              value={houseStats ? (houseStats as any).conversionRate || 0 : 0} 
+                              className="h-2" 
+                            />
+                            <p className="text-xs text-slate-400">
+                              {(() => {
+                                const metrics = getPerformanceMetrics();
+                                return metrics?.performance || 'Sem dados';
+                              })()} performance
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Average Commission */}
+                      <Card className="bg-slate-800 border-slate-700">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm text-slate-300 flex items-center gap-2">
+                            <Award className="h-4 w-4" />
+                            Comissão Média
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2">
+                            <span className="text-2xl font-bold text-yellow-400">
+                              R$ {houseStats ? ((houseStats as any).avgCommission || 0).toFixed(2) : '0.00'}
+                            </span>
+                            <p className="text-xs text-slate-400">
+                              Por conversão realizada
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Recent Activity */}
+                    <Card className="bg-slate-800 border-slate-700">
+                      <CardHeader>
+                        <CardTitle className="text-sm text-slate-300 flex items-center gap-2">
+                          <Activity className="h-4 w-4" />
+                          Atividade Recente (30 dias)
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-blue-400">
+                              {houseStats ? (houseStats as any).recentClicks || 0 : 0}
+                            </p>
+                            <p className="text-xs text-slate-400">Cliques Recentes</p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-purple-400">
+                              {houseStats ? (houseStats as any).recentConversions || 0 : 0}
+                            </p>
+                            <p className="text-xs text-slate-400">Conversões Recentes</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
+                  <TabsContent value="performance" className="space-y-4">
+                    <Card className="bg-slate-800 border-slate-700">
+                      <CardHeader>
+                        <CardTitle className="text-sm text-slate-300 flex items-center gap-2">
+                          <LineChart className="h-4 w-4" />
+                          Performance nos Últimos 7 Dias
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          {houseStats && (houseStats as any).dailyStats?.map((day: any, index: number) => (
+                            <div key={index} className="flex items-center justify-between p-2 bg-slate-700/50 rounded">
+                              <span className="text-sm text-slate-300">
+                                {format(new Date(day.date), 'dd/MM', { locale: ptBR })}
+                              </span>
+                              <div className="flex items-center gap-4">
+                                <div className="text-xs text-blue-400">
+                                  {day.clicks} cliques
+                                </div>
+                                <div className="text-xs text-purple-400">
+                                  {day.conversions} conversões
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
+                  <TabsContent value="trends" className="space-y-4">
+                    <Card className="bg-slate-800 border-slate-700">
+                      <CardHeader>
+                        <CardTitle className="text-sm text-slate-300 flex items-center gap-2">
+                          <TrendingUp className="h-4 w-4" />
+                          Análise de Crescimento
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <span className="text-slate-300">Crescimento Mensal</span>
+                            <span className={`font-bold ${(houseStats as any)?.monthlyGrowth > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                              {houseStats ? ((houseStats as any).monthlyGrowth || 0).toFixed(1) : '0.0'}%
+                            </span>
+                          </div>
+                          <Progress 
+                            value={Math.abs((houseStats as any)?.monthlyGrowth || 0)} 
+                            className="h-2" 
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
+                  <TabsContent value="details" className="space-y-4">
+                    <Card className="bg-slate-800 border-slate-700">
+                      <CardHeader>
+                        <CardTitle className="text-sm text-slate-300 flex items-center gap-2">
+                          <Timer className="h-4 w-4" />
+                          Informações do Link
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Criado em:</span>
+                            <span className="text-slate-300">
+                              {houseStats ? format(new Date((houseStats as any).linkCreatedAt), 'dd/MM/yyyy HH:mm', { locale: ptBR }) : '-'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Tipo de Comissão:</span>
+                            <span className="text-slate-300">{selectedStatsHouse.commissionType}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Status:</span>
+                            <Badge className="bg-emerald-500 text-white">
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Ativo
+                            </Badge>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            )}
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowStatsDialog(false)}>
+                Fechar
+              </Button>
+              <Button 
+                onClick={() => {
+                  const userLink = Array.isArray(affiliateLinks) ? affiliateLinks.find((link: any) => link.houseId === selectedStatsHouse?.id) : null;
+                  if (userLink) {
+                    copyAffiliateLink(userLink.generatedUrl);
+                  }
+                }}
+                className="bg-emerald-600 hover:bg-emerald-700"
+              >
+                <Copy className="h-4 w-4 mr-2" />
+                Copiar Link
               </Button>
             </DialogFooter>
           </DialogContent>
