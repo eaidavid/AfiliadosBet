@@ -144,8 +144,9 @@ export default function BettingHouses() {
   };
 
   // Fetch betting houses
-  const { data: bettingHouses, isLoading: housesLoading } = useQuery<BettingHouse[]>({
+  const { data: bettingHouses, isLoading: housesLoading, error: housesError } = useQuery<BettingHouse[]>({
     queryKey: ['/api/betting-houses'],
+    retry: 3,
   });
 
   // Fetch affiliate stats
@@ -255,7 +256,7 @@ export default function BettingHouses() {
     return highlights.slice(0, 3);
   };
 
-  const filteredHouses = bettingHouses?.filter(house => {
+  const filteredHouses = Array.isArray(bettingHouses) ? bettingHouses.filter((house: any) => {
     const matchesSearch = house.name.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesCommission = commissionFilter === 'all' ||
@@ -268,7 +269,7 @@ export default function BettingHouses() {
       (affiliationFilter === 'not-affiliated' && !house.isAffiliated);
     
     return matchesSearch && matchesCommission && matchesAffiliation;
-  }) || [];
+  }) : [];
 
   const handleAffiliate = async (house: BettingHouse) => {
     setSelectedHouse(house);
@@ -434,14 +435,25 @@ export default function BettingHouses() {
               <div className="col-span-full text-center py-12">
                 <Building2 className="h-12 w-12 mx-auto mb-4 text-slate-400" />
                 <h3 className="text-xl font-semibold text-slate-300 mb-2">
-                  Nenhuma casa encontrada
+                  {housesError ? 'Erro ao carregar casas' : 'Nenhuma casa encontrada'}
                 </h3>
                 <p className="text-slate-400">
-                  Tente ajustar os filtros para encontrar mais opções.
+                  {housesError 
+                    ? 'Verifique sua conexão e tente novamente.' 
+                    : 'Tente ajustar os filtros para encontrar mais opções.'
+                  }
                 </p>
+                {housesError && (
+                  <Button 
+                    onClick={() => queryClient.invalidateQueries({ queryKey: ['/api/betting-houses'] })}
+                    className="mt-4 bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    Tentar Novamente
+                  </Button>
+                )}
               </div>
             ) : (
-              filteredHouses.map((house) => {
+              filteredHouses.map((house: any) => {
                 const commissions = getCommissionDisplay(house);
                 const paymentMethods = getPaymentMethods(house.paymentMethods);
                 const highlights = getHouseHighlights(house);
