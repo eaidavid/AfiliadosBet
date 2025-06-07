@@ -932,6 +932,16 @@ export async function registerRoutes(app: express.Application) {
         return res.status(400).json({ error: "ID da casa é obrigatório" });
       }
 
+      // Get user data for username as subid
+      const [user] = await db
+        .select({ username: schema.users.username })
+        .from(schema.users)
+        .where(eq(schema.users.id, userId));
+
+      if (!user) {
+        return res.status(404).json({ error: "Usuário não encontrado" });
+      }
+
       // Check if house exists
       const [house] = await db
         .select()
@@ -955,10 +965,9 @@ export async function registerRoutes(app: express.Application) {
         return res.status(400).json({ error: "Você já possui um link para esta casa" });
       }
 
-      // Generate affiliate link
+      // Generate affiliate link using username as subid
       const baseUrl = house.baseUrl;
-      const userIdStr = userId.toString().padStart(6, '0');
-      const generatedUrl = baseUrl.replace('VALUE', userIdStr);
+      const generatedUrl = baseUrl.replace('VALUE', user.username);
 
       // Create affiliate link record
       const [newLink] = await db
@@ -971,7 +980,7 @@ export async function registerRoutes(app: express.Application) {
         })
         .returning();
 
-      console.log(`✅ Link de afiliação criado para usuário ${userId} na casa ${house.name}`);
+      console.log(`✅ Link de afiliação criado para usuário ${user.username} na casa ${house.name}`);
       res.json({ success: true, link: newLink });
     } catch (error) {
       console.error("❌ Erro ao criar link de afiliação:", error);
@@ -1003,6 +1012,12 @@ export async function registerRoutes(app: express.Application) {
         return res.status(404).json({ error: "Link não encontrado ou inativo" });
       }
 
+      // Get username for proper subid tracking
+      const [user] = await db
+        .select({ username: schema.users.username })
+        .from(schema.users)
+        .where(eq(schema.users.id, linkData.userId));
+
       // Capturar dados do clique
       const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
       const userAgent = req.get('User-Agent') || 'unknown';
@@ -1016,7 +1031,7 @@ export async function registerRoutes(app: express.Application) {
         userAgent,
       });
 
-      // Registrar conversão de clique
+      // Registrar conversão de clique com subid correto
       await db.insert(schema.conversions).values({
         userId: linkData.userId,
         houseId: linkData.houseId,
@@ -1024,7 +1039,13 @@ export async function registerRoutes(app: express.Application) {
         type: 'click',
         amount: "0",
         commission: "0",
-        conversionData: { ipAddress, userAgent, source: 'affiliate_link' },
+        conversionData: { 
+          ipAddress, 
+          userAgent, 
+          source: 'affiliate_link',
+          subid: user?.username || 'unknown',
+          timestamp: new Date().toISOString()
+        },
       });
 
       console.log(`📊 Clique registrado: Afiliado ${linkData.userId} → Casa ${linkData.houseName} (IP: ${ipAddress})`);
