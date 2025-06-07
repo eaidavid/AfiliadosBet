@@ -118,8 +118,6 @@ export default function MyLinks() {
   }).filter((link): link is NonNullable<typeof link> => link !== null) || [];
 
   const filteredLinks = enhancedLinks.filter(link => {
-    if (!link) return false;
-    
     const matchesSearch = link.house.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesPerformance = performanceFilter === 'all' || 
       (performanceFilter === 'high-performance' && link.stats.conversionRate > 5) ||
