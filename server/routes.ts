@@ -1400,5 +1400,271 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
+  // Postback routes for betting houses
+  app.get("/postback/click", async (req, res) => {
+    try {
+      const { token, subid, customer_id, value } = req.query;
+      const ip = req.ip || req.connection?.remoteAddress || 'unknown';
+      
+      console.log(`🔔 POSTBACK CLICK: token=${token}, subid=${subid}, customer_id=${customer_id}, value=${value}`);
+      
+      if (!token || !subid) {
+        return res.status(400).json({ 
+          status: 'error', 
+          message: 'Token e subid são obrigatórios' 
+        });
+      }
+
+      // Find affiliate by username (subid)
+      const [affiliate] = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.username, subid as string))
+        .limit(1);
+
+      if (!affiliate) {
+        console.log(`❌ Afiliado não encontrado: ${subid}`);
+        return res.status(404).json({ 
+          status: 'error', 
+          message: 'Afiliado não encontrado' 
+        });
+      }
+
+      // Register click conversion
+      await db.insert(schema.conversions).values({
+        userId: affiliate.id,
+        houseId: 1, // Default house or find by token
+        type: 'click',
+        amount: (value as string) || "0",
+        commission: "0",
+        customerId: customer_id as string,
+        conversionData: {
+          source: 'postback_click',
+          ip,
+          token,
+          timestamp: new Date().toISOString(),
+        },
+      });
+
+      console.log(`✅ Click registrado para ${affiliate.username}`);
+      res.json({ 
+        status: 'ok', 
+        event: 'click',
+        message: 'Click registrado com sucesso',
+        affiliate: affiliate.username
+      });
+
+    } catch (error) {
+      console.error("❌ Erro no postback click:", error);
+      res.status(500).json({ 
+        status: 'error', 
+        message: 'Erro interno do servidor' 
+      });
+    }
+  });
+
+  app.get("/postback/register", async (req, res) => {
+    try {
+      const { token, subid, customer_id, value } = req.query;
+      const ip = req.ip || req.connection?.remoteAddress || 'unknown';
+      
+      console.log(`🔔 POSTBACK REGISTER: token=${token}, subid=${subid}, customer_id=${customer_id}`);
+      
+      if (!token || !subid) {
+        return res.status(400).json({ 
+          status: 'error', 
+          message: 'Token e subid são obrigatórios' 
+        });
+      }
+
+      // Find affiliate by username (subid)
+      const [affiliate] = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.username, subid as string))
+        .limit(1);
+
+      if (!affiliate) {
+        console.log(`❌ Afiliado não encontrado: ${subid}`);
+        return res.status(404).json({ 
+          status: 'error', 
+          message: 'Afiliado não encontrado' 
+        });
+      }
+
+      // Register registration conversion
+      await db.insert(schema.conversions).values({
+        userId: affiliate.id,
+        houseId: 1, // Default house or find by token
+        type: 'registration',
+        amount: "0",
+        commission: "0",
+        customerId: customer_id as string,
+        conversionData: {
+          source: 'postback_register',
+          ip,
+          token,
+          timestamp: new Date().toISOString(),
+        },
+      });
+
+      console.log(`✅ Registro registrado para ${affiliate.username}`);
+      res.json({ 
+        status: 'ok', 
+        event: 'register',
+        message: 'Registro registrado com sucesso',
+        affiliate: affiliate.username
+      });
+
+    } catch (error) {
+      console.error("❌ Erro no postback register:", error);
+      res.status(500).json({ 
+        status: 'error', 
+        message: 'Erro interno do servidor' 
+      });
+    }
+  });
+
+  app.get("/postback/deposit", async (req, res) => {
+    try {
+      const { token, subid, customer_id, value } = req.query;
+      const ip = req.ip || req.connection?.remoteAddress || 'unknown';
+      
+      console.log(`🔔 POSTBACK DEPOSIT: token=${token}, subid=${subid}, customer_id=${customer_id}, value=${value}`);
+      
+      if (!token || !subid) {
+        return res.status(400).json({ 
+          status: 'error', 
+          message: 'Token e subid são obrigatórios' 
+        });
+      }
+
+      // Find affiliate by username (subid)
+      const [affiliate] = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.username, subid as string))
+        .limit(1);
+
+      if (!affiliate) {
+        console.log(`❌ Afiliado não encontrado: ${subid}`);
+        return res.status(404).json({ 
+          status: 'error', 
+          message: 'Afiliado não encontrado' 
+        });
+      }
+
+      const depositAmount = parseFloat(value as string || '0');
+      
+      // Calculate commission (example: R$ 150 CPA for deposits >= R$ 10)
+      let commission = 0;
+      if (depositAmount >= 10) {
+        commission = 150; // CPA value
+      }
+
+      // Register deposit conversion
+      await db.insert(schema.conversions).values({
+        userId: affiliate.id,
+        houseId: 1, // Default house or find by token
+        type: 'deposit',
+        amount: depositAmount.toString(),
+        commission: commission.toString(),
+        customerId: customer_id as string,
+        conversionData: {
+          source: 'postback_deposit',
+          ip,
+          token,
+          timestamp: new Date().toISOString(),
+        },
+      });
+
+      console.log(`✅ Depósito registrado para ${affiliate.username} - Valor: R$ ${depositAmount} - Comissão: R$ ${commission}`);
+      res.json({ 
+        status: 'ok', 
+        event: 'deposit',
+        message: 'Depósito registrado com sucesso',
+        affiliate: affiliate.username,
+        amount: depositAmount,
+        commission: commission
+      });
+
+    } catch (error) {
+      console.error("❌ Erro no postback deposit:", error);
+      res.status(500).json({ 
+        status: 'error', 
+        message: 'Erro interno do servidor' 
+      });
+    }
+  });
+
+  app.get("/postback/revenue", async (req, res) => {
+    try {
+      const { token, subid, customer_id, value } = req.query;
+      const ip = req.ip || req.connection?.remoteAddress || 'unknown';
+      
+      console.log(`🔔 POSTBACK REVENUE: token=${token}, subid=${subid}, customer_id=${customer_id}, value=${value}`);
+      
+      if (!token || !subid) {
+        return res.status(400).json({ 
+          status: 'error', 
+          message: 'Token e subid são obrigatórios' 
+        });
+      }
+
+      // Find affiliate by username (subid)
+      const [affiliate] = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.username, subid as string))
+        .limit(1);
+
+      if (!affiliate) {
+        console.log(`❌ Afiliado não encontrado: ${subid}`);
+        return res.status(404).json({ 
+          status: 'error', 
+          message: 'Afiliado não encontrado' 
+        });
+      }
+
+      const revenueAmount = parseFloat(value as string || '0');
+      
+      // Calculate commission (example: 30% RevShare)
+      const commission = revenueAmount * 0.30;
+
+      // Register revenue conversion
+      await db.insert(schema.conversions).values({
+        userId: affiliate.id,
+        houseId: 1, // Default house or find by token
+        type: 'profit',
+        amount: revenueAmount.toString(),
+        commission: commission.toString(),
+        customerId: customer_id as string,
+        conversionData: {
+          source: 'postback_revenue',
+          ip,
+          token,
+          timestamp: new Date().toISOString(),
+        },
+      });
+
+      console.log(`✅ Receita registrada para ${affiliate.username} - Valor: R$ ${revenueAmount} - Comissão: R$ ${commission}`);
+      res.json({ 
+        status: 'ok', 
+        event: 'revenue',
+        message: 'Receita registrada com sucesso',
+        affiliate: affiliate.username,
+        amount: revenueAmount,
+        commission: commission
+      });
+
+    } catch (error) {
+      console.error("❌ Erro no postback revenue:", error);
+      res.status(500).json({ 
+        status: 'error', 
+        message: 'Erro interno do servidor' 
+      });
+    }
+  });
+
   console.log("✅ Rotas registradas com sucesso");
 }

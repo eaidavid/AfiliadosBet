@@ -1,0 +1,107 @@
+🛑 Erros que estão impedindo o postback de funcionar
+1. ❌ Rota /postback/click (e outras) não existe ou não está ativada
+O erro 404 Page Not Found mostra que a URL acessada não está definida no servidor.
+
+A mensagem “Did you forget to add the page to the router?” sugere que a rota não foi registrada no sistema de rotas (ex: Express, Next.js, etc.).
+
+2. ❌ A estrutura do domínio e path está errada
+Você testou usando um link como:
+
+arduino
+Copiar
+Editar
+https://afiliadosbet.com.br/postback/click?token=...&subid=...
+Mas esse caminho está retornando erro 404. Isso significa:
+
+O servidor do domínio afiliadosbet.com.br não está configurado para tratar requisições GET nesse caminho.
+
+O endpoint /postback/click não foi criado.
+
+3. ❌ Token válido, mas roteamento quebrado
+O token está formatado corretamente:
+
+nginx
+Copiar
+Editar
+token_1749225849382_9i1qbnmzj
+Porém ele não está sendo processado porque a rota não existe.
+
+4. ❌ Ambiente de teste não está preparado
+A URL parece estar sendo testada direto pelo navegador, mas o backend não responde corretamente a requisições diretas. Talvez o endpoint só aceite requisições POST, ou espera headers específicos.
+
+✅ O que a plataforma (ou a IA dela) precisa corrigir
+1. ✅ Criar e ativar os endpoints no backend
+Crie rotas para cada tipo de postback:
+
+bash
+Copiar
+Editar
+GET /postback/click
+GET /postback/register
+GET /postback/deposit
+GET /postback/revenue
+Cada rota deve:
+
+Validar o token
+
+Processar os parâmetros (subid, customer_id, value)
+
+Registrar os dados (em banco ou log)
+
+Retornar resposta clara, por exemplo:
+
+json
+Copiar
+Editar
+{
+  "status": "ok",
+  "message": "Postback registrado com sucesso"
+}
+2. ✅ Registrar as rotas no sistema de rotas
+Exemplo para Node.js (Express):
+
+js
+Copiar
+Editar
+app.get('/postback/click', (req, res) => {
+  // Validar token e registrar o clique
+  res.json({ status: 'ok', event: 'click' });
+});
+
+app.get('/postback/register', (req, res) => {
+  // Registrar novo cadastro
+  res.json({ status: 'ok', event: 'register' });
+});
+
+app.get('/postback/deposit', (req, res) => {
+  // Registrar depósito
+  res.json({ status: 'ok', event: 'deposit' });
+});
+
+app.get('/postback/revenue', (req, res) => {
+  // Registrar receita
+  res.json({ status: 'ok', event: 'revenue' });
+});
+3. ✅ Devolver status HTTP correto
+Responder com 200 OK quando o postback for bem-sucedido.
+
+Nunca responder com 404 se a URL está correta.
+
+Usar mensagens úteis no corpo da resposta.
+
+4. ✅ Testar com ferramentas adequadas
+Garanta que os testes sejam feitos usando:
+
+Navegador (para GET)
+
+Postman (para testes mais avançados)
+
+Logs do servidor (para confirmar que a rota foi acessada)
+
+🛠️ Exemplo de URL de teste correta
+Se a rota /postback/revenue estiver configurada corretamente, esta URL deve funcionar:
+
+arduino
+Copiar
+Editar
+https://afiliadosbet.com.br/postback/revenue?token=token_1749225849382_9i1qbnmzj&subid=ead
