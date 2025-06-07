@@ -6,6 +6,7 @@ import bcrypt from "bcrypt";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import testApiRouter from './test-api';
+import { webhookRouter } from './webhook-endpoints';
 
 // Authentication configuration
 passport.use(new LocalStrategy(
@@ -1792,6 +1793,9 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
+  // Webhooks para receber dados das casas de apostas
+  app.use('/webhook', webhookRouter);
+  
   // API de teste para demonstração
   app.use('/api/v1', testApiRouter);
 

@@ -44,8 +44,9 @@ router.get('/docs', validateApiKey, (req, res) => {
       description: 'Inclua sua API Key no header de cada requisição'
     },
     endpoints: {
-      'POST /conversions': {
-        description: 'Registrar uma conversão (click, registro, depósito, lucro)',
+      'POST /webhook/conversions': {
+        description: 'RECEBE dados de conversão das casas de apostas externas',
+        purpose: 'Endpoint para casas enviarem dados de conversão automaticamente',
         parameters: {
           event_type: 'string (required) - click, registration, deposit, profit',
           customer_id: 'string (required) - ID único do cliente',
