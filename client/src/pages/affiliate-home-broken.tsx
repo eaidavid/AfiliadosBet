@@ -1,37 +1,38 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { useToast } from '@/hooks/use-toast';
-import { SidebarLayout } from '@/components/sidebar-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import SidebarLayout from '@/components/sidebar-layout';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 import {
-  Gift,
-  CheckCircle,
   MousePointer,
   Users,
+  Coins,
   DollarSign,
   TrendingUp,
-  Award,
-  Search,
-  Crown,
   Eye,
-  Zap,
-  ExternalLink,
   Copy,
+  ExternalLink,
+  Calendar,
+  Activity,
+  Award,
+  Zap,
+  Crown,
+  Star,
+  CheckCircle,
+  XCircle,
+  Search,
   BarChart3,
   Bell,
-  Activity,
-  XCircle,
-  Coins,
-  Building2,
-  Link
+  Gift
 } from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface UserStats {
   totalClicks: number;
@@ -88,13 +89,13 @@ interface MonthlyStats {
 }
 
 export default function AffiliateHome() {
-  const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Fetch user stats
   const { data: userStats, isLoading: statsLoading } = useQuery<UserStats>({
-    queryKey: ['/api/affiliate/stats'],
+    queryKey: ['/api/stats/user'],
   });
 
   // Fetch betting houses
@@ -104,42 +105,54 @@ export default function AffiliateHome() {
 
   // Fetch affiliate links
   const { data: affiliateLinks, isLoading: linksLoading } = useQuery<AffiliateLink[]>({
-    queryKey: ['/api/affiliate/links'],
+    queryKey: ['/api/my-links'],
   });
 
-  // Fetch recent conversions
-  const { data: recentConversions, isLoading: conversionsLoading } = useQuery<Conversion[]>({
-    queryKey: ['/api/affiliate/conversions'],
+  // Fetch recent conversions - using empty array for now
+  const { data: recentConversions = [], isLoading: conversionsLoading } = useQuery<Conversion[]>({
+    queryKey: ['/api/stats/user'],
+    select: () => [], // Return empty array since we don't have conversions endpoint yet
   });
 
-  // Fetch recent postbacks
-  const { data: recentPostbacks, isLoading: postbacksLoading } = useQuery<PostbackLog[]>({
-    queryKey: ['/api/affiliate/postbacks'],
+  // Fetch recent postbacks - using empty array for now  
+  const { data: recentPostbacks = [], isLoading: postbacksLoading } = useQuery<PostbackLog[]>({
+    queryKey: ['/api/stats/user'],
+    select: () => [], // Return empty array since we don't have postbacks endpoint yet
+  });
+
+  // Fetch monthly stats - using default data for now
+  const { data: monthlyStats = [], isLoading: monthlyLoading } = useQuery<MonthlyStats[]>({
+    queryKey: ['/api/stats/user'],
+    select: () => [], // Return empty array since we don't have monthly stats endpoint yet
   });
 
   // Join affiliate mutation
   const joinAffiliateMutation = useMutation({
     mutationFn: async (houseId: number) => {
-      const response = await fetch('/api/affiliate/join', {
+      const response = await fetch(`/api/affiliate/join/${houseId}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ houseId }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
-      if (!response.ok) throw new Error('Failed to join affiliate program');
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erro ao se afiliar');
+      }
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/betting-houses'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/affiliate/links'] });
       toast({
-        title: "Sucesso!",
-        description: "Você se afiliou com sucesso à casa de apostas.",
+        title: "Afiliação realizada com sucesso!",
+        description: "Você agora é afiliado desta casa de apostas.",
       });
+      queryClient.invalidateQueries({ queryKey: ['/api/betting-houses'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/my-links'] });
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
-        title: "Erro",
-        description: "Não foi possível se afiliar à casa de apostas.",
+        title: "Erro ao se afiliar",
+        description: error.message || "Não foi possível realizar a afiliação.",
         variant: "destructive",
       });
     },
@@ -209,20 +222,20 @@ export default function AffiliateHome() {
       case 'RevShare':
         return (
           <div className="text-sm">
-            <span className="font-medium text-blue-400">Rev:</span>
-            <span className="text-slate-300 ml-1">{house.revshareValue || house.commissionValue}%</span>
+            <span className="font-medium text-blue-400">RevShare:</span>
+            <span className="text-slate-300 ml-1">{house.revshareValue || house.commissionValue}</span>
           </div>
         );
       case 'Hybrid':
         return (
-          <div className="text-xs space-y-1">
+          <div className="text-sm space-y-1">
             <div>
               <span className="font-medium text-emerald-400">CPA:</span>
               <span className="text-slate-300 ml-1">R$ {house.cpaValue}</span>
             </div>
             <div>
-              <span className="font-medium text-blue-400">Rev:</span>
-              <span className="text-slate-300 ml-1">{house.revshareValue}%</span>
+              <span className="font-medium text-blue-400">RevShare:</span>
+              <span className="text-slate-300 ml-1">{house.revshareValue}</span>
             </div>
           </div>
         );
@@ -624,28 +637,28 @@ export default function AffiliateHome() {
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {recentConversions.map((conversion) => (
-                              <TableRow key={conversion.id} className="border-slate-700">
-                                <TableCell>
-                                  <div className="flex items-center gap-2">
-                                    {getTypeIcon(conversion.type)}
-                                    <span className="capitalize text-slate-300">
-                                      {conversion.type === 'click' ? 'Clique' : 
-                                       conversion.type === 'registration' ? 'Registro' :
-                                       conversion.type === 'deposit' ? 'Depósito' : conversion.type}
-                                    </span>
-                                  </div>
-                                </TableCell>
-                                <TableCell className="text-slate-300">
-                                  {conversion.houseName}
-                                </TableCell>
-                                <TableCell className="text-emerald-400 font-medium">
-                                  {conversion.commission ? `R$ ${conversion.commission}` : '-'}
-                                </TableCell>
-                                <TableCell className="text-slate-300">
-                                  {format(new Date(conversion.convertedAt), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
-                                </TableCell>
-                              </TableRow>
+                        {recentConversions.map((conversion) => (
+                          <TableRow key={conversion.id} className="border-slate-700">
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                {getTypeIcon(conversion.type)}
+                                <span className="capitalize text-slate-300">
+                                  {conversion.type === 'click' ? 'Clique' : 
+                                   conversion.type === 'registration' ? 'Registro' :
+                                   conversion.type === 'deposit' ? 'Depósito' : conversion.type}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-slate-300">
+                              {conversion.houseName}
+                            </TableCell>
+                            <TableCell className="text-emerald-400 font-medium">
+                              {conversion.commission ? `R$ ${conversion.commission}` : '-'}
+                            </TableCell>
+                            <TableCell className="text-slate-300">
+                              {format(new Date(conversion.convertedAt), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
+                            </TableCell>
+                          </TableRow>
                             ))}
                           </TableBody>
                         </Table>

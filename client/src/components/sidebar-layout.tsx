@@ -18,7 +18,7 @@ interface MenuItem {
   badge?: number;
 }
 
-export default function SidebarLayout({ children }: SidebarLayoutProps) {
+export function SidebarLayout({ children }: SidebarLayoutProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [location, navigate] = useLocation();
   const { user } = useAuth();
@@ -77,7 +77,7 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed top-4 left-4 z-[60] sm:hidden bg-[#0E1B2B]/90 backdrop-blur-sm border border-slate-700/50 rounded-xl p-3 text-white hover:bg-[#0E1B2B] transition-all duration-200 shadow-lg"
+          className="fixed top-4 left-4 z-[60] sm:hidden bg-[#0E1B2B]/90 backdrop-blur-sm border border-slate-700/50 rounded-xl p-3 text-white hover:bg-[#0E1B2B] transition-all duration-200 shadow-lg touch-manipulation min-h-[48px] min-w-[48px]"
         >
           <Menu className="h-5 w-5" />
         </button>
@@ -156,11 +156,11 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
                     key={item.path}
                     onClick={() => handleNavigation(item.path)}
                     className={`
-                      w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl
-                      transition-all duration-200 group relative
+                      w-full flex items-center gap-3 px-4 py-4 text-sm font-medium rounded-xl
+                      transition-all duration-200 group relative touch-manipulation min-h-[48px]
                       ${isActive
                         ? 'bg-green-500/10 text-green-400 border-l-4 border-green-400'
-                        : 'text-slate-300 hover:text-white hover:bg-white/5'
+                        : 'text-slate-300 hover:text-white hover:bg-white/5 active:bg-white/10'
                       }
                     `}
                   >
@@ -184,7 +184,7 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
             <Button
               onClick={handleLogout}
               variant="ghost"
-              className="w-full justify-start gap-3 text-slate-300 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+              className="w-full justify-start gap-3 text-slate-300 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 touch-manipulation min-h-[48px] active:bg-red-500/20"
             >
               <X className="h-5 w-5" />
               Sair
@@ -202,3 +202,5 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
     </div>
   );
 }
+
+export default SidebarLayout;
