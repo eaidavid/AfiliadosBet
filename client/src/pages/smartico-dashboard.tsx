@@ -245,7 +245,7 @@ export default function SmarticoDashboard() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Todos os afiliados</SelectItem>
-                  {affiliatesData?.data?.map((affiliate) => (
+                  {affiliatesData?.data?.map((affiliate: Affiliate) => (
                     <SelectItem key={affiliate.id} value={affiliate.id.toString()}>
                       {affiliate.name} (@{affiliate.username})
                     </SelectItem>
@@ -261,7 +261,7 @@ export default function SmarticoDashboard() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">Todas as casas</SelectItem>
-                  {housesData?.data?.map((house) => (
+                  {housesData?.data?.map((house: House) => (
                     <SelectItem key={house.id} value={house.id.toString()}>
                       {house.name}
                     </SelectItem>
