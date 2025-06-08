@@ -158,6 +158,7 @@ export default function AdminHouses() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [commissionFilter, setCommissionFilter] = useState("all");
+  const [integrationType, setIntegrationType] = useState("all");
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -180,6 +181,13 @@ export default function AdminHouses() {
       logoUrl: "",
       isActive: true,
       parameterMapping: "",
+      integrationType: "postback",
+      apiBaseUrl: "",
+      apiKey: "",
+      apiSecret: "",
+      apiVersion: "v1",
+      authType: "bearer",
+      syncInterval: 30,
     },
   });
 
@@ -346,6 +354,49 @@ export default function AdminHouses() {
     },
   });
 
+  // API-specific mutations
+  const testApiConnection = useMutation({
+    mutationFn: async (houseId: number) => {
+      const response = await fetch(`/api/admin/houses/${houseId}/test-connection`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Erro ao testar conexão");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({ 
+        title: data.success ? "Conexão bem-sucedida" : "Falha na conexão",
+        description: data.message,
+        variant: data.success ? "default" : "destructive"
+      });
+    },
+    onError: (error) => {
+      toast({ title: "Erro ao testar conexão", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const manualSync = useMutation({
+    mutationFn: async (houseId: number) => {
+      const response = await fetch(`/api/admin/houses/${houseId}/sync`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Erro na sincronização");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({ 
+        title: "Sincronização concluída",
+        description: data.message || `${data.data?.synced || 0} conversões processadas`
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/betting-houses"] });
+    },
+    onError: (error) => {
+      toast({ title: "Erro na sincronização", description: error.message, variant: "destructive" });
+    },
+  });
+
   // Event handlers
   const handleAdd = () => {
     form.reset();
@@ -500,11 +551,11 @@ export default function AdminHouses() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-400">Com Postbacks</p>
-                    <p className="text-2xl font-bold text-purple-400">{safeHouses.filter(h => h.securityToken).length}</p>
-                    <p className="text-xs text-slate-500 mt-1">configuradas</p>
+                    <p className="text-sm text-slate-400">Integração API</p>
+                    <p className="text-2xl font-bold text-blue-400">{safeHouses.filter(h => h.integrationType === 'api').length}</p>
+                    <p className="text-xs text-slate-500 mt-1">casas com API</p>
                   </div>
-                  <Webhook className="w-8 h-8 text-purple-400" />
+                  <Bot className="w-8 h-8 text-blue-400" />
                 </div>
               </CardContent>
             </Card>
@@ -513,11 +564,11 @@ export default function AdminHouses() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-400">Total Afiliações</p>
-                    <p className="text-2xl font-bold text-orange-400">{safeHouses.reduce((sum, h) => sum + (h._count?.affiliateLinks || 0), 0)}</p>
-                    <p className="text-xs text-slate-500 mt-1">links ativos</p>
+                    <p className="text-sm text-slate-400">Com Postbacks</p>
+                    <p className="text-2xl font-bold text-purple-400">{safeHouses.filter(h => h.integrationType === 'postback' || !h.integrationType).length}</p>
+                    <p className="text-xs text-slate-500 mt-1">postback/webhook</p>
                   </div>
-                  <LinkIcon className="w-8 h-8 text-orange-400" />
+                  <Webhook className="w-8 h-8 text-purple-400" />
                 </div>
               </CardContent>
             </Card>
@@ -545,6 +596,17 @@ export default function AdminHouses() {
                     <SelectItem value="all">Todos Status</SelectItem>
                     <SelectItem value="active">Ativas</SelectItem>
                     <SelectItem value="inactive">Inativas</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Select value={integrationType} onValueChange={setIntegrationType}>
+                  <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                    <SelectValue placeholder="Tipo de Integração" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectItem value="all">Todas Integrações</SelectItem>
+                    <SelectItem value="postback">Postback/Webhook</SelectItem>
+                    <SelectItem value="api">API Externa</SelectItem>
                   </SelectContent>
                 </Select>
                 
@@ -577,10 +639,11 @@ export default function AdminHouses() {
                   <TableHeader>
                     <TableRow className="border-slate-700">
                       <TableHead className="text-slate-300">Casa</TableHead>
+                      <TableHead className="text-slate-300">Integração</TableHead>
                       <TableHead className="text-slate-300">Comissão</TableHead>
-                      <TableHead className="text-slate-300">URL Base</TableHead>
-                      <TableHead className="text-slate-300">Token</TableHead>
+                      <TableHead className="text-slate-300">URL/API</TableHead>
                       <TableHead className="text-slate-300">Status</TableHead>
+                      <TableHead className="text-slate-300">Sync Status</TableHead>
                       <TableHead className="text-slate-300">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -747,6 +810,177 @@ export default function AdminHouses() {
                   </FormItem>
                 )}
               />
+
+              {/* Integration Type Section */}
+              <div className="space-y-4 border-t border-slate-600 pt-6">
+                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                  <Settings className="w-5 h-5" />
+                  Tipo de Integração
+                </h3>
+                
+                <FormField
+                  control={form.control}
+                  name="integrationType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Método de Recebimento de Dados</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                            <SelectValue placeholder="Selecione o tipo de integração" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="postback">Postback (Webhook)</SelectItem>
+                          <SelectItem value="api">API Externa (Smartico/outros)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormDescription className="text-slate-400">
+                        {form.watch("integrationType") === "postback" 
+                          ? "A casa enviará dados via postback/webhook" 
+                          : "Sistema buscará dados via API externa"}
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Conditional API Configuration */}
+              {form.watch("integrationType") === "api" && (
+                <div className="space-y-4 border border-blue-500/20 rounded-lg p-4 bg-blue-950/20">
+                  <h4 className="text-md font-semibold text-blue-400 flex items-center gap-2">
+                    <Bot className="w-4 h-4" />
+                    Configurações da API
+                  </h4>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="apiBaseUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-white">URL Base da API</FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              placeholder="https://api.smartico.ai"
+                              className="bg-slate-700 border-slate-600 text-white" 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="apiKey"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-white">Chave da API</FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              type="password"
+                              placeholder="sk_live_..."
+                              className="bg-slate-700 border-slate-600 text-white" 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="authType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-white">Tipo de Autenticação</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value || "bearer"}>
+                            <FormControl>
+                              <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="bearer">Bearer Token</SelectItem>
+                              <SelectItem value="apikey">API Key Header</SelectItem>
+                              <SelectItem value="basic">Basic Auth</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="apiVersion"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-white">Versão da API</FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              placeholder="v1"
+                              className="bg-slate-700 border-slate-600 text-white" 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="syncInterval"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-white">Intervalo de Sync (min)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              type="number"
+                              placeholder="30"
+                              className="bg-slate-700 border-slate-600 text-white" 
+                            />
+                          </FormControl>
+                          <FormDescription className="text-slate-400 text-xs">
+                            Frequência de sincronização em minutos
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="apiSecret"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white">Secret/Token Adicional (Opcional)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            type="password"
+                            placeholder="Secret adicional se necessário"
+                            className="bg-slate-700 border-slate-600 text-white" 
+                          />
+                        </FormControl>
+                        <FormDescription className="text-slate-400 text-xs">
+                          Usado apenas para APIs que requerem autenticação dupla
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
 
               {/* URL Configuration */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
