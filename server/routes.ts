@@ -1875,7 +1875,7 @@ export async function registerRoutes(app: express.Application) {
         .from(schema.conversions);
 
       if (conditions.length > 0) {
-        totalsQuery.where(and(...conditions));
+        totalsQuery = totalsQuery.where(and(...conditions));
       }
 
       const [totals] = await totalsQuery;

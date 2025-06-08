@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLogout } from "@/hooks/use-auth";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { BarChart3, Users, Building, Link2, Webhook, DollarSign, PieChart, Settings, LogOut, Menu, X, ChevronLeft, ChevronRight, Activity, ExternalLink } from "lucide-react";
+import { BarChart3, Users, Building, Link2, Webhook, DollarSign, PieChart, Settings, LogOut, Menu, X, ChevronLeft, ChevronRight, Activity, ExternalLink, Database } from "lucide-react";
 import logoPath from "@assets/Afiliados Bet positivo.png";
 
 interface AdminSidebarProps {
@@ -19,6 +19,7 @@ export function AdminSidebar({ currentPage, onPageChange }: AdminSidebarProps) {
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
     { id: "houses", label: "Administração de Casas", icon: Building },
     { id: "manage", label: "Administração de Afiliados", icon: Users },
+    { id: "smartico", label: "Dashboard Smartico", icon: Database },
     { id: "gerador-de-postbacks", label: "Gerador de Postbacks", icon: Webhook },
     { id: "logs-postbacks", label: "Logs de Postbacks", icon: Activity },
     { id: "postback-display", label: "URLs de Postback", icon: ExternalLink },
@@ -38,6 +39,8 @@ export function AdminSidebar({ currentPage, onPageChange }: AdminSidebarProps) {
       window.location.href = "/admin/houses";
     } else if (page === "manage") {
       window.location.href = "/admin/manage";
+    } else if (page === "smartico") {
+      window.location.href = "/admin/smartico";
     } else if (page === "gerador-de-postbacks") {
       window.location.href = "/admin/postback-generator";
     } else if (page === "logs-postbacks") {
