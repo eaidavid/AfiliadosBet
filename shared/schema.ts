@@ -59,8 +59,25 @@ export const bettingHouses = pgTable("betting_houses", {
   // Configurações para integração por API
   integrationType: text("integration_type").notNull().default("postback"), // 'postback' ou 'api'
   apiConfig: jsonb("api_config").default({}), // Configurações específicas da API
-  modoRecebimento: text("modo_recebimento").default("postback"), // 'postback' ou 'api'
-  apiKey: text("api_key"), // API Key para consultas Smartico
+  
+  // Configurações da API Smartico/Externa
+  apiBaseUrl: text("api_base_url"), // URL base da API (ex: https://api.smartico.ai)
+  apiKey: text("api_key"), // Chave de autenticação da API
+  apiSecret: text("api_secret"), // Secret adicional se necessário
+  apiVersion: text("api_version").default("v1"), // Versão da API
+  
+  // Configurações de sincronização
+  syncInterval: integer("sync_interval").default(30), // Intervalo em minutos
+  lastSyncAt: timestamp("last_sync_at"), // Última sincronização
+  syncStatus: text("sync_status").default("pending"), // 'pending', 'syncing', 'success', 'error'
+  syncErrorMessage: text("sync_error_message"), // Última mensagem de erro
+  
+  // Mapeamento de endpoints específicos
+  endpointMapping: jsonb("endpoint_mapping").default({}), // URLs específicas por tipo de evento
+  
+  // Configurações de autenticação
+  authType: text("auth_type").default("bearer"), // 'bearer', 'basic', 'apikey'
+  authHeaders: jsonb("auth_headers").default({}), // Headers customizados
   
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

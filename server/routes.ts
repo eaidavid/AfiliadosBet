@@ -1963,5 +1963,72 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
+  // API Integration routes
+  app.post("/api/admin/houses/:id/sync", requireAdmin, async (req, res) => {
+    try {
+      const houseId = parseInt(req.params.id);
+      
+      const { ApiSyncScheduler } = await import('./cron/apiSyncScheduler');
+      const scheduler = ApiSyncScheduler.getInstance();
+      
+      const result = await scheduler.manualSync(houseId);
+      
+      if (result.success) {
+        res.json(result);
+      } else {
+        res.status(400).json(result);
+      }
+    } catch (error) {
+      console.error("Erro na sincronização manual:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Erro interno do servidor" 
+      });
+    }
+  });
+
+  app.post("/api/admin/houses/:id/test-connection", requireAdmin, async (req, res) => {
+    try {
+      const houseId = parseInt(req.params.id);
+      
+      const { ApiSyncScheduler } = await import('./cron/apiSyncScheduler');
+      const scheduler = ApiSyncScheduler.getInstance();
+      
+      const result = await scheduler.testHouseConnection(houseId);
+      res.json(result);
+    } catch (error) {
+      console.error("Erro no teste de conexão:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Erro interno do servidor" 
+      });
+    }
+  });
+
+  app.get("/api/admin/houses/sync-status", requireAdmin, async (req, res) => {
+    try {
+      const houses = await db
+        .select({
+          id: schema.bettingHouses.id,
+          name: schema.bettingHouses.name,
+          integrationType: schema.bettingHouses.integrationType,
+          syncStatus: schema.bettingHouses.syncStatus,
+          lastSyncAt: schema.bettingHouses.lastSyncAt,
+          syncErrorMessage: schema.bettingHouses.syncErrorMessage,
+          syncInterval: schema.bettingHouses.syncInterval
+        })
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.integrationType, 'api'));
+
+      res.json({ success: true, data: houses });
+    } catch (error) {
+      console.error("Erro ao buscar status de sincronização:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Erro interno do servidor" 
+      });
+    }
+  });
+
   console.log("✅ Rotas registradas com sucesso");
 }

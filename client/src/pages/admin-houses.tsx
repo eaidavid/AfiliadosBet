@@ -47,7 +47,7 @@ import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import AdminSidebar from "@/components/admin/sidebar";
 
-// Enhanced schema for complete betting house management
+// Enhanced schema for complete betting house management including API integration
 const bettingHouseSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
   description: z.string().optional(),
@@ -66,6 +66,17 @@ const bettingHouseSchema = z.object({
   logoUrl: z.string().url().optional().or(z.literal("")),
   isActive: z.boolean(),
   parameterMapping: z.string().optional(),
+  
+  // API Integration fields
+  integrationType: z.enum(["postback", "api"], {
+    required_error: "Tipo de integração é obrigatório"
+  }),
+  apiBaseUrl: z.string().url().optional().or(z.literal("")),
+  apiKey: z.string().optional(),
+  apiSecret: z.string().optional(),
+  apiVersion: z.string().optional(),
+  authType: z.enum(["bearer", "basic", "apikey"]).optional(),
+  syncInterval: z.union([z.number(), z.string().transform((val) => val === "" ? undefined : Number(val))]).optional(),
 });
 
 type BettingHouseFormData = z.infer<typeof bettingHouseSchema>;
@@ -86,6 +97,19 @@ interface BettingHouse {
   logoUrl?: string;
   isActive: boolean;
   parameterMapping?: string;
+  
+  // API Integration fields
+  integrationType?: string;
+  apiBaseUrl?: string;
+  apiKey?: string;
+  apiSecret?: string;
+  apiVersion?: string;
+  authType?: string;
+  syncInterval?: number;
+  syncStatus?: string;
+  lastSyncAt?: string;
+  syncErrorMessage?: string;
+  
   createdAt: string;
   updatedAt?: string;
   _count?: {
