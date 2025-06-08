@@ -479,34 +479,7 @@ function AuthenticatedAdminHouses() {
   );
 }
 
-function AuthenticatedAdminHousesManager() {
-  const { isAuthenticated, isLoading, isAdmin } = useAuth();
-  const [location, setLocation] = useLocation();
 
-  useEffect(() => {
-    if (!isLoading && (!isAuthenticated || !isAdmin)) {
-      setLocation("/login");
-    }
-  }, [isAuthenticated, isLoading, isAdmin, setLocation]);
-
-  if (isLoading) {
-    return (
-      <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce">
-        <div className="text-emerald-500 text-xl">Carregando...</div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated || !isAdmin) {
-    return null;
-  }
-
-  return (
-    <div className="mobile-safe no-bounce">
-      <AdminHousesManager />
-    </div>
-  );
-}
 
 function AuthenticatedAdminManage() {
   const { isAuthenticated, isLoading, isAdmin } = useAuth();
@@ -690,35 +663,7 @@ function AuthenticatedAdminApiManagement() {
   );
 }
 
-function AuthenticatedSmarticoDashboard() {
-  const { isAuthenticated, isLoading, isAdmin } = useAuth();
-  const [location, setLocation] = useLocation();
 
-  useEffect(() => {
-    if (!isLoading && (!isAuthenticated || !isAdmin)) {
-      setLocation("/login");
-    }
-  }, [isAuthenticated, isLoading, isAdmin, setLocation]);
-
-  if (isLoading) {
-    return (
-      <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce">
-        <div className="text-emerald-500 text-xl">Carregando...</div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated || !isAdmin) {
-    return null;
-  }
-
-  return (
-    <div className="mobile-safe no-bounce">
-      <SmarticoDashboard />
-      <AdminPanelToggle />
-    </div>
-  );
-}
 
 function App() {
   // Adicionar tratamento global de erros
