@@ -1862,8 +1862,8 @@ export async function registerRoutes(app: express.Application) {
         .limit(parseInt(limit as string))
         .offset(offset);
 
-      // Get totals
-      let totalsQuery = db
+      // Get totals with proper query structure
+      const totalsQueryBuilder = db
         .select({
           totalClick: sql<number>`COUNT(CASE WHEN ${schema.conversions.type} = 'click' THEN 1 END)`,
           totalRegistration: sql<number>`COUNT(CASE WHEN ${schema.conversions.type} = 'registration' THEN 1 END)`,
@@ -1874,9 +1874,9 @@ export async function registerRoutes(app: express.Application) {
         })
         .from(schema.conversions);
 
-      if (conditions.length > 0) {
-        totalsQuery = totalsQuery.where(and(...conditions));
-      }
+      const totalsQuery = conditions.length > 0 
+        ? totalsQueryBuilder.where(and(...conditions))
+        : totalsQueryBuilder;
 
       const [totals] = await totalsQuery;
 

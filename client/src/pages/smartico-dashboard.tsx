@@ -63,6 +63,10 @@ export default function SmarticoDashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const handlePageChange = (page: string) => {
+    setCurrentPage(page);
+  };
+
   // Set default dates (last 7 days)
   useEffect(() => {
     const today = new Date();
@@ -185,13 +189,16 @@ export default function SmarticoDashboard() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard Smartico</h1>
-          <p className="text-gray-600">Relatório de conversões da API Smartico</p>
-        </div>
+    <div className="flex min-h-screen bg-gray-900">
+      <AdminSidebar currentPage={currentPage} onPageChange={handlePageChange} />
+      <div className="flex-1 ml-64">
+        <div className="container mx-auto p-6 space-y-6">
+          {/* Header */}
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-white">Dashboard Smartico</h1>
+              <p className="text-gray-400">Relatório de conversões da API Smartico</p>
+            </div>
         <Button
           onClick={() => syncMutation.mutate()}
           disabled={syncMutation.isPending}
@@ -371,6 +378,8 @@ export default function SmarticoDashboard() {
           )}
         </CardContent>
       </Card>
+        </div>
+      </div>
     </div>
   );
 }
