@@ -745,44 +745,50 @@ export default function AdminHouses() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {house.integrationType === 'api' ? (
-                            <div className="space-y-1">
-                              {house.syncStatus === 'active' ? (
-                                <Badge variant="secondary" className="bg-green-900 text-green-300">
-                                  <Clock className="w-3 h-3 mr-1" />
-                                  Sincronizando
-                                </Badge>
-                              ) : house.syncStatus === 'error' ? (
-                                <Badge variant="secondary" className="bg-red-900 text-red-300">
-                                  <AlertCircle className="w-3 h-3 mr-1" />
-                                  Erro
-                                </Badge>
-                              ) : (
-                                <Badge variant="secondary" className="bg-slate-600 text-slate-300">
-                                  Pendente
-                                </Badge>
-                              )}
-                              {house.lastSyncAt && (
-                                <div className="text-xs text-slate-400">
-                                  {formatDistanceToNow(new Date(house.lastSyncAt), { addSuffix: true, locale: ptBR })}
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="space-y-1">
-                              {house.securityToken ? (
-                                <Badge variant="secondary" className="bg-green-900 text-green-300">
-                                  <CheckCircle className="w-3 h-3 mr-1" />
-                                  Configurado
-                                </Badge>
-                              ) : (
-                                <Badge variant="secondary" className="bg-red-900 text-red-300">
-                                  <AlertCircle className="w-3 h-3 mr-1" />
-                                  Pendente
-                                </Badge>
-                              )}
-                            </div>
-                          )}
+                          <div className="space-y-1">
+                            {/* API Status for API-enabled houses */}
+                            {(house.integrationType === 'api' || house.integrationType === 'hybrid') && (
+                              <div>
+                                {house.syncStatus === 'active' ? (
+                                  <Badge variant="secondary" className="bg-green-900 text-green-300">
+                                    <Clock className="w-3 h-3 mr-1" />
+                                    API Sync
+                                  </Badge>
+                                ) : house.syncStatus === 'error' ? (
+                                  <Badge variant="secondary" className="bg-red-900 text-red-300">
+                                    <AlertCircle className="w-3 h-3 mr-1" />
+                                    API Erro
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="secondary" className="bg-slate-600 text-slate-300">
+                                    API Pendente
+                                  </Badge>
+                                )}
+                                {house.lastSyncAt && (
+                                  <div className="text-xs text-slate-400">
+                                    {formatDistanceToNow(new Date(house.lastSyncAt), { addSuffix: true, locale: ptBR })}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            
+                            {/* Postback Status for postback-enabled houses */}
+                            {(house.integrationType === 'postback' || house.integrationType === 'hybrid' || !house.integrationType) && (
+                              <div className={house.integrationType === 'hybrid' ? 'mt-1' : ''}>
+                                {house.securityToken ? (
+                                  <Badge variant="secondary" className="bg-green-900 text-green-300">
+                                    <CheckCircle className="w-3 h-3 mr-1" />
+                                    Postback OK
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="secondary" className="bg-red-900 text-red-300">
+                                    <AlertCircle className="w-3 h-3 mr-1" />
+                                    Postback Pendente
+                                  </Badge>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2 flex-wrap">
