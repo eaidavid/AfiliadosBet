@@ -30,8 +30,6 @@ import PostbackLogs from "@/pages/postback-logs";
 import AdminApiManagement from "@/pages/admin-api-management";
 
 import AdminSettingsEnhanced from "@/pages/admin-settings-enhanced";
-import SmarticoDashboard from "@/pages/smartico-dashboard-simple";
-import AdminHousesManager from "@/pages/admin-houses-manager";
 import NotFound from "@/pages/not-found";
 import AdminPanelToggle from "@/components/admin-panel-toggle";
 
@@ -109,13 +107,11 @@ function Router() {
       <Route path="/admin/casas" component={AuthenticatedAdminCasas} />
 
       <Route path="/admin/houses" component={AuthenticatedAdminHouses} />
-      <Route path="/admin/houses-manager" component={AuthenticatedAdminHousesManager} />
       <Route path="/admin/manage" component={AuthenticatedAdminManage} />
       <Route path="/admin/manage/:id/edit" component={AuthenticatedAdminEditAffiliate} />
       <Route path="/admin/postback-generator" component={AuthenticatedPostbackGenerator} />
       <Route path="/admin/postback-logs" component={AuthenticatedPostbackLogs} />
       <Route path="/admin/api-management" component={AuthenticatedAdminApiManagement} />
-      <Route path="/admin/smartico" component={AuthenticatedSmarticoDashboard} />
 
       <Route path="/admin/settings" component={AuthenticatedAdminSettings} />
       <Route component={NotFound} />
