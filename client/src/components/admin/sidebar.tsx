@@ -17,14 +17,11 @@ export function AdminSidebar({ currentPage, onPageChange }: AdminSidebarProps) {
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
-    { id: "houses", label: "Administração de Casas", icon: Building },
-    { id: "houses-manager", label: "Gerenciar Casas", icon: Building },
-    { id: "manage", label: "Administração de Afiliados", icon: Users },
-    { id: "smartico", label: "Dashboard Smartico", icon: Database },
+    { id: "houses", label: "Gerenciar Casas", icon: Building },
+    { id: "manage", label: "Gerenciar Afiliados", icon: Users },
     { id: "gerador-de-postbacks", label: "Gerador de Postbacks", icon: Webhook },
     { id: "logs-postbacks", label: "Logs de Postbacks", icon: Activity },
-    { id: "postback-display", label: "URLs de Postback", icon: ExternalLink },
-    { id: "admin-settings", label: "Configurações Avançadas", icon: Settings },
+    { id: "admin-settings", label: "Configurações", icon: Settings },
   ];
 
   const handlePageChange = (page: string) => {
@@ -38,18 +35,12 @@ export function AdminSidebar({ currentPage, onPageChange }: AdminSidebarProps) {
       window.location.href = "/admin";
     } else if (page === "houses") {
       window.location.href = "/admin/houses";
-    } else if (page === "houses-manager") {
-      window.location.href = "/admin/houses-manager";
     } else if (page === "manage") {
       window.location.href = "/admin/manage";
-    } else if (page === "smartico") {
-      window.location.href = "/admin/smartico";
     } else if (page === "gerador-de-postbacks") {
       window.location.href = "/admin/postback-generator";
     } else if (page === "logs-postbacks") {
       window.location.href = "/admin/postback-logs";
-    } else if (page === "postback-display") {
-      window.location.href = "/admin/postback-display";
     } else if (page === "admin-settings") {
       window.location.href = "/admin/settings";
     }
