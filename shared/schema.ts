@@ -57,7 +57,7 @@ export const bettingHouses = pgTable("betting_houses", {
   parameterMapping: jsonb("parameter_mapping").default({}), // mapeamento de parâmetros: { "subid": "subid", "valor": "amount" }
   
   // Configurações para integração por API
-  integrationType: text("integration_type").notNull().default("postback"), // 'postback' ou 'api'
+  integrationType: text("integration_type").notNull().default("postback"), // 'postback', 'api', ou 'hybrid'
   apiConfig: jsonb("api_config").default({}), // Configurações específicas da API
   
   // Configurações da API Smartico/Externa
