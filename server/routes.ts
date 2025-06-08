@@ -1816,7 +1816,7 @@ export async function registerRoutes(app: express.Application) {
 
       const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
       
-      let query = db
+      const baseQueryBuilder = db
         .select({
           id: schema.conversions.id,
           type: schema.conversions.type,
@@ -1853,11 +1853,11 @@ export async function registerRoutes(app: express.Application) {
         conditions.push(eq(schema.conversions.houseId, parseInt(house_id as string)));
       }
 
-      if (conditions.length > 0) {
-        query = query.where(and(...conditions));
-      }
+      const finalQuery = conditions.length > 0 
+        ? baseQueryBuilder.where(and(...conditions))
+        : baseQueryBuilder;
 
-      const conversions = await query
+      const conversions = await finalQuery
         .orderBy(desc(schema.conversions.convertedAt))
         .limit(parseInt(limit as string))
         .offset(offset);
@@ -1874,11 +1874,11 @@ export async function registerRoutes(app: express.Application) {
         })
         .from(schema.conversions);
 
-      const totalsQuery = conditions.length > 0 
+      const finalTotalsQuery = conditions.length > 0 
         ? totalsQueryBuilder.where(and(...conditions))
         : totalsQueryBuilder;
 
-      const [totals] = await totalsQuery;
+      const [totals] = await finalTotalsQuery;
 
       res.json({
         success: true,
