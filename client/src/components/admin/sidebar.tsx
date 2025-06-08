@@ -18,6 +18,7 @@ export function AdminSidebar({ currentPage, onPageChange }: AdminSidebarProps) {
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
     { id: "houses", label: "Administração de Casas", icon: Building },
+    { id: "houses-manager", label: "Gerenciar Casas", icon: Building },
     { id: "manage", label: "Administração de Afiliados", icon: Users },
     { id: "smartico", label: "Dashboard Smartico", icon: Database },
     { id: "gerador-de-postbacks", label: "Gerador de Postbacks", icon: Webhook },
@@ -37,6 +38,8 @@ export function AdminSidebar({ currentPage, onPageChange }: AdminSidebarProps) {
       window.location.href = "/admin";
     } else if (page === "houses") {
       window.location.href = "/admin/houses";
+    } else if (page === "houses-manager") {
+      window.location.href = "/admin/houses-manager";
     } else if (page === "manage") {
       window.location.href = "/admin/manage";
     } else if (page === "smartico") {
