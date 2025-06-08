@@ -60,7 +60,7 @@ export class ApiSyncScheduler {
     const task = cron.schedule(cronExpression, async () => {
       await this.executeHouseSync(houseId, house.name);
     }, {
-      scheduled: true
+      timezone: "America/Sao_Paulo"
     });
 
     this.scheduledTasks.set(houseId, task);
@@ -181,17 +181,21 @@ export class ApiSyncScheduler {
   }
 
   getActiveSchedules(): { houseId: number; isActive: boolean }[] {
-    return Array.from(this.scheduledTasks.entries()).map(([houseId, task]) => ({
-      houseId,
-      isActive: task.running
-    }));
+    const result: { houseId: number; isActive: boolean }[] = [];
+    this.scheduledTasks.forEach((task, houseId) => {
+      result.push({
+        houseId,
+        isActive: true // Always true if task exists in the map
+      });
+    });
+    return result;
   }
 
   async stopAllSchedules(): Promise<void> {
-    for (const [houseId, task] of this.scheduledTasks) {
+    this.scheduledTasks.forEach((task, houseId) => {
       task.stop();
       console.log(`🛑 Agendamento parado para casa ${houseId}`);
-    }
+    });
     this.scheduledTasks.clear();
   }
 }
