@@ -41,8 +41,12 @@ import {
   User,
   CheckCircle,
   Clock,
-  Shield
+  Shield,
+  AlertCircle,
+  RefreshCw
 } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import AdminSidebar from "@/components/admin/sidebar";
@@ -264,9 +268,15 @@ export default function AdminHouses() {
         (commissionFilter === "revshare" && houseCommission.includes("RevShare")) ||
         (commissionFilter === "both" && houseCommission === "CPA+RevShare");
       
-      return matchesSearch && matchesStatus && matchesCommission;
+      // Verificação de tipo de integração
+      const houseIntegrationType = house.integrationType || 'postback';
+      const matchesIntegrationType = integrationType === "all" ||
+        (integrationType === "api" && houseIntegrationType === "api") ||
+        (integrationType === "postback" && (houseIntegrationType === "postback" || !house.integrationType));
+      
+      return matchesSearch && matchesStatus && matchesCommission && matchesIntegrationType;
     });
-  }, [safeHouses, searchTerm, statusFilter, commissionFilter]);
+  }, [safeHouses, searchTerm, statusFilter, commissionFilter, integrationType]);
 
   // Mutations
   const createHouseMutation = useMutation({
@@ -669,6 +679,21 @@ export default function AdminHouses() {
                         </TableCell>
                         <TableCell>
                           <div className="space-y-1">
+                            {house.integrationType === 'api' ? (
+                              <Badge variant="outline" className="text-blue-400 border-blue-400">
+                                <Bot className="w-3 h-3 mr-1" />
+                                API
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-purple-400 border-purple-400">
+                                <Webhook className="w-3 h-3 mr-1" />
+                                Postback
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
                             <Badge variant="outline" className="text-blue-400 border-blue-400">
                               {house.commissionType || "N/A"}
                             </Badge>
@@ -681,18 +706,9 @@ export default function AdminHouses() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="font-mono text-sm text-slate-300">{house.baseUrl}</div>
-                        </TableCell>
-                        <TableCell>
-                          {house.securityToken ? (
-                            <Badge variant="secondary" className="bg-green-900 text-green-300">
-                              Configurado
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary" className="bg-red-900 text-red-300">
-                              Pendente
-                            </Badge>
-                          )}
+                          <div className="font-mono text-sm text-slate-300">
+                            {house.integrationType === 'api' ? house.apiBaseUrl : house.baseUrl}
+                          </div>
                         </TableCell>
                         <TableCell>
                           <Badge 
@@ -703,7 +719,47 @@ export default function AdminHouses() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
+                          {house.integrationType === 'api' ? (
+                            <div className="space-y-1">
+                              {house.syncStatus === 'active' ? (
+                                <Badge variant="secondary" className="bg-green-900 text-green-300">
+                                  <Clock className="w-3 h-3 mr-1" />
+                                  Sincronizando
+                                </Badge>
+                              ) : house.syncStatus === 'error' ? (
+                                <Badge variant="secondary" className="bg-red-900 text-red-300">
+                                  <AlertCircle className="w-3 h-3 mr-1" />
+                                  Erro
+                                </Badge>
+                              ) : (
+                                <Badge variant="secondary" className="bg-slate-600 text-slate-300">
+                                  Pendente
+                                </Badge>
+                              )}
+                              {house.lastSyncAt && (
+                                <div className="text-xs text-slate-400">
+                                  {formatDistanceToNow(new Date(house.lastSyncAt), { addSuffix: true, locale: ptBR })}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="space-y-1">
+                              {house.securityToken ? (
+                                <Badge variant="secondary" className="bg-green-900 text-green-300">
+                                  <CheckCircle className="w-3 h-3 mr-1" />
+                                  Configurado
+                                </Badge>
+                              ) : (
+                                <Badge variant="secondary" className="bg-red-900 text-red-300">
+                                  <AlertCircle className="w-3 h-3 mr-1" />
+                                  Pendente
+                                </Badge>
+                              )}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2 flex-wrap">
                             <Button
                               variant="ghost"
                               size="sm"
@@ -728,6 +784,33 @@ export default function AdminHouses() {
                             >
                               <Copy className="w-4 h-4" />
                             </Button>
+                            
+                            {/* API-specific actions */}
+                            {house.integrationType === 'api' && (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => testApiConnection.mutate(house.id)}
+                                  className="text-cyan-400 hover:text-cyan-300"
+                                  disabled={testApiConnection.isPending}
+                                  title="Testar Conexão API"
+                                >
+                                  <TestTube className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => manualSync.mutate(house.id)}
+                                  className="text-orange-400 hover:text-orange-300"
+                                  disabled={manualSync.isPending}
+                                  title="Sincronização Manual"
+                                >
+                                  <RefreshCw className="w-4 h-4" />
+                                </Button>
+                              </>
+                            )}
+                            
                             <Button
                               variant="ghost"
                               size="sm"
