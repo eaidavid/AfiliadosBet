@@ -1863,7 +1863,7 @@ export async function registerRoutes(app: express.Application) {
         .offset(offset);
 
       // Get totals
-      const totalsQuery = db
+      let totalsQuery = db
         .select({
           totalClick: sql<number>`COUNT(CASE WHEN ${schema.conversions.type} = 'click' THEN 1 END)`,
           totalRegistration: sql<number>`COUNT(CASE WHEN ${schema.conversions.type} = 'registration' THEN 1 END)`,

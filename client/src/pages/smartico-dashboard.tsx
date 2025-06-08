@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Loader2, RefreshCw, BarChart3, TrendingUp, Users, DollarSign } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { AdminSidebar } from '@/components/admin/sidebar';
 
 interface Conversion {
   id: number;
@@ -52,6 +53,7 @@ interface House {
 }
 
 export default function SmarticoDashboard() {
+  const [currentPage, setCurrentPage] = useState("smartico");
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [selectedAffiliate, setSelectedAffiliate] = useState<string>('');
