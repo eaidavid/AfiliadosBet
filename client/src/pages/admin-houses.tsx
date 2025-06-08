@@ -72,7 +72,7 @@ const bettingHouseSchema = z.object({
   parameterMapping: z.string().optional(),
   
   // API Integration fields
-  integrationType: z.enum(["postback", "api"], {
+  integrationType: z.enum(["postback", "api", "hybrid"], {
     required_error: "Tipo de integração é obrigatório"
   }),
   apiBaseUrl: z.string().url().optional().or(z.literal("")),
@@ -272,6 +272,7 @@ export default function AdminHouses() {
       const houseIntegrationType = house.integrationType || 'postback';
       const matchesIntegrationType = integrationType === "all" ||
         (integrationType === "api" && houseIntegrationType === "api") ||
+        (integrationType === "hybrid" && houseIntegrationType === "hybrid") ||
         (integrationType === "postback" && (houseIntegrationType === "postback" || !house.integrationType));
       
       return matchesSearch && matchesStatus && matchesCommission && matchesIntegrationType;
@@ -561,9 +562,9 @@ export default function AdminHouses() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-400">Integração API</p>
+                    <p className="text-sm text-slate-400">Apenas API</p>
                     <p className="text-2xl font-bold text-blue-400">{safeHouses.filter(h => h.integrationType === 'api').length}</p>
-                    <p className="text-xs text-slate-500 mt-1">casas com API</p>
+                    <p className="text-xs text-slate-500 mt-1">só API externa</p>
                   </div>
                   <Bot className="w-8 h-8 text-blue-400" />
                 </div>
@@ -574,9 +575,22 @@ export default function AdminHouses() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-400">Com Postbacks</p>
+                    <p className="text-sm text-slate-400">API + Postback</p>
+                    <p className="text-2xl font-bold text-green-400">{safeHouses.filter(h => h.integrationType === 'hybrid').length}</p>
+                    <p className="text-xs text-slate-500 mt-1">integração híbrida</p>
+                  </div>
+                  <Activity className="w-8 h-8 text-green-400" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-800 border-slate-700">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-slate-400">Apenas Postback</p>
                     <p className="text-2xl font-bold text-purple-400">{safeHouses.filter(h => h.integrationType === 'postback' || !h.integrationType).length}</p>
-                    <p className="text-xs text-slate-500 mt-1">postback/webhook</p>
+                    <p className="text-xs text-slate-500 mt-1">só webhook</p>
                   </div>
                   <Webhook className="w-8 h-8 text-purple-400" />
                 </div>
@@ -615,8 +629,9 @@ export default function AdminHouses() {
                   </SelectTrigger>
                   <SelectContent className="bg-slate-800 border-slate-700">
                     <SelectItem value="all">Todas Integrações</SelectItem>
-                    <SelectItem value="postback">Postback/Webhook</SelectItem>
-                    <SelectItem value="api">API Externa</SelectItem>
+                    <SelectItem value="postback">Apenas Postback</SelectItem>
+                    <SelectItem value="api">Apenas API</SelectItem>
+                    <SelectItem value="hybrid">API + Postback</SelectItem>
                   </SelectContent>
                 </Select>
                 
@@ -684,6 +699,17 @@ export default function AdminHouses() {
                                 <Bot className="w-3 h-3 mr-1" />
                                 API
                               </Badge>
+                            ) : house.integrationType === 'hybrid' ? (
+                              <div className="space-y-1">
+                                <Badge variant="outline" className="text-green-400 border-green-400">
+                                  <Bot className="w-3 h-3 mr-1" />
+                                  API
+                                </Badge>
+                                <Badge variant="outline" className="text-purple-400 border-purple-400">
+                                  <Webhook className="w-3 h-3 mr-1" />
+                                  Postback
+                                </Badge>
+                              </div>
                             ) : (
                               <Badge variant="outline" className="text-purple-400 border-purple-400">
                                 <Webhook className="w-3 h-3 mr-1" />
@@ -785,8 +811,8 @@ export default function AdminHouses() {
                               <Copy className="w-4 h-4" />
                             </Button>
                             
-                            {/* API-specific actions */}
-                            {house.integrationType === 'api' && (
+                            {/* API-specific actions for API-enabled houses */}
+                            {(house.integrationType === 'api' || house.integrationType === 'hybrid') && (
                               <>
                                 <Button
                                   variant="ghost"
@@ -914,14 +940,17 @@ export default function AdminHouses() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="postback">Postback (Webhook)</SelectItem>
-                          <SelectItem value="api">API Externa (Smartico/outros)</SelectItem>
+                          <SelectItem value="postback">Apenas Postback (Webhook)</SelectItem>
+                          <SelectItem value="api">Apenas API Externa</SelectItem>
+                          <SelectItem value="hybrid">API + Postback (Ambos)</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormDescription className="text-slate-400">
                         {form.watch("integrationType") === "postback" 
-                          ? "A casa enviará dados via postback/webhook" 
-                          : "Sistema buscará dados via API externa"}
+                          ? "A casa enviará dados apenas via postback/webhook" 
+                          : form.watch("integrationType") === "api"
+                          ? "Sistema buscará dados apenas via API externa"
+                          : "Casa usará tanto API quanto postback simultaneamente"}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -930,7 +959,7 @@ export default function AdminHouses() {
               </div>
 
               {/* Conditional API Configuration */}
-              {form.watch("integrationType") === "api" && (
+              {(form.watch("integrationType") === "api" || form.watch("integrationType") === "hybrid") && (
                 <div className="space-y-4 border border-blue-500/20 rounded-lg p-4 bg-blue-950/20">
                   <h4 className="text-md font-semibold text-blue-400 flex items-center gap-2">
                     <Bot className="w-4 h-4" />
