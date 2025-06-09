@@ -295,7 +295,7 @@ export class ApiIntegrationFactory {
       .where(eq(schema.bettingHouses.id, houseId))
       .limit(1);
 
-    if (!house[0] || house[0].integrationType !== 'api' || !house[0].apiKey) {
+    if (!house[0] || (house[0].integrationType !== 'api' && house[0].integrationType !== 'hybrid') || !house[0].apiKey) {
       return null;
     }
 
