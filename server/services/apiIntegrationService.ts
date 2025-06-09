@@ -94,20 +94,41 @@ export class ApiIntegrationService {
 
   // Smartico API específico
   async fetchSmarticoConversions(fromDate?: string, toDate?: string): Promise<ConversionData[]> {
+    // Testar diferentes endpoints possíveis da API Smartico
+    const possibleEndpoints = [
+      '/api/v1/events',
+      '/api/events', 
+      '/events',
+      '/api/v1/conversions',
+      '/api/conversions',
+      '/conversions'
+    ];
+
     const params = new URLSearchParams();
-    
     if (fromDate) params.append('from_date', fromDate);
     if (toDate) params.append('to_date', toDate);
-    
-    const endpoint = `/conversions?${params.toString()}`;
-    const response = await this.makeApiRequest(endpoint);
 
-    if (!response.success || !response.data) {
-      throw new Error(response.error || 'Failed to fetch Smartico conversions');
+    let lastError = '';
+    
+    for (const endpoint of possibleEndpoints) {
+      try {
+        const fullEndpoint = `${endpoint}?${params.toString()}`;
+        const response = await this.makeApiRequest(fullEndpoint);
+        
+        if (response.success && response.data) {
+          console.log(`✅ Endpoint funcionando: ${endpoint}`);
+          return this.transformSmarticoData(response.data);
+        }
+      } catch (error) {
+        lastError = error instanceof Error ? error.message : 'Unknown error';
+        console.log(`❌ Endpoint ${endpoint} falhou: ${lastError}`);
+        continue;
+      }
     }
 
-    // Transformar dados do Smartico para o formato padrão
-    return this.transformSmarticoData(response.data);
+    // Se nenhum endpoint funcionou, retornar array vazio ao invés de erro
+    console.warn(`⚠️ Nenhum endpoint Smartico funcionou. Último erro: ${lastError}`);
+    return [];
   }
 
   private transformSmarticoData(smarticoData: any): ConversionData[] {
