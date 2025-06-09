@@ -43,8 +43,17 @@ app.use(passport.session());
   }
 
   const PORT = parseInt(process.env.PORT || "5000", 10);
-  app.listen(PORT, "0.0.0.0", () => {
+  app.listen(PORT, "0.0.0.0", async () => {
     console.log(`Server listening on port ${PORT}`);
     console.log("Application ready to receive requests");
+    
+    // Inicializar agendador de sincronização API
+    try {
+      const { ApiSyncScheduler } = await import('./cron/apiSyncScheduler');
+      const scheduler = ApiSyncScheduler.getInstance();
+      await scheduler.initializeScheduler();
+    } catch (error) {
+      console.error("Erro ao inicializar agendador de API:", error);
+    }
   });
 })();

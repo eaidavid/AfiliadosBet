@@ -20,20 +20,21 @@ export class ApiSyncScheduler {
   async initializeScheduler(): Promise<void> {
     console.log('🕐 Inicializando agendador de sincronização API');
 
-    // Buscar todas as casas API ativas
+    // Buscar todas as casas API e hybrid ativas
     const apiHouses = await db
       .select()
       .from(schema.bettingHouses)
       .where(
         and(
-          eq(schema.bettingHouses.integrationType, 'api'),
           eq(schema.bettingHouses.isActive, true)
         )
       );
 
-    // Agendar sincronização para cada casa
+    // Agendar sincronização apenas para casas com API (api ou hybrid)
     for (const house of apiHouses) {
-      await this.scheduleHouseSync(house);
+      if (house.integrationType === 'api' || house.integrationType === 'hybrid') {
+        await this.scheduleHouseSync(house);
+      }
     }
 
     // Agendar limpeza de logs antigos (diário às 02:00)
@@ -118,10 +119,10 @@ export class ApiSyncScheduler {
       .where(eq(schema.bettingHouses.id, houseId))
       .limit(1);
 
-    if (house[0] && house[0].integrationType === 'api' && house[0].isActive) {
+    if (house[0] && (house[0].integrationType === 'api' || house[0].integrationType === 'hybrid') && house[0].isActive) {
       await this.scheduleHouseSync(house[0]);
     } else {
-      // Remover agendamento se casa não é mais API ou está inativa
+      // Remover agendamento se casa não é mais API/hybrid ou está inativa
       this.removeHouseSchedule(houseId);
     }
   }
