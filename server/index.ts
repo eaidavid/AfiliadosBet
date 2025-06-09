@@ -36,14 +36,8 @@ app.use(passport.session());
   // Registrar todas as rotas da API
   await registerRoutes(app);
 
-  if (process.env.NODE_ENV === "development") {
-    await setupVite(app);
-  } else {
-    serveStatic(app);
-  }
-
   const PORT = parseInt(process.env.PORT || "5000", 10);
-  app.listen(PORT, "0.0.0.0", async () => {
+  const server = app.listen(PORT, "0.0.0.0", async () => {
     console.log(`Server listening on port ${PORT}`);
     console.log("Application ready to receive requests");
     
@@ -56,4 +50,11 @@ app.use(passport.session());
       console.error("Erro ao inicializar agendador de API:", error);
     }
   });
+
+  // Setup Vite development environment
+  if (process.env.NODE_ENV === "development") {
+    await setupVite(app, server);
+  } else {
+    serveStatic(app);
+  }
 })();
