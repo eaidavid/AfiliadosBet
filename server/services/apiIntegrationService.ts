@@ -94,52 +94,79 @@ export class ApiIntegrationService {
     }
   }
 
-  // Smartico API específico - versão real baseada na documentação
+  // API genérica para casas com painéis dedicados
   async fetchSmarticoConversions(fromDate?: string, toDate?: string): Promise<ConversionData[]> {
-    // Endpoints reais da API Smartico baseados na documentação oficial
-    const smarticoEndpoints = [
+    // Endpoints possíveis para painéis dedicados de casas
+    const possibleEndpoints = [
+      // Endpoints padrão Smartico
+      '/api/v1/conversions',
       '/api/v1/affiliate/stats',
-      '/api/v1/player/list',
-      '/api/v1/conversion/list',
-      '/affiliate/stats',
-      '/player/list', 
-      '/conversion/list',
+      '/api/v1/events',
+      '/api/conversions',
+      '/api/stats',
+      '/api/events',
+      // Endpoints alternativos para painéis customizados
+      '/conversions',
       '/stats',
-      '/list'
+      '/events',
+      '/data/conversions',
+      '/affiliate/conversions',
+      '/reports/conversions',
+      // Endpoints específicos por casa
+      '/v1/data',
+      '/v2/events',
+      '/analytics/conversions'
     ];
 
     const params = new URLSearchParams();
     if (fromDate) params.append('date_from', fromDate);
     if (toDate) params.append('date_to', toDate);
     
-    // Adicionar parâmetros específicos da Smartico
-    params.append('limit', '100');
+    // Parâmetros comuns para diferentes APIs
+    params.append('limit', '50');
     params.append('offset', '0');
 
-    let workingEndpoint = '';
+    console.log(`🔍 Testando ${possibleEndpoints.length} endpoints para casa ${this.houseId}`);
     
-    for (const endpoint of smarticoEndpoints) {
+    for (const endpoint of possibleEndpoints) {
       try {
         const fullEndpoint = `${endpoint}?${params.toString()}`;
-        console.log(`🔍 Testando endpoint Smartico: ${endpoint}`);
         
         const response = await this.makeApiRequest(fullEndpoint);
         
         if (response.success && response.data) {
-          console.log(`✅ Endpoint Smartico funcionando: ${endpoint}`);
-          workingEndpoint = endpoint;
+          console.log(`✅ Endpoint funcionando: ${endpoint}`);
+          // Salvar endpoint que funciona para uso futuro
+          await this.saveWorkingEndpoint(endpoint);
           return this.transformSmarticoData(response.data);
         }
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-        console.log(`❌ Endpoint ${endpoint} falhou: ${errorMsg}`);
+        if (!errorMsg.includes('404')) {
+          console.log(`❌ Endpoint ${endpoint}: ${errorMsg}`);
+        }
         continue;
       }
     }
 
-    // Se nenhum endpoint funcionou, a API pode estar configurada incorretamente
-    console.warn(`⚠️ API Smartico: Nenhum endpoint de dados disponível. Verifique as credenciais e permissões.`);
+    console.warn(`⚠️ Nenhum endpoint de dados encontrado para casa ${this.houseId}. Configure URL específica do painel dedicado.`);
     return [];
+  }
+
+  private async saveWorkingEndpoint(endpoint: string): Promise<void> {
+    try {
+      await db
+        .update(schema.bettingHouses)
+        .set({ 
+          endpointMapping: { conversions: endpoint },
+          updatedAt: new Date()
+        })
+        .where(eq(schema.bettingHouses.id, this.houseId));
+      
+      console.log(`💾 Endpoint salvo para casa ${this.houseId}: ${endpoint}`);
+    } catch (error) {
+      console.error('Erro ao salvar endpoint:', error);
+    }
   }
 
   private transformSmarticoData(smarticoData: any): ConversionData[] {
@@ -302,25 +329,48 @@ export class ApiIntegrationService {
 
   async testConnection(): Promise<{ success: boolean; message: string }> {
     try {
-      // Testar conectividade básica
-      const healthResponse = await fetch(`${this.baseUrl}/health`, {
-        method: 'GET',
-        headers: this.authHeaders
-      });
+      // Testar conectividade básica com múltiplos endpoints de saúde
+      const healthEndpoints = ['/health', '/status', '/ping', '/api/health'];
+      let basicConnection = false;
+      
+      for (const healthEndpoint of healthEndpoints) {
+        try {
+          const healthResponse = await fetch(`${this.baseUrl}${healthEndpoint}`, {
+            method: 'GET',
+            headers: this.authHeaders
+          });
 
-      if (!healthResponse.ok) {
-        return { success: false, message: `Falha na conexão básica: ${healthResponse.status}` };
+          if (healthResponse.ok) {
+            basicConnection = true;
+            break;
+          }
+        } catch (error) {
+          continue;
+        }
       }
 
-      // Testar acesso aos dados
+      if (!basicConnection) {
+        return { 
+          success: false, 
+          message: 'Falha na conexão. Verifique a URL base da API do painel dedicado da casa.' 
+        };
+      }
+
+      // Testar acesso aos dados com endpoints mais abrangentes
       const dataEndpoints = [
-        '/api/v1/affiliate/stats',
         '/api/v1/conversions',
+        '/api/v1/affiliate/stats', 
+        '/api/v1/events',
+        '/api/conversions',
+        '/api/stats',
+        '/conversions',
         '/stats',
-        '/conversions'
+        '/events',
+        '/data/conversions',
+        '/affiliate/conversions'
       ];
 
-      let hasDataAccess = false;
+      let workingEndpoint = '';
       for (const endpoint of dataEndpoints) {
         try {
           const testResponse = await fetch(`${this.baseUrl}${endpoint}?limit=1`, {
@@ -329,7 +379,7 @@ export class ApiIntegrationService {
           });
           
           if (testResponse.ok) {
-            hasDataAccess = true;
+            workingEndpoint = endpoint;
             break;
           }
         } catch (error) {
@@ -337,12 +387,15 @@ export class ApiIntegrationService {
         }
       }
 
-      if (hasDataAccess) {
-        return { success: true, message: 'API conectada com acesso completo aos dados' };
+      if (workingEndpoint) {
+        return { 
+          success: true, 
+          message: `API conectada com acesso aos dados. Endpoint funcionando: ${workingEndpoint}` 
+        };
       } else {
         return { 
           success: true, 
-          message: 'API conectada, mas sem acesso aos endpoints de dados. Verifique permissões da API key.' 
+          message: 'Conexão estabelecida, mas endpoints de dados não encontrados. Solicite ao gerente da casa a URL específica do painel dedicado e lista de endpoints disponíveis.' 
         };
       }
     } catch (error) {

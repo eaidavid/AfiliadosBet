@@ -969,8 +969,14 @@ export default function AdminHouses() {
                 <div className="space-y-4 border border-blue-500/20 rounded-lg p-4 bg-blue-950/20">
                   <h4 className="text-md font-semibold text-blue-400 flex items-center gap-2">
                     <Bot className="w-4 h-4" />
-                    Configurações da API
+                    Configurações da API - Painel Dedicado da Casa
                   </h4>
+                  <div className="bg-amber-950/30 border border-amber-500/30 rounded-md p-3 mb-4">
+                    <p className="text-amber-200 text-sm">
+                      <strong>Importante:</strong> Cada casa possui seu próprio painel com URL específica. 
+                      Solicite ao gerente da casa as informações corretas da API dedicada.
+                    </p>
+                  </div>
                   
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <FormField
@@ -982,7 +988,7 @@ export default function AdminHouses() {
                           <FormControl>
                             <Input 
                               {...field} 
-                              placeholder="https://api.smartico.ai"
+                              placeholder="https://lotogreen.smartico.ai (URL específica da casa)"
                               className="bg-slate-700 border-slate-600 text-white" 
                             />
                           </FormControl>
