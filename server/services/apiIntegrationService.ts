@@ -300,16 +300,48 @@ export class ApiIntegrationService {
 
   async testConnection(): Promise<{ success: boolean; message: string }> {
     try {
-      // Test with a simple endpoint that might return plain text
-      const response = await fetch(`${this.baseUrl}/health`, {
+      // Testar conectividade básica
+      const healthResponse = await fetch(`${this.baseUrl}/health`, {
         method: 'GET',
         headers: this.authHeaders
       });
 
-      if (response.ok) {
-        return { success: true, message: 'Conexão com API estabelecida com sucesso' };
+      if (!healthResponse.ok) {
+        return { success: false, message: `Falha na conexão básica: ${healthResponse.status}` };
+      }
+
+      // Testar acesso aos dados
+      const dataEndpoints = [
+        '/api/v1/affiliate/stats',
+        '/api/v1/conversions',
+        '/stats',
+        '/conversions'
+      ];
+
+      let hasDataAccess = false;
+      for (const endpoint of dataEndpoints) {
+        try {
+          const testResponse = await fetch(`${this.baseUrl}${endpoint}?limit=1`, {
+            method: 'GET',
+            headers: this.authHeaders
+          });
+          
+          if (testResponse.ok) {
+            hasDataAccess = true;
+            break;
+          }
+        } catch (error) {
+          continue;
+        }
+      }
+
+      if (hasDataAccess) {
+        return { success: true, message: 'API conectada com acesso completo aos dados' };
       } else {
-        return { success: false, message: `API retornou status ${response.status}` };
+        return { 
+          success: true, 
+          message: 'API conectada, mas sem acesso aos endpoints de dados. Verifique permissões da API key.' 
+        };
       }
     } catch (error) {
       return { 
