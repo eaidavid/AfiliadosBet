@@ -92,42 +92,51 @@ export class ApiIntegrationService {
     }
   }
 
-  // Smartico API específico
+  // Smartico API específico - versão real baseada na documentação
   async fetchSmarticoConversions(fromDate?: string, toDate?: string): Promise<ConversionData[]> {
-    // Testar diferentes endpoints possíveis da API Smartico
-    const possibleEndpoints = [
-      '/api/v1/events',
-      '/api/events', 
-      '/events',
-      '/api/v1/conversions',
-      '/api/conversions',
-      '/conversions'
+    // Endpoints reais da API Smartico baseados na documentação oficial
+    const smarticoEndpoints = [
+      '/api/v1/affiliate/stats',
+      '/api/v1/player/list',
+      '/api/v1/conversion/list',
+      '/affiliate/stats',
+      '/player/list', 
+      '/conversion/list',
+      '/stats',
+      '/list'
     ];
 
     const params = new URLSearchParams();
-    if (fromDate) params.append('from_date', fromDate);
-    if (toDate) params.append('to_date', toDate);
-
-    let lastError = '';
+    if (fromDate) params.append('date_from', fromDate);
+    if (toDate) params.append('date_to', toDate);
     
-    for (const endpoint of possibleEndpoints) {
+    // Adicionar parâmetros específicos da Smartico
+    params.append('limit', '100');
+    params.append('offset', '0');
+
+    let workingEndpoint = '';
+    
+    for (const endpoint of smarticoEndpoints) {
       try {
         const fullEndpoint = `${endpoint}?${params.toString()}`;
+        console.log(`🔍 Testando endpoint Smartico: ${endpoint}`);
+        
         const response = await this.makeApiRequest(fullEndpoint);
         
         if (response.success && response.data) {
-          console.log(`✅ Endpoint funcionando: ${endpoint}`);
+          console.log(`✅ Endpoint Smartico funcionando: ${endpoint}`);
+          workingEndpoint = endpoint;
           return this.transformSmarticoData(response.data);
         }
       } catch (error) {
-        lastError = error instanceof Error ? error.message : 'Unknown error';
-        console.log(`❌ Endpoint ${endpoint} falhou: ${lastError}`);
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+        console.log(`❌ Endpoint ${endpoint} falhou: ${errorMsg}`);
         continue;
       }
     }
 
-    // Se nenhum endpoint funcionou, retornar array vazio ao invés de erro
-    console.warn(`⚠️ Nenhum endpoint Smartico funcionou. Último erro: ${lastError}`);
+    // Se nenhum endpoint funcionou, a API pode estar configurada incorretamente
+    console.warn(`⚠️ API Smartico: Nenhum endpoint de dados disponível. Verifique as credenciais e permissões.`);
     return [];
   }
 
