@@ -670,36 +670,60 @@ export async function registerRoutes(app: express.Application) {
     try {
       console.log("📋 Dados recebidos para criar casa:", req.body);
       
-      const { name, description, logoUrl, baseUrl, primaryParam, additionalParams, commissionType, commissionValue, minDeposit, paymentMethods, isActive } = req.body;
+      const { 
+        name, description, logoUrl, baseUrl, primaryParam, additionalParams, 
+        commissionType, commissionValue, cpaValue, revshareValue, minDeposit, 
+        paymentMethods, isActive, identifier, securityToken, parameterMapping,
+        // API Integration fields
+        integrationType, apiBaseUrl, apiKey, apiSecret, apiVersion, 
+        authType, syncInterval
+      } = req.body;
 
       if (!name || !baseUrl) {
         return res.status(400).json({ error: "Nome e URL base são obrigatórios" });
       }
 
-      // Generate identifier and security token
-      const identifier = name.toLowerCase().replace(/[^a-z0-9]/g, '') + Date.now();
-      const securityToken = `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      // Generate identifier and security token if not provided
+      const finalIdentifier = identifier || (name.toLowerCase().replace(/[^a-z0-9]/g, '') + Date.now());
+      const finalSecurityToken = securityToken || `token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
       const houseData = {
         name,
         description: description || null,
         logoUrl: logoUrl || null,
         baseUrl,
-        identifier,
-        securityToken,
+        identifier: finalIdentifier,
+        securityToken: finalSecurityToken,
         primaryParam: primaryParam || "subid",
         additionalParams: additionalParams || null,
         commissionType: commissionType || "RevShare",
         commissionValue: commissionValue || "30",
-        minDeposit: minDeposit || "100",
+        cpaValue: cpaValue ? String(cpaValue) : null,
+        revshareValue: revshareValue ? String(revshareValue) : null,
+        minDeposit: minDeposit ? String(minDeposit) : "100",
         paymentMethods: paymentMethods || "Pix",
-        parameterMapping: {
+        parameterMapping: parameterMapping || {
           subid: "subid",
           amount: "amount",
           customer_id: "customer_id"
         },
         enabledPostbacks: [],
         isActive: isActive !== undefined ? isActive : true,
+        
+        // API Integration fields
+        integrationType: integrationType || "postback",
+        apiBaseUrl: apiBaseUrl || null,
+        apiKey: apiKey || null,
+        apiSecret: apiSecret || null,
+        apiVersion: apiVersion || "v1",
+        authType: authType || "bearer",
+        syncInterval: syncInterval || 30,
+        syncStatus: (integrationType === 'api' || integrationType === 'hybrid') ? 'pending' : 'n/a',
+        lastSyncAt: null,
+        syncErrorMessage: null,
+        apiConfig: {},
+        endpointMapping: {},
+        authHeaders: {}
       };
 
       console.log("💾 Dados que serão inseridos:", houseData);
