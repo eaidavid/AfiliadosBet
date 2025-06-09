@@ -82,8 +82,26 @@ export class ApiIntegrationService {
         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
 
-      const data = await response.json();
-      return { success: true, data };
+      // Check if response is HTML instead of JSON
+      const contentType = response.headers.get('content-type');
+      const responseText = await response.text();
+      
+      if (contentType?.includes('text/html') || responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')) {
+        return { 
+          success: false, 
+          error: 'Endpoint retorna HTML ao invés de dados JSON - pode ser uma página web'
+        };
+      }
+      
+      try {
+        const data = JSON.parse(responseText);
+        return { success: true, data };
+      } catch (parseError) {
+        return { 
+          success: false, 
+          error: `Resposta não é JSON válido: ${responseText.substring(0, 100)}...`
+        };
+      }
 
     } catch (error) {
       console.error('API request error:', error);
@@ -105,17 +123,31 @@ export class ApiIntegrationService {
       '/api/conversions',
       '/api/stats',
       '/api/events',
+      // Endpoints Lotogreen específicos
+      '/api/affiliate/conversions',
+      '/api/affiliate/stats',
+      '/api/affiliate/leads',
+      '/api/v1/affiliate/conversions',
+      '/api/v1/affiliate/leads',
+      '/affiliate/api/conversions',
+      '/affiliate/api/stats',
+      '/affiliate/conversions',
+      '/affiliate/stats',
+      '/affiliate/leads',
       // Endpoints alternativos para painéis customizados
       '/conversions',
       '/stats',
       '/events',
+      '/leads',
       '/data/conversions',
-      '/affiliate/conversions',
+      '/data/leads',
       '/reports/conversions',
+      '/reports/leads',
       // Endpoints específicos por casa
       '/v1/data',
       '/v2/events',
-      '/analytics/conversions'
+      '/analytics/conversions',
+      '/analytics/leads'
     ];
 
     const params = new URLSearchParams();
@@ -379,8 +411,17 @@ export class ApiIntegrationService {
           });
           
           if (testResponse.ok) {
-            workingEndpoint = endpoint;
-            break;
+            // Check if response is actually JSON data, not HTML
+            const contentType = testResponse.headers.get('content-type');
+            const responseText = await testResponse.text();
+            
+            if (contentType?.includes('application/json') || 
+                (!responseText.trim().startsWith('<!DOCTYPE') && 
+                 !responseText.trim().startsWith('<html') &&
+                 responseText.trim().startsWith('{'))) {
+              workingEndpoint = endpoint;
+              break;
+            }
           }
         } catch (error) {
           continue;
