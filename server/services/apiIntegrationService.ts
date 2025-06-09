@@ -51,6 +51,8 @@ export class ApiIntegrationService {
     switch (authType) {
       case 'bearer':
         headers['Authorization'] = `Bearer ${this.apiKey}`;
+        // Smartico also accepts X-API-Key, add both for compatibility
+        headers['X-API-Key'] = this.apiKey;
         break;
       case 'apikey':
         headers['X-API-Key'] = this.apiKey;
