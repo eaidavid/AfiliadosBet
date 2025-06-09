@@ -270,12 +270,16 @@ export class ApiIntegrationService {
 
   async testConnection(): Promise<{ success: boolean; message: string }> {
     try {
-      const response = await this.makeApiRequest('/health', { method: 'GET' });
-      
-      if (response.success) {
+      // Test with a simple endpoint that might return plain text
+      const response = await fetch(`${this.baseUrl}/health`, {
+        method: 'GET',
+        headers: this.authHeaders
+      });
+
+      if (response.ok) {
         return { success: true, message: 'Conexão com API estabelecida com sucesso' };
       } else {
-        return { success: false, message: response.error || 'Falha na conexão' };
+        return { success: false, message: `API retornou status ${response.status}` };
       }
     } catch (error) {
       return { 
