@@ -43,6 +43,7 @@ import {
   Clock,
   Shield,
   AlertCircle,
+  Calculator,
   RefreshCw
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -81,6 +82,10 @@ const bettingHouseSchema = z.object({
   apiVersion: z.string().optional(),
   authType: z.enum(["bearer", "basic", "apikey"]).optional(),
   syncInterval: z.union([z.number(), z.string().transform((val) => val === "" ? undefined : Number(val))]).optional(),
+  
+  // Affiliate Commission Percentage fields
+  revshareAffiliatePercent: z.union([z.number(), z.string().transform((val) => val === "" ? undefined : Number(val))]).optional(),
+  cpaAffiliatePercent: z.union([z.number(), z.string().transform((val) => val === "" ? undefined : Number(val))]).optional(),
 });
 
 type BettingHouseFormData = z.infer<typeof bettingHouseSchema>;
@@ -1247,6 +1252,68 @@ export default function AdminHouses() {
                       </FormItem>
                     )}
                   />
+                </div>
+
+                {/* Affiliate Commission Configuration */}
+                <div className="border border-emerald-500/20 rounded-lg p-4 bg-emerald-950/20 space-y-4">
+                  <h4 className="text-md font-semibold text-emerald-400 flex items-center gap-2">
+                    <Calculator className="w-4 h-4" />
+                    Divisão de Comissões - Afiliado vs Master
+                  </h4>
+                  <div className="bg-emerald-950/30 border border-emerald-500/30 rounded-md p-3 mb-4">
+                    <p className="text-emerald-200 text-sm">
+                      <strong>Configure os percentuais repassados aos afiliados.</strong> O restante fica com o master admin. 
+                      Exemplo: Se casa paga 35% RevShare e você repassa 20% ao afiliado, o master fica com 15%.
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="revshareAffiliatePercent"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-white">Percentual Afiliado - RevShare (%)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              step="0.01"
+                              {...field} 
+                              placeholder="Ex: 20.00"
+                              className="bg-slate-700 border-slate-600 text-white" 
+                            />
+                          </FormControl>
+                          <FormDescription className="text-slate-400 text-sm">
+                            Quanto do RevShare total vai para o afiliado (o resto fica com o master)
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="cpaAffiliatePercent"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-white">Percentual Afiliado - CPA (%)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              step="0.01"
+                              {...field} 
+                              placeholder="Ex: 70.00"
+                              className="bg-slate-700 border-slate-600 text-white" 
+                            />
+                          </FormControl>
+                          <FormDescription className="text-slate-400 text-sm">
+                            Quanto do valor CPA vai para o afiliado (o resto fica com o master)
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
               </div>
 
