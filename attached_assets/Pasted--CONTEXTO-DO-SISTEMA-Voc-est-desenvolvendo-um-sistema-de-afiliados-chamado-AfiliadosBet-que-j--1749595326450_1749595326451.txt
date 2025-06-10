@@ -1,0 +1,144 @@
+🧾 CONTEXTO DO SISTEMA
+Você está desenvolvendo um sistema de afiliados chamado AfiliadosBet, que já possui:
+
+Backend com banco de dados estruturado em PostgreSQL.
+
+Tabela de betting_houses onde é possível configurar cada casa de apostas, incluindo:
+
+Tipo de comissão: revshare ou cpa
+
+Percentual total da comissão enviado pela casa (revshare_value ou cpa_value)
+
+Percentual que será repassado ao afiliado (revshare_affiliate_percent ou cpa_affiliate_percent)
+
+Recebimento de dados via postback das casas, já com os valores brutos calculados (ex: R$350 enviados = 35% da receita de R$1000).
+
+Registro das conversões em conversions, onde ficam amount, commission, conversion_data, etc.
+
+Você é o afiliado master (admin), e deseja repassar parte da comissão para seus afiliados.
+
+🎯 OBJETIVO
+Implementar no backend e refletir no painel administrativo a lógica correta de cálculo e divisão de comissões entre:
+
+O afiliado final (usuário que gerou o lead/conversão)
+
+O afiliado master (você), que recebe a comissão total da casa e repassa parte
+
+A lógica deve funcionar para os dois tipos de comissão:
+
+🔹 RevShare
+Valor recebido no postback = percentual da receita enviado pela casa (ex: 35% da receita).
+
+O afiliado ganha uma fração desse valor, proporcional ao percentual repassado.
+
+O restante fica com o master.
+
+🔹 CPA
+Valor fixo enviado no postback (ex: R$500).
+
+O afiliado ganha uma porcentagem desse valor (ex: 70%), e o restante fica com o master.
+
+🔣 LÓGICA DE CÁLCULO
+✅ Fórmulas Universais:
+
+plaintext
+Copiar
+Editar
+# Para ambos os tipos:
+comissao_do_afiliado = valor_postback × (percentual_repassado / percentual_total)
+comissao_do_master   = valor_postback × ((percentual_total - percentual_repassado) / percentual_total)
+🧮 EXEMPLOS PRÁTICOS
+Exemplo 1 — RevShare
+Casa: Bet365
+
+Receita: R$1000
+
+Percentual total enviado pela casa: 35%
+
+Valor recebido no postback: R$350
+
+Percentual repassado ao afiliado: 20%
+
+ini
+Copiar
+Editar
+comissao_afiliado = 350 × (20 / 35) = R$200
+comissao_master = 350 - 200 = R$150
+Exemplo 2 — CPA
+Casa: Blaze
+
+Valor CPA por jogador: R$500
+
+Valor recebido no postback: R$500
+
+Percentual repassado ao afiliado: 70%
+
+ini
+Copiar
+Editar
+comissao_afiliado = 500 × (70 / 100) = R$350
+comissao_master = 500 - 350 = R$150
+🗄️ INTEGRAÇÃO NO BACKEND
+Quando um postback for recebido:
+
+Registrar o valor_postback como amount na tabela conversions.
+
+Obter da tabela betting_houses:
+
+commission_type
+
+revshare_value ou cpa_value
+
+revshare_affiliate_percent ou cpa_affiliate_percent
+
+Aplicar a fórmula correta com base no tipo de comissão.
+
+Armazenar:
+
+Em commission: apenas o valor destinado ao afiliado.
+
+Em conversion_data: JSON com detalhes como:
+
+json
+Copiar
+Editar
+{
+  "tipo_comissao": "revshare",
+  "valor_total_postback": 350,
+  "percentual_total": 35,
+  "percentual_repassado": 20,
+  "valor_afiliado": 200,
+  "valor_master": 150
+}
+Não sobrescrever valores retroativos ao atualizar percentuais. Os cálculos devem ser feitos com base nos percentuais em vigor no momento do evento.
+
+💻 INTERFACE DO PAINEL ADMINISTRATIVO
+A tela de criação/edição de casas de apostas deve permitir configurar:
+
+Campo	Tipo	Descrição
+Tipo de comissão	Select	revshare ou cpa
+Percentual total (revshare)	Input %	Percentual da receita pago pela casa (ex: 35%)
+Percentual repassado ao afiliado (revshare)	Input %	Quanto do total será repassado ao afiliado (ex: 20%)
+Valor fixo CPA	Input R$	Valor total enviado no postback (ex: R$500)
+Percentual CPA para afiliado	Input %	Quanto do valor CPA vai para o afiliado (ex: 70%)
+
+Esses valores devem ser salvos nos campos correspondentes da tabela betting_houses.
+
+🔐 SEGURANÇA E ESCALABILIDADE
+Os valores devem ser validados no backend, inclusive para evitar divisões por zero.
+
+O painel deve permitir alterar os percentuais sem afetar comissões já registradas.
+
+O sistema precisa ser preparado para lidar com múltiplas casas com regras diferentes.
+
+A lógica de cálculo deve ser centralizada para facilitar manutenção e testes.
+
+📌 RECOMENDAÇÕES FINAIS
+Armazene os cálculos detalhados no conversion_data para rastreabilidade.
+
+Use o user_id e house_id para garantir que cada comissão seja corretamente associada.
+
+Mantenha logs de postbacks recebidos na tabela postback_logs para auditoria.
+
+Permita a visualização do valor total recebido e a divisão no painel do afiliado e do admin.
+

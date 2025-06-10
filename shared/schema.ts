@@ -48,6 +48,10 @@ export const bettingHouses = pgTable("betting_houses", {
   commissionValue: text("commission_value"), // Valor principal
   cpaValue: text("cpa_value"), // Valor específico para CPA em modelo Hybrid
   revshareValue: text("revshare_value"), // Valor específico para RevShare em modelo Hybrid
+  
+  // Percentuais para cálculo de comissões de afiliados
+  revshareAffiliatePercent: decimal("revshare_affiliate_percent", { precision: 5, scale: 2 }), // % repassado ao afiliado em RevShare
+  cpaAffiliatePercent: decimal("cpa_affiliate_percent", { precision: 5, scale: 2 }), // % repassado ao afiliado em CPA
   minDeposit: text("min_deposit"),
   paymentMethods: text("payment_methods"),
   isActive: boolean("is_active").default(true),
@@ -111,10 +115,11 @@ export const conversions = pgTable("conversions", {
   houseId: integer("house_id").notNull().references(() => bettingHouses.id),
   affiliateLinkId: integer("affiliate_link_id").references(() => affiliateLinks.id),
   type: text("type").notNull(), // 'click', 'registration', 'first_deposit', 'deposit', 'profit'
-  amount: decimal("amount", { precision: 10, scale: 2 }).default("0"),
-  commission: decimal("commission", { precision: 10, scale: 2 }).default("0"),
+  amount: decimal("amount", { precision: 10, scale: 2 }).default("0"), // Valor total recebido no postback
+  commission: decimal("commission", { precision: 10, scale: 2 }).default("0"), // Comissão destinada ao afiliado
+  masterCommission: decimal("master_commission", { precision: 10, scale: 2 }).default("0"), // Comissão do master
   customerId: text("customer_id"), // ID do cliente na casa de apostas
-  conversionData: jsonb("conversion_data"), // Additional data from postback
+  conversionData: jsonb("conversion_data"), // Dados detalhados do cálculo de comissão
   convertedAt: timestamp("converted_at").defaultNow(),
 }, (table) => [
   // Índice composto para evitar duplicações por customer_id + house_id + type
