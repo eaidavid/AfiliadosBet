@@ -196,8 +196,8 @@ async function runDemo() {
 }
 
 // Executar demo se chamado diretamente
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   runDemo().catch(console.error);
 }
 
-module.exports = { runDemo };
+export { runDemo };
