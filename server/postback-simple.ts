@@ -19,13 +19,13 @@ export async function handlePostback(req: Request, res: Response) {
 
     // Registrar log inicial
     const logEntry = await db.insert(schema.postbackLogs).values({
-      status: 'PROCESSING',
-      casa: casa,
-      evento: evento,
+      eventType: evento,
+      urlDisparada: rawUrl,
+      statusCode: 200,
       subid: subid as string || '',
       valor: parseFloat(amount as string) || 0,
-      ip: ip,
-      raw: rawUrl
+      parametrosUtilizados: JSON.stringify(req.query),
+      isTest: false
     }).returning({ id: schema.postbackLogs.id });
 
     console.log(`✅ Log criado com ID: ${logEntry[0].id}`);
@@ -41,7 +41,10 @@ export async function handlePostback(req: Request, res: Response) {
 
     if (houses.length === 0) {
       await db.update(schema.postbackLogs)
-        .set({ status: 'ERROR_HOUSE_NOT_FOUND' })
+        .set({ 
+          statusCode: 404,
+          resposta: `Casa '${casa}' não encontrada`
+        })
         .where(eq(schema.postbackLogs.id, logEntry[0].id));
       
       return res.status(404).json({
@@ -75,7 +78,7 @@ export async function handlePostback(req: Request, res: Response) {
         
         console.log(`💰 RevShare calculado: Afiliado R$ ${affiliateCommission.toFixed(2)}, Master R$ ${masterCommission.toFixed(2)}`);
       } catch (error) {
-        console.error(`❌ Erro no cálculo RevShare: ${error.message}`);
+        console.error(`❌ Erro no cálculo RevShare: ${(error as Error).message}`);
         // Fallback para lógica anterior se configuração estiver incompleta
         const percentage = parseFloat(house.commissionValue || '30');
         affiliateCommission = (eventAmount * percentage) / 100;
@@ -91,7 +94,7 @@ export async function handlePostback(req: Request, res: Response) {
         
         console.log(`💰 CPA calculado: Afiliado R$ ${affiliateCommission.toFixed(2)}, Master R$ ${masterCommission.toFixed(2)}`);
       } catch (error) {
-        console.error(`❌ Erro no cálculo CPA: ${error.message}`);
+        console.error(`❌ Erro no cálculo CPA: ${(error as Error).message}`);
         // Fallback para lógica anterior se configuração estiver incompleta
         affiliateCommission = parseFloat(house.commissionValue || '0');
         masterCommission = 0;
@@ -122,7 +125,11 @@ export async function handlePostback(req: Request, res: Response) {
 
     // Atualizar status do log
     await db.update(schema.postbackLogs)
-      .set({ status: 'SUCCESS_CONVERSION_REGISTERED' })
+      .set({ 
+        statusCode: 200,
+        resposta: 'Conversão registrada com sucesso',
+        tipoComissao: house.commissionType
+      })
       .where(eq(schema.postbackLogs.id, logEntry[0].id));
 
     console.log(`✅ Conversão registrada com sucesso para ${house.name} - evento: ${evento}`);
@@ -131,7 +138,8 @@ export async function handlePostback(req: Request, res: Response) {
       status: 'success',
       message: `Postback processado com sucesso - ${house.name}`,
       event: evento,
-      commission: commissionAmount,
+      commission: affiliateCommission,
+      masterCommission: masterCommission,
       house: house.name,
       logId: logEntry[0].id
     });

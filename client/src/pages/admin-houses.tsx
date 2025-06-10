@@ -439,6 +439,19 @@ export default function AdminHouses() {
       logoUrl: house.logoUrl || "",
       isActive: house.isActive,
       parameterMapping: house.parameterMapping || "",
+      
+      // API Integration fields
+      integrationType: (house as any).integrationType || "postback",
+      apiBaseUrl: (house as any).apiBaseUrl || "",
+      apiKey: (house as any).apiKey || "",
+      apiSecret: (house as any).apiSecret || "",
+      apiVersion: (house as any).apiVersion || "v1",
+      authType: (house as any).authType || "bearer",
+      syncInterval: (house as any).syncInterval || 30,
+      
+      // Commission percentage fields
+      revshareAffiliatePercent: (house as any).revshareAffiliatePercent || 0,
+      cpaAffiliatePercent: (house as any).cpaAffiliatePercent || 0,
     });
     setIsDialogOpen(true);
   };
