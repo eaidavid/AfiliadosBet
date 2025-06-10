@@ -16,6 +16,10 @@ interface BettingHouse {
   primaryParam: string;
   commissionType: string;
   commissionValue: string;
+  revshareValue?: string;
+  cpaValue?: string;
+  revshareAffiliatePercent?: number;
+  cpaAffiliatePercent?: number;
   minDeposit: string;
   paymentMethods: string;
   isActive: boolean;
@@ -37,12 +41,12 @@ export default function BettingHousesSecure() {
   const [loadingAffiliation, setLoadingAffiliation] = useState<number | null>(null);
 
   // Buscar todas as casas ativas
-  const { data: houses = [], isLoading: housesLoading } = useQuery({
+  const { data: houses = [], isLoading: housesLoading } = useQuery<BettingHouse[]>({
     queryKey: ["/api/betting-houses"],
   });
 
   // Buscar links de afiliação do usuário
-  const { data: userLinks = [], isLoading: linksLoading } = useQuery({
+  const { data: userLinks = [], isLoading: linksLoading } = useQuery<AffiliateLink[]>({
     queryKey: ["/api/my-links"],
   });
 
@@ -119,6 +123,62 @@ export default function BettingHousesSecure() {
     });
   };
 
+  // Calculate the actual commission amount that the affiliate will receive
+  const calculateAffiliateCommission = (house: BettingHouse) => {
+    const commissionType = house.commissionType?.toLowerCase();
+    
+    if (commissionType === 'revshare') {
+      const grossRevShare = parseFloat(house.revshareValue || house.commissionValue || '0');
+      const affiliatePercent = house.revshareAffiliatePercent || 0;
+      
+      if (affiliatePercent > 0) {
+        // Calculate net RevShare: gross_value * (affiliate_percent / 100)
+        const netRevShare = grossRevShare * (affiliatePercent / 100);
+        return {
+          value: `${netRevShare.toFixed(1)}%`,
+          description: `Você receberá ${netRevShare.toFixed(1)}% sobre a receita dos jogadores indicados.`,
+          type: 'RevShare'
+        };
+      }
+      
+      // Fallback to gross value if no affiliate percentage configured
+      return {
+        value: `${grossRevShare}%`,
+        description: `RevShare de ${grossRevShare}% sobre a receita dos jogadores.`,
+        type: 'RevShare'
+      };
+    }
+    
+    if (commissionType === 'cpa') {
+      const grossCPA = parseFloat(house.cpaValue || house.commissionValue || '0');
+      const affiliatePercent = house.cpaAffiliatePercent || 0;
+      
+      if (affiliatePercent > 0) {
+        // Calculate net CPA: gross_value * (affiliate_percent / 100)
+        const netCPA = grossCPA * (affiliatePercent / 100);
+        return {
+          value: `R$ ${netCPA.toFixed(0)}`,
+          description: `Você receberá R$ ${netCPA.toFixed(0)} por jogador qualificado.`,
+          type: 'CPA'
+        };
+      }
+      
+      // Fallback to gross value if no affiliate percentage configured
+      return {
+        value: `R$ ${grossCPA.toFixed(0)}`,
+        description: `CPA de R$ ${grossCPA.toFixed(0)} por jogador qualificado.`,
+        type: 'CPA'
+      };
+    }
+    
+    // Fallback for other commission types
+    return {
+      value: house.commissionValue || '0',
+      description: 'Comissão disponível para afiliados.',
+      type: house.commissionType || 'Padrão'
+    };
+  };
+
   if (housesLoading || linksLoading) {
     return (
       <div className="space-y-6">
@@ -155,6 +215,7 @@ export default function BettingHousesSecure() {
         const affiliated = isAffiliated(house.id);
         const affiliateLink = getAffiliateLink(house.id);
         const isLoading = loadingAffiliation === house.id;
+        const commissionData = calculateAffiliateCommission(house);
 
         return (
           <Card key={house.id} className="bg-slate-800 border-slate-700">

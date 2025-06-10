@@ -1,0 +1,103 @@
+🎯 CONTEXTO DO SISTEMA
+O sistema de afiliados possui uma arquitetura master → subafiliados.
+Cada casa de aposta possui uma comissão original (RevShare ou CPA), configurada no backend, que representa o valor bruto pago pela casa ao master.
+
+Contudo, o master pode definir um percentual de repasse para seus afiliados, e o sistema já calcula esse valor no backend.
+
+Atualmente, na listagem de casas disponíveis para afiliação (painel do afiliado), o sistema ainda exibe os valores brutos da casa, o que gera falsa expectativa de ganhos.
+
+🧩 O QUE DEVE SER REVISTO E AJUSTADO
+1. TELA OU COMPONENTE ENVOLVIDO
+
+Painel do afiliado → “Casas disponíveis para se afiliar”
+
+Cada card, bloco ou linha de casa exibe hoje:
+
+RevShare: 35% (errado: valor da casa)
+
+CPA: R$500 (errado: valor bruto)
+
+2. LÓGICA DE EXIBIÇÃO CORRETA
+Para cada casa listada ao afiliado:
+
+Se a comissão for RevShare:
+
+Mostrar: RevShare: XX% (XX = valor configurado de repasse ao afiliado)
+
+Exemplo: se a casa paga 35%, mas o master repassa 20%, mostrar: RevShare: 20%
+
+Se a comissão for CPA:
+
+Mostrar: CPA: R$YYY (YYY = valor configurado de repasse ao afiliado)
+
+Exemplo: se a casa paga R$500, mas o master repassa 60%, mostrar: CPA: R$300
+
+Nunca mostrar o valor bruto da casa para o afiliado, apenas o valor repassado.
+
+📌 CAMPOS USADOS PARA O CÁLCULO
+As informações usadas estão divididas entre duas fontes:
+
+TABELA betting_houses:
+
+commission_type (revshare ou cpa)
+
+revshare_value → valor bruto da casa (ex: 35)
+
+cpa_value → valor bruto da casa (ex: 500)
+
+(NOVO) Ponto de personalização de repasse:
+
+Deve haver uma estrutura (fixa ou dinâmica) que indique:
+
+% de repasse do RevShare para o afiliado
+
+% de repasse do CPA para o afiliado
+
+Esse valor pode estar em uma tabela de relação entre user_id e house_id, ou em affiliate_links, conversions ou estrutura auxiliar (como uma tabela commission_rules).
+
+⚠️ IMPORTANTE — AÇÃO ESPERADA PELA IA
+Identificar se há repasse configurado para cada afiliado por casa.
+
+Calcular corretamente o valor a ser mostrado, aplicando:
+
+revshare_repassado = revshare_value * percentual_repassado / 100
+
+cpa_repassado = cpa_value * percentual_repassado / 100
+
+Mostrar apenas esse valor final no frontend.
+
+Nunca mostrar os valores brutos da casa para o afiliado comum.
+
+(Opcional, mas recomendável): incluir uma descrição adicional como:
+
+"Comissão líquida repassada a você"
+
+"Você receberá até 20% sobre a receita do jogador"
+
+✅ EXEMPLO CORRETO DE EXIBIÇÃO (APÓS A APLICAÇÃO)
+Supondo:
+A casa "Bet365" tem RevShare de 35%
+
+O master configurou que os afiliados recebem 20%
+
+Painel do afiliado deverá mostrar:
+
+plaintext
+Copiar
+Editar
+🏠 Bet365
+🔁 RevShare: 20%
+ℹ️ Você receberá 20% sobre a receita dos jogadores indicados.
+Supondo:
+A casa "Blaze" tem CPA de R$500
+
+O master repassa 60%
+
+Painel do afiliado deverá mostrar:
+
+plaintext
+Copiar
+Editar
+🏠 Blaze
+💰 CPA: R$300,00
+ℹ️ Você receberá R$300 por jogador qualificado.
