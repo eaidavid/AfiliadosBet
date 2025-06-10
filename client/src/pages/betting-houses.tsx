@@ -57,6 +57,8 @@ interface BettingHouse {
   commissionValue: string | null;
   cpaValue: string | null;
   revshareValue: string | null;
+  revshareAffiliatePercent?: number;
+  cpaAffiliatePercent?: number;
   minDeposit: string | null;
   paymentMethods: any;
   isActive: boolean;
@@ -93,41 +95,80 @@ export default function BettingHouses() {
   const [selectedStatsHouse, setSelectedStatsHouse] = useState<BettingHouse | null>(null);
 
   const getCommissionDisplay = (house: BettingHouse) => {
-    switch (house.commissionType) {
-      case 'CPA':
+    const commissionType = house.commissionType?.toLowerCase();
+    
+    if (commissionType === 'cpa') {
+      const grossCPA = parseFloat(house.cpaValue || house.commissionValue || '0');
+      const affiliatePercent = house.cpaAffiliatePercent || 0;
+      
+      if (affiliatePercent > 0) {
+        const netCPA = grossCPA * (affiliatePercent / 100);
         return (
           <div className="text-sm">
             <span className="font-medium text-emerald-400">CPA:</span>
-            <span className="text-slate-300 ml-1">R$ {house.cpaValue || house.commissionValue}</span>
+            <span className="text-slate-300 ml-1">R$ {netCPA.toFixed(0)}</span>
           </div>
         );
-      case 'RevShare':
+      }
+      
+      return (
+        <div className="text-sm">
+          <span className="font-medium text-emerald-400">CPA:</span>
+          <span className="text-slate-300 ml-1">R$ {grossCPA.toFixed(0)}</span>
+        </div>
+      );
+    }
+    
+    if (commissionType === 'revshare') {
+      const grossRevShare = parseFloat(house.revshareValue || house.commissionValue || '0');
+      const affiliatePercent = house.revshareAffiliatePercent || 0;
+      
+      if (affiliatePercent > 0) {
+        const netRevShare = grossRevShare * (affiliatePercent / 100);
         return (
           <div className="text-sm">
             <span className="font-medium text-blue-400">RevShare:</span>
-            <span className="text-slate-300 ml-1">{house.revshareValue || house.commissionValue}</span>
+            <span className="text-slate-300 ml-1">{netRevShare.toFixed(1)}%</span>
           </div>
         );
-      case 'Hybrid':
-        return (
-          <div className="text-sm space-y-1">
-            <div>
-              <span className="font-medium text-emerald-400">CPA:</span>
-              <span className="text-slate-300 ml-1">R$ {house.cpaValue}</span>
-            </div>
-            <div>
-              <span className="font-medium text-blue-400">RevShare:</span>
-              <span className="text-slate-300 ml-1">{house.revshareValue}</span>
-            </div>
-          </div>
-        );
-      default:
-        return (
-          <div className="text-sm text-slate-400">
-            {house.commissionValue || 'Não especificado'}
-          </div>
-        );
+      }
+      
+      return (
+        <div className="text-sm">
+          <span className="font-medium text-blue-400">RevShare:</span>
+          <span className="text-slate-300 ml-1">{grossRevShare}%</span>
+        </div>
+      );
     }
+    
+    if (commissionType === 'hybrid') {
+      const grossCPA = parseFloat(house.cpaValue || '0');
+      const grossRevShare = parseFloat(house.revshareValue || '0');
+      const cpaAffiliatePercent = house.cpaAffiliatePercent || 0;
+      const revshareAffiliatePercent = house.revshareAffiliatePercent || 0;
+      
+      const netCPA = cpaAffiliatePercent > 0 ? grossCPA * (cpaAffiliatePercent / 100) : grossCPA;
+      const netRevShare = revshareAffiliatePercent > 0 ? grossRevShare * (revshareAffiliatePercent / 100) : grossRevShare;
+      
+      return (
+        <div className="text-sm space-y-1">
+          <div>
+            <span className="font-medium text-emerald-400">CPA:</span>
+            <span className="text-slate-300 ml-1">R$ {netCPA.toFixed(0)}</span>
+          </div>
+          <div>
+            <span className="font-medium text-blue-400">RevShare:</span>
+            <span className="text-slate-300 ml-1">{netRevShare.toFixed(1)}%</span>
+          </div>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="text-sm text-slate-400">
+        {house.commissionValue || 'Não especificado'}
+      </div>
+    );
   };
 
   const getCommissionBadge = (house: BettingHouse) => {
