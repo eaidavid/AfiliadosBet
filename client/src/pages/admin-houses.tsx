@@ -100,6 +100,8 @@ interface BettingHouse {
   commissionType?: string;
   cpaValue?: number;
   revshareValue?: number;
+  revshareAffiliatePercent?: number;
+  cpaAffiliatePercent?: number;
   minDeposit?: number;
   paymentMethods?: string;
   securityToken?: string;
@@ -750,7 +752,7 @@ export default function AdminHouses() {
                                   <>
                                     <div className="text-xs text-slate-500">Afiliado:</div>
                                     <div className="text-sm text-emerald-400 font-medium">
-                                      {((parseFloat(house.revshareValue) * house.revshareAffiliatePercent) / 100).toFixed(1)}%
+                                      {Number(house.revshareAffiliatePercent).toFixed(1)}%
                                     </div>
                                   </>
                                 )}
@@ -765,7 +767,7 @@ export default function AdminHouses() {
                                   <>
                                     <div className="text-xs text-slate-500">Afiliado:</div>
                                     <div className="text-sm text-emerald-400 font-medium">
-                                      {formatCurrency((parseFloat(house.cpaValue) * house.cpaAffiliatePercent) / 100)}
+                                      {Number(house.cpaAffiliatePercent).toFixed(1)}%
                                     </div>
                                   </>
                                 )}
@@ -779,7 +781,7 @@ export default function AdminHouses() {
                                     <div className="text-xs text-emerald-400">CPA Total: {formatCurrency(house.cpaValue)}</div>
                                     {house.cpaAffiliatePercent && (
                                       <div className="text-xs text-emerald-300">
-                                        Afiliado: {formatCurrency((parseFloat(house.cpaValue) * house.cpaAffiliatePercent) / 100)}
+                                        Afiliado: {Number(house.cpaAffiliatePercent).toFixed(1)}%
                                       </div>
                                     )}
                                   </div>
@@ -789,7 +791,7 @@ export default function AdminHouses() {
                                     <div className="text-xs text-blue-400">Rev Total: {formatPercentage(house.revshareValue)}</div>
                                     {house.revshareAffiliatePercent && (
                                       <div className="text-xs text-blue-300">
-                                        Afiliado: {((parseFloat(house.revshareValue) * house.revshareAffiliatePercent) / 100).toFixed(1)}%
+                                        Afiliado: {Number(house.revshareAffiliatePercent).toFixed(1)}%
                                       </div>
                                     )}
                                   </div>

@@ -209,19 +209,18 @@ export default function AffiliateHome() {
     const commissionType = house.commissionType?.toLowerCase();
     
     if (commissionType === 'cpa') {
-      const grossCPA = parseFloat(house.cpaValue || house.commissionValue || '0');
       const affiliatePercent = house.cpaAffiliatePercent || 0;
       
       if (affiliatePercent > 0) {
-        const netCPA = grossCPA * (affiliatePercent / 100);
         return (
           <div className="text-sm">
             <span className="font-medium text-emerald-400">CPA:</span>
-            <span className="text-slate-300 ml-1">R$ {netCPA.toFixed(0)}</span>
+            <span className="text-slate-300 ml-1">{affiliatePercent.toFixed(1)}%</span>
           </div>
         );
       }
       
+      const grossCPA = parseFloat(house.cpaValue || house.commissionValue || '0');
       return (
         <div className="text-sm">
           <span className="font-medium text-emerald-400">CPA:</span>
@@ -231,19 +230,18 @@ export default function AffiliateHome() {
     }
     
     if (commissionType === 'revshare') {
-      const grossRevShare = parseFloat(house.revshareValue || house.commissionValue || '0');
       const affiliatePercent = house.revshareAffiliatePercent || 0;
       
       if (affiliatePercent > 0) {
-        const netRevShare = grossRevShare * (affiliatePercent / 100);
         return (
           <div className="text-sm">
             <span className="font-medium text-blue-400">Rev:</span>
-            <span className="text-slate-300 ml-1">{netRevShare.toFixed(1)}%</span>
+            <span className="text-slate-300 ml-1">{affiliatePercent.toFixed(1)}%</span>
           </div>
         );
       }
       
+      const grossRevShare = parseFloat(house.revshareValue || house.commissionValue || '0');
       return (
         <div className="text-sm">
           <span className="font-medium text-blue-400">Rev:</span>
@@ -253,24 +251,23 @@ export default function AffiliateHome() {
     }
     
     if (commissionType === 'hybrid') {
-      const grossCPA = parseFloat(house.cpaValue || '0');
-      const grossRevShare = parseFloat(house.revshareValue || '0');
       const cpaAffiliatePercent = house.cpaAffiliatePercent || 0;
       const revshareAffiliatePercent = house.revshareAffiliatePercent || 0;
       
-      const netCPA = cpaAffiliatePercent > 0 ? grossCPA * (cpaAffiliatePercent / 100) : grossCPA;
-      const netRevShare = revshareAffiliatePercent > 0 ? grossRevShare * (revshareAffiliatePercent / 100) : grossRevShare;
-      
       return (
         <div className="text-xs space-y-1">
-          <div>
-            <span className="font-medium text-emerald-400">CPA:</span>
-            <span className="text-slate-300 ml-1">R$ {netCPA.toFixed(0)}</span>
-          </div>
-          <div>
-            <span className="font-medium text-blue-400">Rev:</span>
-            <span className="text-slate-300 ml-1">{netRevShare.toFixed(1)}%</span>
-          </div>
+          {cpaAffiliatePercent > 0 && (
+            <div>
+              <span className="font-medium text-emerald-400">CPA:</span>
+              <span className="text-slate-300 ml-1">{cpaAffiliatePercent.toFixed(1)}%</span>
+            </div>
+          )}
+          {revshareAffiliatePercent > 0 && (
+            <div>
+              <span className="font-medium text-blue-400">Rev:</span>
+              <span className="text-slate-300 ml-1">{revshareAffiliatePercent.toFixed(1)}%</span>
+            </div>
+          )}
         </div>
       );
     }
