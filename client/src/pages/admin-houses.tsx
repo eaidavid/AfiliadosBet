@@ -737,15 +737,64 @@ export default function AdminHouses() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="space-y-1">
+                          <div className="space-y-2">
                             <Badge variant="outline" className="text-blue-400 border-blue-400">
                               {house.commissionType || "N/A"}
                             </Badge>
-                            {house.cpaValue && (
-                              <div className="text-sm text-slate-400">{formatCurrency(house.cpaValue)}</div>
+                            
+                            {house.commissionType === 'RevShare' && house.revshareValue && (
+                              <div className="space-y-1">
+                                <div className="text-xs text-slate-500">Total:</div>
+                                <div className="text-sm text-white font-medium">{formatPercentage(house.revshareValue)}</div>
+                                {house.revshareAffiliatePercent && (
+                                  <>
+                                    <div className="text-xs text-slate-500">Afiliado:</div>
+                                    <div className="text-sm text-emerald-400 font-medium">
+                                      {((parseFloat(house.revshareValue) * house.revshareAffiliatePercent) / 100).toFixed(1)}%
+                                    </div>
+                                  </>
+                                )}
+                              </div>
                             )}
-                            {house.revshareValue && (
-                              <div className="text-sm text-slate-400">{formatPercentage(house.revshareValue)}</div>
+                            
+                            {house.commissionType === 'CPA' && house.cpaValue && (
+                              <div className="space-y-1">
+                                <div className="text-xs text-slate-500">Total:</div>
+                                <div className="text-sm text-white font-medium">{formatCurrency(house.cpaValue)}</div>
+                                {house.cpaAffiliatePercent && (
+                                  <>
+                                    <div className="text-xs text-slate-500">Afiliado:</div>
+                                    <div className="text-sm text-emerald-400 font-medium">
+                                      {formatCurrency((parseFloat(house.cpaValue) * house.cpaAffiliatePercent) / 100)}
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            )}
+                            
+                            {house.commissionType === 'Hybrid' && (
+                              <div className="space-y-2">
+                                {house.cpaValue && (
+                                  <div className="space-y-1">
+                                    <div className="text-xs text-emerald-400">CPA Total: {formatCurrency(house.cpaValue)}</div>
+                                    {house.cpaAffiliatePercent && (
+                                      <div className="text-xs text-emerald-300">
+                                        Afiliado: {formatCurrency((parseFloat(house.cpaValue) * house.cpaAffiliatePercent) / 100)}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                                {house.revshareValue && (
+                                  <div className="space-y-1">
+                                    <div className="text-xs text-blue-400">Rev Total: {formatPercentage(house.revshareValue)}</div>
+                                    {house.revshareAffiliatePercent && (
+                                      <div className="text-xs text-blue-300">
+                                        Afiliado: {((parseFloat(house.revshareValue) * house.revshareAffiliatePercent) / 100).toFixed(1)}%
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
                             )}
                           </div>
                         </TableCell>
