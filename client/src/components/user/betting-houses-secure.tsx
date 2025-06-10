@@ -69,16 +69,10 @@ export default function BettingHousesSecure() {
   const affiliateMutation = useMutation({
     mutationFn: async (houseId: number) => {
       console.log("🔗 Iniciando afiliação para casa:", houseId);
-      const response = await apiRequest("POST", "/api/affiliate", { houseId });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Erro ao se afiliar");
-      }
-      
-      return response.json();
+      const data = await apiRequest(`/api/affiliate/${houseId}`, { method: "POST" });
+      return data;
     },
-    onSuccess: (data, houseId) => {
+    onSuccess: (data) => {
       console.log("✅ Afiliação realizada com sucesso:", data);
       toast({
         title: "Sucesso!",
@@ -90,7 +84,7 @@ export default function BettingHousesSecure() {
       queryClient.invalidateQueries({ queryKey: ["/api/betting-houses"] });
       setLoadingAffiliation(null);
     },
-    onError: (error: any, houseId) => {
+    onError: (error: any) => {
       console.error("❌ Erro na afiliação:", error);
       toast({
         title: "Erro na afiliação",
@@ -193,7 +187,7 @@ export default function BettingHousesSecure() {
     );
   }
 
-  const activeHouses = (houses || []).filter((house: BettingHouse) => house.isActive);
+  const activeHouses = houses.filter((house: BettingHouse) => house.isActive);
 
   if (activeHouses.length === 0) {
     return (
@@ -258,11 +252,11 @@ export default function BettingHousesSecure() {
                 <div className="bg-slate-700/50 rounded-xl p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-slate-400 text-sm mb-1">Comissão</div>
-                      <div className="text-2xl font-bold text-emerald-500">{house.commissionValue}</div>
+                      <div className="text-slate-400 text-sm mb-1">Comissão Líquida</div>
+                      <div className="text-2xl font-bold text-emerald-500">{commissionData.value}</div>
                     </div>
                     <div className="text-xs bg-slate-600 text-slate-300 px-2 py-1 rounded">
-                      {house.commissionType === "revshare" ? "RS" : "CPA"}
+                      {commissionData.type}
                     </div>
                   </div>
                 </div>
@@ -291,6 +285,18 @@ export default function BettingHousesSecure() {
                       <div className="text-slate-400 text-sm mb-1">Status</div>
                       <Badge className="bg-emerald-500/20 text-emerald-400">Ativa</Badge>
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                <div className="flex items-start space-x-3">
+                  <div className="bg-blue-500/20 rounded-lg p-2">
+                    <TrendingUp className="h-4 w-4 text-blue-400" />
+                  </div>
+                  <div>
+                    <h4 className="text-blue-400 font-semibold text-sm mb-1">Comissão Repassada a Você</h4>
+                    <p className="text-slate-300 text-sm">{commissionData.description}</p>
                   </div>
                 </div>
               </div>
