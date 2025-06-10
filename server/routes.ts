@@ -7,6 +7,7 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import testApiRouter from './test-api';
 import { webhookRouter } from './webhook-endpoints';
+import { handlePostback } from './postback-simple';
 
 // Authentication configuration
 passport.use(new LocalStrategy(
@@ -2053,6 +2054,9 @@ export async function registerRoutes(app: express.Application) {
       });
     }
   });
+
+  // Postback endpoint for commission calculation
+  app.get('/postback/:casa/:evento', handlePostback);
 
   console.log("✅ Rotas registradas com sucesso");
 }
