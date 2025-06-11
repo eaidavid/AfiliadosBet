@@ -2058,5 +2058,289 @@ export async function registerRoutes(app: express.Application) {
   // Postback endpoint for commission calculation
   app.get('/postback/:casa/:evento', handlePostback);
 
+  // === PAYMENT MANAGEMENT ROUTES ===
+  
+  // Get payment statistics for admin dashboard
+  app.get("/api/admin/payments/stats", requireAdmin, async (req, res) => {
+    try {
+      const stats = await db
+        .select({
+          status: schema.payments.status,
+          totalAmount: sql<string>`COALESCE(SUM(${schema.payments.amount}), 0)`,
+          count: sql<number>`COUNT(*)`
+        })
+        .from(schema.payments)
+        .groupBy(schema.payments.status);
+
+      // Get monthly volume (current month)
+      const currentMonth = new Date();
+      currentMonth.setDate(1);
+      currentMonth.setHours(0, 0, 0, 0);
+      
+      const monthlyVolume = await db
+        .select({
+          totalAmount: sql<string>`COALESCE(SUM(${schema.payments.amount}), 0)`
+        })
+        .from(schema.payments)
+        .where(gte(schema.payments.createdAt, currentMonth));
+
+      const result = {
+        totalPendingAmount: stats.find(s => s.status === 'pending')?.totalAmount || '0',
+        totalCompletedAmount: stats.find(s => s.status === 'completed')?.totalAmount || '0',
+        totalFailedAmount: stats.find(s => s.status === 'failed')?.totalAmount || '0',
+        pendingCount: stats.find(s => s.status === 'pending')?.count || 0,
+        completedCount: stats.find(s => s.status === 'completed')?.count || 0,
+        failedCount: stats.find(s => s.status === 'failed')?.count || 0,
+        monthlyVolume: monthlyVolume[0]?.totalAmount || '0',
+        averagePayment: stats.length > 0 
+          ? ((parseFloat(stats.find(s => s.status === 'completed')?.totalAmount || '0') / 
+              (stats.find(s => s.status === 'completed')?.count || 1))).toFixed(2)
+          : '0'
+      };
+
+      res.json(result);
+    } catch (error) {
+      console.error("Erro ao buscar estatísticas de pagamentos:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Get paginated payments with filters
+  app.get("/api/admin/payments", requireAdmin, async (req, res) => {
+    try {
+      const {
+        page = 1,
+        limit = 25,
+        status,
+        method,
+        dateFrom,
+        dateTo,
+        search,
+        minAmount,
+        maxAmount
+      } = req.query;
+
+      const offset = (Number(page) - 1) * Number(limit);
+      
+      // Build where conditions
+      const conditions = [];
+      
+      if (status) {
+        conditions.push(eq(schema.payments.status, status as string));
+      }
+      
+      if (method) {
+        conditions.push(eq(schema.payments.method, method as string));
+      }
+      
+      if (dateFrom) {
+        conditions.push(gte(schema.payments.createdAt, new Date(dateFrom as string)));
+      }
+      
+      if (dateTo) {
+        const endDate = new Date(dateTo as string);
+        endDate.setHours(23, 59, 59, 999);
+        conditions.push(lt(schema.payments.createdAt, endDate));
+      }
+      
+      if (minAmount) {
+        conditions.push(gte(schema.payments.amount, minAmount as string));
+      }
+      
+      if (maxAmount) {
+        conditions.push(sql`${schema.payments.amount} <= ${maxAmount}`);
+      }
+
+      // Search in user data
+      if (search) {
+        conditions.push(
+          or(
+            ilike(schema.users.fullName, `%${search}%`),
+            ilike(schema.users.email, `%${search}%`),
+            ilike(schema.users.username, `%${search}%`),
+            sql`CAST(${schema.payments.id} AS TEXT) ILIKE ${`%${search}%`}`
+          )
+        );
+      }
+
+      const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+      // Get payments with user data
+      const payments = await db
+        .select({
+          id: schema.payments.id,
+          amount: schema.payments.amount,
+          method: schema.payments.method,
+          pixKey: schema.payments.pixKey,
+          status: schema.payments.status,
+          transactionId: schema.payments.transactionId,
+          paidAt: schema.payments.paidAt,
+          createdAt: schema.payments.createdAt,
+          userId: schema.payments.userId,
+          userFullName: schema.users.fullName,
+          userEmail: schema.users.email,
+          userUsername: schema.users.username,
+          userPixKeyType: schema.users.pixKeyType,
+          userPixKeyValue: schema.users.pixKeyValue
+        })
+        .from(schema.payments)
+        .innerJoin(schema.users, eq(schema.payments.userId, schema.users.id))
+        .where(whereClause)
+        .orderBy(desc(schema.payments.createdAt))
+        .limit(Number(limit))
+        .offset(offset);
+
+      // Get total count
+      const totalResult = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(schema.payments)
+        .innerJoin(schema.users, eq(schema.payments.userId, schema.users.id))
+        .where(whereClause);
+
+      const total = totalResult[0]?.count || 0;
+
+      res.json({
+        payments,
+        pagination: {
+          page: Number(page),
+          limit: Number(limit),
+          total,
+          totalPages: Math.ceil(total / Number(limit))
+        }
+      });
+    } catch (error) {
+      console.error("Erro ao buscar pagamentos:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Get payment details
+  app.get("/api/admin/payments/:id", requireAdmin, async (req, res) => {
+    try {
+      const paymentId = parseInt(req.params.id);
+      
+      const payment = await db
+        .select({
+          id: schema.payments.id,
+          amount: schema.payments.amount,
+          method: schema.payments.method,
+          pixKey: schema.payments.pixKey,
+          status: schema.payments.status,
+          transactionId: schema.payments.transactionId,
+          paidAt: schema.payments.paidAt,
+          createdAt: schema.payments.createdAt,
+          userId: schema.payments.userId,
+          userFullName: schema.users.fullName,
+          userEmail: schema.users.email,
+          userUsername: schema.users.username,
+          userPixKeyType: schema.users.pixKeyType,
+          userPixKeyValue: schema.users.pixKeyValue,
+          userPhone: schema.users.phone,
+          userCity: schema.users.city,
+          userState: schema.users.state
+        })
+        .from(schema.payments)
+        .innerJoin(schema.users, eq(schema.payments.userId, schema.users.id))
+        .where(eq(schema.payments.id, paymentId))
+        .limit(1);
+
+      if (!payment.length) {
+        return res.status(404).json({ error: "Pagamento não encontrado" });
+      }
+
+      res.json(payment[0]);
+    } catch (error) {
+      console.error("Erro ao buscar detalhes do pagamento:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Update payment
+  app.put("/api/admin/payments/:id", requireAdmin, async (req, res) => {
+    try {
+      const paymentId = parseInt(req.params.id);
+      const { status, transactionId, pixKey, method } = req.body;
+
+      const updateData: any = {};
+      
+      if (status !== undefined) {
+        updateData.status = status;
+        if (status === 'completed') {
+          updateData.paidAt = new Date();
+        }
+      }
+      
+      if (transactionId !== undefined) {
+        updateData.transactionId = transactionId;
+      }
+      
+      if (pixKey !== undefined) {
+        updateData.pixKey = pixKey;
+      }
+      
+      if (method !== undefined) {
+        updateData.method = method;
+      }
+
+      const result = await db
+        .update(schema.payments)
+        .set(updateData)
+        .where(eq(schema.payments.id, paymentId))
+        .returning();
+
+      if (!result.length) {
+        return res.status(404).json({ error: "Pagamento não encontrado" });
+      }
+
+      res.json({ success: true, payment: result[0] });
+    } catch (error) {
+      console.error("Erro ao atualizar pagamento:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Bulk actions for payments
+  app.post("/api/admin/payments/bulk", requireAdmin, async (req, res) => {
+    try {
+      const { action, paymentIds, transactionId } = req.body;
+
+      if (!action || !paymentIds || !Array.isArray(paymentIds)) {
+        return res.status(400).json({ error: "Dados inválidos" });
+      }
+
+      let updateData: any = {};
+      
+      switch (action) {
+        case 'approve':
+          updateData = {
+            status: 'completed',
+            paidAt: new Date(),
+            ...(transactionId && { transactionId })
+          };
+          break;
+        case 'reject':
+          updateData = { status: 'failed' };
+          break;
+        default:
+          return res.status(400).json({ error: "Ação inválida" });
+      }
+
+      const result = await db
+        .update(schema.payments)
+        .set(updateData)
+        .where(inArray(schema.payments.id, paymentIds))
+        .returning({ id: schema.payments.id });
+
+      res.json({ 
+        success: true, 
+        message: `${result.length} pagamentos atualizados`,
+        updatedIds: result.map(r => r.id)
+      });
+    } catch (error) {
+      console.error("Erro na ação em lote:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   console.log("✅ Rotas registradas com sucesso");
 }

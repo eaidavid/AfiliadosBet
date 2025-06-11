@@ -28,6 +28,7 @@ import AdminEditAffiliate from "@/pages/admin-edit-affiliate";
 import PostbackGeneratorProfessional from "@/pages/postback-generator-professional";
 import PostbackLogs from "@/pages/postback-logs";
 import AdminApiManagement from "@/pages/admin-api-management";
+import AdminPayments from "@/pages/admin-payments";
 
 import AdminSettingsEnhanced from "@/pages/admin-settings-enhanced";
 import NotFound from "@/pages/not-found";
@@ -112,6 +113,7 @@ function Router() {
       <Route path="/admin/postback-generator" component={AuthenticatedPostbackGenerator} />
       <Route path="/admin/postback-logs" component={AuthenticatedPostbackLogs} />
       <Route path="/admin/api-management" component={AuthenticatedAdminApiManagement} />
+      <Route path="/admin/payments" component={AuthenticatedAdminPayments} />
 
       <Route path="/admin/settings" component={AuthenticatedAdminSettings} />
       <Route component={NotFound} />
@@ -480,6 +482,36 @@ function AuthenticatedAdminHouses() {
 }
 
 
+
+function AuthenticatedAdminPayments() {
+  const { isAuthenticated, isLoading, isAdmin } = useAuth();
+  const [location, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading && (!isAuthenticated || !isAdmin)) {
+      setLocation("/login");
+    }
+  }, [isAuthenticated, isLoading, isAdmin, setLocation]);
+
+  if (isLoading) {
+    return (
+      <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce">
+        <div className="text-emerald-500 text-xl">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !isAdmin) {
+    return null;
+  }
+
+  return (
+    <div className="mobile-safe no-bounce">
+      <AdminPayments />
+      <AdminPanelToggle />
+    </div>
+  );
+}
 
 function AuthenticatedAdminManage() {
   const { isAuthenticated, isLoading, isAdmin } = useAuth();
