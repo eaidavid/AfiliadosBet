@@ -192,12 +192,12 @@ export default function AdminSettingsEnhanced() {
   };
 
   const getSettingValue = (key: string, defaultValue: string = '') => {
-    return unsavedChanges[key]?.setting_value ?? settings?.[key]?.setting_value ?? defaultValue;
+    return unsavedChanges[key]?.setting_value ?? defaultValue;
   };
 
   const hasUnsavedChanges = Object.keys(unsavedChanges).length > 0;
 
-  if (settingsLoading || statsLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-950 p-6">
         <div className="max-w-7xl mx-auto">
@@ -289,7 +289,7 @@ export default function AdminSettingsEnhanced() {
                 </div>
                 <div>
                   <p className="text-sm text-slate-300">Cliques Hoje</p>
-                  <p className="text-2xl font-bold text-white">{stats?.totalClicks || 0}</p>
+                  <p className="text-2xl font-bold text-white">{isLoading ? "..." : systemStats.totalClicks}</p>
                 </div>
               </div>
             </CardContent>
@@ -303,7 +303,7 @@ export default function AdminSettingsEnhanced() {
                 </div>
                 <div>
                   <p className="text-sm text-slate-300">Conversões</p>
-                  <p className="text-2xl font-bold text-white">{stats?.totalConversions || 0}</p>
+                  <p className="text-2xl font-bold text-white">{isLoading ? "..." : systemStats.totalConversions}</p>
                 </div>
               </div>
             </CardContent>
@@ -422,12 +422,12 @@ export default function AdminSettingsEnhanced() {
 
                   <div className="flex items-center justify-between">
                     <span className="text-slate-300">Uptime</span>
-                    <span className="text-white font-mono">{stats?.systemUptime || '0h 0m'}</span>
+                    <span className="text-white font-mono">{isLoading ? "..." : systemStats.systemUptime}</span>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <span className="text-slate-300">Último Backup</span>
-                    <span className="text-white">{stats?.lastBackup || 'Nunca'}</span>
+                    <span className="text-white">{isLoading ? "..." : systemStats.lastUpdate}</span>
                   </div>
 
                   <Separator className="bg-slate-700" />
@@ -482,7 +482,7 @@ export default function AdminSettingsEnhanced() {
                         Ativo
                       </Badge>
                       <span className="text-xs text-slate-400">
-                        Atualizado em {settings?.api_token?.updated_at ? new Date(settings.api_token.updated_at).toLocaleDateString('pt-BR') : 'N/A'}
+                        Atualizado em {systemStats.lastUpdate}
                       </span>
                     </div>
                   </div>
