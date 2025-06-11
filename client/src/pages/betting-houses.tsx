@@ -99,7 +99,7 @@ export default function BettingHouses() {
     const commissionType = house.commissionType?.toLowerCase();
     
     if (commissionType === 'cpa') {
-      const affiliatePercent = house.cpaAffiliatePercent || 0;
+      const affiliatePercent = Number(house.cpaAffiliatePercent) || 0;
       
       if (affiliatePercent > 0) {
         return (
@@ -120,7 +120,7 @@ export default function BettingHouses() {
     }
     
     if (commissionType === 'revshare') {
-      const affiliatePercent = house.revshareAffiliatePercent || 0;
+      const affiliatePercent = Number(house.revshareAffiliatePercent) || 0;
       
       if (affiliatePercent > 0) {
         return (
@@ -141,8 +141,8 @@ export default function BettingHouses() {
     }
     
     if (commissionType === 'hybrid') {
-      const cpaAffiliatePercent = house.cpaAffiliatePercent || 0;
-      const revshareAffiliatePercent = house.revshareAffiliatePercent || 0;
+      const cpaAffiliatePercent = Number(house.cpaAffiliatePercent) || 0;
+      const revshareAffiliatePercent = Number(house.revshareAffiliatePercent) || 0;
       
       return (
         <div className="text-sm space-y-1">
