@@ -2299,7 +2299,105 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
-  // Bulk actions for payments
+  // Individual payment update
+  app.patch("/api/admin/payments/:id", requireAdmin, async (req, res) => {
+    try {
+      const paymentId = parseInt(req.params.id);
+      const updateData = req.body;
+
+      if (!paymentId || isNaN(paymentId)) {
+        return res.status(400).json({ error: "ID do pagamento inválido" });
+      }
+
+      // Set processedAt timestamp for status changes
+      if (updateData.status && (updateData.status === 'approved' || updateData.status === 'rejected')) {
+        updateData.processedAt = new Date().toISOString();
+      }
+
+      const [updatedPayment] = await db
+        .update(schema.payments)
+        .set(updateData)
+        .where(eq(schema.payments.id, paymentId))
+        .returning();
+
+      if (!updatedPayment) {
+        return res.status(404).json({ error: "Pagamento não encontrado" });
+      }
+
+      res.json({ success: true, payment: updatedPayment });
+    } catch (error) {
+      console.error("Erro ao atualizar pagamento:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Bulk update payments
+  app.patch("/api/admin/payments/bulk-update", requireAdmin, async (req, res) => {
+    try {
+      const { ids, status } = req.body;
+
+      if (!ids || !Array.isArray(ids) || !status) {
+        return res.status(400).json({ error: "Dados inválidos" });
+      }
+
+      const updateData: any = {
+        status,
+        processedAt: new Date().toISOString()
+      };
+
+      const result = await db
+        .update(schema.payments)
+        .set(updateData)
+        .where(inArray(schema.payments.id, ids))
+        .returning({ id: schema.payments.id });
+
+      res.json({ 
+        success: true, 
+        message: `${result.length} pagamentos atualizados`,
+        updatedIds: result.map(r => r.id)
+      });
+    } catch (error) {
+      console.error("Erro na ação em lote:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Export payments
+  app.get("/api/admin/payments/export", requireAdmin, async (req, res) => {
+    try {
+      const payments = await db
+        .select({
+          id: schema.payments.id,
+          amount: schema.payments.amount,
+          status: schema.payments.status,
+          method: schema.payments.method,
+          userName: schema.users.fullName,
+          userEmail: schema.users.email,
+          pixKey: schema.payments.pixKey,
+          transactionId: schema.payments.transactionId,
+          createdAt: schema.payments.createdAt,
+          processedAt: schema.payments.processedAt
+        })
+        .from(schema.payments)
+        .leftJoin(schema.users, eq(schema.payments.userId, schema.users.id))
+        .orderBy(desc(schema.payments.createdAt));
+
+      // Convert to CSV
+      const csvHeader = 'ID,Valor,Status,Método,Usuário,Email,Chave PIX,ID Transação,Data Solicitação,Data Processamento\n';
+      const csvData = payments.map(p => 
+        `${p.id},"R$ ${parseFloat(p.amount).toFixed(2)}",${p.status},${p.method},"${p.userName}","${p.userEmail}","${p.pixKey || ''}","${p.transactionId || ''}","${p.createdAt}","${p.processedAt || ''}"`
+      ).join('\n');
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename="pagamentos.csv"');
+      res.send(csvHeader + csvData);
+    } catch (error) {
+      console.error("Erro ao exportar pagamentos:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Legacy bulk actions for payments (keeping for compatibility)
   app.post("/api/admin/payments/bulk", requireAdmin, async (req, res) => {
     try {
       const { action, paymentIds, transactionId } = req.body;

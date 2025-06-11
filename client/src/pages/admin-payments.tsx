@@ -224,7 +224,7 @@ export default function AdminPayments() {
     setFilters(prev => ({
       ...prev,
       [key]: value,
-      page: key !== 'page' ? 1 : value
+      page: key !== 'page' ? 1 : (typeof value === 'number' ? value : 1)
     }));
   };
 
@@ -270,6 +270,62 @@ export default function AdminPayments() {
       });
     } catch (error) {
       console.error('Erro ao atualizar pagamento:', error);
+    }
+  };
+
+  const handleQuickAction = async (status: 'approved' | 'rejected') => {
+    if (!selectedPayment) return;
+    
+    try {
+      const updateData: Partial<Payment> = {
+        status,
+        processedAt: new Date().toISOString(),
+        notes: `Pagamento ${status === 'approved' ? 'aprovado' : 'rejeitado'} pelo admin em ${new Date().toLocaleString('pt-BR')}`
+      };
+      
+      await updatePaymentMutation.mutateAsync({ 
+        id: selectedPayment.id, 
+        data: updateData
+      });
+      
+      toast({ 
+        title: `Pagamento ${status === 'approved' ? 'aprovado' : 'rejeitado'} com sucesso!`,
+        description: `O pagamento #${selectedPayment.id} foi ${status === 'approved' ? 'aprovado' : 'rejeitado'}.`
+      });
+    } catch (error) {
+      console.error('Erro na ação rápida:', error);
+      toast({ 
+        title: "Erro ao processar pagamento", 
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive" 
+      });
+    }
+  };
+
+  const handleRowAction = async (payment: Payment, status: 'approved' | 'rejected') => {
+    try {
+      const updateData: Partial<Payment> = {
+        status,
+        processedAt: new Date().toISOString(),
+        notes: `Pagamento ${status === 'approved' ? 'aprovado' : 'rejeitado'} pelo admin em ${new Date().toLocaleString('pt-BR')}`
+      };
+      
+      await updatePaymentMutation.mutateAsync({ 
+        id: payment.id, 
+        data: updateData
+      });
+      
+      toast({ 
+        title: `Pagamento ${status === 'approved' ? 'aprovado' : 'rejeitado'}!`,
+        description: `${payment.userName} - ${formatCurrency(payment.amount)}`
+      });
+    } catch (error) {
+      console.error('Erro na ação da linha:', error);
+      toast({ 
+        title: "Erro ao processar pagamento", 
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive" 
+      });
     }
   };
 
@@ -599,22 +655,43 @@ export default function AdminPayments() {
                           {formatDate(payment.createdAt)}
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
+                            {payment.status === 'pending' && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleRowAction(payment, 'approved')}
+                                  disabled={updatePaymentMutation.isPending}
+                                  className="bg-green-600 hover:bg-green-700 text-white px-2"
+                                >
+                                  <Check className="w-3 h-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleRowAction(payment, 'rejected')}
+                                  disabled={updatePaymentMutation.isPending}
+                                  variant="destructive"
+                                  className="px-2"
+                                >
+                                  <X className="w-3 h-3" />
+                                </Button>
+                              </>
+                            )}
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => handleViewPayment(payment)}
-                              className="bg-slate-800 border-slate-700 hover:bg-slate-700"
+                              className="bg-slate-800 border-slate-700 hover:bg-slate-700 px-2"
                             >
-                              <Eye className="w-4 h-4" />
+                              <Eye className="w-3 h-3" />
                             </Button>
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => handleEditPayment(payment)}
-                              className="bg-slate-800 border-slate-700 hover:bg-slate-700"
+                              className="bg-slate-800 border-slate-700 hover:bg-slate-700 px-2"
                             >
-                              <Edit className="w-4 h-4" />
+                              <Edit className="w-3 h-3" />
                             </Button>
                           </div>
                         </TableCell>
@@ -735,50 +812,104 @@ export default function AdminPayments() {
 
         {/* Edit Payment Modal */}
         <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-          <DialogContent className="bg-slate-900 border-slate-700">
+          <DialogContent className="bg-slate-900 border-slate-700 max-w-md">
             <DialogHeader>
               <DialogTitle className="text-white">
-                Editar Pagamento #{selectedPayment?.id}
+                Processar Pagamento #{selectedPayment?.id}
               </DialogTitle>
             </DialogHeader>
             {selectedPayment && (
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-slate-300">Status</Label>
-                  <Select
-                    defaultValue={selectedPayment.status}
-                    onValueChange={(value) => handleUpdatePayment({ status: value as any })}
+              <div className="space-y-6">
+                {/* Payment Info */}
+                <div className="bg-slate-800 p-4 rounded-lg">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-slate-400">Usuário:</p>
+                      <p className="text-white font-medium">{selectedPayment.userName}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400">Valor:</p>
+                      <p className="text-white font-bold">{formatCurrency(selectedPayment.amount)}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400">Método:</p>
+                      <p className="text-white">{methodConfig[selectedPayment.method]?.label}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400">Status:</p>
+                      <Badge className={statusConfig[selectedPayment.status]?.color}>
+                        {statusConfig[selectedPayment.status]?.label}
+                      </Badge>
+                    </div>
+                  </div>
+                  {selectedPayment.pixKey && (
+                    <div className="mt-3">
+                      <p className="text-slate-400 text-sm">Chave PIX:</p>
+                      <p className="text-white font-mono text-sm">{selectedPayment.pixKey}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Quick Actions */}
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    onClick={() => handleQuickAction('approved')}
+                    disabled={updatePaymentMutation.isPending}
+                    className="bg-green-600 hover:bg-green-700 text-white"
                   >
-                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
-                      <SelectItem value="pending">Pendente</SelectItem>
-                      <SelectItem value="approved">Aprovado</SelectItem>
-                      <SelectItem value="rejected">Rejeitado</SelectItem>
-                      <SelectItem value="processing">Processando</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <Check className="w-4 h-4 mr-2" />
+                    Aprovar
+                  </Button>
+                  <Button
+                    onClick={() => handleQuickAction('rejected')}
+                    disabled={updatePaymentMutation.isPending}
+                    variant="destructive"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Rejeitar
+                  </Button>
                 </div>
 
-                <div>
-                  <Label className="text-slate-300">ID da Transação</Label>
-                  <Input
-                    placeholder="Digite o ID da transação"
-                    defaultValue={selectedPayment.transactionId || ''}
-                    onBlur={(e) => handleUpdatePayment({ transactionId: e.target.value })}
-                    className="bg-slate-800 border-slate-700 text-white"
-                  />
-                </div>
+                {/* Advanced Options */}
+                <div className="space-y-4 border-t border-slate-700 pt-4">
+                  <div>
+                    <Label className="text-slate-300">ID da Transação</Label>
+                    <Input
+                      placeholder="Digite o ID da transação (opcional)"
+                      defaultValue={selectedPayment.transactionId || ''}
+                      onBlur={(e) => handleUpdatePayment({ transactionId: e.target.value })}
+                      className="bg-slate-800 border-slate-700 text-white"
+                    />
+                  </div>
 
-                <div>
-                  <Label className="text-slate-300">Observações</Label>
-                  <Textarea
-                    placeholder="Adicione observações sobre o pagamento"
-                    defaultValue={selectedPayment.notes || ''}
-                    onBlur={(e) => handleUpdatePayment({ notes: e.target.value })}
-                    className="bg-slate-800 border-slate-700 text-white"
-                  />
+                  <div>
+                    <Label className="text-slate-300">Observações Internas</Label>
+                    <Textarea
+                      placeholder="Adicione observações sobre o processamento"
+                      defaultValue={selectedPayment.notes || ''}
+                      onBlur={(e) => handleUpdatePayment({ notes: e.target.value })}
+                      className="bg-slate-800 border-slate-700 text-white"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-slate-300">Status Manual</Label>
+                    <Select
+                      defaultValue={selectedPayment.status}
+                      onValueChange={(value) => handleUpdatePayment({ status: value as any })}
+                    >
+                      <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-800 border-slate-700">
+                        <SelectItem value="pending">Pendente</SelectItem>
+                        <SelectItem value="processing">Processando</SelectItem>
+                        <SelectItem value="approved">Aprovado</SelectItem>
+                        <SelectItem value="rejected">Rejeitado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
             )}
