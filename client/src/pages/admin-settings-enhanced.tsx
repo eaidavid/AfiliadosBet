@@ -66,25 +66,54 @@ export default function AdminSettingsEnhanced() {
   const [regenerateDialogOpen, setRegenerateDialogOpen] = useState(false);
   const [unsavedChanges, setUnsavedChanges] = useState<Record<string, any>>({});
 
-  // Fetch system settings from database
-  const { data: settings, isLoading: settingsLoading } = useQuery({
-    queryKey: ['system-settings'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/system-settings');
-      if (!response.ok) throw new Error('Failed to fetch settings');
-      return response.json();
-    },
+  // Fetch real system data from existing endpoints
+  const { data: affiliatesData, isLoading: affiliatesLoading } = useQuery({
+    queryKey: ["/api/admin/affiliates"],
+    refetchInterval: 30000,
   });
 
-  // Fetch system stats
-  const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ['system-stats'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/system-stats');
-      if (!response.ok) throw new Error('Failed to fetch stats');
-      return response.json();
-    },
+  const { data: housesData, isLoading: housesLoading } = useQuery({
+    queryKey: ["/api/admin/betting-houses"],
+    refetchInterval: 30000,
   });
+
+  const { data: dashboardStats, isLoading: dashboardLoading } = useQuery({
+    queryKey: ["/api/admin/dashboard-stats"],
+    refetchInterval: 30000,
+  });
+
+  const { data: paymentStats, isLoading: paymentsLoading } = useQuery({
+    queryKey: ['/api/admin/payments/stats'],
+    refetchInterval: 30000,
+  });
+
+  const { data: postbackLogs, isLoading: postbackLoading } = useQuery({
+    queryKey: ["/api/admin/postback-logs"],
+    refetchInterval: 30000,
+  });
+
+  // Calculate real system statistics with proper type handling
+  const systemStats = {
+    totalUsers: (affiliatesData as any)?.affiliates?.length || 0,
+    totalHouses: Array.isArray(housesData) ? housesData.length : 0,
+    totalClicks: (dashboardStats as any)?.totalClicks || 0,
+    totalConversions: (dashboardStats as any)?.totalConversions || 0,
+    totalVolume: (paymentStats as any)?.monthlyVolume || "0.00",
+    totalCommissions: (dashboardStats as any)?.totalCommissions || "0.00",
+    activeHouses: Array.isArray(housesData) ? housesData.filter((h: any) => h.isActive).length : 0,
+    activeAffiliates: (affiliatesData as any)?.affiliates?.filter((a: any) => a.isActive).length || 0,
+    pendingPayments: (paymentStats as any)?.pendingCount || 0,
+    completedPayments: (paymentStats as any)?.completedCount || 0,
+    postbackSuccessRate: Array.isArray(postbackLogs) ? 
+      postbackLogs.length > 0 ? 
+        ((postbackLogs.filter((log: any) => log.statusCode >= 200 && log.statusCode < 300).length / postbackLogs.length) * 100).toFixed(1)
+        : "0.0"
+      : "0.0",
+    systemUptime: new Date().toLocaleString('pt-BR'),
+    lastUpdate: new Date().toLocaleString('pt-BR')
+  };
+
+  const isLoading = affiliatesLoading || housesLoading || dashboardLoading || paymentsLoading || postbackLoading;
 
   // Save settings mutation
   const saveSettingMutation = useMutation({
@@ -232,7 +261,7 @@ export default function AdminSettingsEnhanced() {
                 </div>
                 <div>
                   <p className="text-sm text-slate-300">Total Usuários</p>
-                  <p className="text-2xl font-bold text-white">{stats?.totalUsers || 0}</p>
+                  <p className="text-2xl font-bold text-white">{isLoading ? "..." : systemStats.totalUsers}</p>
                 </div>
               </div>
             </CardContent>
@@ -246,7 +275,7 @@ export default function AdminSettingsEnhanced() {
                 </div>
                 <div>
                   <p className="text-sm text-slate-300">Casas Ativas</p>
-                  <p className="text-2xl font-bold text-white">{stats?.totalHouses || 0}</p>
+                  <p className="text-2xl font-bold text-white">{isLoading ? "..." : systemStats.activeHouses}</p>
                 </div>
               </div>
             </CardContent>
