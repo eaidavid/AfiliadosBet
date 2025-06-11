@@ -137,8 +137,10 @@ export const payments = pgTable("payments", {
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   method: text("method").notNull(), // 'pix', 'bank_transfer'
   pixKey: text("pix_key"),
-  status: text("status").default("pending"), // 'pending', 'completed', 'failed'
+  status: text("status").default("pending"), // 'pending', 'approved', 'rejected', 'processing'
   transactionId: text("transaction_id"),
+  notes: text("notes"),
+  processedAt: timestamp("processed_at"),
   paidAt: timestamp("paid_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });

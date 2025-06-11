@@ -379,15 +379,15 @@ export default function AdminPayments() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header Section */}
           <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-white mb-2">
-                Gerenciamento de Pagamentos
-              </h1>
-              <p className="text-slate-400">
-                Controle completo dos pagamentos da plataforma
-              </p>
-            </div>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-3xl font-bold text-white mb-2">
+                  Gerenciamento de Pagamentos
+                </h1>
+                <p className="text-slate-400">
+                  Controle completo dos pagamentos da plataforma
+                </p>
+              </div>
             <div className="flex gap-3">
               <Button
                 variant="outline"
@@ -920,7 +920,6 @@ export default function AdminPayments() {
             )}
           </DialogContent>
         </Dialog>
-          </div>
         </div>
       </div>
     </div>
