@@ -921,6 +921,7 @@ export default function AdminPayments() {
             )}
           </DialogContent>
         </Dialog>
+          </div>
         </div>
       </div>
     </div>
