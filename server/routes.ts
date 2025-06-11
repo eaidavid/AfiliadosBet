@@ -2314,9 +2314,14 @@ export async function registerRoutes(app: express.Application) {
         updateData.processedAt = new Date().toISOString();
       }
 
+      // Filter out undefined values from updateData
+      const cleanUpdateData = Object.fromEntries(
+        Object.entries(updateData).filter(([_, value]) => value !== undefined)
+      );
+
       const [updatedPayment] = await db
         .update(schema.payments)
-        .set(updateData)
+        .set(cleanUpdateData)
         .where(eq(schema.payments.id, paymentId))
         .returning();
 
