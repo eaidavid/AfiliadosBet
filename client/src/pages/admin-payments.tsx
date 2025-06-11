@@ -388,15 +388,16 @@ export default function AdminPayments() {
                   Controle completo dos pagamentos da plataforma
                 </p>
               </div>
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={handleExport}
-                className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Exportar
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={handleExport}
+                  className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Exportar
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -920,6 +921,7 @@ export default function AdminPayments() {
             )}
           </DialogContent>
         </Dialog>
+          </div>
         </div>
       </div>
     </div>
