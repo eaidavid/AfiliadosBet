@@ -739,190 +739,190 @@ export default function AdminPayments() {
           </CardContent>
         </Card>
 
-        {/* Payment Details Modal */}
-        <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
-          <DialogContent className="bg-slate-900 border-slate-700 max-w-2xl">
-            <DialogHeader>
-              <DialogTitle className="text-white">
-                Detalhes do Pagamento #{selectedPayment?.id}
-              </DialogTitle>
-            </DialogHeader>
-            {selectedPayment && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-slate-300">Usuário</Label>
-                    <p className="text-white font-medium">{selectedPayment.userName}</p>
-                    <p className="text-slate-400 text-sm">{selectedPayment.userEmail}</p>
-                  </div>
-                  <div>
-                    <Label className="text-slate-300">Valor</Label>
-                    <p className="text-white font-bold text-lg">
-                      {formatCurrency(selectedPayment.amount)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-slate-300">Método</Label>
-                    <Badge className={methodConfig[selectedPayment.method]?.color}>
-                      {methodConfig[selectedPayment.method]?.icon} {methodConfig[selectedPayment.method]?.label}
-                    </Badge>
-                  </div>
-                  <div>
-                    <Label className="text-slate-300">Status</Label>
-                    <Badge className={statusConfig[selectedPayment.status]?.color}>
-                      {statusConfig[selectedPayment.status]?.label}
-                    </Badge>
-                  </div>
-                </div>
-
-                {selectedPayment.pixKey && (
-                  <div>
-                    <Label className="text-slate-300">Chave PIX</Label>
-                    <p className="text-white font-mono">{selectedPayment.pixKey}</p>
-                  </div>
-                )}
-
-                {selectedPayment.transactionId && (
-                  <div>
-                    <Label className="text-slate-300">ID da Transação</Label>
-                    <p className="text-white font-mono">{selectedPayment.transactionId}</p>
-                  </div>
-                )}
-
-                {selectedPayment.notes && (
-                  <div>
-                    <Label className="text-slate-300">Observações</Label>
-                    <p className="text-slate-400">{selectedPayment.notes}</p>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-slate-300">Data da Solicitação</Label>
-                    <p className="text-slate-400">{formatDate(selectedPayment.createdAt)}</p>
-                  </div>
-                  {selectedPayment.processedAt && (
+        <>
+          {/* Payment Details Modal */}
+          <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+            <DialogContent className="bg-slate-900 border-slate-700 max-w-2xl">
+              <DialogHeader>
+                <DialogTitle className="text-white">
+                  Detalhes do Pagamento #{selectedPayment?.id}
+                </DialogTitle>
+              </DialogHeader>
+              {selectedPayment && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-slate-300">Data do Processamento</Label>
-                      <p className="text-slate-400">{formatDate(selectedPayment.processedAt)}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
-
-        {/* Edit Payment Modal */}
-        <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-          <DialogContent className="bg-slate-900 border-slate-700 max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-white">
-                Processar Pagamento #{selectedPayment?.id}
-              </DialogTitle>
-            </DialogHeader>
-            {selectedPayment && (
-              <div className="space-y-6">
-                {/* Payment Info */}
-                <div className="bg-slate-800 p-4 rounded-lg">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-slate-400">Usuário:</p>
+                      <Label className="text-slate-300">Usuário</Label>
                       <p className="text-white font-medium">{selectedPayment.userName}</p>
+                      <p className="text-slate-400 text-sm">{selectedPayment.userEmail}</p>
                     </div>
                     <div>
-                      <p className="text-slate-400">Valor:</p>
-                      <p className="text-white font-bold">{formatCurrency(selectedPayment.amount)}</p>
+                      <Label className="text-slate-300">Valor</Label>
+                      <p className="text-white font-bold text-lg">
+                        {formatCurrency(selectedPayment.amount)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-slate-300">Método</Label>
+                      <Badge className={methodConfig[selectedPayment.method]?.color}>
+                        {methodConfig[selectedPayment.method]?.icon} {methodConfig[selectedPayment.method]?.label}
+                      </Badge>
                     </div>
                     <div>
-                      <p className="text-slate-400">Método:</p>
-                      <p className="text-white">{methodConfig[selectedPayment.method]?.label}</p>
-                    </div>
-                    <div>
-                      <p className="text-slate-400">Status:</p>
+                      <Label className="text-slate-300">Status</Label>
                       <Badge className={statusConfig[selectedPayment.status]?.color}>
                         {statusConfig[selectedPayment.status]?.label}
                       </Badge>
                     </div>
                   </div>
+
                   {selectedPayment.pixKey && (
-                    <div className="mt-3">
-                      <p className="text-slate-400 text-sm">Chave PIX:</p>
-                      <p className="text-white font-mono text-sm">{selectedPayment.pixKey}</p>
+                    <div>
+                      <Label className="text-slate-300">Chave PIX</Label>
+                      <p className="text-white font-mono">{selectedPayment.pixKey}</p>
                     </div>
                   )}
-                </div>
 
-                {/* Quick Actions */}
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    onClick={() => handleQuickAction('approved')}
-                    disabled={updatePaymentMutation.isPending}
-                    className="bg-green-600 hover:bg-green-700 text-white"
-                  >
-                    <Check className="w-4 h-4 mr-2" />
-                    Aprovar
-                  </Button>
-                  <Button
-                    onClick={() => handleQuickAction('rejected')}
-                    disabled={updatePaymentMutation.isPending}
-                    variant="destructive"
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Rejeitar
-                  </Button>
-                </div>
+                  {selectedPayment.transactionId && (
+                    <div>
+                      <Label className="text-slate-300">ID da Transação</Label>
+                      <p className="text-white font-mono">{selectedPayment.transactionId}</p>
+                    </div>
+                  )}
 
-                {/* Advanced Options */}
-                <div className="space-y-4 border-t border-slate-700 pt-4">
-                  <div>
-                    <Label className="text-slate-300">ID da Transação</Label>
-                    <Input
-                      placeholder="Digite o ID da transação (opcional)"
-                      defaultValue={selectedPayment.transactionId || ''}
-                      onBlur={(e) => handleUpdatePayment({ transactionId: e.target.value })}
-                      className="bg-slate-800 border-slate-700 text-white"
-                    />
+                  {selectedPayment.notes && (
+                    <div>
+                      <Label className="text-slate-300">Observações</Label>
+                      <p className="text-slate-400">{selectedPayment.notes}</p>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-slate-300">Data da Solicitação</Label>
+                      <p className="text-slate-400">{formatDate(selectedPayment.createdAt)}</p>
+                    </div>
+                    {selectedPayment.processedAt && (
+                      <div>
+                        <Label className="text-slate-300">Data do Processamento</Label>
+                        <p className="text-slate-400">{formatDate(selectedPayment.processedAt)}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+
+          {/* Edit Payment Modal */}
+          <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+            <DialogContent className="bg-slate-900 border-slate-700 max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-white">
+                  Processar Pagamento #{selectedPayment?.id}
+                </DialogTitle>
+              </DialogHeader>
+              {selectedPayment && (
+                <div className="space-y-6">
+                  {/* Payment Info */}
+                  <div className="bg-slate-800 p-4 rounded-lg">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-slate-400">Usuário:</p>
+                        <p className="text-white font-medium">{selectedPayment.userName}</p>
+                      </div>
+                      <div>
+                        <p className="text-slate-400">Valor:</p>
+                        <p className="text-white font-bold">{formatCurrency(selectedPayment.amount)}</p>
+                      </div>
+                      <div>
+                        <p className="text-slate-400">Método:</p>
+                        <p className="text-white">{methodConfig[selectedPayment.method]?.label}</p>
+                      </div>
+                      <div>
+                        <p className="text-slate-400">Status:</p>
+                        <Badge className={statusConfig[selectedPayment.status]?.color}>
+                          {statusConfig[selectedPayment.status]?.label}
+                        </Badge>
+                      </div>
+                    </div>
+                    {selectedPayment.pixKey && (
+                      <div className="mt-3">
+                        <p className="text-slate-400 text-sm">Chave PIX:</p>
+                        <p className="text-white font-mono text-sm">{selectedPayment.pixKey}</p>
+                      </div>
+                    )}
                   </div>
 
-                  <div>
-                    <Label className="text-slate-300">Observações Internas</Label>
-                    <Textarea
-                      placeholder="Adicione observações sobre o processamento"
-                      defaultValue={selectedPayment.notes || ''}
-                      onBlur={(e) => handleUpdatePayment({ notes: e.target.value })}
-                      className="bg-slate-800 border-slate-700 text-white"
-                      rows={3}
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-slate-300">Status Manual</Label>
-                    <Select
-                      defaultValue={selectedPayment.status}
-                      onValueChange={(value) => handleUpdatePayment({ status: value as any })}
+                  {/* Quick Actions */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button
+                      onClick={() => handleQuickAction('approved')}
+                      disabled={updatePaymentMutation.isPending}
+                      className="bg-green-600 hover:bg-green-700 text-white"
                     >
-                      <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-800 border-slate-700">
-                        <SelectItem value="pending">Pendente</SelectItem>
-                        <SelectItem value="processing">Processando</SelectItem>
-                        <SelectItem value="approved">Aprovado</SelectItem>
-                        <SelectItem value="rejected">Rejeitado</SelectItem>
-                      </SelectContent>
-                    </Select>
+                      <Check className="w-4 h-4 mr-2" />
+                      Aprovar
+                    </Button>
+                    <Button
+                      onClick={() => handleQuickAction('rejected')}
+                      disabled={updatePaymentMutation.isPending}
+                      variant="destructive"
+                    >
+                      <X className="w-4 h-4 mr-2" />
+                      Rejeitar
+                    </Button>
+                  </div>
+
+                  {/* Advanced Options */}
+                  <div className="space-y-4 border-t border-slate-700 pt-4">
+                    <div>
+                      <Label className="text-slate-300">ID da Transação</Label>
+                      <Input
+                        placeholder="Digite o ID da transação (opcional)"
+                        defaultValue={selectedPayment.transactionId || ''}
+                        onBlur={(e) => handleUpdatePayment({ transactionId: e.target.value })}
+                        className="bg-slate-800 border-slate-700 text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-slate-300">Observações Internas</Label>
+                      <Textarea
+                        placeholder="Adicione observações sobre o processamento"
+                        defaultValue={selectedPayment.notes || ''}
+                        onBlur={(e) => handleUpdatePayment({ notes: e.target.value })}
+                        className="bg-slate-800 border-slate-700 text-white"
+                        rows={3}
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-slate-300">Status Manual</Label>
+                      <Select
+                        defaultValue={selectedPayment.status}
+                        onValueChange={(value) => handleUpdatePayment({ status: value as any })}
+                      >
+                        <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-800 border-slate-700">
+                          <SelectItem value="pending">Pendente</SelectItem>
+                          <SelectItem value="processing">Processando</SelectItem>
+                          <SelectItem value="approved">Aprovado</SelectItem>
+                          <SelectItem value="rejected">Rejeitado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
-          </div>
-        </div>
+              )}
+            </DialogContent>
+          </Dialog>
+        </>
       </div>
     </div>
   );
