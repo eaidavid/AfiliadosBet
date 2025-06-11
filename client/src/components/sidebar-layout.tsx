@@ -32,6 +32,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
     { icon: BarChart3, label: "Dashboard", path: "/admin" },
     { icon: Building, label: "Casas", path: "/admin/houses" },
     { icon: Users, label: "Afiliados", path: "/admin/manage" },
+    { icon: CreditCard, label: "Pagamentos", path: "/admin/payments" },
     { icon: Webhook, label: "Postbacks", path: "/admin/postback-generator" },
     { icon: Activity, label: "Logs", path: "/admin/postback-logs" },
     { icon: Settings, label: "Configurações", path: "/admin/settings" }
