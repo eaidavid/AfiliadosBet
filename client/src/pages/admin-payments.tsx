@@ -36,7 +36,6 @@ import {
   RefreshCw
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
-import { AdminSidebar } from "@/components/admin/sidebar";
 
 // Types
 interface PaymentStats {
@@ -370,34 +369,29 @@ export default function AdminPayments() {
     );
   }
 
-  const [currentPage, setCurrentPage] = useState("payments");
-
   return (
-    <div className="flex min-h-screen bg-slate-950">
-      <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
-      <div className="flex-1 lg:ml-72">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Header Section */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h1 className="text-3xl font-bold text-white mb-2">
-                  Gerenciamento de Pagamentos
-                </h1>
-                <p className="text-slate-400">
-                  Controle completo dos pagamentos da plataforma
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={handleExport}
-                  className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Exportar
-                </Button>
-              </div>
+    <div className="min-h-screen bg-slate-950">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header Section */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">
+                Gerenciamento de Pagamentos
+              </h1>
+              <p className="text-slate-400">
+                Controle completo dos pagamentos da plataforma
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={handleExport}
+                className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Exportar
+              </Button>
             </div>
           </div>
 
@@ -921,8 +915,6 @@ export default function AdminPayments() {
             )}
           </DialogContent>
         </Dialog>
-          </div>
-        </div>
       </div>
     </div>
   );
