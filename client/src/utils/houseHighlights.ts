@@ -95,10 +95,10 @@ export function generateHighlights(house: any): HighlightConfig {
   
   // Enhance based on commission type and values
   if (isHybrid) {
-    highlights.title = `${highlights.title} - Dupla Receita`;
+    highlights.title = "Modelo Híbrido Premium";
     highlights.subtitle = "CPA + RevShare para máxima rentabilidade";
-    highlights.badge = "HÍBRIDO PREMIUM";
-    highlights.icon = "💰";
+    highlights.badge = "COMISSÃO DUPLA";
+    highlights.icon = "⚡";
   } else if (hasHighRevShare) {
     highlights.subtitle = `${highlights.subtitle} - Rev ${revshareAffiliatePercent}%`;
     highlights.badge = "ALTA COMISSÃO";
