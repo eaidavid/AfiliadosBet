@@ -47,6 +47,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { generateHighlights, getVisualElements, shouldHighlight } from '@/utils/houseHighlights';
 
 interface BettingHouse {
   id: number;
@@ -281,27 +282,51 @@ export default function BettingHouses() {
   };
 
   const getHouseHighlights = (house: BettingHouse) => {
+    if (!shouldHighlight(house)) {
+      return [];
+    }
+
+    const highlight = generateHighlights(house);
+    const visual = getVisualElements(highlight);
+    
     const highlights = [];
+    
+    // Main promotional highlight
+    if (highlight.badge) {
+      highlights.push({
+        text: highlight.badge,
+        icon: highlight.icon,
+        color: visual.badgeColor,
+        title: highlight.title,
+        subtitle: highlight.subtitle
+      });
+    }
+    
+    // Commission-specific highlights
     const commissions = getCommissionDisplayArray(house);
-    
     if (commissions.length === 2) {
-      highlights.push({ text: 'Comissão Híbrida', icon: '🔥', color: 'bg-orange-500' });
+      highlights.push({ 
+        text: 'DUPLA RECEITA', 
+        icon: '💰', 
+        color: 'bg-gradient-to-r from-purple-500 to-pink-500',
+        pulse: true
+      });
     }
     
-    if (commissions.some(c => c.type === 'CPA' && parseFloat(c.value.replace(/[^\d]/g, '')) >= 50)) {
-      highlights.push({ text: 'Alta Comissão', icon: '💎', color: 'bg-purple-500' });
+    // High commission highlights
+    const hasHighRevShare = house.revshareAffiliatePercent && house.revshareAffiliatePercent >= 20;
+    const hasHighCPA = house.cpaAffiliatePercent && house.cpaAffiliatePercent >= 30;
+    
+    if (hasHighRevShare || hasHighCPA) {
+      highlights.push({ 
+        text: 'COMISSÃO PREMIUM', 
+        icon: '⚡', 
+        color: 'bg-gradient-to-r from-yellow-400 to-orange-500',
+        glow: true
+      });
     }
     
-    if (house.isActive) {
-      highlights.push({ text: 'Casa Ativa', icon: '✅', color: 'bg-emerald-500' });
-    }
-    
-    const daysActive = Math.floor((Date.now() - new Date(house.createdAt).getTime()) / (1000 * 60 * 60 * 24));
-    if (daysActive <= 30) {
-      highlights.push({ text: 'Novidade', icon: '🆕', color: 'bg-blue-500' });
-    }
-    
-    return highlights.slice(0, 3);
+    return highlights.slice(0, 2);
   };
 
   const filteredHouses = Array.isArray(bettingHouses) ? bettingHouses.filter((house: any) => {
@@ -550,14 +575,33 @@ export default function BettingHouses() {
                         </Badge>
                       </div>
 
-                      {/* Highlights */}
+                      {/* Promotional Highlights */}
                       {highlights.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-4">
+                        <div className="space-y-3 mb-4">
                           {highlights.map((highlight, idx) => (
-                            <Badge key={idx} className={`${highlight.color} text-white text-xs`}>
-                              <span className="mr-1">{highlight.icon}</span>
-                              {highlight.text}
-                            </Badge>
+                            <div key={idx} className="space-y-2">
+                              {/* Main Promotional Badge */}
+                              <div className="flex items-center gap-2">
+                                <Badge className={`${highlight.color} text-white text-xs font-bold ${highlight.pulse ? 'animate-pulse' : ''} ${highlight.glow ? 'shadow-lg' : ''}`}>
+                                  <span className="mr-1">{highlight.icon}</span>
+                                  {highlight.text}
+                                </Badge>
+                              </div>
+                              
+                              {/* Promotional Title and Subtitle */}
+                              {highlight.title && (
+                                <div className="bg-gradient-to-r from-slate-800/50 to-slate-700/50 rounded-lg p-3 border border-slate-600">
+                                  <h3 className="text-sm font-bold text-emerald-400 mb-1">
+                                    {highlight.title}
+                                  </h3>
+                                  {highlight.subtitle && (
+                                    <p className="text-xs text-slate-300 leading-relaxed">
+                                      {highlight.subtitle}
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           ))}
                         </div>
                       )}

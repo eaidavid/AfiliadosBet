@@ -1,0 +1,71 @@
+Objetivo geral:
+
+Crie um conjunto de textos promocionais, chamadas e sugestões de elementos visuais para destacar a casa de apostas na página onde o afiliado irá escolher as casas para promover.
+Utilize a descrição cadastrada pelo usuário como base central do destaque.
+O objetivo é maximizar o interesse do afiliado, despertar a percepção de oportunidade e incentivar o clique para afiliação, sempre respeitando as normas legais de publicidade de apostas.
+
+Instruções detalhadas:
+
+1️⃣ Utilize como base central a seguinte descrição da casa:
+[INSERIR AQUI A DESCRIÇÃO QUE O ADMINISTRADOR INFORMOU NA PLATAFORMA]
+
+2️⃣ Crie chamadas de destaque para exibir junto ao nome da casa, com foco em:
+
+Ganhos atrativos para o afiliado.
+
+Comissões generosas.
+
+Facilidade de conversão.
+
+Popularidade e confiança da casa.
+
+Bônus ou promoções que a casa oferece (se estiverem na descrição).
+
+3️⃣ Exemplos de tom permitido (mas sem ultrapassar o limite legal):
+
+"Comissões acima da média!"
+
+"Casa que converte alto!"
+
+"Oportunidade de ganhos recorrentes!"
+
+"Alta taxa de retenção de jogadores!"
+
+"Campanhas de bônus que atraem jogadores!"
+
+4️⃣ NÃO utilize:
+
+Garantia de lucros.
+
+Chamadas enganosas ou proibidas por regulamentação.
+
+Linguagem que sugira promessa de enriquecimento.
+
+5️⃣ Sugira elementos visuais (com nomes técnicos de design para facilitar o briefing):
+
+Banners chamativos com gradientes fortes (ex: verde-limão, laranja vibrante, azul elétrico).
+
+Selo de "Top Conversion" ou "Mais buscada".
+
+Badge animado "Alta performance".
+
+Pequenos ícones indicativos: 🔥, 💰, ⭐.
+
+Animações sutis de pulsação nos botões de "Afilie-se agora".
+
+Microinterações de hover com glow.
+
+Destaque de bônus com fundo degradê.
+
+6️⃣ Formato de saída:
+
+🔹 Título de destaque
+
+🔹 Chamada complementar (subtítulo)
+
+🔹 3 sugestões de elementos visuais aplicáveis na página de seleção de casas.
+
+🔹 Tom apelativo, com forte senso de oportunidade, mas dentro das normas legais de publicidade de apostas.
+
+7️⃣ Importante:
+O material gerado será exibido no painel de afiliados, na área onde eles escolhem as casas para promover. O foco é maximizar o interesse do afiliado em escolher a casa que está sendo destacada.
