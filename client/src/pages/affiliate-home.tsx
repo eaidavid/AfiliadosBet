@@ -205,6 +205,27 @@ export default function AffiliateHome() {
     }
   };
 
+  const getPaymentMethods = (paymentMethods: any) => {
+    if (!paymentMethods) return [];
+    
+    const methods = Array.isArray(paymentMethods) ? paymentMethods : 
+                   typeof paymentMethods === 'string' ? paymentMethods.split(',') :
+                   Object.keys(paymentMethods);
+    
+    return methods.map((method: string) => {
+      const lowercaseMethod = method.toLowerCase().trim();
+      if (lowercaseMethod.includes('pix')) return { 
+        name: 'PIX', 
+        icon: '◉', 
+        className: 'text-emerald-400 font-bold bg-emerald-900/30 px-2 py-1 rounded-md border border-emerald-500/30' 
+      };
+      if (lowercaseMethod.includes('cartão') || lowercaseMethod.includes('card')) return { name: 'Cartão', icon: '💳' };
+      if (lowercaseMethod.includes('boleto')) return { name: 'Boleto', icon: '📄' };
+      if (lowercaseMethod.includes('cripto') || lowercaseMethod.includes('crypto')) return { name: 'Cripto', icon: '🪙' };
+      return { name: method, icon: '💰' };
+    });
+  };
+
   const getCommissionDisplay = (house: BettingHouse) => {
     const commissionType = house.commissionType?.toLowerCase();
     

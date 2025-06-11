@@ -273,7 +273,11 @@ export default function BettingHouses() {
     
     return methods.map((method: string) => {
       const lowercaseMethod = method.toLowerCase().trim();
-      if (lowercaseMethod.includes('pix')) return { name: 'Pix', icon: '🟢' };
+      if (lowercaseMethod.includes('pix')) return { 
+        name: 'PIX', 
+        icon: '◉', 
+        className: 'text-emerald-400 font-bold bg-emerald-900/30 px-2 py-1 rounded-md border border-emerald-500/30' 
+      };
       if (lowercaseMethod.includes('cartão') || lowercaseMethod.includes('card')) return { name: 'Cartão', icon: '💳' };
       if (lowercaseMethod.includes('boleto')) return { name: 'Boleto', icon: '📄' };
       if (lowercaseMethod.includes('cripto') || lowercaseMethod.includes('crypto')) return { name: 'Cripto', icon: '🪙' };
@@ -646,7 +650,11 @@ export default function BettingHouses() {
                           {paymentMethods.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-2">
                               {paymentMethods.map((method, idx) => (
-                                <Badge key={idx} variant="outline" className="text-xs">
+                                <Badge 
+                                  key={idx} 
+                                  variant="outline" 
+                                  className={method.className || "text-xs"}
+                                >
                                   <span className="mr-1">{method.icon}</span>
                                   {method.name}
                                 </Badge>

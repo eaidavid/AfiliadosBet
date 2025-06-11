@@ -15,7 +15,9 @@ export function generateHighlights(house: any): HighlightConfig {
   // Analyze commission attractiveness
   const hasHighRevShare = revshareAffiliatePercent && revshareAffiliatePercent >= 20;
   const hasHighCPA = cpaAffiliatePercent && cpaAffiliatePercent >= 30;
-  const isHybrid = commissionType === 'Hybrid';
+  const isHybrid = commissionType?.toLowerCase() === 'hybrid' && 
+                   parseFloat(cpaAffiliatePercent || '0') > 0 && 
+                   parseFloat(revshareAffiliatePercent || '0') > 0;
   
   // Generate highlights based on description keywords and commission data
   let highlights: HighlightConfig;
