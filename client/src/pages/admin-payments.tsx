@@ -116,8 +116,8 @@ export default function AdminPayments() {
     page: 1,
     limit: 25,
     search: '',
-    status: '',
-    method: '',
+    status: 'all',
+    method: 'all',
     dateFrom: '',
     dateTo: '',
     minAmount: '',
@@ -148,7 +148,7 @@ export default function AdminPayments() {
     queryFn: async () => {
       const params = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
-        if (value) params.append(key, value.toString());
+        if (value && value !== 'all') params.append(key, value.toString());
       });
       
       const response = await fetch(`/api/admin/payments?${params}`);
@@ -460,7 +460,7 @@ export default function AdminPayments() {
                         <SelectValue placeholder="Todos os status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Todos</SelectItem>
+                        <SelectItem value="all">Todos</SelectItem>
                         <SelectItem value="pending">Pendente</SelectItem>
                         <SelectItem value="completed">Pago</SelectItem>
                         <SelectItem value="failed">Falhado</SelectItem>
@@ -475,7 +475,7 @@ export default function AdminPayments() {
                         <SelectValue placeholder="Todos os métodos" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Todos</SelectItem>
+                        <SelectItem value="all">Todos</SelectItem>
                         <SelectItem value="pix">PIX</SelectItem>
                         <SelectItem value="bank_transfer">TED</SelectItem>
                       </SelectContent>
