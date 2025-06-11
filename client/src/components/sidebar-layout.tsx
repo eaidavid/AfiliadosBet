@@ -30,11 +30,11 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
   // Menu items based on current route context (not just user role)
   const menuItems: MenuItem[] = isOnAdminRoute ? [
     { icon: BarChart3, label: "Dashboard", path: "/admin" },
-    { icon: Building, label: "Casas", path: "/admin/houses" },
-    { icon: Users, label: "Afiliados", path: "/admin/manage" },
-    { icon: CreditCard, label: "Pagamentos", path: "/admin/payments" },
-    { icon: Webhook, label: "Postbacks", path: "/admin/postback-generator" },
-    { icon: Activity, label: "Logs", path: "/admin/postback-logs" },
+    { icon: Building, label: "Gerenciar Casas", path: "/admin/houses" },
+    { icon: Users, label: "Gerenciar Afiliados", path: "/admin/manage" },
+    { icon: CreditCard, label: "Gerenciar Pagamentos", path: "/admin/payments" },
+    { icon: Webhook, label: "Gerador de Postbacks", path: "/admin/postback-generator" },
+    { icon: Activity, label: "Logs de Postbacks", path: "/admin/postback-logs" },
     { icon: Settings, label: "Configurações", path: "/admin/settings" }
   ] : [
     { icon: Home, label: "Dashboard", path: "/home" },
