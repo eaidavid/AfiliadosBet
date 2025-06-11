@@ -739,9 +739,8 @@ export default function AdminPayments() {
           </CardContent>
         </Card>
 
-        <>
-          {/* Payment Details Modal */}
-          <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+        {/* Payment Details Modal */}
+        <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
             <DialogContent className="bg-slate-900 border-slate-700 max-w-2xl">
               <DialogHeader>
                 <DialogTitle className="text-white">
@@ -922,7 +921,8 @@ export default function AdminPayments() {
               )}
             </DialogContent>
           </Dialog>
-        </>
+          </div>
+        </div>
       </div>
     </div>
   );
