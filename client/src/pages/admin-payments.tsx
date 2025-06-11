@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -308,7 +308,7 @@ export default function AdminPayments() {
     ]);
     
     const csvContent = [headers, ...csvData]
-      .map(row => row.map(field => `"${field}"`).join(','))
+      .map(row => row.map((field: any) => `"${field}"`).join(','))
       .join('\n');
     
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -778,6 +778,9 @@ export default function AdminPayments() {
         <DialogContent className="bg-slate-900 border-slate-700 text-white">
           <DialogHeader>
             <DialogTitle>Detalhes do Pagamento</DialogTitle>
+            <DialogDescription className="text-slate-400">
+              Visualize e gerencie as informações detalhadas do pagamento selecionado.
+            </DialogDescription>
           </DialogHeader>
           {selectedPayment && (
             <div className="space-y-4">
@@ -846,6 +849,9 @@ export default function AdminPayments() {
         <DialogContent className="bg-slate-900 border-slate-700 text-white">
           <DialogHeader>
             <DialogTitle>Aprovar Pagamento</DialogTitle>
+            <DialogDescription className="text-slate-400">
+              Confirme o pagamento fornecendo o ID da transação para registro.
+            </DialogDescription>
           </DialogHeader>
           {selectedPayment && (
             <div className="space-y-4">
@@ -888,6 +894,9 @@ export default function AdminPayments() {
         <DialogContent className="bg-slate-900 border-slate-700 text-white">
           <DialogHeader>
             <DialogTitle>Editar Pagamento</DialogTitle>
+            <DialogDescription className="text-slate-400">
+              Atualize as informações do pagamento selecionado.
+            </DialogDescription>
           </DialogHeader>
           {selectedPayment && (
             <div className="space-y-4">
