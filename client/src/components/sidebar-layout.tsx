@@ -180,6 +180,24 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
 
           <Separator className="bg-slate-800/50" />
 
+          {/* Quick Actions */}
+          {isOnAdminRoute && (
+            <div className="p-4 space-y-2">
+              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                Ações Rápidas
+              </h3>
+              <Button
+                onClick={() => handleNavigation('/admin/payments')}
+                className="w-full justify-start gap-3 bg-emerald-600 hover:bg-emerald-700 text-white transition-all duration-200 touch-manipulation min-h-[48px]"
+              >
+                <CreditCard className="h-5 w-5" />
+                Gerenciar Pagamentos
+              </Button>
+            </div>
+          )}
+
+          <Separator className="bg-slate-800/50" />
+
           {/* Footer with Logout */}
           <div className="p-4">
             <Button
