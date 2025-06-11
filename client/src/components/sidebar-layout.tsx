@@ -213,8 +213,8 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 sm:ml-0 w-full min-h-screen overflow-y-auto bg-[#101D33] relative">
-        <div className="sm:ml-0 min-h-full">
+      <main className="flex-1 ml-0 lg:ml-72 min-h-screen overflow-y-auto bg-slate-950 relative">
+        <div className="w-full min-h-full p-4 lg:p-6">
           {children}
         </div>
       </main>
