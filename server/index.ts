@@ -21,8 +21,19 @@ app.use(session({
   }
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// JSON parsing middleware with error handling
+app.use('/api', (req, res, next) => {
+  express.json({ limit: '10mb', strict: false })(req, res, (err) => {
+    if (err) {
+      console.error('JSON parsing error:', err.message);
+      return res.status(400).json({ error: 'Invalid JSON format' });
+    }
+    next();
+  });
+});
+
+app.use(express.json({ limit: '10mb', strict: false }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Configurar Passport
 app.use(passport.initialize());
