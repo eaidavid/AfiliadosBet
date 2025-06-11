@@ -149,7 +149,6 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
           <ScrollArea className="flex-1 px-3 py-4">
             <nav className="space-y-2">
               {menuItems.map((item) => {
-                console.log('Rendering menu item:', item.label, item.path);
                 const isActive = location === item.path;
                 const Icon = item.icon;
 
