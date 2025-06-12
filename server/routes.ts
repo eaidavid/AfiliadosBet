@@ -2527,17 +2527,15 @@ export async function registerRoutes(app: express.Application) {
         return res.status(400).json({ error: "Dados inválidos para ação em lote" });
       }
 
-      let updateData: any = {
-        processedAt: new Date(),
-        adminNotes: notes || `Ação em lote: ${action}`
-      };
+      let updateData: any = {};
 
       switch (action) {
         case 'approve':
-          updateData.status = 'approved';
+          updateData.status = 'completed';
+          updateData.paidAt = new Date();
           break;
         case 'reject':
-          updateData.status = 'rejected';
+          updateData.status = 'failed';
           break;
         default:
           return res.status(400).json({ error: "Ação inválida" });
@@ -2584,18 +2582,26 @@ export async function registerRoutes(app: express.Application) {
       // Calculate commission totals
       const commissionStats = await db
         .select({
-          totalEarned: sql<string>`COALESCE(SUM(CASE WHEN ${schema.conversions.status} = 'active' THEN ${schema.conversions.commissionAmount} ELSE 0 END), 0)`,
-          totalWithdrawn: sql<string>`COALESCE(SUM(CASE WHEN ${schema.payments.status} = 'approved' THEN ${schema.payments.amount} ELSE 0 END), 0)`,
-          pendingPayments: sql<string>`COALESCE(SUM(CASE WHEN ${schema.payments.status} = 'pending' THEN ${schema.payments.amount} ELSE 0 END), 0)`
+          totalEarned: sql<string>`COALESCE(SUM(${schema.conversions.commission}), 0)`,
         })
         .from(schema.conversions)
-        .leftJoin(schema.payments, eq(schema.payments.userId, schema.conversions.affiliateId))
-        .where(eq(schema.conversions.affiliateId, userId));
+        .where(eq(schema.conversions.userId, userId));
 
-      const stats = commissionStats[0];
-      const totalEarned = parseFloat(stats.totalEarned) || 0;
-      const totalWithdrawn = parseFloat(stats.totalWithdrawn) || 0;
-      const pendingPayments = parseFloat(stats.pendingPayments) || 0;
+      // Calculate payment totals
+      const paymentStats = await db
+        .select({
+          totalWithdrawn: sql<string>`COALESCE(SUM(CASE WHEN ${schema.payments.status} = 'completed' THEN ${schema.payments.amount} ELSE 0 END), 0)`,
+          pendingPayments: sql<string>`COALESCE(SUM(CASE WHEN ${schema.payments.status} = 'pending' THEN ${schema.payments.amount} ELSE 0 END), 0)`
+        })
+        .from(schema.payments)
+        .where(eq(schema.payments.userId, userId));
+
+      const commissionData = commissionStats[0];
+      const paymentData = paymentStats[0];
+      
+      const totalEarned = parseFloat(commissionData?.totalEarned) || 0;
+      const totalWithdrawn = parseFloat(paymentData?.totalWithdrawn) || 0;
+      const pendingPayments = parseFloat(paymentData?.pendingPayments) || 0;
       const availableBalance = Math.max(0, totalEarned - totalWithdrawn - pendingPayments);
 
       // Get payment history
@@ -2614,13 +2620,13 @@ export async function registerRoutes(app: express.Application) {
 
       // Get latest payment date
       const [latestPayment] = await db
-        .select({ processedAt: schema.payments.processedAt })
+        .select({ paidAt: schema.payments.paidAt })
         .from(schema.payments)
         .where(and(
           eq(schema.payments.userId, userId),
-          eq(schema.payments.status, 'approved')
+          eq(schema.payments.status, 'completed')
         ))
-        .orderBy(desc(schema.payments.processedAt))
+        .orderBy(desc(schema.payments.paidAt))
         .limit(1);
 
       const result = {
@@ -2629,7 +2635,7 @@ export async function registerRoutes(app: express.Application) {
         totalEarned: totalEarned.toFixed(2),
         totalWithdrawn: totalWithdrawn.toFixed(2),
         pendingPayments: pendingPayments.toFixed(2),
-        lastPaymentDate: latestPayment?.processedAt || null,
+        lastPaymentDate: latestPayment?.paidAt || null,
         commissionBreakdown: {
           revShare: totalEarned.toFixed(2), // Simplified - all as revshare for now
           cpa: '0.00',
