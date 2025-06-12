@@ -2440,5 +2440,216 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
+  // Enhanced payment management endpoints
+  
+  // Approve payment with detailed logging
+  app.post("/api/admin/payments/:id/approve", requireAdmin, async (req, res) => {
+    try {
+      const paymentId = parseInt(req.params.id);
+      const { notes, adminName, transactionId, estimatedProcessingTime } = req.body;
+
+      if (!notes || !adminName) {
+        return res.status(400).json({ error: "Observações e nome do admin são obrigatórios" });
+      }
+
+      // Update payment status
+      const [updatedPayment] = await db
+        .update(schema.payments)
+        .set({
+          status: 'completed',
+          paidAt: new Date(),
+          transactionId: transactionId || null
+        })
+        .where(eq(schema.payments.id, paymentId))
+        .returning();
+
+      if (!updatedPayment) {
+        return res.status(404).json({ error: "Pagamento não encontrado" });
+      }
+
+      // Log the action for audit trail
+      console.log(`💳 Pagamento ${paymentId} aprovado por ${adminName}: ${notes}`);
+
+      res.json({ 
+        success: true, 
+        payment: updatedPayment,
+        message: "Pagamento aprovado com sucesso" 
+      });
+    } catch (error) {
+      console.error("Erro ao aprovar pagamento:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Reject payment with detailed logging
+  app.post("/api/admin/payments/:id/reject", requireAdmin, async (req, res) => {
+    try {
+      const paymentId = parseInt(req.params.id);
+      const { notes, adminName } = req.body;
+
+      if (!notes || !adminName) {
+        return res.status(400).json({ error: "Motivo da rejeição e nome do admin são obrigatórios" });
+      }
+
+      // Update payment status
+      const [updatedPayment] = await db
+        .update(schema.payments)
+        .set({
+          status: 'failed'
+        })
+        .where(eq(schema.payments.id, paymentId))
+        .returning();
+
+      if (!updatedPayment) {
+        return res.status(404).json({ error: "Pagamento não encontrado" });
+      }
+
+      // Log the action for audit trail
+      console.log(`❌ Pagamento ${paymentId} rejeitado por ${adminName}: ${notes}`);
+
+      res.json({ 
+        success: true, 
+        payment: updatedPayment,
+        message: "Pagamento rejeitado com sucesso" 
+      });
+    } catch (error) {
+      console.error("Erro ao rejeitar pagamento:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Enhanced bulk actions with logging
+  app.post("/api/admin/payments/bulk-action", requireAdmin, async (req, res) => {
+    try {
+      const { paymentIds, action, notes } = req.body;
+
+      if (!paymentIds || !Array.isArray(paymentIds) || !action) {
+        return res.status(400).json({ error: "Dados inválidos para ação em lote" });
+      }
+
+      let updateData: any = {
+        processedAt: new Date(),
+        adminNotes: notes || `Ação em lote: ${action}`
+      };
+
+      switch (action) {
+        case 'approve':
+          updateData.status = 'approved';
+          break;
+        case 'reject':
+          updateData.status = 'rejected';
+          break;
+        default:
+          return res.status(400).json({ error: "Ação inválida" });
+      }
+
+      const result = await db
+        .update(schema.payments)
+        .set(updateData)
+        .where(inArray(schema.payments.id, paymentIds))
+        .returning({ id: schema.payments.id });
+
+      console.log(`📊 Ação em lote '${action}' aplicada a ${result.length} pagamentos`);
+
+      res.json({ 
+        success: true, 
+        message: `${result.length} pagamentos processados com sucesso`,
+        updatedIds: result.map(r => r.id)
+      });
+    } catch (error) {
+      console.error("Erro na ação em lote:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+  // Get user commission data
+  app.get("/api/admin/users/commissions/:userId", requireAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+
+      if (!userId || isNaN(userId)) {
+        return res.status(400).json({ error: "ID do usuário inválido" });
+      }
+
+      // Get user data
+      const [user] = await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.id, userId));
+
+      if (!user) {
+        return res.status(404).json({ error: "Usuário não encontrado" });
+      }
+
+      // Calculate commission totals
+      const commissionStats = await db
+        .select({
+          totalEarned: sql<string>`COALESCE(SUM(CASE WHEN ${schema.conversions.status} = 'active' THEN ${schema.conversions.commissionAmount} ELSE 0 END), 0)`,
+          totalWithdrawn: sql<string>`COALESCE(SUM(CASE WHEN ${schema.payments.status} = 'approved' THEN ${schema.payments.amount} ELSE 0 END), 0)`,
+          pendingPayments: sql<string>`COALESCE(SUM(CASE WHEN ${schema.payments.status} = 'pending' THEN ${schema.payments.amount} ELSE 0 END), 0)`
+        })
+        .from(schema.conversions)
+        .leftJoin(schema.payments, eq(schema.payments.userId, schema.conversions.affiliateId))
+        .where(eq(schema.conversions.affiliateId, userId));
+
+      const stats = commissionStats[0];
+      const totalEarned = parseFloat(stats.totalEarned) || 0;
+      const totalWithdrawn = parseFloat(stats.totalWithdrawn) || 0;
+      const pendingPayments = parseFloat(stats.pendingPayments) || 0;
+      const availableBalance = Math.max(0, totalEarned - totalWithdrawn - pendingPayments);
+
+      // Get payment history
+      const paymentHistory = await db
+        .select({
+          totalPayments: sql<number>`COUNT(*)`,
+          successfulPayments: sql<number>`SUM(CASE WHEN ${schema.payments.status} = 'approved' THEN 1 ELSE 0 END)`
+        })
+        .from(schema.payments)
+        .where(eq(schema.payments.userId, userId));
+
+      const history = paymentHistory[0];
+      const successRate = history.totalPayments > 0 
+        ? ((history.successfulPayments / history.totalPayments) * 100).toFixed(1)
+        : '0';
+
+      // Get latest payment date
+      const [latestPayment] = await db
+        .select({ processedAt: schema.payments.processedAt })
+        .from(schema.payments)
+        .where(and(
+          eq(schema.payments.userId, userId),
+          eq(schema.payments.status, 'approved')
+        ))
+        .orderBy(desc(schema.payments.processedAt))
+        .limit(1);
+
+      const result = {
+        userId,
+        availableBalance: availableBalance.toFixed(2),
+        totalEarned: totalEarned.toFixed(2),
+        totalWithdrawn: totalWithdrawn.toFixed(2),
+        pendingPayments: pendingPayments.toFixed(2),
+        lastPaymentDate: latestPayment?.processedAt || null,
+        commissionBreakdown: {
+          revShare: totalEarned.toFixed(2), // Simplified - all as revshare for now
+          cpa: '0.00',
+          bonus: '0.00'
+        },
+        paymentHistory: {
+          totalPayments: history.totalPayments,
+          successRate: successRate + '%',
+          averageAmount: history.totalPayments > 0 
+            ? (totalWithdrawn / Math.max(1, history.successfulPayments)).toFixed(2)
+            : '0.00'
+        }
+      };
+
+      res.json(result);
+    } catch (error) {
+      console.error("Erro ao buscar dados de comissão:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
   console.log("✅ Rotas registradas com sucesso");
 }
