@@ -185,8 +185,8 @@ export default function AdminPayments() {
     page: 1,
     limit: 10,
     search: '',
-    status: '',
-    method: '',
+    status: 'all',
+    method: 'all',
     dateFrom: '',
     dateTo: '',
     minAmount: '',
@@ -589,7 +589,7 @@ export default function AdminPayments() {
                         <SelectValue placeholder="Todos os status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Todos os status</SelectItem>
+                        <SelectItem value="all">Todos os status</SelectItem>
                         <SelectItem value="pending">Pendente</SelectItem>
                         <SelectItem value="approved">Aprovado</SelectItem>
                         <SelectItem value="rejected">Rejeitado</SelectItem>
@@ -605,7 +605,7 @@ export default function AdminPayments() {
                         <SelectValue placeholder="Todos os métodos" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Todos os métodos</SelectItem>
+                        <SelectItem value="all">Todos os métodos</SelectItem>
                         <SelectItem value="pix">PIX</SelectItem>
                         <SelectItem value="bank_transfer">Transferência Bancária</SelectItem>
                       </SelectContent>

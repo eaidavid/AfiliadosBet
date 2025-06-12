@@ -2376,7 +2376,7 @@ export async function registerRoutes(app: express.Application) {
           pixKey: schema.payments.pixKey,
           transactionId: schema.payments.transactionId,
           createdAt: schema.payments.createdAt,
-          processedAt: schema.payments.processedAt
+          paidAt: schema.payments.paidAt
         })
         .from(schema.payments)
         .leftJoin(schema.users, eq(schema.payments.userId, schema.users.id))
@@ -2385,7 +2385,7 @@ export async function registerRoutes(app: express.Application) {
       // Convert to CSV
       const csvHeader = 'ID,Valor,Status,Método,Usuário,Email,Chave PIX,ID Transação,Data Solicitação,Data Processamento\n';
       const csvData = payments.map(p => 
-        `${p.id},"R$ ${parseFloat(p.amount).toFixed(2)}",${p.status},${p.method},"${p.userName}","${p.userEmail}","${p.pixKey || ''}","${p.transactionId || ''}","${p.createdAt}","${p.processedAt || ''}"`
+        `${p.id},"R$ ${parseFloat(p.amount).toFixed(2)}",${p.status},${p.method},"${p.userName}","${p.userEmail}","${p.pixKey || ''}","${p.transactionId || ''}","${p.createdAt}","${p.paidAt || ''}"`
       ).join('\n');
 
       res.setHeader('Content-Type', 'text/csv');
