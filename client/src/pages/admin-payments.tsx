@@ -471,10 +471,10 @@ export default function AdminPayments() {
                 <CardContent className="pt-0">
                   <div className="space-y-2">
                     <div className="text-2xl font-bold text-white">
-                      {formatCurrency(paymentStats?.totalPendingAmount || '0')}
+                      {formatCurrency((paymentStats as any)?.totalPendingAmount || '0')}
                     </div>
                     <div className="text-xs text-slate-400">
-                      {paymentStats?.pendingCount || 0} solicitações
+                      {(paymentStats as any)?.pendingCount || 0} solicitações
                     </div>
                   </div>
                 </CardContent>
@@ -497,10 +497,10 @@ export default function AdminPayments() {
                 <CardContent className="pt-0">
                   <div className="space-y-2">
                     <div className="text-2xl font-bold text-white">
-                      {formatCurrency(paymentStats?.totalCompletedAmount || '0')}
+                      {formatCurrency((paymentStats as any)?.totalCompletedAmount || '0')}
                     </div>
                     <div className="text-xs text-slate-400">
-                      {paymentStats?.completedCount || 0} pagamentos
+                      {(paymentStats as any)?.completedCount || 0} pagamentos
                     </div>
                   </div>
                 </CardContent>
@@ -523,10 +523,10 @@ export default function AdminPayments() {
                 <CardContent className="pt-0">
                   <div className="space-y-2">
                     <div className="text-2xl font-bold text-white">
-                      {formatCurrency(paymentStats?.totalFailedAmount || '0')}
+                      {formatCurrency((paymentStats as any)?.totalFailedAmount || '0')}
                     </div>
                     <div className="text-xs text-slate-400">
-                      {paymentStats?.failedCount || 0} solicitações
+                      {(paymentStats as any)?.failedCount || 0} solicitações
                     </div>
                   </div>
                 </CardContent>
@@ -549,10 +549,10 @@ export default function AdminPayments() {
                 <CardContent className="pt-0">
                   <div className="space-y-2">
                     <div className="text-2xl font-bold text-white">
-                      {formatCurrency(paymentStats?.monthlyVolume || '0')}
+                      {formatCurrency((paymentStats as any)?.monthlyVolume || '0')}
                     </div>
                     <div className="text-xs text-slate-400">
-                      Média: {formatCurrency(paymentStats?.averagePayment || '0')}
+                      Média: {formatCurrency((paymentStats as any)?.averagePayment || '0')}
                     </div>
                   </div>
                 </CardContent>
@@ -677,7 +677,7 @@ export default function AdminPayments() {
                             checked={selectedPayments.length === payments.length && payments.length > 0}
                             onCheckedChange={(checked) => {
                               if (checked) {
-                                setSelectedPayments(payments.map(p => p.id));
+                                setSelectedPayments(payments.map((p: any) => p.id));
                               } else {
                                 setSelectedPayments([]);
                               }
@@ -694,7 +694,7 @@ export default function AdminPayments() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {payments.map((payment) => (
+                      {payments.map((payment: any) => (
                         <TableRow key={payment.id} className="border-slate-700 hover:bg-slate-800/50">
                           <TableCell>
                             <Checkbox
@@ -851,7 +851,7 @@ export default function AdminPayments() {
                                               <span className="text-slate-400 text-sm">Saldo Disponível</span>
                                             </div>
                                             <div className="text-green-400 font-bold text-xl">
-                                              {formatCurrency(userCommissions?.availableBalance || '0')}
+                                              {formatCurrency((userCommissions as any)?.availableBalance || '0')}
                                             </div>
                                           </div>
                                           <div className="bg-slate-900 p-4 rounded-lg">
@@ -860,7 +860,7 @@ export default function AdminPayments() {
                                               <span className="text-slate-400 text-sm">Total Ganho</span>
                                             </div>
                                             <div className="text-blue-400 font-bold text-xl">
-                                              {formatCurrency(userCommissions?.totalEarned || '0')}
+                                              {formatCurrency((userCommissions as any)?.totalEarned || '0')}
                                             </div>
                                           </div>
                                           <div className="bg-slate-900 p-4 rounded-lg">
@@ -869,7 +869,7 @@ export default function AdminPayments() {
                                               <span className="text-slate-400 text-sm">Total Sacado</span>
                                             </div>
                                             <div className="text-orange-400 font-bold text-xl">
-                                              {formatCurrency(userCommissions?.totalWithdrawn || '0')}
+                                              {formatCurrency((userCommissions as any)?.totalWithdrawn || '0')}
                                             </div>
                                           </div>
                                           <div className="bg-slate-900 p-4 rounded-lg">
@@ -878,7 +878,7 @@ export default function AdminPayments() {
                                               <span className="text-slate-400 text-sm">Pendente</span>
                                             </div>
                                             <div className="text-yellow-400 font-bold text-xl">
-                                              {formatCurrency(userCommissions?.pendingPayments || '0')}
+                                              {formatCurrency((userCommissions as any)?.pendingPayments || '0')}
                                             </div>
                                           </div>
                                         </div>
@@ -917,7 +917,7 @@ export default function AdminPayments() {
                 {/* Pagination */}
                 <div className="flex items-center justify-between mt-6">
                   <div className="text-sm text-slate-400">
-                    Mostrando {((filters.page - 1) * filters.limit) + 1} a {Math.min(filters.page * filters.limit, paymentsData?.total || 0)} de {paymentsData?.total || 0} pagamentos
+                    Mostrando {((filters.page - 1) * filters.limit) + 1} a {Math.min(filters.page * filters.limit, (paymentsData as any)?.total || 0)} de {(paymentsData as any)?.total || 0} pagamentos
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
