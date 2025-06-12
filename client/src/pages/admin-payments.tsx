@@ -362,6 +362,16 @@ export default function AdminPayments() {
 
   const getStatusBadge = (status: string) => {
     const config = statusConfig[status as keyof typeof statusConfig];
+    if (!config) {
+      // Fallback for unknown status
+      return (
+        <Badge variant="outline" className="text-slate-400 bg-slate-900/20 border-slate-500/30 px-3 py-1 font-medium">
+          <Clock className="h-3 w-3 mr-1" />
+          {status || 'Desconhecido'}
+        </Badge>
+      );
+    }
+    
     const Icon = config.icon;
     
     return (
@@ -374,6 +384,17 @@ export default function AdminPayments() {
 
   const getPriorityBadge = (priority: string) => {
     const config = priorityConfig[priority as keyof typeof priorityConfig];
+    if (!config) {
+      // Fallback for unknown priority
+      return (
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-gray-400" />
+          <span className="text-xs font-medium text-gray-400 bg-gray-900/20">
+            {priority || 'Média'}
+          </span>
+        </div>
+      );
+    }
     
     return (
       <div className="flex items-center gap-2">
