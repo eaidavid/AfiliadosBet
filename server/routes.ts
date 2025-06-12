@@ -2070,6 +2070,11 @@ export async function registerRoutes(app: express.Application) {
           count: sql<number>`COUNT(*)`
         })
         .from(schema.payments)
+        .innerJoin(schema.users, eq(schema.payments.userId, schema.users.id))
+        .where(and(
+          eq(schema.users.role, 'affiliate'),
+          eq(schema.users.isActive, true)
+        ))
         .groupBy(schema.payments.status);
 
       // Get monthly volume (current month)
@@ -2082,7 +2087,12 @@ export async function registerRoutes(app: express.Application) {
           totalAmount: sql<string>`COALESCE(SUM(${schema.payments.amount}), 0)`
         })
         .from(schema.payments)
-        .where(gte(schema.payments.createdAt, currentMonth));
+        .innerJoin(schema.users, eq(schema.payments.userId, schema.users.id))
+        .where(and(
+          gte(schema.payments.createdAt, currentMonth),
+          eq(schema.users.role, 'affiliate'),
+          eq(schema.users.isActive, true)
+        ));
 
       const result = {
         totalPendingAmount: stats.find(s => s.status === 'pending')?.totalAmount || '0',
@@ -2125,11 +2135,15 @@ export async function registerRoutes(app: express.Application) {
       // Build where conditions
       const conditions = [];
       
-      if (status) {
+      // Only show payments from actual affiliates
+      conditions.push(eq(schema.users.role, 'affiliate'));
+      conditions.push(eq(schema.users.isActive, true));
+      
+      if (status && status !== 'all') {
         conditions.push(eq(schema.payments.status, status as string));
       }
       
-      if (method) {
+      if (method && method !== 'all') {
         conditions.push(eq(schema.payments.method, method as string));
       }
       
@@ -2569,14 +2583,18 @@ export async function registerRoutes(app: express.Application) {
         return res.status(400).json({ error: "ID do usuário inválido" });
       }
 
-      // Get user data
+      // Get user data - only allow affiliate accounts
       const [user] = await db
         .select()
         .from(schema.users)
-        .where(eq(schema.users.id, userId));
+        .where(and(
+          eq(schema.users.id, userId),
+          eq(schema.users.role, 'affiliate'),
+          eq(schema.users.isActive, true)
+        ));
 
       if (!user) {
-        return res.status(404).json({ error: "Usuário não encontrado" });
+        return res.status(404).json({ error: "Afiliado não encontrado ou inativo" });
       }
 
       // Calculate commission totals
