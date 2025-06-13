@@ -4,7 +4,9 @@ import { useLocation } from 'wouter';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { SidebarLayout } from '@/components/sidebar-layout';
+import { BottomNavigation } from '@/components/bottom-navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -92,6 +94,7 @@ interface MonthlyStats {
 
 export default function AffiliateHome() {
   const [searchTerm, setSearchTerm] = useState('');
+  const isMobile = useIsMobile();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
@@ -306,7 +309,7 @@ export default function AffiliateHome() {
 
   return (
     <SidebarLayout>
-      <div className="p-3 sm:p-6 pt-[62px] pb-[62px]">
+      <div className={`p-3 sm:p-6 pt-[62px] ${isMobile ? 'pb-[90px]' : 'pb-[62px]'}`}>
         <div className="max-w-7xl mx-auto space-y-4 sm:space-y-8">
           {/* Header */}
           <div className="space-y-4">
