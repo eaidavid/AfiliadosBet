@@ -9,7 +9,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import SidebarLayout from '@/components/sidebar-layout';
+import { BottomNavigation } from '@/components/bottom-navigation';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { apiRequest } from '@/lib/queryClient';
 import {
   Search,
@@ -86,6 +88,7 @@ interface AffiliateLink {
 export default function BettingHouses() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const isMobile = useIsMobile();
   const [searchTerm, setSearchTerm] = useState('');
   const [commissionFilter, setCommissionFilter] = useState('all');
   const [paymentFilter, setPaymentFilter] = useState('all');

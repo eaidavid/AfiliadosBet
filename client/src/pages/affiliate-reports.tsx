@@ -15,6 +15,8 @@ import {
   Activity
 } from 'lucide-react';
 import SidebarLayout from '@/components/sidebar-layout';
+import { BottomNavigation } from '@/components/bottom-navigation';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
