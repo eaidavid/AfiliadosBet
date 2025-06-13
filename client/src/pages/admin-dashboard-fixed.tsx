@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AdminSidebar } from "@/components/admin/sidebar";
+import { BottomNavigation } from "@/components/bottom-navigation";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
@@ -367,6 +368,9 @@ export default function AdminDashboardFixed() {
           )}
         </main>
       </div>
+      
+      {/* Test Bottom Navigation */}
+      <BottomNavigation />
     </div>
   );
 }

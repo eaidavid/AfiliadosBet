@@ -59,7 +59,10 @@ export function BottomNavigation({ className }: BottomNavigationProps) {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 z-50 h-16 flex items-center justify-around px-2 md:hidden">
+    <div 
+      className="fixed bottom-0 left-0 right-0 bg-red-500 border-t border-slate-700 z-[9999] h-16 flex items-center justify-around px-2"
+      style={{ display: 'flex' }}
+    >
       {navigationItems.map((item) => {
         const isActive = location === item.href || 
                         (item.href === '/home' && location === '/') ||
