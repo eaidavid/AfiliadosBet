@@ -71,6 +71,7 @@ const PIX_KEY_TYPES = [
 
 export default function UserProfile() {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [profileData, setProfileData] = useState<Partial<UserProfile>>({});
@@ -769,6 +770,9 @@ export default function UserProfile() {
           </div>
         </div>
       </div>
+      
+      {/* Bottom Navigation for Mobile */}
+      {isMobile && <BottomNavigation />}
     </SidebarLayout>
   );
 }
