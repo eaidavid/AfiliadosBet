@@ -845,7 +845,7 @@ export default function AffiliateHome() {
       </div>
       
       {/* Bottom Navigation for Mobile */}
-      {isMobile && <BottomNavigation />}
+      <BottomNavigation />
     </SidebarLayout>
   );
 }

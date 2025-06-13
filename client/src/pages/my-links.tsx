@@ -613,7 +613,7 @@ export default function MyLinks() {
       </div>
       
       {/* Bottom Navigation for Mobile */}
-      {isMobile && <BottomNavigation />}
+      <BottomNavigation />
     </SidebarLayout>
   );
 }

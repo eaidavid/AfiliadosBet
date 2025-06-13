@@ -500,7 +500,7 @@ export default function AffiliatePayments() {
       </div>
       
       {/* Bottom Navigation for Mobile */}
-      {isMobile && <BottomNavigation />}
+      <BottomNavigation />
     </SidebarLayout>
   );
 }

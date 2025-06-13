@@ -59,9 +59,12 @@ export function BottomNavigation({ className }: BottomNavigationProps) {
     navigate(href);
   };
 
+  // Debug log to check if component is rendering
+  console.log('BottomNavigation rendering on location:', location);
+
   return (
     <div className={cn(
-      "fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-md border-t border-slate-700/50 md:hidden",
+      "fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-md border-t border-slate-700/50 lg:hidden",
       "safe-area-inset-bottom", // Para dispositivos com notch
       className
     )}>
