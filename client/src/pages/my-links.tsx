@@ -78,6 +78,7 @@ export default function MyLinks() {
   const [sortBy, setSortBy] = useState('recent');
   const [copiedLinkId, setCopiedLinkId] = useState<number | null>(null);
   const [selectedView, setSelectedView] = useState('cards');
+  const isMobile = useIsMobile();
   const { toast } = useToast();
 
   // Fetch affiliate links
@@ -610,6 +611,9 @@ export default function MyLinks() {
           )}
         </div>
       </div>
+      
+      {/* Bottom Navigation for Mobile */}
+      {isMobile && <BottomNavigation />}
     </SidebarLayout>
   );
 }

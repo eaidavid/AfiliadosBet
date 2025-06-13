@@ -20,6 +20,9 @@ import {
   Info
 } from 'lucide-react';
 
+import SidebarLayout from '@/components/sidebar-layout';
+import { BottomNavigation } from '@/components/bottom-navigation';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -30,8 +33,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import SidebarLayout from '@/components/sidebar-layout';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Payment {
   id: number;

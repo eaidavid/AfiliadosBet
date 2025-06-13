@@ -71,6 +71,7 @@ export default function AffiliateReports() {
   const [period, setPeriod] = useState('7');
   const [conversionFilter, setConversionFilter] = useState('all');
   const [houseFilter, setHouseFilter] = useState('all');
+  const isMobile = useIsMobile();
 
   // Fetch analytics data
   const { data: analyticsData, isLoading } = useQuery<AnalyticsData>({
@@ -429,6 +430,9 @@ export default function AffiliateReports() {
           )}
         </div>
       </div>
+      
+      {/* Bottom Navigation for Mobile */}
+      {isMobile && <BottomNavigation />}
     </SidebarLayout>
   );
 }

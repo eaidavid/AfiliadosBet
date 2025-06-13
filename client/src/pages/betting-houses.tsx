@@ -1065,6 +1065,9 @@ export default function BettingHouses() {
           </DialogContent>
         </Dialog>
       </div>
+      
+      {/* Bottom Navigation for Mobile */}
+      {isMobile && <BottomNavigation />}
     </SidebarLayout>
   );
 }
