@@ -1,5 +1,4 @@
 import { useLocation } from 'wouter';
-import { cn } from '@/lib/utils';
 import {
   Home,
   Building2,
@@ -59,57 +58,28 @@ export function BottomNavigation({ className }: BottomNavigationProps) {
     navigate(href);
   };
 
-  // Debug log to check if component is rendering
-  console.log('BottomNavigation rendering on location:', location);
-
   return (
-    <div className={cn(
-      "fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-md border-t border-slate-700/50 lg:hidden",
-      "safe-area-inset-bottom", // Para dispositivos com notch
-      className
-    )}>
-      <div className="flex items-center justify-around px-2 py-2">
-        {navigationItems.map((item) => {
-          const isActive = location === item.href || 
-                          (item.href === '/home' && location === '/') ||
-                          (item.href === '/betting-houses' && location === '/houses');
-          
-          return (
-            <button
-              key={item.href}
-              onClick={() => handleNavigation(item.href)}
-              className={cn(
-                "flex flex-col items-center justify-center min-w-0 flex-1 py-2 px-1 rounded-lg transition-all duration-200 touch-target",
-                "focus:outline-none focus:ring-2 focus:ring-emerald-500/20",
-                isActive
-                  ? "text-emerald-400"
-                  : "text-slate-400 hover:text-slate-300 active:text-emerald-300"
-              )}
-              aria-label={item.title}
-            >
-              <div className={cn(
-                "relative flex items-center justify-center w-8 h-8 mb-1 rounded-lg transition-all duration-200",
-                isActive 
-                  ? "bg-emerald-500/20 text-emerald-400" 
-                  : "text-slate-400 group-hover:bg-slate-800/50"
-              )}>
-                <item.icon className="h-5 w-5" />
-                {isActive && (
-                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                )}
-              </div>
-              <span className={cn(
-                "text-xs font-medium truncate max-w-full transition-colors duration-200",
-                isActive 
-                  ? "text-emerald-400" 
-                  : "text-slate-400"
-              )}>
-                {item.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+    <div className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 z-50 h-16 flex items-center justify-around px-2 md:hidden">
+      {navigationItems.map((item) => {
+        const isActive = location === item.href || 
+                        (item.href === '/home' && location === '/') ||
+                        (item.href === '/betting-houses' && location === '/houses');
+        
+        return (
+          <button
+            key={item.href}
+            onClick={() => handleNavigation(item.href)}
+            className={`flex flex-col items-center justify-center flex-1 py-1 px-1 transition-all duration-200 ${
+              isActive ? 'text-emerald-400' : 'text-slate-400'
+            }`}
+          >
+            <item.icon className="h-5 w-5 mb-1" />
+            <span className="text-xs font-medium">
+              {item.label}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }
