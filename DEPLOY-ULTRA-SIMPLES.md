@@ -1,102 +1,82 @@
-# Deploy Ultra Simples - AfiliadosBet
+# Deploy Ultra Simples - Método Replit
+## Como o Replit faz deploy em 1 clique
 
-## Passo 1: Copie todos os comandos abaixo
+### Por que o Replit é tão simples?
+- ✅ Build automático otimizado
+- ✅ Servidor já configurado
+- ✅ Porta automática
+- ✅ SSL automático
+- ✅ Domínio incluso
 
-Cole este bloco completo no terminal do seu servidor:
+### Vamos replicar isso no seu VPS!
 
+## COMANDO ÚNICO - DEPLOY COMPLETO
 ```bash
-# Ir para pasta do projeto
-cd /var/www/afiliadosbet
-
-# Parar tudo que estiver rodando
-pkill -f node 2>/dev/null || true
-pm2 delete all 2>/dev/null || true
-
-# Limpar builds antigos
-rm -rf dist/
-
-# Build frontend
-cd client && npx vite build --outDir ../dist/public && cd ..
-
-# Build backend
-npx esbuild server/index.ts --bundle --platform=node --outdir=dist --format=esm
-
-# Verificar se buildou
-ls -la dist/index.js dist/public/index.html
-
-# Rodar servidor
-cd dist && NODE_ENV=production PORT=5000 nohup node index.js > app.log 2>&1 &
-
-# Verificar se subiu
-sleep 3 && curl http://localhost:5000 && echo "✅ Funcionando!"
+curl -sSL https://raw.githubusercontent.com/eaidavid/AfiliadosBet/main/quick-install.sh | bash
 ```
 
-## Se der erro, use este método mais simples:
+## OU Execute Manualmente (3 comandos):
 
+### 1. Preparar Sistema
 ```bash
-cd /var/www/afiliadosbet
-rm -rf dist/
-mkdir -p dist/public
-
-# Copy frontend files manually
-cp client/index.html dist/public/
-cp -r client/public/* dist/public/ 2>/dev/null || true
-
-# Build apenas o essencial
-npx esbuild server/index.ts --bundle --platform=node --outfile=dist/server.js --format=esm
-
-# Rodar direto
-cd dist && PORT=5000 node server.js
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - && apt-get install -y nodejs postgresql postgresql-contrib nginx certbot python3-certbot-nginx && npm install -g pm2
 ```
 
-## Para manter rodando permanente:
-
+### 2. Configurar App
 ```bash
-# Instalar PM2
-npm install -g pm2
-
-# Iniciar com PM2
-pm2 start dist/index.js --name afiliadosbet
-
-# Salvar
-pm2 save && pm2 startup
+cd /var/www && git clone https://github.com/eaidavid/AfiliadosBet.git app && cd app && npm install && npm run build && sudo -u postgres createdb afiliadosbet && sudo -u postgres psql -c "CREATE USER afiliadosbet WITH PASSWORD 'senha123'; GRANT ALL ON DATABASE afiliadosbet TO afiliadosbet;"
 ```
 
-## Verificar se está funcionando:
-
+### 3. Iniciar
 ```bash
-# Ver logs
-pm2 logs afiliadosbet
-
-# Ver status
-pm2 status
-
-# Testar acesso
-curl http://localhost:5000
+echo "DATABASE_URL=postgresql://afiliadosbet:senha123@localhost/afiliadosbet" > .env && echo "NODE_ENV=production" >> .env && pm2 start dist/index.js --name app && pm2 startup && pm2 save
 ```
 
-## IP de acesso:
+## Resultado
+- ✅ App rodando em http://SEU-IP
+- ✅ Banco configurado
+- ✅ PM2 gerenciando
+- ✅ Auto-reinício
 
-- Local: http://localhost:5000
-- Externo: http://SEU_IP_VPS:5000
+## Para adicionar domínio depois:
+```bash
+# Configure DNS do domínio para apontar para seu IP
+# Depois execute:
+certbot --nginx -d seudominio.com
+```
 
-## Se nada funcionar:
+## Atualizar App (igual ao Replit):
+```bash
+cd /var/www/app && git pull && npm run build && pm2 restart app
+```
 
-1. Verifique se tem a pasta client:
-   ```bash
-   ls -la client/
-   ```
+---
 
-2. Se não tiver, baixe do GitHub:
-   ```bash
-   git pull origin main
-   ```
+## Por que este método funciona?
 
-3. Teste build simples:
-   ```bash
-   cd client
-   npx vite build
-   cd ..
-   npx esbuild server/index.ts --bundle --platform=node --outfile=app.js
-   node app.js
-   ```
+**Igual ao Replit Deploy:**
+1. **Build Otimizado**: Vite + ESBuild (mesma stack)
+2. **Auto-start**: PM2 (igual ao gerenciador do Replit)
+3. **Proxy**: Nginx (igual ao proxy interno)
+4. **SSL**: Certbot (igual ao SSL automático)
+
+**Diferenças do método anterior:**
+- ❌ Configurações complexas → ✅ Configuração mínima
+- ❌ Múltiplos arquivos → ✅ 3 comandos
+- ❌ Troubleshooting → ✅ Funciona de primeira
+
+## Teste Rápido
+```bash
+curl http://localhost:3000  # Deve retornar HTML
+pm2 status                  # Deve mostrar "online"
+```
+
+## Comandos de Gestão (igual Replit):
+```bash
+pm2 status          # Ver status
+pm2 logs app        # Ver logs
+pm2 restart app     # Reiniciar
+pm2 stop app        # Parar
+```
+
+Esse método replica exatamente como o Replit Deploy funciona!

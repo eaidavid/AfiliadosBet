@@ -1,77 +1,51 @@
-# Comando Único para Deploy VPS - Acesso Root
+# Deploy Automático - 1 Comando
 
-## Conectar no Servidor
+## Como o Replit Deploy funciona:
+1. Clica no botão
+2. Aguarda 2 minutos
+3. Site funcionando
+
+## Seu VPS - Método idêntico:
+
+### COMANDO ÚNICO:
 ```bash
-ssh root@69.62.65.24
+wget -qO- https://raw.githubusercontent.com/eaidavid/AfiliadosBet/main/deploy-zero.sh | bash
 ```
-Senha: `Alepoker@800`
 
-## Comando Completo de Instalação
-
-Cole este comando único e aguarde:
-
+### OU copie e cole direto:
 ```bash
-apt update && apt upgrade -y && apt install -y curl git nginx postgresql postgresql-contrib && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && apt-get install -y nodejs && npm install -g pm2 && sudo -u postgres psql -c "CREATE DATABASE afiliadosbet; CREATE USER afiliadosbet WITH ENCRYPTED PASSWORD 'Alepoker@800'; GRANT ALL PRIVILEGES ON DATABASE afiliadosbet TO afiliadosbet; ALTER USER afiliadosbet CREATEDB;" && cd /var/www && rm -rf afiliadosbet && git clone https://github.com/eaidavid/AfiliadosBet.git afiliadosbet && cd afiliadosbet && useradd -m -s /bin/bash afiliadosbet && echo "afiliadosbet:Alepoker@800" | chpasswd && chown -R afiliadosbet:afiliadosbet . && cat > .env << 'EOF'
-NODE_ENV=production
-PORT=5000
-DATABASE_URL=postgresql://afiliadosbet:Alepoker@800@localhost:5432/afiliadosbet
-SESSION_SECRET=afiliadosbet_secret_key_2024_$(openssl rand -hex 16)
-DOMAIN=https://afiliadosbet.com.br
-FRONTEND_URL=https://afiliadosbet.com.br
-BACKEND_URL=https://afiliadosbet.com.br
-EOF
-npm install && npm run build && npm run db:push && pm2 delete afiliadosbet 2>/dev/null || true && pm2 start dist/index.js --name afiliadosbet && pm2 save && pm2 startup && tee /etc/nginx/sites-available/afiliadosbet << 'EOFNGINX'
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - && apt-get update && apt-get install -y nodejs postgresql postgresql-contrib nginx ufw && npm install -g pm2 && systemctl start postgresql && systemctl enable postgresql && sudo -u postgres psql -c "CREATE DATABASE afiliadosbet; CREATE USER afiliadosapp WITH ENCRYPTED PASSWORD 'app123'; GRANT ALL PRIVILEGES ON DATABASE afiliadosbet TO afiliadosapp;" && cd /var/www && rm -rf afiliadosbet && git clone https://github.com/eaidavid/AfiliadosBet.git afiliadosbet && cd afiliadosbet && npm install && npm run build && echo "NODE_ENV=production
+PORT=3000
+DATABASE_URL=postgresql://afiliadosapp:app123@localhost:5432/afiliadosbet
+SESSION_SECRET=afiliadosbet_secret_2024" > .env && npm run db:push && pm2 start dist/index.js --name afiliadosbet && pm2 startup && pm2 save && cat > /etc/nginx/sites-available/default << 'EOF'
 server {
-    listen 80;
-    server_name afiliadosbet.com.br www.afiliadosbet.com.br;
-    
+    listen 80 default_server;
     location / {
-        proxy_pass http://127.0.0.1:5000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
+        proxy_pass http://127.0.0.1:3000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
     }
-    
-    client_max_body_size 10M;
 }
-EOFNGINX
-ln -sf /etc/nginx/sites-available/afiliadosbet /etc/nginx/sites-enabled/ && rm -f /etc/nginx/sites-enabled/default && nginx -t && systemctl restart nginx && apt install -y certbot python3-certbot-nginx && certbot --nginx -d afiliadosbet.com.br -d www.afiliadosbet.com.br --non-interactive --agree-tos -m admin@afiliadosbet.com.br && ufw allow ssh && ufw allow 'Nginx Full' && ufw --force enable && echo "🎉 DEPLOY CONCLUÍDO! Acesse: https://afiliadosbet.com.br"
+EOF
+nginx -t && systemctl restart nginx && ufw allow ssh && ufw allow 'Nginx Full' && ufw --force enable && echo "Deploy concluído! Acesse pelo IP do servidor"
 ```
 
-## Verificar se Funcionou
+## Resultado:
+- ✅ Site funcionando em http://SEU-IP
+- ✅ Zero configuração manual
+- ✅ Igual ao botão Deploy
 
+## Gerenciar (igual Replit):
 ```bash
-pm2 status
-curl http://localhost:5000
-curl https://afiliadosbet.com.br
-```
-
-## Para Atualizações Futuras
-
-```bash
-cd /var/www/afiliadosbet
-git pull origin main
-npm install
-npm run build
-pm2 restart afiliadosbet
-```
-
-## Comandos Úteis
-
-```bash
-pm2 logs afiliadosbet    # Ver logs
+pm2 status           # Ver se está rodando
+pm2 logs afiliadosbet # Ver logs
 pm2 restart afiliadosbet # Reiniciar
-pm2 status              # Status
-systemctl status nginx  # Status Nginx
 ```
 
-## Acesso Final
+## Atualizar:
+```bash
+cd /var/www/afiliadosbet && git pull && npm run build && pm2 restart afiliadosbet
+```
 
-- Site: https://afiliadosbet.com.br
-- SSH: ssh root@69.62.65.24
-- Logs: pm2 logs afiliadosbet
+**Simples assim - igual ao Replit Deploy!**
