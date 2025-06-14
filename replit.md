@@ -123,21 +123,20 @@ AfiliadosBet é uma plataforma completa de marketing de afiliados para casas de 
 
 ## Recent Changes
 
-### June 14, 2025 - Project Structure Cleanup & UI Improvements
-- **Universal Bottom Navigation**: Implemented bottom navigation system replacing traditional sidebar across all devices
-- **Admin Manage Page**: Complete functionality implementation with proper edit forms and detailed affiliate information view
-- **Project Structure**: Major cleanup - archived all unnecessary files in root directory to `archived_files/` 
-  - Documentation files moved to `archived_files/documentation/`
-  - Scripts and test files moved to `archived_files/scripts/`
-  - Configuration files moved to `archived_files/configs/`
-- **Modal Functionality**: Full implementation of edit and details modals with proper form validation and data display
-- **UI Consistency**: Standardized spacing and navigation across admin and affiliate panels
+### June 14, 2025 - Complete VPS Deployment System
+- **Independent VPS Deployment**: Created comprehensive deployment system for production VPS (69.62.65.24)
+- **Automated Installation Scripts**: Built three deployment options - quick install, full install, and manual step-by-step
+- **Production Configuration**: Complete Nginx, PostgreSQL, PM2, SSL/HTTPS setup with domain afiliadosbet.com.br
+- **Update System**: Automated git-based update system with backup capabilities
+- **Beginner-Friendly Guides**: Created simple tutorials for non-technical users
+- **Build Optimization**: Resolved Vite build performance issues with optimized scripts
 
 ### Current Project State
 - Clean root directory structure with only essential files
 - Fully functional admin management system with complete CRUD operations
 - Universal bottom navigation working across all pages
 - Comprehensive affiliate data management with performance statistics
+- Complete production deployment system ready for VPS implementation
 
 ## Changelog
 - June 13, 2025. Initial setup
