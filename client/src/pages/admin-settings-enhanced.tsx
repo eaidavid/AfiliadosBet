@@ -860,6 +860,20 @@ export default function AdminSettingsEnhanced() {
                       <strong>Dica:</strong> Os dados exportados são criptografados e seguem as normas da LGPD.
                     </AlertDescription>
                   </Alert>
+
+                  <Separator className="bg-slate-700" />
+
+                  <div className="pt-4">
+                    <Button 
+                      variant="outline" 
+                      className="w-full border-red-500/20 text-red-400 hover:bg-red-500/10 hover:border-red-500/30"
+                      onClick={() => logout.mutate()}
+                      disabled={logout.isPending}
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      {logout.isPending ? "Saindo..." : "Sair do Painel Admin"}
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </div>
