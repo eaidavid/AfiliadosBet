@@ -430,9 +430,7 @@ export default function AffiliateReports() {
           )}
         </div>
       </div>
-      
-      {/* Bottom Navigation for Mobile */}
-      <BottomNavigation />
+
     </SidebarLayout>
   );
 }

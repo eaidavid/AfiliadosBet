@@ -770,9 +770,7 @@ export default function UserProfile() {
           </div>
         </div>
       </div>
-      
-      {/* Bottom Navigation for Mobile */}
-      <BottomNavigation />
+
     </SidebarLayout>
   );
 }
