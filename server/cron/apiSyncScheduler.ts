@@ -20,29 +20,41 @@ export class ApiSyncScheduler {
   async initializeScheduler(): Promise<void> {
     console.log('🕐 Inicializando agendador de sincronização API');
 
-    // Buscar todas as casas API e hybrid ativas
-    const apiHouses = await db
-      .select()
-      .from(schema.bettingHouses)
-      .where(
-        and(
-          eq(schema.bettingHouses.isActive, true)
-        )
-      );
+    try {
+      // Buscar todas as casas API e hybrid ativas
+      const apiHouses = await db
+        .select()
+        .from(schema.bettingHouses)
+        .where(
+          and(
+            eq(schema.bettingHouses.isActive, true)
+          )
+        );
 
-    // Agendar sincronização apenas para casas com API (api ou hybrid)
-    for (const house of apiHouses) {
-      if (house.integrationType === 'api' || house.integrationType === 'hybrid') {
-        await this.scheduleHouseSync(house);
+      let scheduledCount = 0;
+      
+      // Agendar sincronização apenas para casas com API (api ou hybrid)
+      for (const house of apiHouses) {
+        if (house.integrationType === 'api' || house.integrationType === 'hybrid') {
+          try {
+            await this.scheduleHouseSync(house);
+            scheduledCount++;
+          } catch (error) {
+            console.error(`Erro ao agendar casa ${house.name} (${house.id}):`, error);
+          }
+        }
       }
+
+      // Agendar limpeza de logs antigos (diário às 02:00)
+      cron.schedule('0 2 * * *', () => {
+        this.cleanupOldLogs();
+      });
+
+      console.log(`✅ Agendador inicializado com ${scheduledCount} casas API`);
+    } catch (error) {
+      console.error('Erro na inicialização do agendador:', error);
+      // Não propagar o erro para não quebrar o startup
     }
-
-    // Agendar limpeza de logs antigos (diário às 02:00)
-    cron.schedule('0 2 * * *', () => {
-      this.cleanupOldLogs();
-    });
-
-    console.log(`✅ Agendador inicializado com ${apiHouses.length} casas API`);
   }
 
   async scheduleHouseSync(house: any): Promise<void> {
@@ -55,16 +67,20 @@ export class ApiSyncScheduler {
       this.scheduledTasks.delete(houseId);
     }
 
-    // Criar novo agendamento
+    // Criar novo agendamento (sem executar imediatamente)
     const cronExpression = this.generateCronExpression(syncInterval);
     
     const task = cron.schedule(cronExpression, async () => {
       await this.executeHouseSync(houseId, house.name);
     }, {
-      timezone: "America/Sao_Paulo"
+      timezone: "America/Sao_Paulo",
+      scheduled: false // Não iniciar automaticamente
     });
 
     this.scheduledTasks.set(houseId, task);
+    
+    // Iniciar o agendamento após configurar
+    task.start();
     
     console.log(`📅 Agendamento criado para ${house.name} (${houseId}): a cada ${syncInterval} minutos`);
   }

@@ -52,14 +52,16 @@ app.use(passport.session());
     console.log(`Server listening on port ${PORT}`);
     console.log("Application ready to receive requests");
     
-    // Inicializar agendador de sincronização API
-    try {
-      const { ApiSyncScheduler } = await import('./cron/apiSyncScheduler');
-      const scheduler = ApiSyncScheduler.getInstance();
-      await scheduler.initializeScheduler();
-    } catch (error) {
-      console.error("Erro ao inicializar agendador de API:", error);
-    }
+    // Inicializar agendador de sincronização API com delay
+    setTimeout(async () => {
+      try {
+        const { ApiSyncScheduler } = await import('./cron/apiSyncScheduler');
+        const scheduler = ApiSyncScheduler.getInstance();
+        await scheduler.initializeScheduler();
+      } catch (error) {
+        console.error("Erro ao inicializar agendador de API:", error);
+      }
+    }, 5000); // Delay de 5 segundos para permitir que o servidor inicie completamente
   });
 
   // Setup Vite development environment
