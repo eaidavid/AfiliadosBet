@@ -73,8 +73,7 @@ export class ApiSyncScheduler {
     const task = cron.schedule(cronExpression, async () => {
       await this.executeHouseSync(houseId, house.name);
     }, {
-      timezone: "America/Sao_Paulo",
-      scheduled: false // Não iniciar automaticamente
+      timezone: "America/Sao_Paulo"
     });
 
     this.scheduledTasks.set(houseId, task);

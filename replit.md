@@ -123,6 +123,13 @@ AfiliadosBet é uma plataforma completa de marketing de afiliados para casas de 
 
 ## Recent Changes
 
+### June 14, 2025 - Application Startup and UI Fixes
+- **Fixed Application Startup Issues**: Resolved API scheduler initialization problems causing app crashes
+- **Improved Error Handling**: Added proper error handling for cron tasks and database connections
+- **Fixed CSS Border Issues**: Removed global border rules causing unwanted borders throughout the interface
+- **Enhanced Startup Sequence**: Added delayed scheduler initialization to prevent startup conflicts
+- **Port Conflict Resolution**: Fixed EADDRINUSE errors by properly managing running processes
+
 ### June 14, 2025 - Complete VPS Deployment System
 - **Independent VPS Deployment**: Created comprehensive deployment system for production VPS (69.62.65.24)
 - **Automated Installation Scripts**: Built three deployment options - quick install, full install, and manual step-by-step
@@ -137,6 +144,7 @@ AfiliadosBet é uma plataforma completa de marketing de afiliados para casas de 
 - Universal bottom navigation working across all pages
 - Comprehensive affiliate data management with performance statistics
 - Complete production deployment system ready for VPS implementation
+- Application running stable with proper error handling and clean UI
 
 ## Changelog
 - June 13, 2025. Initial setup
