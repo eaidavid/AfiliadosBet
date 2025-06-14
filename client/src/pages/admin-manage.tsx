@@ -37,7 +37,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
-import { AdminSidebar } from "@/components/admin/sidebar";
+import CenteredLayout from "@/components/centered-layout";
 
 // Form schema
 const affiliateSchema = z.object({
@@ -348,9 +348,7 @@ export default function AdminManage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
-      <div className="lg:ml-72 px-4 md:px-6 lg:px-8 max-w-[1600px] mx-auto transition-all duration-300 pl-[17px] pr-[17px] mt-[0px] mb-[0px] pt-[77px] pb-[77px] lg:ml-[110px] lg:mr-[110px]">
+    <CenteredLayout>
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}

@@ -14,17 +14,7 @@ export function StandardLayout({ children, title, subtitle, className = '' }: St
   return (
     <div className={`min-h-screen bg-slate-950 text-white ${className}`}>
       {/* Main Content with Dynamic Spacing */}
-      <div className={`
-        transition-all duration-300 ease-in-out
-        ${isMobile 
-          ? 'px-4 pt-20' // Mobile: top padding for mobile menu button
-          : 'lg:ml-72 xl:ml-72' // Desktop: left margin for sidebar (expanded)
-        }
-        px-4 md:px-6 lg:px-8 
-        pt-6 pb-8
-        max-w-[1600px] 
-        mx-auto
-      `}>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
         {/* Header Section */}
         {(title || subtitle) && (
           <div className="mb-6 space-y-2">
