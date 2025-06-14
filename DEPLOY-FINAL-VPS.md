@@ -2,7 +2,7 @@
 
 ## Dados do Servidor
 - **IP:** 69.62.65.24
-- **Usuário:** afiliadosbet
+- **Usuário:** root
 - **Senha:** Alepoker@800
 - **Domínio:** afiliadosbet.com.br
 
@@ -11,20 +11,20 @@
 Conecte no servidor e execute:
 
 ```bash
-ssh afiliadosbet@69.62.65.24
+ssh root@69.62.65.24
 ```
 
 Depois cole este comando completo:
 
 ```bash
-sudo apt update && sudo apt upgrade -y && sudo apt install -y curl git nginx postgresql postgresql-contrib && curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - && sudo apt-get install -y nodejs && npm install -g pm2 && sudo -u postgres psql << 'EOFDB'
+apt update && apt upgrade -y && apt install -y curl git nginx postgresql postgresql-contrib && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && apt-get install -y nodejs && npm install -g pm2 && sudo -u postgres psql << 'EOFDB'
 CREATE DATABASE afiliadosbet;
 CREATE USER afiliadosbet WITH ENCRYPTED PASSWORD 'Alepoker@800';
 GRANT ALL PRIVILEGES ON DATABASE afiliadosbet TO afiliadosbet;
 ALTER USER afiliadosbet CREATEDB;
 \q
 EOFDB
-cd /var/www && sudo rm -rf afiliadosbet && sudo git clone https://github.com/eaidavid/AfiliadosBet.git afiliadosbet && cd afiliadosbet && sudo chown -R afiliadosbet:afiliadosbet . && cat > .env << 'EOFENV'
+cd /var/www && rm -rf afiliadosbet && git clone https://github.com/eaidavid/AfiliadosBet.git afiliadosbet && cd afiliadosbet && useradd -m -s /bin/bash afiliadosbet && echo "afiliadosbet:Alepoker@800" | chpasswd && chown -R afiliadosbet:afiliadosbet . && cat > .env << 'EOFENV'
 NODE_ENV=production
 PORT=5000
 DATABASE_URL=postgresql://afiliadosbet:Alepoker@800@localhost:5432/afiliadosbet
@@ -33,7 +33,7 @@ DOMAIN=https://afiliadosbet.com.br
 FRONTEND_URL=https://afiliadosbet.com.br
 BACKEND_URL=https://afiliadosbet.com.br
 EOFENV
-npm install && npm run build && npm run db:push && pm2 delete afiliadosbet 2>/dev/null || true && pm2 start dist/index.js --name afiliadosbet && pm2 save && pm2 startup && sudo tee /etc/nginx/sites-available/afiliadosbet << 'EOFNGINX'
+npm install && npm run build && npm run db:push && pm2 delete afiliadosbet 2>/dev/null || true && pm2 start dist/index.js --name afiliadosbet && pm2 save && pm2 startup && tee /etc/nginx/sites-available/afiliadosbet << 'EOFNGINX'
 server {
     listen 80;
     server_name afiliadosbet.com.br www.afiliadosbet.com.br;
@@ -53,21 +53,21 @@ server {
     client_max_body_size 10M;
 }
 EOFNGINX
-sudo ln -sf /etc/nginx/sites-available/afiliadosbet /etc/nginx/sites-enabled/ && sudo rm -f /etc/nginx/sites-enabled/default && sudo nginx -t && sudo systemctl restart nginx && sudo apt install -y certbot python3-certbot-nginx && sudo certbot --nginx -d afiliadosbet.com.br -d www.afiliadosbet.com.br --non-interactive --agree-tos -m admin@afiliadosbet.com.br && sudo ufw allow ssh && sudo ufw allow 'Nginx Full' && sudo ufw --force enable && echo "✅ DEPLOY CONCLUÍDO! Acesse: https://afiliadosbet.com.br"
+ln -sf /etc/nginx/sites-available/afiliadosbet /etc/nginx/sites-enabled/ && rm -f /etc/nginx/sites-enabled/default && nginx -t && systemctl restart nginx && apt install -y certbot python3-certbot-nginx && certbot --nginx -d afiliadosbet.com.br -d www.afiliadosbet.com.br --non-interactive --agree-tos -m admin@afiliadosbet.com.br && ufw allow ssh && ufw allow 'Nginx Full' && ufw --force enable && echo "✅ DEPLOY CONCLUÍDO! Acesse: https://afiliadosbet.com.br"
 ```
 
 ## Se der erro, use instalação passo a passo:
 
 ### 1. Preparar sistema
 ```bash
-sudo apt update && sudo apt upgrade -y
-sudo apt install -y curl git nginx postgresql postgresql-contrib
+apt update && apt upgrade -y
+apt install -y curl git nginx postgresql postgresql-contrib
 ```
 
 ### 2. Instalar Node.js
 ```bash
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
+curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+apt-get install -y nodejs
 npm install -g pm2
 ```
 
@@ -84,9 +84,11 @@ ALTER USER afiliadosbet CREATEDB;
 ### 4. Baixar código
 ```bash
 cd /var/www
-sudo git clone https://github.com/eaidavid/AfiliadosBet.git afiliadosbet
+git clone https://github.com/eaidavid/AfiliadosBet.git afiliadosbet
 cd afiliadosbet
-sudo chown -R afiliadosbet:afiliadosbet .
+useradd -m -s /bin/bash afiliadosbet
+echo "afiliadosbet:Alepoker@800" | chpasswd
+chown -R afiliadosbet:afiliadosbet .
 ```
 
 ### 5. Configurar aplicação
@@ -114,7 +116,7 @@ pm2 startup
 
 ### 7. Configurar Nginx
 ```bash
-sudo tee /etc/nginx/sites-available/afiliadosbet << 'EOF'
+tee /etc/nginx/sites-available/afiliadosbet << 'EOF'
 server {
     listen 80;
     server_name afiliadosbet.com.br www.afiliadosbet.com.br;
@@ -135,10 +137,10 @@ server {
 }
 EOF
 
-sudo ln -sf /etc/nginx/sites-available/afiliadosbet /etc/nginx/sites-enabled/
-sudo rm -f /etc/nginx/sites-enabled/default
-sudo nginx -t
-sudo systemctl restart nginx
+ln -sf /etc/nginx/sites-available/afiliadosbet /etc/nginx/sites-enabled/
+rm -f /etc/nginx/sites-enabled/default
+nginx -t
+systemctl restart nginx
 ```
 
 ### 8. SSL e segurança
