@@ -527,13 +527,12 @@ export default function AdminHouses() {
           window.location.href = "/admin/settings";
         }
       }} />
-      
       <div className="ml-20 lg:ml-[110px] lg:mr-[110px]">
         <main className="p-4 lg:p-6 space-y-6">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-emerald-400 bg-clip-text text-transparent">
+              <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-emerald-400 bg-clip-text text-[#ffffff]">
                 Administração de Casas de Apostas
               </h1>
               <p className="text-slate-400 mt-1">
@@ -939,7 +938,6 @@ export default function AdminHouses() {
           </Card>
         </main>
       </div>
-      
       {/* Form Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-[95vw] lg:max-w-4xl max-h-[90vh] overflow-y-auto mx-4 lg:mx-0">
@@ -1500,7 +1498,6 @@ export default function AdminHouses() {
           </Form>
         </DialogContent>
       </Dialog>
-
       {/* View Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-2xl">
