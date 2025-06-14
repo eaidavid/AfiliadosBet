@@ -48,8 +48,9 @@ export function useAuth() {
         });
         
         if (response.ok) {
-          const userData = await response.json();
-          if (isMounted) {
+          const data = await response.json();
+          const userData = data.user || data; // Handle both response formats
+          if (isMounted && userData) {
             setUser(userData);
             setError(null);
             // Cache the auth state
