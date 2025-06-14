@@ -50,15 +50,16 @@ type AffiliateFormData = z.infer<typeof affiliateSchema>;
 // Types
 interface Affiliate {
   id: number;
-  subid: string;
-  casa_id: number;
-  casa_nome?: string;
-  tipo_comissao: "cpa" | "revshare" | "cpa+revshare";
-  valor_cpa?: number;
-  percentual_revshare?: number;
-  status: boolean;
-  data_criacao: string;
-  token_postback: string;
+  username: string;
+  email: string;
+  fullName: string;
+  isActive: boolean;
+  createdAt: string;
+  totalClicks: number;
+  totalRegistrations: number;
+  totalDeposits: number;
+  totalCommissions: string;
+  houses: string[];
 }
 
 interface PostbackLog {
@@ -112,11 +113,11 @@ export default function AdminManageFixed() {
   const stats = useMemo(() => {
     const affiliateList = Array.isArray(affiliates) ? affiliates : [];
     const total = affiliateList.length;
-    const ativos = affiliateList.filter((a: Affiliate) => a.status).length;
+    const ativos = affiliateList.filter((a: Affiliate) => a.isActive).length;
     const inativos = total - ativos;
     const ultimoCadastro = affiliateList.length > 0 
       ? new Date(Math.max(...affiliateList.map((a: Affiliate) => {
-          const date = new Date(a.data_criacao);
+          const date = new Date(a.createdAt);
           return isNaN(date.getTime()) ? 0 : date.getTime();
         })))
       : null;
@@ -128,22 +129,21 @@ export default function AdminManageFixed() {
   const filteredAffiliates = useMemo(() => {
     const affiliateList = Array.isArray(affiliates) ? affiliates : [];
     return affiliateList.filter((affiliate: Affiliate) => {
-      const matchesSubid = searchSubid === "" || 
-        affiliate.subid.toLowerCase().includes(searchSubid.toLowerCase());
+      const matchesSearch = searchSubid === "" || 
+        affiliate.username.toLowerCase().includes(searchSubid.toLowerCase()) ||
+        affiliate.email.toLowerCase().includes(searchSubid.toLowerCase()) ||
+        affiliate.fullName.toLowerCase().includes(searchSubid.toLowerCase());
       
       const matchesCasa = filterCasa === "all" || 
-        affiliate.casa_id.toString() === filterCasa;
-      
-      const matchesComissao = filterComissao === "all" || 
-        affiliate.tipo_comissao === filterComissao;
+        affiliate.houses.includes(filterCasa);
       
       const matchesStatus = filterStatus === "all" || 
-        (filterStatus === "ativo" && affiliate.status) ||
-        (filterStatus === "inativo" && !affiliate.status);
+        (filterStatus === "ativo" && affiliate.isActive) ||
+        (filterStatus === "inativo" && !affiliate.isActive);
 
-      return matchesSubid && matchesCasa && matchesComissao && matchesStatus;
+      return matchesSearch && matchesCasa && matchesStatus;
     });
-  }, [affiliates, searchSubid, filterCasa, filterComissao, filterStatus]);
+  }, [affiliates, searchSubid, filterCasa, filterStatus]);
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Data não disponível';
@@ -269,9 +269,9 @@ export default function AdminManageFixed() {
                 <Table>
                   <TableHeader>
                     <TableRow className="border-slate-700">
-                      <TableHead className="text-slate-300">SubID</TableHead>
-                      <TableHead className="text-slate-300">Casa</TableHead>
-                      <TableHead className="text-slate-300">Comissão</TableHead>
+                      <TableHead className="text-slate-300">Usuário</TableHead>
+                      <TableHead className="text-slate-300">Email</TableHead>
+                      <TableHead className="text-slate-300">Nome Completo</TableHead>
                       <TableHead className="text-slate-300">Status</TableHead>
                       <TableHead className="text-slate-300">Criado em</TableHead>
                       <TableHead className="text-slate-300">Ações</TableHead>
@@ -281,26 +281,24 @@ export default function AdminManageFixed() {
                     {filteredAffiliates.map((affiliate: Affiliate) => (
                       <TableRow key={affiliate.id} className="border-slate-700 hover:bg-slate-700/50">
                         <TableCell className="text-slate-200 font-medium">
-                          {affiliate.subid}
+                          {affiliate.username}
                         </TableCell>
                         <TableCell className="text-slate-300">
-                          {affiliate.casa_nome || `Casa ${affiliate.casa_id}`}
+                          {affiliate.email}
                         </TableCell>
                         <TableCell className="text-slate-300">
-                          <Badge variant="outline" className="text-xs">
-                            {affiliate.tipo_comissao?.toUpperCase() || 'N/A'}
-                          </Badge>
+                          {affiliate.fullName}
                         </TableCell>
                         <TableCell>
                           <Badge 
-                            variant={affiliate.status ? "default" : "destructive"}
-                            className={affiliate.status ? "bg-green-600" : "bg-red-600"}
+                            variant={affiliate.isActive ? "default" : "destructive"}
+                            className={affiliate.isActive ? "bg-green-600" : "bg-red-600"}
                           >
-                            {affiliate.status ? "Ativo" : "Inativo"}
+                            {affiliate.isActive ? "Ativo" : "Inativo"}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-slate-400 text-sm">
-                          {formatDate(affiliate.data_criacao)}
+                          {formatDate(affiliate.createdAt)}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
