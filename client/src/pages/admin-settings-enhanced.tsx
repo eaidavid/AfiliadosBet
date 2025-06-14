@@ -13,7 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import AdminSidebar from '@/components/admin/sidebar';
-import { useAuth, useLogout } from '@/hooks/use-auth';
+import { useAuth } from '@/hooks/use-auth';
 import {
   Settings,
   Shield,
@@ -63,7 +63,6 @@ export default function AdminSettingsEnhanced() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const logout = useLogout();
   
   const [showToken, setShowToken] = useState(false);
   const [regenerateDialogOpen, setRegenerateDialogOpen] = useState(false);
@@ -196,6 +195,32 @@ export default function AdminSettingsEnhanced() {
 
   const getSettingValue = (key: string, defaultValue: string = '') => {
     return unsavedChanges[key]?.setting_value ?? defaultValue;
+  };
+
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("/api/auth/logout", {
+        method: "POST"
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Logout realizado",
+        description: "Você foi desconectado com sucesso.",
+      });
+      window.location.href = "/";
+    },
+    onError: () => {
+      toast({
+        title: "Erro",
+        description: "Erro ao fazer logout.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleLogout = () => {
+    logoutMutation.mutate();
   };
 
   const hasUnsavedChanges = Object.keys(unsavedChanges).length > 0;

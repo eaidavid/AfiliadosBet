@@ -123,7 +123,7 @@ export default function Profile({ onPageChange }: ProfileProps) {
     updatePassword.mutate(data);
   };
 
-  const logout = useMutation({
+  const logoutMutation = useMutation({
     mutationFn: async () => {
       return apiRequest("/api/auth/logout", {
         method: "POST"
@@ -146,7 +146,7 @@ export default function Profile({ onPageChange }: ProfileProps) {
   });
 
   const handleLogout = () => {
-    logout.mutate();
+    logoutMutation.mutate();
   };
 
   return (
@@ -157,7 +157,16 @@ export default function Profile({ onPageChange }: ProfileProps) {
           <h1 className="text-3xl font-bold text-white">Meu Perfil</h1>
           <p className="text-slate-400 mt-1">Gerencie suas informações pessoais e configurações</p>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-3">
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            className="bg-red-600 hover:bg-red-700 border-red-600 text-white"
+            disabled={logoutMutation.isPending}
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            {logoutMutation.isPending ? "Saindo..." : "Sair"}
+          </Button>
           <User className="h-8 w-8 text-emerald-500" />
         </div>
       </div>
@@ -384,11 +393,11 @@ export default function Profile({ onPageChange }: ProfileProps) {
               <Button 
                 variant="outline" 
                 className="w-full border-red-500/20 text-red-400 hover:bg-red-500/10 hover:border-red-500/30"
-                onClick={() => logout.mutate()}
-                disabled={logout.isPending}
+                onClick={() => logoutMutation.mutate()}
+                disabled={logoutMutation.isPending}
               >
                 <LogOut className="h-4 w-4 mr-2" />
-                {logout.isPending ? "Saindo..." : "Sair da Conta"}
+                {logoutMutation.isPending ? "Saindo..." : "Sair da Conta"}
               </Button>
             </CardContent>
           </Card>
