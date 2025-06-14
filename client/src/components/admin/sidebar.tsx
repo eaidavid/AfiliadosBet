@@ -136,3 +136,5 @@ export default function AdminSidebar({ currentPage, onPageChange }: AdminSidebar
     </>
   );
 }
+
+export { AdminSidebar };
