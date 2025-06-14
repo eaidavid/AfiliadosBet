@@ -305,7 +305,10 @@ export default function AdminManageFixed() {
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => setViewingAffiliate(affiliate)}
+                              onClick={() => {
+                                console.log("Clicou no botão Ver Detalhes para:", affiliate.username);
+                                setViewingAffiliate(affiliate);
+                              }}
                               className="h-8 w-8 p-0 text-slate-300 hover:text-white"
                             >
                               <Eye className="h-4 w-4" />
@@ -314,6 +317,7 @@ export default function AdminManageFixed() {
                               size="sm"
                               variant="ghost"
                               onClick={() => {
+                                console.log("Clicou no botão Editar para:", affiliate.username);
                                 setEditingAffiliate(affiliate);
                                 setIsDialogOpen(true);
                               }}
