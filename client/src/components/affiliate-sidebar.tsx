@@ -81,19 +81,10 @@ export function AffiliateSidebar({ className }: AffiliateSidebarProps) {
     }
   }, [location, isMobile]);
 
-  // Mobile Menu Toggle Button (Fixed Position)
+  // Mobile: não mostrar botão de menu (usamos navegação inferior)
   if (isMobile) {
     return (
       <>
-        {/* Mobile Menu Button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setMobileOpen(true)}
-          className="fixed top-4 left-4 z-50 bg-slate-800 hover:bg-slate-700 text-white md:hidden"
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
 
         {/* Mobile Overlay */}
         {mobileOpen && (

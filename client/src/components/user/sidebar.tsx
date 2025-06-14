@@ -35,17 +35,10 @@ export default function UserSidebar({ currentPage, onPageChange }: UserSidebarPr
     setIsCollapsed(!isCollapsed);
   };
 
-  // Mobile menu button
+  // Mobile: não mostrar botão de menu (usamos navegação inferior)
   if (isMobile) {
     return (
       <>
-        {/* Mobile Menu Button */}
-        <button
-          onClick={() => setIsMobileOpen(true)}
-          className="fixed top-4 left-4 z-50 lg:hidden bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-xl p-3 text-white hover:bg-slate-700/90 transition-all duration-200"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
 
         {/* Mobile Overlay */}
         {isMobileOpen && (
