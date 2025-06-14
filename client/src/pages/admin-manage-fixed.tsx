@@ -80,7 +80,7 @@ export default function AdminManageFixed() {
   // Filters
   const [searchSubid, setSearchSubid] = useState("");
   const [filterCasa, setFilterCasa] = useState("all");
-  const [filterComissao, setFilterComissao] = useState("all");
+
   const [filterStatus, setFilterStatus] = useState("all");
 
   const { toast } = useToast();
@@ -352,7 +352,7 @@ export default function AdminManageFixed() {
         <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-4xl">
           <DialogHeader>
             <DialogTitle className="text-xl text-white">
-              Detalhes do Afiliado: {viewingAffiliate?.subid}
+              Detalhes do Afiliado: {viewingAffiliate?.username}
             </DialogTitle>
           </DialogHeader>
           <div className="text-center text-slate-400 py-8">
