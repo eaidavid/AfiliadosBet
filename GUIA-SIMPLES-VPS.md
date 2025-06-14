@@ -4,14 +4,14 @@
 
 ### Dados da sua VPS:
 - **IP:** 69.62.65.24
-- **Usuário:** afiliadosbet
+- **Usuário:** root
 - **Senha:** Alepoker@800
 - **Site:** afiliadosbet.com.br
 
 ## Passo 1: Conectar no servidor
 
 1. Abra o terminal/prompt de comando
-2. Digite: `ssh afiliadosbet@69.62.65.24`
+2. Digite: `ssh root@69.62.65.24`
 3. Digite a senha: `Alepoker@800`
 
 ## Passo 2: Instalar tudo automaticamente
@@ -19,13 +19,13 @@
 Cole este comando e pressione Enter:
 
 ```bash
-sudo apt update && curl -fsSL https://raw.githubusercontent.com/eaidavid/AfiliadosBet/main/install-vps.sh | sudo bash
+apt update && curl -fsSL https://raw.githubusercontent.com/eaidavid/AfiliadosBet/main/install-vps.sh | bash
 ```
 
 **OU se não funcionar, use a instalação manual:**
 
 ```bash
-sudo apt update && sudo apt upgrade -y && sudo apt install -y nginx postgresql postgresql-contrib nodejs npm git curl ufw certbot python3-certbot-nginx && curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - && sudo apt-get install -y nodejs && npm install -g pm2 && sudo -u postgres psql -c "CREATE DATABASE afiliadosbet; CREATE USER afiliadosbet WITH ENCRYPTED PASSWORD 'Alepoker@800'; GRANT ALL PRIVILEGES ON DATABASE afiliadosbet TO afiliadosbet; ALTER USER afiliadosbet CREATEDB;" && cd /var/www && sudo git clone https://github.com/eaidavid/AfiliadosBet.git afiliadosbet && cd afiliadosbet && sudo chown -R $USER:$USER . && cat > .env << 'EOF'
+apt update && apt upgrade -y && apt install -y nginx postgresql postgresql-contrib nodejs npm git curl ufw certbot python3-certbot-nginx && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && apt-get install -y nodejs && npm install -g pm2 && sudo -u postgres psql -c "CREATE DATABASE afiliadosbet; CREATE USER afiliadosbet WITH ENCRYPTED PASSWORD 'Alepoker@800'; GRANT ALL PRIVILEGES ON DATABASE afiliadosbet TO afiliadosbet; ALTER USER afiliadosbet CREATEDB;" && cd /var/www && git clone https://github.com/eaidavid/AfiliadosBet.git afiliadosbet && cd afiliadosbet && useradd -m -s /bin/bash afiliadosbet && echo "afiliadosbet:Alepoker@800" | chpasswd && chown -R afiliadosbet:afiliadosbet . && cat > .env << 'EOF'
 NODE_ENV=production
 PORT=5000
 DATABASE_URL=postgresql://afiliadosbet:Alepoker@800@localhost:5432/afiliadosbet
@@ -34,7 +34,7 @@ DOMAIN=https://afiliadosbet.com.br
 FRONTEND_URL=https://afiliadosbet.com.br
 BACKEND_URL=https://afiliadosbet.com.br
 EOF
-&& npm install && npm run build && npm run db:push && pm2 start dist/index.js --name afiliadosbet && pm2 save && pm2 startup && sudo tee /etc/nginx/sites-available/afiliadosbet << 'EOFNGINX'
+&& npm install && npm run build && npm run db:push && pm2 start dist/index.js --name afiliadosbet && pm2 save && pm2 startup && tee /etc/nginx/sites-available/afiliadosbet << 'EOFNGINX'
 server {
     listen 80;
     server_name afiliadosbet.com.br www.afiliadosbet.com.br;
@@ -51,7 +51,7 @@ server {
     }
 }
 EOFNGINX
-&& sudo ln -sf /etc/nginx/sites-available/afiliadosbet /etc/nginx/sites-enabled/ && sudo rm -f /etc/nginx/sites-enabled/default && sudo nginx -t && sudo systemctl restart nginx && sudo certbot --nginx -d afiliadosbet.com.br -d www.afiliadosbet.com.br --non-interactive --agree-tos -m admin@afiliadosbet.com.br && sudo ufw allow ssh && sudo ufw allow 'Nginx Full' && sudo ufw --force enable && echo "✅ INSTALAÇÃO CONCLUÍDA! Acesse: https://afiliadosbet.com.br"
+&& ln -sf /etc/nginx/sites-available/afiliadosbet /etc/nginx/sites-enabled/ && rm -f /etc/nginx/sites-enabled/default && nginx -t && systemctl restart nginx && certbot --nginx -d afiliadosbet.com.br -d www.afiliadosbet.com.br --non-interactive --agree-tos -m admin@afiliadosbet.com.br && ufw allow ssh && ufw allow 'Nginx Full' && ufw --force enable && echo "✅ INSTALAÇÃO CONCLUÍDA! Acesse: https://afiliadosbet.com.br"
 ```
 
 ## Aguarde a instalação terminar

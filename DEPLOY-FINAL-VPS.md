@@ -145,12 +145,12 @@ systemctl restart nginx
 
 ### 8. SSL e segurança
 ```bash
-sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d afiliadosbet.com.br -d www.afiliadosbet.com.br --non-interactive --agree-tos -m admin@afiliadosbet.com.br
+apt install -y certbot python3-certbot-nginx
+certbot --nginx -d afiliadosbet.com.br -d www.afiliadosbet.com.br --non-interactive --agree-tos -m admin@afiliadosbet.com.br
 
-sudo ufw allow ssh
-sudo ufw allow 'Nginx Full'
-sudo ufw --force enable
+ufw allow ssh
+ufw allow 'Nginx Full'
+ufw --force enable
 ```
 
 ## Verificar instalação
@@ -197,7 +197,7 @@ sudo -u postgres psql afiliadosbet
 ## Acessos
 
 - **Site:** https://afiliadosbet.com.br
-- **SSH:** ssh afiliadosbet@69.62.65.24
+- **SSH:** ssh root@69.62.65.24
 - **Logs:** pm2 logs afiliadosbet
 
 O sistema estará totalmente independente e funcionando em produção.
