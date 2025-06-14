@@ -256,17 +256,17 @@ export default function AdminDashboardFixed() {
                 <Table>
                   <TableHeader>
                     <TableRow className="border-slate-700">
-                        <TableHead className="text-slate-300">Nome</TableHead>
-                        <TableHead className="text-slate-300">Email</TableHead>
-                        <TableHead className="text-slate-300">Status</TableHead>
-                        <TableHead className="text-slate-300">Cliques</TableHead>
-                        <TableHead className="text-slate-300">Registros</TableHead>
-                        <TableHead className="text-slate-300">Depósitos</TableHead>
-                        <TableHead className="text-slate-300">Comissão</TableHead>
-                        <TableHead className="text-slate-300">Cadastro</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
+                      <TableHead className="text-slate-300">Nome</TableHead>
+                      <TableHead className="text-slate-300">Email</TableHead>
+                      <TableHead className="text-slate-300">Status</TableHead>
+                      <TableHead className="text-slate-300">Cliques</TableHead>
+                      <TableHead className="text-slate-300">Registros</TableHead>
+                      <TableHead className="text-slate-300">Depósitos</TableHead>
+                      <TableHead className="text-slate-300">Comissão</TableHead>
+                      <TableHead className="text-slate-300">Cadastro</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                       {recentAffiliates.map((affiliate) => (
                         <TableRow key={affiliate.id} className="border-slate-700 hover:bg-slate-700/50">
                           <TableCell className="text-slate-200 font-medium">
