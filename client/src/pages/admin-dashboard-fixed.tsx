@@ -123,55 +123,55 @@ export default function AdminDashboardFixed() {
             <Card className="bg-slate-800 border-slate-700">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-slate-400">Total Afiliados</p>
-                      <p className="text-2xl font-bold text-white">{affiliates.length}</p>
-                    </div>
-                    <Users className="h-8 w-8 text-blue-400" />
+                  <div>
+                    <p className="text-sm text-slate-400">Total Afiliados</p>
+                    <p className="text-2xl font-bold text-white">{affiliates.length}</p>
                   </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+                  <Users className="h-8 w-8 text-blue-400" />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <Card className="bg-slate-800 border-slate-700">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-slate-400">Afiliados Ativos</p>
-                      <p className="text-2xl font-bold text-white">{activeAffiliates}</p>
-                    </div>
-                    <Building2 className="h-8 w-8 text-green-400" />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="bg-slate-800 border-slate-700">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-slate-400">Afiliados Ativos</p>
+                    <p className="text-2xl font-bold text-white">{activeAffiliates}</p>
                   </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+                  <Building2 className="h-8 w-8 text-green-400" />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <Card className="bg-slate-800 border-slate-700">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-slate-400">Casas Cadastradas</p>
-                      <p className="text-2xl font-bold text-white">{bettingHouses.length}</p>
-                    </div>
-                    <MousePointer className="h-8 w-8 text-purple-400" />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Card className="bg-slate-800 border-slate-700">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-slate-400">Casas Cadastradas</p>
+                    <p className="text-2xl font-bold text-white">{bettingHouses.length}</p>
                   </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+                  <MousePointer className="h-8 w-8 text-purple-400" />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
               <Card className="bg-slate-800 border-slate-700">
