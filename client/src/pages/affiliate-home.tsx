@@ -5,8 +5,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { SidebarLayout } from '@/components/sidebar-layout';
-import { BottomNavigation } from '@/components/bottom-navigation';
+import CenteredLayout from '@/components/centered-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -308,7 +307,7 @@ export default function AffiliateHome() {
   ) || [];
 
   return (
-    <SidebarLayout>
+    <CenteredLayout>
       <div className={`p-3 sm:p-6 pt-[62px] ${isMobile ? 'pb-[90px]' : 'pb-[62px]'}`}>
         <div className="max-w-7xl mx-auto space-y-4 sm:space-y-8">
           {/* Header */}
@@ -844,6 +843,6 @@ export default function AffiliateHome() {
         </div>
       </div>
 
-    </SidebarLayout>
+    </CenteredLayout>
   );
 }
