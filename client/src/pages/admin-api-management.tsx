@@ -155,7 +155,7 @@ export default function AdminApiManagement() {
     <div className="min-h-screen bg-slate-950 flex">
       <AdminSidebar />
       
-      <div className="flex-1 ml-64 p-6 pb-32">
+      <div className="flex-1 ml-64 p-6 pb-48">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

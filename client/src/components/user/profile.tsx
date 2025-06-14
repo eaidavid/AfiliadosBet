@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { User, Lock, Shield, Calendar, LogOut } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth, useLogout } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
 
 const profileSchema = z.object({
   username: z.string().min(1, "Usuário é obrigatório"),
@@ -44,7 +44,6 @@ export default function Profile({ onPageChange }: ProfileProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const logout = useLogout();
 
   const profileForm = useForm<ProfileData>({
     resolver: zodResolver(profileSchema),
@@ -72,8 +71,10 @@ export default function Profile({ onPageChange }: ProfileProps) {
 
   const updateProfile = useMutation({
     mutationFn: async (data: ProfileData) => {
-      const response = await apiRequest("PUT", "/api/user/profile", data);
-      return response.json();
+      return apiRequest("/api/user/profile", {
+        method: "PUT",
+        body: JSON.stringify(data)
+      });
     },
     onSuccess: () => {
       toast({
@@ -93,8 +94,10 @@ export default function Profile({ onPageChange }: ProfileProps) {
 
   const updatePassword = useMutation({
     mutationFn: async (data: PasswordData) => {
-      const response = await apiRequest("PUT", "/api/user/password", data);
-      return response.json();
+      return apiRequest("/api/user/password", {
+        method: "PUT",
+        body: JSON.stringify(data)
+      });
     },
     onSuccess: () => {
       toast({
@@ -118,6 +121,32 @@ export default function Profile({ onPageChange }: ProfileProps) {
 
   const onPasswordSubmit = (data: PasswordData) => {
     updatePassword.mutate(data);
+  };
+
+  const logout = useMutation({
+    mutationFn: async () => {
+      return apiRequest("/api/auth/logout", {
+        method: "POST"
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Logout realizado",
+        description: "Você foi desconectado com sucesso.",
+      });
+      window.location.href = "/";
+    },
+    onError: () => {
+      toast({
+        title: "Erro",
+        description: "Erro ao fazer logout.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleLogout = () => {
+    logout.mutate();
   };
 
   return (
