@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import AdminSidebar from '@/components/admin/sidebar';
+import { useAuth, useLogout } from '@/hooks/use-auth';
 import {
   Settings,
   Shield,
@@ -61,6 +62,8 @@ interface SystemStats {
 export default function AdminSettingsEnhanced() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const logout = useLogout();
   
   const [showToken, setShowToken] = useState(false);
   const [regenerateDialogOpen, setRegenerateDialogOpen] = useState(false);

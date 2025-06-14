@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User, Lock, Shield, Calendar } from "lucide-react";
+import { User, Lock, Shield, Calendar, LogOut } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth, useLogout } from "@/hooks/use-auth";
 
 const profileSchema = z.object({
   username: z.string().min(1, "Usuário é obrigatório"),
@@ -44,6 +44,7 @@ export default function Profile({ onPageChange }: ProfileProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const logout = useLogout();
 
   const profileForm = useForm<ProfileData>({
     resolver: zodResolver(profileSchema),
@@ -347,6 +348,18 @@ export default function Profile({ onPageChange }: ProfileProps) {
               >
                 <Calendar className="h-4 w-4 mr-2" />
                 Configurar Pagamentos
+              </Button>
+
+              <Separator className="bg-slate-600" />
+
+              <Button 
+                variant="outline" 
+                className="w-full border-red-500/20 text-red-400 hover:bg-red-500/10 hover:border-red-500/30"
+                onClick={() => logout.mutate()}
+                disabled={logout.isPending}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                {logout.isPending ? "Saindo..." : "Sair da Conta"}
               </Button>
             </CardContent>
           </Card>
