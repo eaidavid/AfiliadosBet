@@ -439,7 +439,7 @@ export default function AdminPayments() {
       {/* Main Content */}
       <div className="flex-1 lg:ml-20 overflow-hidden">
         <div className="h-full overflow-y-auto">
-          <div className="p-4 lg:p-8 pt-16 lg:pt-8">
+          <div className="p-4 lg:p-8 pt-16 lg:pt-8 pb-32">
             {/* Header */}
             <div className="mb-8">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">

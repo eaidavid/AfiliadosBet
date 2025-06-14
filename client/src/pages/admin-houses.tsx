@@ -528,7 +528,7 @@ export default function AdminHouses() {
         }
       }} />
       <div className="ml-20 lg:ml-[110px] lg:mr-[110px]">
-        <main className="p-4 lg:p-6 space-y-6">
+        <main className="p-4 lg:p-6 space-y-6 pb-32">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
