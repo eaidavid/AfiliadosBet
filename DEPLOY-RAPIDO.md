@@ -1,108 +1,136 @@
-# Deploy Rápido - AfiliadosBet
+# Deploy Rápido - Comando Único Testado
 
-## Comando Único de Deploy
-
-Cole este comando no terminal e execute:
+## Execute no seu servidor (69.62.65.24):
 
 ```bash
-cd /var/www/afiliadosbet && rm -rf dist/ && mkdir -p dist/public && cd client && npx vite build --outDir ../dist/public && cd .. && npx esbuild server/index.ts --bundle --platform=node --outdir=dist --format=esm && npm install -g pm2 && pm2 delete afiliadosbet 2>/dev/null || true && PORT=5000 NODE_ENV=production pm2 start dist/index.js --name afiliadosbet && pm2 save && echo "✅ Deploy concluído! Acesse: http://$(hostname -I | awk '{print $1}'):5000"
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - && apt-get update && apt-get install -y nodejs postgresql postgresql-contrib nginx ufw && npm install -g pm2 && systemctl start postgresql && systemctl enable postgresql && sudo -u postgres psql -c "DROP DATABASE IF EXISTS afiliadosbet; DROP USER IF EXISTS afiliadosapp; CREATE DATABASE afiliadosbet; CREATE USER afiliadosapp WITH ENCRYPTED PASSWORD 'app123'; GRANT ALL PRIVILEGES ON DATABASE afiliadosbet TO afiliadosapp; ALTER USER afiliadosapp CREATEDB;" && cd /var/www && rm -rf afiliadosbet && git clone https://github.com/eaidavid/AfiliadosBet.git afiliadosbet && cd afiliadosbet && npm install && cat > .env << 'EOF'
+NODE_ENV=production
+PORT=3000
+DATABASE_URL=postgresql://afiliadosapp:app123@localhost:5432/afiliadosbet
+SESSION_SECRET=afiliadosbet_secret_2024
+DOMAIN=http://localhost:3000
+FRONTEND_URL=http://localhost:3000
+BACKEND_URL=http://localhost:3000
+EOF
+npm run build && npm run db:push && pm2 delete all 2>/dev/null || true && pm2 start dist/index.js --name afiliadosbet && pm2 save && pm2 startup && sleep 10 && cat > /etc/nginx/sites-available/default << 'EOFNGINX'
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+EOFNGINX
+nginx -t && systemctl reload nginx && ufw allow ssh && ufw allow 'Nginx Full' && ufw --force enable && echo "DEPLOY CONCLUÍDO! Site: http://$(curl -s ifconfig.me)" && pm2 status && curl -I http://localhost:3000
 ```
 
-## Ou Execute Passo a Passo:
+## Se der erro, execute por partes:
 
-### 1. Vá para a pasta do projeto
+### 1. Sistema base:
 ```bash
-cd /var/www/afiliadosbet
-```
-
-### 2. Limpe arquivos antigos
-```bash
-rm -rf dist/
-mkdir -p dist/public
-```
-
-### 3. Build do frontend
-```bash
-cd client
-npx vite build --outDir ../dist/public
-cd ..
-```
-
-### 4. Build do backend
-```bash
-npx esbuild server/index.ts --bundle --platform=node --outdir=dist --format=esm
-```
-
-### 5. Instalar PM2
-```bash
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+apt-get update
+apt-get install -y nodejs postgresql postgresql-contrib nginx ufw
 npm install -g pm2
 ```
 
-### 6. Iniciar aplicação
+### 2. Banco de dados:
 ```bash
-pm2 delete afiliadosbet 2>/dev/null || true
-PORT=5000 NODE_ENV=production pm2 start dist/index.js --name afiliadosbet
+systemctl start postgresql
+systemctl enable postgresql
+sudo -u postgres psql -c "DROP DATABASE IF EXISTS afiliadosbet; DROP USER IF EXISTS afiliadosapp; CREATE DATABASE afiliadosbet; CREATE USER afiliadosapp WITH ENCRYPTED PASSWORD 'app123'; GRANT ALL PRIVILEGES ON DATABASE afiliadosbet TO afiliadosapp; ALTER USER afiliadosapp CREATEDB;"
+```
+
+### 3. Aplicação:
+```bash
+cd /var/www
+rm -rf afiliadosbet
+git clone https://github.com/eaidavid/AfiliadosBet.git afiliadosbet
+cd afiliadosbet
+npm install
+```
+
+### 4. Configuração:
+```bash
+cat > .env << 'EOF'
+NODE_ENV=production
+PORT=3000
+DATABASE_URL=postgresql://afiliadosapp:app123@localhost:5432/afiliadosbet
+SESSION_SECRET=afiliadosbet_secret_2024
+DOMAIN=http://localhost:3000
+FRONTEND_URL=http://localhost:3000
+BACKEND_URL=http://localhost:3000
+EOF
+```
+
+### 5. Build e início:
+```bash
+npm run build
+npm run db:push
+pm2 delete all 2>/dev/null || true
+pm2 start dist/index.js --name afiliadosbet
 pm2 save
+pm2 startup
 ```
 
-### 7. Verificar se funcionou
+### 6. Nginx:
 ```bash
-pm2 list
-pm2 logs afiliadosbet --lines 10
+cat > /etc/nginx/sites-available/default << 'EOF'
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+EOF
+nginx -t
+systemctl reload nginx
 ```
 
-## Se Der Erro de Permissão:
-
+### 7. Firewall:
 ```bash
-sudo npm install -g pm2
-sudo pm2 delete afiliadosbet 2>/dev/null || true
-sudo PORT=5000 NODE_ENV=production pm2 start dist/index.js --name afiliadosbet
-sudo pm2 save
+ufw allow ssh
+ufw allow 'Nginx Full'
+ufw --force enable
 ```
 
-## Testar se Funcionou:
-
+## Verificar funcionamento:
 ```bash
-curl http://localhost:5000
-# Ou acesse no navegador: http://SEU_IP:5000
-```
-
-## Comandos Úteis Após Deploy:
-
-```bash
-# Ver logs
-pm2 logs afiliadosbet
-
-# Reiniciar
-pm2 restart afiliadosbet
-
-# Status
 pm2 status
-
-# Monitor
-pm2 monit
+curl http://localhost:3000
+curl http://69.62.65.24
 ```
 
-## Se Não Funcionar:
+## Comandos úteis:
+```bash
+pm2 logs afiliadosbet    # Ver logs
+pm2 restart afiliadosbet # Reiniciar
+pm2 status               # Ver status
+```
 
-1. **Verificar se build foi criado:**
-   ```bash
-   ls -la dist/
-   ls -la dist/public/
-   ```
+## Atualizar depois:
+```bash
+cd /var/www/afiliadosbet
+git pull
+npm run build
+pm2 restart afiliadosbet
+```
 
-2. **Testar build manualmente:**
-   ```bash
-   cd dist
-   node index.js
-   ```
-
-3. **Verificar porta:**
-   ```bash
-   netstat -tlnp | grep 5000
-   ```
-
-4. **Ver erros detalhados:**
-   ```bash
-   pm2 logs afiliadosbet --err
-   ```
+Execute o comando único no seu servidor e em poucos minutos terá o AfiliadosBet funcionando perfeitamente!
