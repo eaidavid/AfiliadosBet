@@ -288,7 +288,7 @@ export default function AdminManageFixed() {
                         </TableCell>
                         <TableCell className="text-slate-300">
                           <Badge variant="outline" className="text-xs">
-                            {affiliate.tipo_comissao.toUpperCase()}
+                            {affiliate.tipo_comissao?.toUpperCase() || 'N/A'}
                           </Badge>
                         </TableCell>
                         <TableCell>
