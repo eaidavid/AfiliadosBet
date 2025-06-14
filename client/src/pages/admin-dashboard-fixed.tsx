@@ -205,57 +205,57 @@ export default function AdminDashboardFixed() {
           </Card>
 
           <Card className="bg-slate-800 border-slate-700">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-slate-400">Total Comissões</p>
-                    <p className="text-2xl font-bold text-orange-400">
-                      R$ {totalCommissions.toFixed(2)}
-                    </p>
-                  </div>
-                  <Activity className="h-8 w-8 text-orange-400" />
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-400">Total Comissões</p>
+                  <p className="text-2xl font-bold text-orange-400">
+                    R$ {totalCommissions.toFixed(2)}
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
+                <Activity className="h-8 w-8 text-orange-400" />
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card className="bg-slate-800 border-slate-700">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-slate-400">Total Links</p>
-                    <p className="text-2xl font-bold text-purple-400">
-                      {systemStats?.totalLinks || 0}
-                    </p>
-                  </div>
-                  <Award className="h-8 w-8 text-purple-400" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Lista de Afiliados - Dados Reais */}
           <Card className="bg-slate-800 border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Users className="h-5 w-5 text-blue-400" />
-                Afiliados do Sistema ({affiliates.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoadingAffiliates ? (
-                <div className="text-center text-slate-400 py-8">
-                  Carregando afiliados...
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-400">Total Links</p>
+                  <p className="text-2xl font-bold text-purple-400">
+                    {systemStats?.totalLinks || 0}
+                  </p>
                 </div>
-              ) : recentAffiliates.length === 0 ? (
-                <div className="text-center text-slate-400 py-8">
-                  <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Nenhum afiliado encontrado</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="border-slate-700">
+                <Award className="h-8 w-8 text-purple-400" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Lista de Afiliados - Dados Reais */}
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Users className="h-5 w-5 text-blue-400" />
+              Afiliados do Sistema ({affiliates.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoadingAffiliates ? (
+              <div className="text-center text-slate-400 py-8">
+                Carregando afiliados...
+              </div>
+            ) : recentAffiliates.length === 0 ? (
+              <div className="text-center text-slate-400 py-8">
+                <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Nenhum afiliado encontrado</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-slate-700">
                         <TableHead className="text-slate-300">Nome</TableHead>
                         <TableHead className="text-slate-300">Email</TableHead>
                         <TableHead className="text-slate-300">Status</TableHead>
