@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
@@ -32,20 +32,18 @@ import {
   Activity
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useToast } from "@/hooks/use-toast";
 import CenteredLayout from "@/components/centered-layout";
+import { useToast } from "@/hooks/use-toast";
 
-// Form schema
-const affiliateSchema = z.object({
-  subid: z.string().min(1, "SubID é obrigatório"),
-  casa_id: z.number().min(1, "Casa de apostas é obrigatória"),
-  tipo_comissao: z.enum(["cpa", "revshare", "cpa+revshare"]),
-  valor_cpa: z.number().min(0).optional(),
-  percentual_revshare: z.number().min(0).max(100).optional(),
-  status: z.boolean(),
+// Form schema for editing affiliate
+const editAffiliateSchema = z.object({
+  username: z.string().min(1, "Nome de usuário é obrigatório"),
+  email: z.string().email("Email inválido"),
+  fullName: z.string().min(1, "Nome completo é obrigatório"),
+  isActive: z.boolean(),
 });
 
-type AffiliateFormData = z.infer<typeof affiliateSchema>;
+type EditAffiliateFormData = z.infer<typeof editAffiliateSchema>;
 
 // Types
 interface Affiliate {
@@ -87,17 +85,27 @@ export default function AdminManageFixed() {
   const queryClient = useQueryClient();
 
   // Form setup
-  const form = useForm<AffiliateFormData>({
-    resolver: zodResolver(affiliateSchema),
+  const form = useForm<EditAffiliateFormData>({
+    resolver: zodResolver(editAffiliateSchema),
     defaultValues: {
-      subid: "",
-      casa_id: 0,
-      tipo_comissao: "cpa",
-      valor_cpa: 0,
-      percentual_revshare: 0,
-      status: true,
+      username: "",
+      email: "",
+      fullName: "",
+      isActive: true,
     },
   });
+
+  // Update form when editing affiliate changes
+  React.useEffect(() => {
+    if (editingAffiliate) {
+      form.reset({
+        username: editingAffiliate.username,
+        email: editingAffiliate.email,
+        fullName: editingAffiliate.fullName,
+        isActive: editingAffiliate.isActive,
+      });
+    }
+  }, [editingAffiliate, form]);
 
   // Fetch affiliates
   const { data: affiliates = [], isLoading: loadingAffiliates } = useQuery({
