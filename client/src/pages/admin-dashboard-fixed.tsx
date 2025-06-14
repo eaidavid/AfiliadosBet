@@ -172,39 +172,39 @@ export default function AdminDashboardFixed() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <Card className="bg-slate-800 border-slate-700">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-slate-400">Total Conversões</p>
-                      <p className="text-2xl font-bold text-white">{systemStats?.totalConversions || 0}</p>
-                    </div>
-                    <TrendingUp className="h-8 w-8 text-emerald-400" />
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </div>
-
-          {/* Métricas Financeiras - Dados Reais */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            transition={{ delay: 0.3 }}
+          >
             <Card className="bg-slate-800 border-slate-700">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-400">Total Volume</p>
-                    <p className="text-2xl font-bold text-green-400">
-                      R$ {systemStats?.totalVolume || '0,00'}
-                    </p>
+                    <p className="text-sm text-slate-400">Total Conversões</p>
+                    <p className="text-2xl font-bold text-white">{systemStats?.totalConversions || 0}</p>
                   </div>
-                  <DollarSign className="h-8 w-8 text-green-400" />
+                  <TrendingUp className="h-8 w-8 text-emerald-400" />
                 </div>
               </CardContent>
             </Card>
+          </motion.div>
+        </div>
 
-            <Card className="bg-slate-800 border-slate-700">
+        {/* Métricas Financeiras - Dados Reais */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <Card className="bg-slate-800 border-slate-700">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-400">Total Volume</p>
+                  <p className="text-2xl font-bold text-green-400">
+                    R$ {systemStats?.totalVolume || '0,00'}
+                  </p>
+                </div>
+                <DollarSign className="h-8 w-8 text-green-400" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-slate-800 border-slate-700">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
