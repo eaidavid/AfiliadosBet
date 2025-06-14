@@ -1,18 +1,22 @@
 import { useLocation } from 'wouter';
+import { useAuth } from '@/hooks/use-auth';
 import {
   Home,
   Building2,
   Link2,
   BarChart3,
   CreditCard,
-  User
+  User,
+  Users,
+  Settings,
+  Activity
 } from 'lucide-react';
 
 interface BottomNavigationProps {
   className?: string;
 }
 
-const navigationItems = [
+const affiliateNavigationItems = [
   {
     title: 'Dashboard',
     href: '/home',
@@ -51,22 +55,66 @@ const navigationItems = [
   }
 ];
 
+const adminNavigationItems = [
+  {
+    title: 'Dashboard',
+    href: '/admin',
+    icon: BarChart3,
+    label: 'Admin'
+  },
+  {
+    title: 'Casas',
+    href: '/admin/houses',
+    icon: Building2,
+    label: 'Casas'
+  },
+  {
+    title: 'Afiliados',
+    href: '/admin/manage',
+    icon: Users,
+    label: 'Users'
+  },
+  {
+    title: 'Pagamentos',
+    href: '/admin/payments',
+    icon: CreditCard,
+    label: 'Pagtos'
+  },
+  {
+    title: 'Logs',
+    href: '/admin/postback-logs',
+    icon: Activity,
+    label: 'Logs'
+  },
+  {
+    title: 'Config',
+    href: '/admin/settings',
+    icon: Settings,
+    label: 'Config'
+  }
+];
+
 export function BottomNavigation({ className }: BottomNavigationProps) {
   const [location, navigate] = useLocation();
+  const { isAdmin } = useAuth();
 
   const handleNavigation = (href: string) => {
     navigate(href);
   };
 
+  // Escolher navegação baseada no tipo de usuário
+  const navigationItems = isAdmin ? adminNavigationItems : affiliateNavigationItems;
+
   return (
     <div 
-      className="fixed bottom-0 left-0 right-0 bg-red-500 border-t border-slate-700 z-[9999] h-16 flex items-center justify-around px-2"
+      className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 z-[9999] h-16 flex items-center justify-around px-2 sm:hidden"
       style={{ display: 'flex' }}
     >
       {navigationItems.map((item) => {
         const isActive = location === item.href || 
                         (item.href === '/home' && location === '/') ||
-                        (item.href === '/betting-houses' && location === '/houses');
+                        (item.href === '/betting-houses' && location === '/houses') ||
+                        (item.href === '/admin' && location === '/admin');
         
         return (
           <button
