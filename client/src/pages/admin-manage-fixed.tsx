@@ -221,13 +221,6 @@ export default function AdminManageFixed() {
               Gerencie afiliados, comissões e tokens de postback
             </p>
           </div>
-          <Button
-            onClick={() => setIsDialogOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Novo Afiliado
-          </Button>
         </div>
 
         {/* Statistics Cards */}
