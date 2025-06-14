@@ -121,8 +121,27 @@ AfiliadosBet é uma plataforma completa de marketing de afiliados para casas de 
 2. **Docker Compose**: Stack completa containerizada
 3. **Replit**: Deploy direto na plataforma Replit
 
+## Recent Changes
+
+### June 14, 2025 - Project Structure Cleanup & UI Improvements
+- **Universal Bottom Navigation**: Implemented bottom navigation system replacing traditional sidebar across all devices
+- **Admin Manage Page**: Complete functionality implementation with proper edit forms and detailed affiliate information view
+- **Project Structure**: Major cleanup - archived all unnecessary files in root directory to `archived_files/` 
+  - Documentation files moved to `archived_files/documentation/`
+  - Scripts and test files moved to `archived_files/scripts/`
+  - Configuration files moved to `archived_files/configs/`
+- **Modal Functionality**: Full implementation of edit and details modals with proper form validation and data display
+- **UI Consistency**: Standardized spacing and navigation across admin and affiliate panels
+
+### Current Project State
+- Clean root directory structure with only essential files
+- Fully functional admin management system with complete CRUD operations
+- Universal bottom navigation working across all pages
+- Comprehensive affiliate data management with performance statistics
+
 ## Changelog
-- June 14, 2025. Initial setup
+- June 13, 2025. Initial setup
+- June 14, 2025. Project cleanup and UI standardization
 
 ## User Preferences
 
