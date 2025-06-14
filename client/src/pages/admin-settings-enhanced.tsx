@@ -37,7 +37,8 @@ import {
   Users,
   BarChart3,
   FileText,
-  Zap
+  Zap,
+  LogOut
 } from 'lucide-react';
 
 interface SystemSetting {
@@ -267,16 +268,27 @@ export default function AdminSettingsEnhanced() {
               </p>
             </div>
           
-          {hasUnsavedChanges && (
-            <Button 
-              onClick={handleSaveAllChanges}
-              disabled={saveSettingMutation.isPending}
-              className="bg-emerald-600 hover:bg-emerald-700"
+          <div className="flex items-center gap-3">
+            {hasUnsavedChanges && (
+              <Button 
+                onClick={handleSaveAllChanges}
+                disabled={saveSettingMutation.isPending}
+                className="bg-emerald-600 hover:bg-emerald-700"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Salvar Alterações
+              </Button>
+            )}
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="bg-red-600 hover:bg-red-700 border-red-600 text-white"
+              disabled={logoutMutation.isPending}
             >
-              <Save className="h-4 w-4 mr-2" />
-              Salvar Alterações
+              <LogOut className="h-4 w-4 mr-2" />
+              {logoutMutation.isPending ? "Saindo..." : "Sair"}
             </Button>
-          )}
+          </div>
         </div>
 
           {/* System Status Cards */}
@@ -892,11 +904,11 @@ export default function AdminSettingsEnhanced() {
                     <Button 
                       variant="outline" 
                       className="w-full border-red-500/20 text-red-400 hover:bg-red-500/10 hover:border-red-500/30"
-                      onClick={() => logout.mutate()}
-                      disabled={logout.isPending}
+                      onClick={() => logoutMutation.mutate()}
+                      disabled={logoutMutation.isPending}
                     >
-                      <Settings className="h-4 w-4 mr-2" />
-                      {logout.isPending ? "Saindo..." : "Sair do Painel Admin"}
+                      <LogOut className="h-4 w-4 mr-2" />
+                      {logoutMutation.isPending ? "Saindo..." : "Sair do Painel Admin"}
                     </Button>
                   </div>
                 </CardContent>
