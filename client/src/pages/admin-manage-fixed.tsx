@@ -115,7 +115,10 @@ export default function AdminManageFixed() {
     const ativos = affiliateList.filter((a: Affiliate) => a.status).length;
     const inativos = total - ativos;
     const ultimoCadastro = affiliateList.length > 0 
-      ? new Date(Math.max(...affiliateList.map((a: Affiliate) => new Date(a.data_criacao).getTime())))
+      ? new Date(Math.max(...affiliateList.map((a: Affiliate) => {
+          const date = new Date(a.data_criacao);
+          return isNaN(date.getTime()) ? 0 : date.getTime();
+        })))
       : null;
 
     return { total, ativos, inativos, ultimoCadastro };
