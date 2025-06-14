@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AdminSidebar } from "@/components/admin/sidebar";
+import CenteredLayout from "@/components/centered-layout";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
@@ -86,11 +86,8 @@ export default function AdminDashboardFixed() {
   console.log('🔍 Debug Dashboard - System Stats:', systemStats);
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <AdminSidebar currentPage={currentPage} onPageChange={setCurrentPage} />
-      <div className="lg:ml-64 p-4 sm:p-6 lg:p-8">
-        
-        <main className="p-4 lg:p-6 space-y-6">
+    <CenteredLayout>
+      <div className="space-y-6">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -365,8 +362,7 @@ export default function AdminDashboardFixed() {
               </Card>
             </div>
           )}
-        </main>
       </div>
-    </div>
+    </CenteredLayout>
   );
 }

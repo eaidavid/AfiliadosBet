@@ -63,10 +63,8 @@ export function AffiliateSidebar({ className }: BottomNavigationProps) {
     navigate(href);
   };
 
-  // Mobile: não renderizar nada (usamos navegação inferior)
-  if (isMobile) {
-    return null;
-  }
+  // Não renderizar sidebar - usamos navegação inferior para todos os dispositivos
+  return null;
 
   // Desktop: renderizar sidebar normal
   return (
