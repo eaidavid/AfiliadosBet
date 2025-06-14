@@ -107,6 +107,35 @@ export default function AdminManageFixed() {
     }
   }, [editingAffiliate, form]);
 
+  // Update affiliate mutation
+  const updateAffiliateMutation = useMutation({
+    mutationFn: async (data: EditAffiliateFormData & { id: number }) => {
+      const response = await fetch(`/api/admin/affiliates/${data.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Failed to update affiliate');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/affiliates"] });
+      toast({ title: "Afiliado atualizado com sucesso!" });
+      setIsDialogOpen(false);
+      setEditingAffiliate(null);
+    },
+    onError: () => {
+      toast({ title: "Erro ao atualizar afiliado", variant: "destructive" });
+    },
+  });
+
+  // Handle form submission
+  const onSubmit = (data: EditAffiliateFormData) => {
+    if (editingAffiliate) {
+      updateAffiliateMutation.mutate({ ...data, id: editingAffiliate.id });
+    }
+  };
+
   // Fetch affiliates
   const { data: affiliates = [], isLoading: loadingAffiliates } = useQuery({
     queryKey: ["/api/admin/affiliates"],
@@ -345,17 +374,117 @@ export default function AdminManageFixed() {
         </Card>
       </motion.div>
 
-      {/* Form Dialog */}
+      {/* Edit Form Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-xl text-white">
-              {editingAffiliate ? "Editar Afiliado" : "Novo Afiliado"}
+              Editar Afiliado
             </DialogTitle>
+            <DialogDescription className="text-slate-400">
+              Edite as informações do afiliado
+            </DialogDescription>
           </DialogHeader>
-          <div className="text-center text-slate-400 py-8">
-            Formulário de afiliado em desenvolvimento...
-          </div>
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Nome de Usuário</FormLabel>
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          className="bg-slate-700 border-slate-600 text-white"
+                          placeholder="Nome de usuário"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-white">Email</FormLabel>
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          type="email"
+                          className="bg-slate-700 border-slate-600 text-white"
+                          placeholder="email@exemplo.com"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <FormField
+                control={form.control}
+                name="fullName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-white">Nome Completo</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        className="bg-slate-700 border-slate-600 text-white"
+                        placeholder="Nome completo"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="isActive"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-600 p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-white">Status Ativo</FormLabel>
+                      <FormDescription className="text-slate-400">
+                        Ativar ou desativar o afiliado no sistema
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              
+              <div className="flex justify-end gap-3 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsDialogOpen(false)}
+                  className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={updateAffiliateMutation.isPending}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  {updateAffiliateMutation.isPending ? "Salvando..." : "Salvar Alterações"}
+                </Button>
+              </div>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
 
@@ -366,10 +495,106 @@ export default function AdminManageFixed() {
             <DialogTitle className="text-xl text-white">
               Detalhes do Afiliado: {viewingAffiliate?.username}
             </DialogTitle>
+            <DialogDescription className="text-slate-400">
+              Visualize as informações detalhadas do afiliado
+            </DialogDescription>
           </DialogHeader>
-          <div className="text-center text-slate-400 py-8">
-            Detalhes do afiliado em desenvolvimento...
-          </div>
+          
+          {viewingAffiliate && (
+            <div className="space-y-6">
+              {/* Basic Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card className="bg-slate-700 border-slate-600">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg text-white flex items-center gap-2">
+                      <Users className="w-5 h-5" />
+                      Informações Pessoais
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div>
+                      <p className="text-slate-400 text-sm">Nome de Usuário</p>
+                      <p className="text-white font-medium">{viewingAffiliate.username}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400 text-sm">Email</p>
+                      <p className="text-white font-medium">{viewingAffiliate.email}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400 text-sm">Nome Completo</p>
+                      <p className="text-white font-medium">{viewingAffiliate.fullName}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400 text-sm">Status</p>
+                      <Badge 
+                        variant={viewingAffiliate.isActive ? "default" : "destructive"}
+                        className={viewingAffiliate.isActive ? "bg-green-600" : "bg-red-600"}
+                      >
+                        {viewingAffiliate.isActive ? "Ativo" : "Inativo"}
+                      </Badge>
+                    </div>
+                    <div>
+                      <p className="text-slate-400 text-sm">Data de Cadastro</p>
+                      <p className="text-white font-medium">{formatDate(viewingAffiliate.createdAt)}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Performance Statistics */}
+                <Card className="bg-slate-700 border-slate-600">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg text-white flex items-center gap-2">
+                      <Activity className="w-5 h-5" />
+                      Estatísticas de Performance
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div>
+                      <p className="text-slate-400 text-sm">Total de Cliques</p>
+                      <p className="text-white font-medium text-lg">{viewingAffiliate.totalClicks}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400 text-sm">Registros</p>
+                      <p className="text-white font-medium text-lg">{viewingAffiliate.totalRegistrations}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400 text-sm">Depósitos</p>
+                      <p className="text-white font-medium text-lg">{viewingAffiliate.totalDeposits}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400 text-sm">Comissões Totais</p>
+                      <p className="text-green-400 font-bold text-lg">
+                        R$ {parseFloat(viewingAffiliate.totalCommissions).toFixed(2)}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Affiliate Links */}
+              <Card className="bg-slate-700 border-slate-600">
+                <CardHeader>
+                  <CardTitle className="text-lg text-white flex items-center gap-2">
+                    <Copy className="w-5 h-5" />
+                    Casas de Apostas Vinculadas
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {viewingAffiliate.houses.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {viewingAffiliate.houses.map((house, index) => (
+                        <div key={index} className="p-3 bg-slate-600 rounded-lg">
+                          <p className="text-white font-medium">{house}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-slate-400 italic">Nenhuma casa de apostas vinculada</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </CenteredLayout>
