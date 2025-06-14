@@ -281,7 +281,7 @@ export default function UserProfile() {
 
   return (
     <SidebarLayout>
-      <div className="p-6 max-w-4xl mx-auto pt-[71px] pb-[71px]">
+      <div className="p-6 max-w-4xl mx-auto pt-[32px] pb-[32px]">
         <div className="space-y-8">
           {/* Header */}
           <div className="space-y-4">
@@ -770,7 +770,6 @@ export default function UserProfile() {
           </div>
         </div>
       </div>
-
     </SidebarLayout>
   );
 }
