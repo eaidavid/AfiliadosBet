@@ -13,27 +13,27 @@ const app = express();
 app.use(session({
   secret: process.env.SESSION_SECRET || "fallback-secret-for-dev",
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   cookie: {
     httpOnly: true,
     secure: false, // Permitir cookies em desenvolvimento
-    maxAge: 24 * 60 * 60 * 1000 // 24 horas
+    maxAge: 24 * 60 * 60 * 1000, // 24 horas
+    sameSite: 'lax'
   }
 }));
 
 // JSON parsing middleware with error handling
-app.use('/api', (req, res, next) => {
-  express.json({ limit: '10mb', strict: false })(req, res, (err) => {
-    if (err) {
-      console.error('JSON parsing error:', err.message);
-      return res.status(400).json({ error: 'Invalid JSON format' });
-    }
-    next();
-  });
-});
-
-app.use(express.json({ limit: '10mb', strict: false }));
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Error handling middleware
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error('Server error:', err);
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'Invalid JSON' });
+  }
+  res.status(500).json({ error: 'Internal server error' });
+});
 
 // Configurar Passport
 app.use(passport.initialize());
