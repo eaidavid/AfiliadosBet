@@ -406,7 +406,7 @@ export default function BettingHouses() {
 
   return (
     <SidebarLayout>
-      <div className="p-6 pt-[69px] pb-[69px]">
+      <div className="p-6 pt-[32px] pb-[32px] pl-[20px] pr-[20px]">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Header */}
           <div className="space-y-4">
@@ -1065,7 +1065,6 @@ export default function BettingHouses() {
           </DialogContent>
         </Dialog>
       </div>
-      
       {/* Bottom Navigation for Mobile */}
       <BottomNavigation />
     </SidebarLayout>
