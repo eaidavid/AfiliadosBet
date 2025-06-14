@@ -309,10 +309,10 @@ export default function AffiliateHome() {
   return (
     <CenteredLayout>
       <div className="space-y-4 sm:space-y-8">
-          {/* Header */}
-          <div className="space-y-4">
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-              <div>
+        {/* Header */}
+        <div className="space-y-4">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+            <div>
                 <h1 className="text-2xl sm:text-4xl font-bold text-emerald-400 flex items-center gap-2 sm:gap-3">
                   <Gift className="h-6 w-6 sm:h-10 sm:w-10" />
                   Bem-vindo ao AfiliadosBet
@@ -840,8 +840,6 @@ export default function AffiliateHome() {
             </TabsContent>
           </Tabs>
         </div>
-      </div>
-
     </CenteredLayout>
   );
 }
