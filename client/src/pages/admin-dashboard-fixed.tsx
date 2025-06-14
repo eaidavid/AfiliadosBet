@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AdminSidebar } from "@/components/admin/sidebar";
+import AdminSidebar from "@/components/admin/sidebar";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {

@@ -81,18 +81,10 @@ export function AffiliateSidebar({ className }: AffiliateSidebarProps) {
     }
   }, [location, isMobile]);
 
-  // Mobile: não mostrar botão de menu (usamos navegação inferior)
+  // Mobile: não renderizar nada (usamos navegação inferior)
   if (isMobile) {
-    return (
-      <>
-
-        {/* Mobile Overlay */}
-        {mobileOpen && (
-          <div 
-            className="fixed inset-0 bg-black/50 z-40 md:hidden"
-            onClick={() => setMobileOpen(false)}
-          />
-        )}
+    return null;
+  }
 
         {/* Mobile Sidebar */}
         <div className={cn(
