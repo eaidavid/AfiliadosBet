@@ -1,123 +1,128 @@
-# AfiliadosBet - Affiliate Marketing Platform
+# AfiliadosBet - Sistema de Marketing de Afiliados
 
 ## Overview
 
-AfiliadosBet is a comprehensive affiliate marketing platform designed specifically for betting houses (casas de apostas) in the Brazilian market. The system operates as a **data receiver**, where betting houses send conversion data through webhooks/postbacks and API integrations, which are then processed to calculate and credit affiliate commissions automatically.
+AfiliadosBet é uma plataforma completa de marketing de afiliados para casas de apostas esportivas. O sistema permite que afiliados promovam diferentes casas de apostas e recebam comissões baseadas em conversões, com suporte a múltiplos modelos de comissão (CPA, RevShare, e Hybrid).
 
 ## System Architecture
 
 ### Frontend Architecture
-- **Framework**: React 18 with TypeScript
-- **Styling**: Tailwind CSS with custom UI components from shadcn/ui
-- **Routing**: React Router for SPA navigation
-- **State Management**: React hooks and context for local state
-- **Data Fetching**: Fetch API with custom hooks for server communication
-- **Build Tool**: Vite for fast development and optimized builds
+- **Framework**: React 18 com TypeScript
+- **Styling**: Tailwind CSS com componentes shadcn/ui
+- **State Management**: TanStack React Query para gerenciamento de estado servidor
+- **Routing**: Wouter para navegação client-side
+- **Build Tool**: Vite para desenvolvimento e build
 
 ### Backend Architecture
-- **Runtime**: Node.js 20 with Express.js
-- **Database**: PostgreSQL with Drizzle ORM
-- **Authentication**: Passport.js with session-based auth
-- **Session Storage**: PostgreSQL-backed sessions via connect-pg-simple
-- **API Design**: RESTful endpoints with webhook receivers
+- **Runtime**: Node.js 20 com TypeScript
+- **Framework**: Express.js para API REST
+- **Authentication**: Passport.js com estratégia local + sessões
+- **Session Storage**: PostgreSQL com connect-pg-simple
+- **Database ORM**: Drizzle ORM com schema tipado
 
-### Deployment Strategy
-- **Development**: Replit environment with hot reloading
-- **Production**: Containerized deployment with Docker
-- **Database**: PostgreSQL 15+ required
-- **Process Management**: PM2 for production deployments
-- **Reverse Proxy**: Nginx configuration included
+### Database Architecture
+- **Primary Database**: PostgreSQL
+- **ORM**: Drizzle ORM com migrations automáticas
+- **Session Storage**: Tabela dedicada para gerenciamento de sessões
 
 ## Key Components
 
-### User Management
-- **Dual Role System**: Affiliates and Administrators
-- **Authentication**: Email/password with bcrypt hashing
-- **Profile Management**: Complete user profiles with PIX key integration
-- **Session Management**: Secure session handling with automatic expiration
-
-### Betting House Integration
-- **Postback Processing**: Real-time webhook receivers for conversion events
-- **API Integration**: Pull-based data fetching from betting house APIs
-- **Commission Calculation**: Automated CPA and RevShare commission processing
-- **Security Tokens**: Unique tokens for each betting house integration
+### Core Entities
+1. **Users**: Afiliados e administradores com sistema de roles
+2. **Betting Houses**: Casas de apostas com configurações específicas de comissão
+3. **Affiliate Links**: Links únicos para tracking de conversões
+4. **Conversions**: Registros de conversões (registro, depósito, etc.)
+5. **Payments**: Sistema de pagamentos para afiliados
+6. **Click Tracking**: Rastreamento detalhado de cliques
 
 ### Commission System
-- **CPA (Cost Per Acquisition)**: Fixed amount per qualified deposit
-- **RevShare (Revenue Share)**: Percentage of betting house revenue
-- **Hybrid Model**: Support for both CPA and RevShare simultaneously
-- **Master/Affiliate Split**: Configurable percentage splits between platform and affiliates
+- **CPA (Cost Per Action)**: Comissão fixa por conversão qualificada
+- **RevShare**: Porcentagem do revenue compartilhado
+- **Hybrid**: Combinação de CPA + RevShare
+- **Split Configuration**: Divisão configurável entre afiliado e master admin
 
-### Data Processing
-- **Webhook Endpoints**: Multiple endpoints for different event types (clicks, registrations, deposits, revenue)
-- **Commission Calculator**: Automated calculation engine with fallback logic
-- **Data Validation**: Input validation and error handling for all incoming data
-- **Logging System**: Comprehensive logging for all postback events and API calls
+### Integration Types
+1. **Postback**: Webhooks enviados pelas casas de apostas
+2. **API**: Integração via API para buscar dados de conversão
+3. **Hybrid**: Combinação de postback + API
+
+### Postback System
+- **URL Pattern**: `/api/postback/:casa/:evento`
+- **Event Types**: register, deposit, profit, chargeback
+- **Security**: Token-based validation para cada casa
+- **Commission Calculation**: Automático baseado nas regras da casa
 
 ## Data Flow
 
-### Inbound Data Flow
-1. **Betting Houses** → Send postback/webhook data → **AfiliadosBet Receivers**
-2. **Receivers** → Validate and process data → **Commission Calculator**
-3. **Calculator** → Apply business rules → **Database Storage**
-4. **Database** → Update affiliate balances → **Real-time Dashboard Updates**
+### User Registration Flow
+1. Usuário se registra na plataforma
+2. Sistema cria conta de afiliado
+3. Afiliado pode gerar links de casas ativas
+4. Tracking automático de cliques e conversões
 
-### API Integration Flow
-1. **Scheduled Jobs** → Fetch data from betting house APIs → **Data Processor**
-2. **Processor** → Transform and validate data → **Commission System**
-3. **Commission System** → Calculate earnings → **Database Updates**
+### Conversion Tracking Flow
+1. Casa de apostas envia postback para sistema
+2. Sistema valida token de segurança
+3. Identifica afiliado via subid
+4. Calcula comissão baseada nas regras
+5. Registra conversão na base de dados
+6. Atualiza estatísticas do afiliado
 
-### User Interface Flow
-1. **Affiliates** → Access dashboard → **View earnings and statistics**
-2. **Administrators** → Manage betting houses → **Configure commission structures**
-3. **Payment System** → Process withdrawal requests → **Update payment statuses**
+### Payment Flow
+1. Afiliado solicita pagamento via dashboard
+2. Admin aprova/rejeita pedido
+3. Sistema processa pagamento (PIX/Transferência)
+4. Atualiza status e histórico
 
 ## External Dependencies
 
 ### Core Dependencies
-- **Database**: PostgreSQL 14+ (production), Neon serverless (development)
-- **Node.js**: Version 20+ required for modern JavaScript features
-- **React Ecosystem**: React 18, React Router, React Hook Form
-- **UI Framework**: Radix UI primitives with Tailwind CSS styling
+- **@neondatabase/serverless**: Driver PostgreSQL otimizado
+- **drizzle-orm**: ORM tipado para TypeSQL
+- **express**: Framework web para Node.js
+- **passport**: Middleware de autenticação
+- **bcrypt**: Hash de senhas
+- **express-session**: Gerenciamento de sessões
+
+### Frontend Dependencies
+- **@tanstack/react-query**: Gerenciamento de estado servidor
+- **@radix-ui**: Componentes UI acessíveis
+- **tailwindcss**: Framework CSS utility-first
+- **framer-motion**: Animações React
+- **react-hook-form**: Gerenciamento de formulários
 
 ### Development Tools
-- **TypeScript**: Full type safety across frontend and backend
-- **Drizzle ORM**: Type-safe database operations with migration support
-- **Vite**: Fast development server and build optimization
-- **ESBuild**: Fast TypeScript compilation for production builds
-
-### Authentication & Security
-- **Passport.js**: Authentication middleware with local strategy
-- **bcrypt**: Password hashing and verification
-- **express-session**: Session management with PostgreSQL storage
-- **CORS**: Cross-origin resource sharing configuration
-
-### Monitoring & Logging
-- **Custom Logging**: Comprehensive request/response logging
-- **Error Handling**: Centralized error handling with proper HTTP status codes
-- **Webhook Logging**: Detailed logging of all postback events for debugging
+- **tsx**: TypeScript execution para desenvolvimento
+- **esbuild**: Bundler para produção do servidor
+- **vite**: Build tool e dev server
+- **drizzle-kit**: CLI para migrations
 
 ## Deployment Strategy
 
-### Development Environment
-- Replit-based development with hot reloading
-- Environment variables managed through .env files
-- Automatic database provisioning and migration
+### Production Environment
+- **Container**: Docker com Node.js 20 Alpine
+- **Database**: PostgreSQL 15+ com SSL
+- **Reverse Proxy**: Nginx para servir frontend e proxy API
+- **Process Manager**: PM2 para gerenciamento de processos
 
-### Production Deployment
-- Docker containerization with multi-stage builds
-- PostgreSQL database with connection pooling
-- Nginx reverse proxy for load balancing and SSL termination
-- PM2 process management for zero-downtime deployments
+### Environment Configuration
+- **NODE_ENV**: production/development
+- **DATABASE_URL**: String de conexão PostgreSQL
+- **SESSION_SECRET**: Chave secreta para sessões
+- **PORT**: Porta do servidor (padrão 3000)
 
-### Scalability Considerations
-- Database connection pooling for high concurrency
-- Horizontal scaling support through containerization
-- CDN integration for static asset delivery
-- Caching strategies for frequently accessed data
+### Docker Composition
+- **app**: Aplicação principal Node.js
+- **postgres**: Banco PostgreSQL dedicado
+- **nginx**: Proxy reverso e servidor web
+
+### Deployment Options
+1. **Manual VPS**: Scripts automatizados para Ubuntu/CentOS
+2. **Docker Compose**: Stack completa containerizada
+3. **Replit**: Deploy direto na plataforma Replit
 
 ## Changelog
-- June 13, 2025. Initial setup
+- June 14, 2025. Initial setup
 
 ## User Preferences
 
