@@ -662,7 +662,7 @@ export default function AdminManage() {
             </CardContent>
           </Card>
         </motion.div>
-      </div>
+
       {/* Form Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-2xl">
@@ -1002,6 +1002,6 @@ export default function AdminManage() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </CenteredLayout>
   );
 }

@@ -23,7 +23,7 @@ import AdminDashboardFixed from "@/pages/admin-dashboard-fixed";
 import AdminCasas from "@/pages/admin-casas";
 
 import AdminHouses from "@/pages/admin-houses";
-import AdminManageSimple from "@/pages/admin-manage-simple";
+import AdminManageFixed from "@/pages/admin-manage-fixed";
 import AdminEditAffiliate from "@/pages/admin-edit-affiliate";
 import PostbackGeneratorProfessional from "@/pages/postback-generator-professional";
 import PostbackLogs from "@/pages/postback-logs";
@@ -554,7 +554,7 @@ function AuthenticatedAdminManage() {
 
   return (
     <div className="mobile-safe no-bounce">
-      <AdminManageSimple />
+      <AdminManageFixed />
       <AdminPanelToggle />
       <BottomNavigation />
     </div>

@@ -308,8 +308,7 @@ export default function AffiliateHome() {
 
   return (
     <CenteredLayout>
-      <div className={`p-3 sm:p-6 pt-[62px] ${isMobile ? 'pb-[90px]' : 'pb-[62px]'}`}>
-        <div className="max-w-7xl mx-auto space-y-4 sm:space-y-8">
+      <div className="space-y-4 sm:space-y-8">
           {/* Header */}
           <div className="space-y-4">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">

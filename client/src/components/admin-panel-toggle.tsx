@@ -27,7 +27,7 @@ export default function AdminPanelToggle() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-24 right-6 z-[60]">
       <div className="flex flex-col items-end space-y-2">
         {isExpanded && (
           <div className="bg-slate-800 border border-slate-700 rounded-lg p-2 shadow-lg">
