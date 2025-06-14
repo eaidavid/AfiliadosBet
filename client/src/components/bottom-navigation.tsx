@@ -96,14 +96,22 @@ const adminNavigationItems = [
 
 export function BottomNavigation({ className }: BottomNavigationProps) {
   const [location, navigate] = useLocation();
-  const { isAdmin } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const handleNavigation = (href: string) => {
     navigate(href);
   };
 
-  // Escolher navegação baseada no tipo de usuário
-  const navigationItems = isAdmin ? adminNavigationItems : affiliateNavigationItems;
+  // Detectar se está em área admin baseado na URL
+  const isAdminArea = location.startsWith('/admin');
+  
+  // Escolher navegação baseada na área atual (admin ou afiliado)
+  const navigationItems = isAdminArea ? adminNavigationItems : affiliateNavigationItems;
+
+  // Não mostrar navegação se não estiver autenticado
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 z-[9999] h-16 flex items-center justify-around px-2 lg:hidden">
