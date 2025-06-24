@@ -24,3 +24,6 @@ ufw --force enable
 certbot --nginx -d afiliadosbet.com.br
 
 echo "✅ Sistema AfiliadosBet rodando em https://afiliadosbet.com.br"
+
+
+#atualizar
