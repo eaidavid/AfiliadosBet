@@ -134,6 +134,7 @@ AfiliadosBet é uma plataforma completa de marketing de afiliados para casas de 
 - **Fixed Import Dependencies**: Resolved all broken imports and missing modules that caused server errors
 - **Production-Ready Session Security**: Configured secure cookies and HTTPS-only mode for production
 - **Comprehensive Documentation**: Created detailed README.md with installation, deployment, and troubleshooting guides
+- **Database Error Handling**: Fixed "Internal Server Error" on login by implementing proper database connection error handling with user-friendly Portuguese messages
 
 ### June 14, 2025 - Application Startup and UI Fixes
 - **Fixed Application Startup Issues**: Resolved API scheduler initialization problems causing app crashes
