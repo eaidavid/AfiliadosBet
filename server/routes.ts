@@ -1,5 +1,6 @@
 import express from 'express';
 import { db, safeDbQuery } from "./db";
+import { DatabaseFallback } from "./db-fallback";
 import * as schema from "../shared/schema";
 import { eq, desc, and, or, ilike, gte, lt, inArray, sql, ne, count } from "drizzle-orm";
 import bcrypt from "bcrypt";
@@ -14,18 +15,28 @@ passport.use(new LocalStrategy(
   { usernameField: 'email' },
   async (email, password, done) => {
     try {
-      const userResult = await safeDbQuery(async () => {
-        return await db
-          .select()
-          .from(schema.users)
-          .where(eq(schema.users.email, email));
-      });
+      // Try database first, fallback to local data
+      let user;
+      try {
+        const userResult = await safeDbQuery(async () => {
+          return await db
+            .select()
+            .from(schema.users)
+            .where(eq(schema.users.email, email));
+        });
 
-      if (!userResult || userResult.length === 0) {
+        if (userResult && userResult.length > 0) {
+          user = userResult[0];
+        }
+      } catch (error) {
+        // Use fallback when database unavailable
+        user = await DatabaseFallback.findUserByEmailOrUsername(email);
+      }
+
+      if (!user) {
         return done(null, false, { message: 'Email não encontrado' });
       }
 
-      const user = userResult[0];
       const isValid = await bcrypt.compare(password, user.password);
       if (!isValid) {
         return done(null, false, { message: 'Senha incorreta' });
@@ -45,18 +56,29 @@ passport.serializeUser((user: any, done) => {
 
 passport.deserializeUser(async (id: any, done) => {
   try {
-    const userResult = await safeDbQuery(async () => {
-      return await db
-        .select()
-        .from(schema.users)
-        .where(eq(schema.users.id, id));
-    });
+    // Try database first, fallback to local data
+    let user;
+    try {
+      const userResult = await safeDbQuery(async () => {
+        return await db
+          .select()
+          .from(schema.users)
+          .where(eq(schema.users.id, id));
+      });
 
-    if (!userResult || userResult.length === 0) {
+      if (userResult && userResult.length > 0) {
+        user = userResult[0];
+      }
+    } catch (error) {
+      // Use fallback when database unavailable
+      user = await DatabaseFallback.findUserById(parseInt(id));
+    }
+
+    if (!user) {
       return done(null, false);
     }
 
-    done(null, userResult[0]);
+    done(null, user);
   } catch (error) {
     console.error("Deserialize user error:", error);
     done(error);
@@ -103,10 +125,10 @@ export async function registerRoutes(app: express.Application) {
         return res.status(400).json({ error: "Email e senha são obrigatórios" });
       }
 
-      // Find user by email or username with enhanced error handling
-      let userResult;
+      // Try database first, fallback to local data if needed
+      let user;
       try {
-        userResult = await safeDbQuery(async () => {
+        const userResult = await safeDbQuery(async () => {
           return await db
             .select()
             .from(schema.users)
@@ -115,34 +137,23 @@ export async function registerRoutes(app: express.Application) {
               eq(schema.users.username, email)
             ));
         });
+
+        if (userResult && userResult.length > 0) {
+          user = userResult[0];
+        }
       } catch (error: any) {
-        console.error("Database connection error during login:", error.message);
+        console.warn("Database unavailable, using fallback authentication");
         
-        // Handle specific database connection errors
-        if (error.message === 'DATABASE_ENDPOINT_DISABLED') {
-          return res.status(503).json({ 
-            error: "Banco de dados temporariamente indisponível. Aguarde alguns minutos e tente novamente.",
-            code: "DATABASE_UNAVAILABLE"
-          });
+        // Use fallback data when database is unavailable
+        const fallbackUser = await DatabaseFallback.findUserByEmailOrUsername(email);
+        if (fallbackUser) {
+          user = fallbackUser;
         }
-        
-        if (error.message === 'DATABASE_CONNECTION_FAILED') {
-          return res.status(503).json({ 
-            error: "Falha na conexão com o banco de dados. Tente novamente.",
-            code: "CONNECTION_ERROR"
-          });
-        }
-        
-        return res.status(500).json({ 
-          error: "Erro interno do servidor. Contate o suporte se o problema persistir." 
-        });
       }
 
-      if (!userResult || userResult.length === 0) {
+      if (!user) {
         return res.status(401).json({ error: "Credenciais inválidas" });
       }
-
-      const user = userResult[0];
 
       // Verify password
       const isValid = await bcrypt.compare(password, user.password);
