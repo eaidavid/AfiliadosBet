@@ -54,6 +54,14 @@ app.use(passport.session());
 (async () => {
   console.log("starting up user application");
 
+  // Initialize database schema
+  try {
+    const { initializeDatabase } = await import('./init-database');
+    await initializeDatabase();
+  } catch (error) {
+    console.warn("Database initialization skipped:", error instanceof Error ? error.message : 'Unknown error');
+  }
+
   // Health check endpoint for monitoring
   app.get('/api/health', (req, res) => {
     res.status(200).json({ 

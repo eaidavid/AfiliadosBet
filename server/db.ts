@@ -1,42 +1,39 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
+import { drizzle } from 'drizzle-orm/better-sqlite3';
+import Database from 'better-sqlite3';
 import * as schema from "@shared/schema";
+import path from 'path';
+import fs from 'fs';
 
-// Configure Neon for serverless environments
-neonConfig.webSocketConstructor = ws;
-
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
-  );
+// Ensure data directory exists
+const dataDir = path.join(process.cwd(), 'data');
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
 }
 
-// Enhanced database configuration with retry logic
-const pool = new Pool({ 
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined
-});
+// Create SQLite database connection
+const dbPath = path.join(dataDir, 'afiliadosbet.db');
+const sqlite = new Database(dbPath);
+
+// Enable foreign key constraints
+sqlite.exec('PRAGMA foreign_keys = ON;');
 
 // Create database instance with enhanced error handling
-export const db = drizzle({ client: pool, schema });
+export const db = drizzle(sqlite, { schema });
 
-// Database wrapper with enhanced error handling for Neon serverless
+// Database wrapper with enhanced error handling
 export async function safeDbQuery<T>(queryFn: () => Promise<T>): Promise<T | null> {
   try {
     return await queryFn();
   } catch (error: any) {
     console.error('Database query failed:', error.message);
     
-    // Handle specific Neon endpoint disabled error
-    if (error.code === 'XX000' && error.message?.includes('endpoint is disabled')) {
-      console.warn('Neon database endpoint is disabled - this may be a temporary issue');
-      throw new Error('DATABASE_ENDPOINT_DISABLED');
+    // Handle connection errors
+    if (error.message?.includes('Connection refused') || error.message?.includes('ECONNREFUSED')) {
+      throw new Error('DATABASE_CONNECTION_REFUSED');
     }
     
-    // Handle other connection errors
-    if (error.message?.includes('Control plane request failed')) {
-      throw new Error('DATABASE_CONNECTION_FAILED');
+    if (error.message?.includes('timeout') || error.message?.includes('ETIMEDOUT')) {
+      throw new Error('DATABASE_CONNECTION_TIMEOUT');
     }
     
     throw error;
@@ -55,10 +52,10 @@ export async function initializeDatabase() {
   }
 }
 
-// Test database connection
+// Test database connection with simple query
 export async function testDatabaseConnection() {
   try {
-    await safeDbQuery(() => db.select().from(schema.users).limit(1));
+    const result = sqlite.prepare('SELECT datetime("now") as current_time').get();
     console.log("✅ Database connection successful");
     return true;
   } catch (error) {
@@ -67,4 +64,4 @@ export async function testDatabaseConnection() {
   }
 }
 
-export { pool };
+export { sqlite };
