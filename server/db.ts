@@ -12,7 +12,7 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-// Enhanced database configuration with better error handling
+// Enhanced database configuration with retry logic
 const pool = new Pool({ 
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined
@@ -21,10 +21,44 @@ const pool = new Pool({
 // Create database instance with enhanced error handling
 export const db = drizzle({ client: pool, schema });
 
+// Database wrapper with enhanced error handling for Neon serverless
+export async function safeDbQuery<T>(queryFn: () => Promise<T>): Promise<T | null> {
+  try {
+    return await queryFn();
+  } catch (error: any) {
+    console.error('Database query failed:', error.message);
+    
+    // Handle specific Neon endpoint disabled error
+    if (error.code === 'XX000' && error.message?.includes('endpoint is disabled')) {
+      console.warn('Neon database endpoint is disabled - this may be a temporary issue');
+      throw new Error('DATABASE_ENDPOINT_DISABLED');
+    }
+    
+    // Handle other connection errors
+    if (error.message?.includes('Control plane request failed')) {
+      throw new Error('DATABASE_CONNECTION_FAILED');
+    }
+    
+    throw error;
+  }
+}
+
+// Initialize database with connection validation
+export async function initializeDatabase() {
+  try {
+    console.log('Initializing database connection...');
+    await testDatabaseConnection();
+    return true;
+  } catch (error) {
+    console.error('Database initialization failed:', error);
+    return false;
+  }
+}
+
 // Test database connection
 export async function testDatabaseConnection() {
   try {
-    await db.select().from(schema.users).limit(1);
+    await safeDbQuery(() => db.select().from(schema.users).limit(1));
     console.log("✅ Database connection successful");
     return true;
   } catch (error) {

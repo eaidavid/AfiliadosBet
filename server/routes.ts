@@ -1,5 +1,5 @@
 import express from 'express';
-import { db } from "./db";
+import { db, safeDbQuery } from "./db";
 import * as schema from "../shared/schema";
 import { eq, desc, and, or, ilike, gte, lt, inArray, sql, ne, count } from "drizzle-orm";
 import bcrypt from "bcrypt";
@@ -14,15 +14,18 @@ passport.use(new LocalStrategy(
   { usernameField: 'email' },
   async (email, password, done) => {
     try {
-      const [user] = await db
-        .select()
-        .from(schema.users)
-        .where(eq(schema.users.email, email));
+      const userResult = await safeDbQuery(async () => {
+        return await db
+          .select()
+          .from(schema.users)
+          .where(eq(schema.users.email, email));
+      });
 
-      if (!user) {
+      if (!userResult || userResult.length === 0) {
         return done(null, false, { message: 'Email não encontrado' });
       }
 
+      const user = userResult[0];
       const isValid = await bcrypt.compare(password, user.password);
       if (!isValid) {
         return done(null, false, { message: 'Senha incorreta' });
@@ -30,6 +33,7 @@ passport.use(new LocalStrategy(
 
       return done(null, user);
     } catch (error) {
+      console.error("Login error:", error);
       return done(error);
     }
   }
@@ -41,12 +45,20 @@ passport.serializeUser((user: any, done) => {
 
 passport.deserializeUser(async (id: any, done) => {
   try {
-    const [user] = await db
-      .select()
-      .from(schema.users)
-      .where(eq(schema.users.id, id));
-    done(null, user);
+    const userResult = await safeDbQuery(async () => {
+      return await db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.id, id));
+    });
+
+    if (!userResult || userResult.length === 0) {
+      return done(null, false);
+    }
+
+    done(null, userResult[0]);
   } catch (error) {
+    console.error("Deserialize user error:", error);
     done(error);
   }
 });
@@ -91,18 +103,46 @@ export async function registerRoutes(app: express.Application) {
         return res.status(400).json({ error: "Email e senha são obrigatórios" });
       }
 
-      // Find user by email or username
-      const [user] = await db
-        .select()
-        .from(schema.users)
-        .where(or(
-          eq(schema.users.email, email),
-          eq(schema.users.username, email)
-        ));
+      // Find user by email or username with enhanced error handling
+      let userResult;
+      try {
+        userResult = await safeDbQuery(async () => {
+          return await db
+            .select()
+            .from(schema.users)
+            .where(or(
+              eq(schema.users.email, email),
+              eq(schema.users.username, email)
+            ));
+        });
+      } catch (error: any) {
+        console.error("Database connection error during login:", error.message);
+        
+        // Handle specific database connection errors
+        if (error.message === 'DATABASE_ENDPOINT_DISABLED') {
+          return res.status(503).json({ 
+            error: "Banco de dados temporariamente indisponível. Aguarde alguns minutos e tente novamente.",
+            code: "DATABASE_UNAVAILABLE"
+          });
+        }
+        
+        if (error.message === 'DATABASE_CONNECTION_FAILED') {
+          return res.status(503).json({ 
+            error: "Falha na conexão com o banco de dados. Tente novamente.",
+            code: "CONNECTION_ERROR"
+          });
+        }
+        
+        return res.status(500).json({ 
+          error: "Erro interno do servidor. Contate o suporte se o problema persistir." 
+        });
+      }
 
-      if (!user) {
+      if (!userResult || userResult.length === 0) {
         return res.status(401).json({ error: "Credenciais inválidas" });
       }
+
+      const user = userResult[0];
 
       // Verify password
       const isValid = await bcrypt.compare(password, user.password);
