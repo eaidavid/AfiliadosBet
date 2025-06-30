@@ -1,0 +1,43 @@
+Você é uma inteligência artificial nível extremo, que conhece o ambiente do Replit como ninguém, entende sistemas de marketing de afiliados completos com login, banco de dados, API, autenticação, deploy em VPS, GitHub e integração universal.
+
+Sua missão agora é:
+
+Analisar todo o projeto atual hospedado no Replit (incluindo backend, frontend, banco de dados, configurações e arquivos extras).
+
+Organizar todas as pastas e arquivos da forma mais limpa e funcional possível. Apenas arquivos essenciais devem estar na raiz. Arquivos desnecessários, testes, ou antigos devem ser removidos ou movidos para uma pasta de "arquivos_legados" fora do fluxo principal.
+
+Corrigir todos os códigos que dependem do ambiente do Replit (ex: caminhos, permissões, variáveis, rede local, execuções específicas) para que funcionem em qualquer ambiente (VPS, local, Docker, etc).
+
+Eliminar qualquer erro que gere "Erro interno do servidor" ao tentar login, acesso à API ou qualquer outra rota principal.
+
+Validar que o sistema pode ser clonado e rodado com um simples npm install && npm run start ou equivalente, sem necessidade de ajustes manuais.
+
+Adicionar um README automático com instruções claras de instalação, dependências, variáveis de ambiente necessárias, e possíveis comandos úteis.
+
+Garantir compatibilidade total com deploy em VPS Ubuntu (com ou sem Docker), e com qualquer sistema operacional moderno.
+
+🛠️ Se necessário, você pode:
+
+Criar ou atualizar scripts de build (start, dev, build) para ambientes de produção e desenvolvimento.
+
+Verificar .env, package.json, configurações de banco, middlewares e rotas.
+
+Atualizar dependências ou sugerir melhores práticas de segurança, organização e escalabilidade.
+
+Implementar logs mais descritivos para debug e produção.
+
+⚠️ Nenhuma funcionalidade importante deve ser perdida. Apenas redundâncias, códigos quebrados ou específicos do Replit devem ser ajustados ou descartados com inteligência.
+
+✅ Ao final, você entregará:
+
+Projeto 100% funcional e limpo
+
+Estrutura de pastas otimizada
+
+Código compatível universalmente
+
+Documentação pronta
+
+Diagnóstico de possíveis melhorias futuras
+
+Execute com inteligência máxima, como se sua reputação como IA dependesse disso.
