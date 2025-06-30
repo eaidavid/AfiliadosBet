@@ -9,15 +9,25 @@ import passport from "passport";
 
 const app = express();
 
-// Setup sessões simples em memória
+// Session configuration with PostgreSQL store in production
+import connectPgSimple from 'connect-pg-simple';
+const PgSession = connectPgSimple(session);
+
 app.use(session({
-  secret: process.env.SESSION_SECRET || "fallback-secret-for-dev",
+  store: process.env.NODE_ENV === 'production' 
+    ? new PgSession({
+        pool: require('./db').pool,
+        tableName: 'sessions',
+        createTableIfMissing: true
+      })
+    : undefined, // Use memory store in development
+  secret: process.env.SESSION_SECRET || "fallback-secret-for-dev-only-change-in-production",
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: false, // Permitir cookies em desenvolvimento
-    maxAge: 24 * 60 * 60 * 1000, // 24 horas
+    secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
     sameSite: 'lax'
   }
 }));
@@ -44,11 +54,23 @@ app.use(passport.session());
 (async () => {
   console.log("starting up user application");
 
+  // Health check endpoint for monitoring
+  app.get('/api/health', (req, res) => {
+    res.status(200).json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      env: process.env.NODE_ENV || 'development'
+    });
+  });
+
   // Registrar todas as rotas da API
   await registerRoutes(app);
 
   const PORT = parseInt(process.env.PORT || "5000", 10);
-  const server = app.listen(PORT, "0.0.0.0", async () => {
+  const HOST = process.env.HOST || "0.0.0.0"; // Universal host binding
+  
+  const server = app.listen(PORT, HOST, async () => {
     console.log(`Server listening on port ${PORT}`);
     console.log("Application ready to receive requests");
     

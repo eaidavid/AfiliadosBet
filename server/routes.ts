@@ -5,7 +5,7 @@ import { eq, desc, and, or, ilike, gte, lt, inArray, sql, ne, count } from "driz
 import bcrypt from "bcrypt";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import testApiRouter from './test-api';
+
 import { webhookRouter } from './webhook-endpoints';
 import { handlePostback } from './postback-simple';
 
@@ -1818,12 +1818,8 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
-  // Webhook receiver for betting houses
-  const webhookApp = await import('./webhook-receiver');
-  app.use('/webhook', webhookApp.default);
-  
-  // API de teste para demonstração
-  app.use('/api/v1', testApiRouter);
+  // Webhook endpoints for betting houses
+  app.use('/webhook', webhookRouter);
 
   // Smartico Conversions API Routes
   
