@@ -74,16 +74,22 @@ app.use(passport.session());
     console.log(`Server listening on port ${PORT}`);
     console.log("Application ready to receive requests");
     
-    // Inicializar agendador de sincronização API com delay
-    setTimeout(async () => {
-      try {
-        const { ApiSyncScheduler } = await import('./cron/apiSyncScheduler');
-        const scheduler = ApiSyncScheduler.getInstance();
-        await scheduler.initializeScheduler();
-      } catch (error) {
-        console.error("Erro ao inicializar agendador de API:", error);
-      }
-    }, 5000); // Delay de 5 segundos para permitir que o servidor inicie completamente
+    // Initialize API scheduler only in production with proper error handling
+    if (process.env.NODE_ENV === 'production') {
+      setTimeout(async () => {
+        try {
+          const { ApiSyncScheduler } = await import('./cron/apiSyncScheduler');
+          const scheduler = ApiSyncScheduler.getInstance();
+          await scheduler.initializeScheduler();
+          console.log("✅ API scheduler initialized successfully");
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          console.warn("⚠️ API scheduler initialization failed (non-critical):", errorMessage);
+        }
+      }, 10000); // Longer delay for production stability
+    } else {
+      console.log("📋 API scheduler disabled in development mode");
+    }
   });
 
   // Setup Vite development environment

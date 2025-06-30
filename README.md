@@ -4,14 +4,21 @@ Sistema completo de marketing de afiliados para casas de apostas esportivas, com
 
 ## 🚀 Instalação Rápida
 
-### Pré-requisitos
-- Node.js 20+ 
-- PostgreSQL 13+
-- npm ou yarn
-
-### Instalação
-
+### Método 1: Instalação Automática (Ubuntu/Debian VPS)
 ```bash
+# Clone o repositório
+git clone <repository-url>
+cd afiliadosbet
+
+# Execute o script de deploy automático
+chmod +x deploy.sh
+./deploy.sh
+```
+
+### Método 2: Instalação Local/Desenvolvimento
+```bash
+# Pré-requisitos: Node.js 20+, PostgreSQL 13+
+
 # 1. Clonar o repositório
 git clone <repository-url>
 cd afiliadosbet
@@ -28,6 +35,14 @@ npm run db:push
 
 # 5. Iniciar aplicação
 npm run dev
+```
+
+### Método 3: Docker Compose
+```bash
+# Clone e inicie com Docker
+git clone <repository-url>
+cd afiliadosbet
+docker-compose up -d
 ```
 
 ## 🔧 Variáveis de Ambiente
