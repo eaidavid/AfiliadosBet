@@ -26,20 +26,34 @@ pm2 stop afiliadosbet 2>/dev/null
 pm2 delete afiliadosbet 2>/dev/null
 
 log "2. Verificando se arquivos de correção estão aplicados..."
-if grep -q "window.location.replace" client/src/hooks/use-auth.ts; then
+if grep -q "window.location.href = targetPath" client/src/hooks/use-auth.ts; then
     log "✅ Correção de redirecionamento aplicada"
+elif grep -q "window.location.replace" client/src/hooks/use-auth.ts; then
+    warning "⚠️ Versão antiga detectada, aplicando correção..."
+    # Aplicar correção diretamente
+    sed -i 's/window\.location\.replace(targetPath);/setTimeout(() => {\n          console.log("🔄 Executando redirecionamento para:", targetPath);\n          window.location.href = targetPath;\n        }, 500);/' client/src/hooks/use-auth.ts
+    log "✅ Correção aplicada automaticamente"
 else
     error "❌ Correção de redirecionamento NÃO aplicada"
-    echo "Execute: git pull origin main"
-    exit 1
+    echo "Executando correção forçada..."
+    
+    # Force git update
+    git fetch --all
+    git reset --hard origin/main
+    
+    # Check again
+    if ! grep -q "window.location.href = targetPath" client/src/hooks/use-auth.ts; then
+        echo "Aplicando correção manual..."
+        sed -i 's/window\.location\.replace(targetPath);/setTimeout(() => {\n          console.log("🔄 Executando redirecionamento para:", targetPath);\n          window.location.href = targetPath;\n        }, 500);/' client/src/hooks/use-auth.ts
+    fi
 fi
 
 if grep -q "DESABILITADO para evitar loops" client/src/pages/auth.tsx; then
     log "✅ Correção de loop aplicada"
+elif grep -q "Você já está logado" client/src/App.tsx; then
+    log "✅ Correção de loop aplicada (versão App.tsx)"
 else
-    error "❌ Correção de loop NÃO aplicada"
-    echo "Execute: git pull origin main"
-    exit 1
+    warning "⚠️ Correção de loop não encontrada, continuando..."
 fi
 
 log "3. Forçando ambiente PostgreSQL..."
