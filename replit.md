@@ -138,6 +138,8 @@ AfiliadosBet é uma plataforma completa de marketing de afiliados para casas de 
 - **Loop Fix**: Resolved infinite redirect loops by eliminating conflicting useEffect redirects and improving session sync
 - **Production Session Configuration**: Fixed session cookie persistence issues by disabling secure flag and forcing session save after login
 - **Session Debug Enhancement**: Added comprehensive session logging to identify cookie persistence problems
+- **PostgreSQL Production Fix**: Created comprehensive PostgreSQL diagnostic and repair script for VPS deployment issues
+- **Emergency Recovery**: Added CORRECAO_FORCADA_VPS.md with manual PostgreSQL recovery procedures
 
 ### June 30, 2025 - Complete Project Optimization and Universal Compatibility
 - **Universal Environment Compatibility**: Removed all Replit-specific dependencies and made system work in any environment (VPS, local, Docker)
