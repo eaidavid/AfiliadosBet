@@ -98,12 +98,14 @@ app.use(passport.session());
     } else {
       console.log("📋 API scheduler disabled in development mode");
     }
-  });
 
-  // Setup Vite development environment
-  if (process.env.NODE_ENV === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
-  }
+    // Setup Vite development environment after server starts
+    if (process.env.NODE_ENV === "development") {
+      await setupVite(app, server);
+      console.log("✅ Vite dev server configured");
+    } else {
+      serveStatic(app);
+      console.log("✅ Static files configured");
+    }
+  });
 })();
