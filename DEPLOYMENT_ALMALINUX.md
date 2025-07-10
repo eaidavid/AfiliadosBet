@@ -100,21 +100,56 @@ pm2 startup systemd
 # Execute o comando que aparece na tela
 ```
 
-## 4. Banco de Dados SQLite (Simplificado)
+## 4. Instalação do PostgreSQL
 
-### 4.1 Criar Diretório de Dados
+### 4.1 Instalar PostgreSQL 15
 ```bash
-# Criar diretório para banco SQLite
+# Instalar repositório PostgreSQL
+dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+
+# Instalar PostgreSQL
+dnf install -y postgresql15-server postgresql15
+
+# Inicializar base de dados
+/usr/pgsql-15/bin/postgresql-15-setup initdb
+
+# Iniciar e habilitar PostgreSQL
+systemctl start postgresql-15
+systemctl enable postgresql-15
+```
+
+### 4.2 Configurar PostgreSQL
+```bash
+# Entrar como usuário postgres
+sudo -u postgres psql
+
+-- Dentro do psql:
+CREATE DATABASE afiliadosbetdb;
+CREATE USER afiliadosbet WITH ENCRYPTED PASSWORD 'Alepoker800';
+GRANT ALL PRIVILEGES ON DATABASE afiliadosbetdb TO afiliadosbet;
+\q
+
+# Configurar autenticação
+sed -i "s/#listen_addresses = 'localhost'/listen_addresses = 'localhost'/" /var/lib/pgsql/15/data/postgresql.conf
+```
+
+### 4.3 Editar pg_hba.conf
+```bash
+vim /var/lib/pgsql/15/data/pg_hba.conf
+
+# Adicionar linha para autenticação local:
+local   afiliadosbetdb    afiliadosbet                            md5
+
+# Reiniciar PostgreSQL
+systemctl restart postgresql-15
+```
+
+### 4.4 Criar Diretório SQLite (Fallback)
+```bash
+# Criar diretório para banco SQLite (fallback em desenvolvimento)
 mkdir -p /var/www/afiliadosbet/data
 chown -R nginx:nginx /var/www/afiliadosbet/data
 chmod 755 /var/www/afiliadosbet/data
-```
-
-### 4.2 Observação sobre PostgreSQL
-```bash
-# OPCIONAL: Se você quiser usar PostgreSQL, descomente a linha DATABASE_URL no .env
-# e siga as instruções do PostgreSQL (disponíveis na documentação completa)
-# Para este projeto, SQLite é mais simples e funciona perfeitamente
 ```
 
 ## 5. Instalação do Nginx
@@ -239,8 +274,8 @@ NODE_ENV=production
 PORT=3000
 HOST=0.0.0.0
 
-# Database (SQLite é mais simples para este projeto)
-# DATABASE_URL=postgresql://afiliadosbet:sua_senha_segura@localhost:5432/afiliadosbet
+# Database
+DATABASE_URL=postgresql://afiliadosbet:Alepoker800@localhost:5432/afiliadosbetdb
 
 # Session
 SESSION_SECRET=gere_uma_chave_secreta_muito_forte_aqui

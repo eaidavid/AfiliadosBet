@@ -10,13 +10,19 @@ cd /var/www/afiliadosbet
 
 ### 2. Fazer download do script de correção
 ```bash
-curl -O https://raw.githubusercontent.com/seu-usuario/afiliadosbet/main/fix-session-production.sh
-chmod +x fix-session-production.sh
+curl -O https://raw.githubusercontent.com/seu-usuario/afiliadosbet/main/fix-postgresql-production.sh
+chmod +x fix-postgresql-production.sh
 ```
 
 ### 3. Executar a correção
 ```bash
-./fix-session-production.sh
+./fix-postgresql-production.sh
+```
+
+## Ou use o script que já está no projeto:
+```bash
+# Se você já tem o repositório atualizado
+./fix-postgresql-production.sh
 ```
 
 ## OU execute manualmente:
@@ -42,16 +48,30 @@ vim server/index.ts
 import connectPgSimple from 'connect-pg-simple';
 ```
 
-### 5. Substituir por:
+### 5. Substituir por (configuração PostgreSQL correta):
 ```typescript
-// Session configuration with memory store (simpler for this project)
-import MemoryStore from 'memorystore';
-const memoryStore = MemoryStore(session);
+// Session configuration with PostgreSQL store in production
+import connectPgSimple from 'connect-pg-simple';
+import { Pool } from 'pg';
+
+const PgSession = connectPgSimple(session);
+
+// Create PostgreSQL pool for sessions
+const sessionPool = process.env.NODE_ENV === 'production' && process.env.DATABASE_URL
+  ? new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: false // Set to true if using SSL
+    })
+  : null;
 
 app.use(session({
-  store: new memoryStore({
-    checkPeriod: 86400000 // prune expired entries every 24h
-  }),
+  store: sessionPool 
+    ? new PgSession({
+        pool: sessionPool,
+        tableName: 'sessions',
+        createTableIfMissing: true
+      })
+    : undefined, // Use memory store in development
   secret: process.env.SESSION_SECRET || "fallback-secret-for-dev-only-change-in-production",
   resave: false,
   saveUninitialized: false,

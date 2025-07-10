@@ -1,3 +1,36 @@
+#!/bin/bash
+
+# Script para corrigir configuração PostgreSQL em produção
+# Usando as credenciais corretas: afiliadosbet:Alepoker800@localhost:5432/afiliadosbetdb
+
+set -e
+
+echo "🔧 Corrigindo configuração PostgreSQL para produção..."
+
+# Verificar se estamos no diretório correto
+if [[ ! -f "server/index.ts" ]]; then
+    echo "❌ Erro: Execute este script no diretório raiz do projeto (/var/www/afiliadosbet)"
+    exit 1
+fi
+
+# Parar aplicação
+echo "⏹️  Parando aplicação..."
+pm2 stop afiliadosbet || true
+
+# Fazer backup do arquivo atual
+echo "💾 Fazendo backup do arquivo atual..."
+cp server/index.ts server/index.ts.backup.$(date +%Y%m%d_%H%M%S)
+
+# Atualizar arquivo .env se necessário
+echo "🔧 Atualizando arquivo .env..."
+if ! grep -q "DATABASE_URL=postgresql://afiliadosbet:Alepoker800@localhost:5432/afiliadosbetdb" .env; then
+    sed -i 's|DATABASE_URL=.*|DATABASE_URL=postgresql://afiliadosbet:Alepoker800@localhost:5432/afiliadosbetdb|' .env
+    echo "✅ DATABASE_URL atualizada no .env"
+fi
+
+# Aplicar correção no server/index.ts
+echo "🔄 Aplicando correção PostgreSQL..."
+cat > server/index.ts << 'EOF'
 import express from "express";
 import { setupVite, serveStatic } from "./vite";
 import { registerRoutes } from "./routes";
@@ -85,7 +118,7 @@ app.use(passport.session());
   // Registrar todas as rotas da API
   await registerRoutes(app);
 
-  const PORT = parseInt(process.env.PORT || "5000", 10);
+  const PORT = parseInt(process.env.PORT || "3000", 10);
   const HOST = process.env.HOST || "0.0.0.0"; // Universal host binding
   
   const server = app.listen(PORT, HOST, async () => {
@@ -119,3 +152,55 @@ app.use(passport.session());
     }
   });
 })();
+EOF
+
+# Verificar se o PostgreSQL está rodando
+echo "🔍 Verificando PostgreSQL..."
+if ! systemctl is-active --quiet postgresql-15; then
+    echo "⚠️  PostgreSQL não está rodando, iniciando..."
+    systemctl start postgresql-15
+fi
+
+# Testar conexão com o banco
+echo "🧪 Testando conexão com banco..."
+if ! psql -U afiliadosbet -h localhost -d afiliadosbetdb -c "SELECT 1;" > /dev/null 2>&1; then
+    echo "❌ Erro: Não foi possível conectar ao banco PostgreSQL"
+    echo "Verifique se o banco afiliadosbetdb existe e se as credenciais estão corretas"
+    exit 1
+fi
+
+# Fazer rebuild da aplicação
+echo "🔨 Fazendo rebuild da aplicação..."
+npm run build
+
+# Reiniciar aplicação
+echo "🚀 Reiniciando aplicação..."
+pm2 restart afiliadosbet
+
+# Aguardar um pouco para a aplicação iniciar
+echo "⏳ Aguardando aplicação iniciar..."
+sleep 5
+
+# Verificar status
+echo "📊 Verificando status da aplicação..."
+pm2 status afiliadosbet
+
+echo ""
+echo "✅ Correção PostgreSQL aplicada com sucesso!"
+echo ""
+echo "🔧 Configuração aplicada:"
+echo "   - Banco: afiliadosbetdb"
+echo "   - Usuário: afiliadosbet"
+echo "   - Senha: Alepoker800"
+echo "   - Host: localhost:5432"
+echo ""
+echo "🔍 Para verificar se está funcionando:"
+echo "   pm2 logs afiliadosbet"
+echo ""
+echo "🧪 Para testar login:"
+echo "   curl -X POST https://seudominio.com/api/auth/login \\"
+echo "     -H \"Content-Type: application/json\" \\"
+echo "     -d '{\"email\":\"admin@afiliadosbet.com.br\",\"password\":\"admin123\"}'"
+echo ""
+echo "📋 Logs em tempo real:"
+echo "   pm2 logs afiliadosbet --lines 50"
