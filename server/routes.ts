@@ -170,15 +170,25 @@ export async function registerRoutes(app: express.Application) {
 
         console.log("✅ Login successful for:", user.email, "Role:", user.role);
         console.log("🔑 Session ID:", req.sessionID);
-
-        res.json({ 
-          success: true, 
-          user: { 
-            id: user.id, 
-            email: user.email, 
-            role: user.role,
-            fullName: user.fullName 
-          } 
+        
+        // Force session save before responding
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error("❌ Session save error:", saveErr);
+            return res.status(500).json({ error: "Erro ao salvar sessão" });
+          }
+          
+          console.log("💾 Session saved successfully");
+          
+          res.json({ 
+            success: true, 
+            user: { 
+              id: user.id, 
+              email: user.email, 
+              role: user.role,
+              fullName: user.fullName 
+            } 
+          });
         });
       });
     } catch (error) {

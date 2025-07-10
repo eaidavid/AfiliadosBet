@@ -1,0 +1,51 @@
+0|afiliadosbet  | 🕐 Inicializando agendador de sincronização API
+0|afiliadosbet  | ✅ Agendador inicializado com 0 casas API
+0|afiliadosbet  | ✅ API scheduler initialized successfully
+0|afiliadosbet  | 🔍 Checking auth - Session ID: u8tRkls-2edISlok4mN8v6dlDu-Vn_jS
+0|afiliadosbet  | 🔍 Authenticated: false
+0|afiliadosbet  | 🔍 User in session: NO
+0|afiliadosbet  | ❌ User not authenticated
+0|afiliadosbet  | 🔍 Checking auth - Session ID: KFjDI_QoqJ2_BNuxgpbL_9BkLipNMWf4
+0|afiliadosbet  | 🔍 Authenticated: false
+0|afiliadosbet  | 🔍 User in session: NO
+0|afiliadosbet  | ❌ User not authenticated
+0|afiliadosbet  | ✅ Login successful for: admin@afiliadosbet.com.br Role: admin
+0|afiliadosbet  | 🔑 Session ID: 9IqKePKXsxGtiYVR6nX61o3OatVcdTo0
+0|afiliadosbet  | 🔍 Checking auth - Session ID: ygykQrgh9KB5qf5cCnPQ0sYS8MW5DIys
+0|afiliadosbet  | 🔍 Authenticated: false
+0|afiliadosbet  | 🔍 User in session: NO
+0|afiliadosbet  | ❌ User not authenticated
+0|afiliadosbet  | 🔍 Checking auth - Session ID: 5rNPk6fISrMTfy0czAXeLaTIfolJzLAc
+0|afiliadosbet  | 🔍 Authenticated: false
+0|afiliadosbet  | 🔍 User in session: NO
+0|afiliadosbet  | ❌ User not authenticated
+0|afiliadosbet  | 🔍 Checking auth - Session ID: V1MQmX6HKl1EK9d2xC6L3vY3Emb0q9WE
+0|afiliadosbet  | 🔍 Authenticated: false
+0|afiliadosbet  | 🔍 User in session: NO
+0|afiliadosbet  | ❌ User not authenticated
+0|afiliadosbet  | 🔍 Checking auth - Session ID: aMrepRfYMtazdg1D0ybTygapqcGgDRU6
+0|afiliadosbet  | 🔍 Authenticated: false
+0|afiliadosbet  | 🔍 User in session: NO
+0|afiliadosbet  | ❌ User not authenticated
+0|afiliadosbet  | 🔍 Checking auth - Session ID: e5e09snMBd8IgyikULXGXFTKbM986aaM
+0|afiliadosbet  | 🔍 Authenticated: false
+0|afiliadosbet  | 🔍 User in session: NO
+0|afiliadosbet  | ❌ User not authenticated
+0|afiliadosbet  | 🔍 Checking auth - Session ID: sFBzktpuSI4Ztw6W66PPCkavnmdXR14X
+0|afiliadosbet  | 🔍 Authenticated: false
+0|afiliadosbet  | 🔍 User in session: NO
+0|afiliadosbet  | ❌ User not authenticated
+0|afiliadosbet  | ✅ Login successful for: euleralvesa113@gmail.com Role: affiliate
+0|afiliadosbet  | 🔑 Session ID: waUb8xB_eYAhfj9dZVd8yPvMSobt4GHQ
+0|afiliadosbet  | 🔍 Checking auth - Session ID: _BvFDxErbhhHG_oEzqEBUJw6ZJf11OBE
+0|afiliadosbet  | 🔍 Authenticated: false
+0|afiliadosbet  | 🔍 User in session: NO
+0|afiliadosbet  | ❌ User not authenticated
+0|afiliadosbet  | 🔍 Checking auth - Session ID: c6thn2Tz-aGCCT7ZSRlJCoPMR8BUxQIn
+0|afiliadosbet  | 🔍 Authenticated: false
+0|afiliadosbet  | 🔍 User in session: NO
+0|afiliadosbet  | ❌ User not authenticated
+0|afiliadosbet  | 🔍 Checking auth - Session ID: lIwfZFNKphThgL21PDLU5GnZNPquOGid
+0|afiliadosbet  | 🔍 Authenticated: false
+0|afiliadosbet  | 🔍 User in session: NO
+0|afiliadosbet  | ❌ User not authenticated

@@ -34,9 +34,10 @@ app.use(session({
   secret: process.env.SESSION_SECRET || "fallback-secret-for-dev-only-change-in-production",
   resave: false,
   saveUninitialized: false,
+  name: 'afiliadosbet.sid', // Custom session name
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+    secure: false, // DISABLED - VPS doesn't have proper HTTPS
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     sameSite: 'lax'
   }
