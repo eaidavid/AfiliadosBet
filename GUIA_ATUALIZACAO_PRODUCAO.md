@@ -2,6 +2,20 @@
 
 ## 🚀 Comandos Rápidos para Atualizar o Servidor
 
+### OPÇÃO 1: Script Automático (RECOMENDADO)
+```bash
+ssh root@seu-servidor-ip
+cd /var/www/afiliadosbet
+
+# Script completo (corrige tudo)
+./fix-postgresql-production.sh
+
+# OU script apenas para sessão
+./fix-session-production.sh
+```
+
+### OPÇÃO 2: Manual
+
 ### 1. Conectar ao Servidor
 ```bash
 ssh root@seu-servidor-ip

@@ -1,167 +1,97 @@
 #!/bin/bash
 
-# Script para corrigir erro de sessão PostgreSQL em produção
-# Erro: SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string
+# 🔄 Script Específico para Correção de Sessão PostgreSQL
+# Foca apenas na correção do problema de loop
 
-set -e
+echo "🔄 Corrigindo sessões PostgreSQL..."
 
-echo "🔧 Iniciando correção do erro de sessão PostgreSQL..."
+# Cores
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
 
-# Verificar se estamos no diretório correto
-if [[ ! -f "server/index.ts" ]]; then
-    echo "❌ Erro: Execute este script no diretório raiz do projeto (/var/www/afiliadosbet)"
+log() { echo -e "${GREEN}[$(date '+%H:%M:%S')]${NC} $1"; }
+error() { echo -e "${RED}[ERRO]${NC} $1"; }
+warning() { echo -e "${YELLOW}[AVISO]${NC} $1"; }
+
+# Verificações básicas
+if [ ! -f "package.json" ]; then
+    error "Execute no diretório do projeto"
     exit 1
 fi
 
-# Parar aplicação
-echo "⏹️  Parando aplicação..."
-pm2 stop afiliadosbet || true
+log "1. Parando aplicação..."
+pm2 stop afiliadosbet 2>/dev/null
+pm2 delete afiliadosbet 2>/dev/null
 
-# Fazer backup do arquivo atual
-echo "💾 Fazendo backup do arquivo atual..."
-cp server/index.ts server/index.ts.backup.$(date +%Y%m%d_%H%M%S)
+log "2. Verificando se arquivos de correção estão aplicados..."
+if grep -q "window.location.replace" client/src/hooks/use-auth.ts; then
+    log "✅ Correção de redirecionamento aplicada"
+else
+    error "❌ Correção de redirecionamento NÃO aplicada"
+    echo "Execute: git pull origin main"
+    exit 1
+fi
 
-# Aplicar correção
-echo "🔄 Aplicando correção de sessão..."
-cat > server/index.ts << 'EOF'
-import express from "express";
-import { setupVite, serveStatic } from "./vite";
-import { registerRoutes } from "./routes";
-import { db } from "./db";
-import { eq, sql, desc } from "drizzle-orm";
-import * as schema from "../shared/schema";
-import session from "express-session";
-import passport from "passport";
+if grep -q "DESABILITADO para evitar loops" client/src/pages/auth.tsx; then
+    log "✅ Correção de loop aplicada"
+else
+    error "❌ Correção de loop NÃO aplicada"
+    echo "Execute: git pull origin main"
+    exit 1
+fi
 
-const app = express();
-
-// Session configuration with memory store (simpler for this project)
-import MemoryStore from 'memorystore';
-const memoryStore = MemoryStore(session);
-
-app.use(session({
-  store: new memoryStore({
-    checkPeriod: 86400000 // prune expired entries every 24h
-  }),
-  secret: process.env.SESSION_SECRET || "fallback-secret-for-dev-only-change-in-production",
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    sameSite: 'lax'
-  }
-}));
-
-// JSON parsing middleware with error handling
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-// Error handling middleware
-app.use((err: any, req: any, res: any, next: any) => {
-  console.error('Server error:', err);
-  if (err.type === 'entity.parse.failed') {
-    return res.status(400).json({ error: 'Invalid JSON' });
-  }
-  res.status(500).json({ error: 'Internal server error' });
-});
-
-// Configurar Passport
-app.use(passport.initialize());
-app.use(passport.session());
-
-// Todas as rotas são registradas através do registerRoutes em routes.ts
-
-(async () => {
-  console.log("starting up user application");
-
-  // Initialize database schema
-  try {
-    const { initializeDatabase } = await import('./init-database');
-    await initializeDatabase();
-  } catch (error) {
-    console.warn("Database initialization skipped:", error instanceof Error ? error.message : 'Unknown error');
-  }
-
-  // Health check endpoint for monitoring
-  app.get('/api/health', (req, res) => {
-    res.status(200).json({ 
-      status: 'ok', 
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      env: process.env.NODE_ENV || 'development'
-    });
-  });
-
-  // Registrar todas as rotas da API
-  await registerRoutes(app);
-
-  const PORT = parseInt(process.env.PORT || "3000", 10);
-  const HOST = process.env.HOST || "0.0.0.0"; // Universal host binding
-  
-  const server = app.listen(PORT, HOST, async () => {
-    console.log(`Server listening on port ${PORT}`);
-    console.log("Application ready to receive requests");
-    
-    // Initialize API scheduler only in production with proper error handling
-    if (process.env.NODE_ENV === 'production') {
-      setTimeout(async () => {
-        try {
-          const { ApiSyncScheduler } = await import('./cron/apiSyncScheduler');
-          const scheduler = ApiSyncScheduler.getInstance();
-          await scheduler.initializeScheduler();
-          console.log("✅ API scheduler initialized successfully");
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
-          console.warn("⚠️ API scheduler initialization failed (non-critical):", errorMessage);
-        }
-      }, 10000); // Longer delay for production stability
-    } else {
-      console.log("📋 API scheduler disabled in development mode");
-    }
-
-    // Setup Vite development environment after server starts
-    if (process.env.NODE_ENV === "development") {
-      await setupVite(app, server);
-      console.log("✅ Vite dev server configured");
-    } else {
-      serveStatic(app);
-      console.log("✅ Static files configured");
-    }
-  });
-})();
+log "3. Forçando ambiente PostgreSQL..."
+cat > .env << EOF
+NODE_ENV=production
+DATABASE_URL=postgresql://afiliadosbet:Alepoker800@localhost:5432/afiliadosbetdb
+SESSION_SECRET=afiliadosbet_super_secret_key_2025
+PORT=3000
+HOST=0.0.0.0
 EOF
 
-# Fazer rebuild da aplicação
-echo "🔨 Fazendo rebuild da aplicação..."
+log "4. Testando PostgreSQL..."
+if ! psql -U afiliadosbet -h localhost -d afiliadosbetdb -c "SELECT 1;" >/dev/null 2>&1; then
+    error "PostgreSQL não conectou"
+    echo "Verifique: systemctl status postgresql-15"
+    exit 1
+fi
+
+log "5. Recriando tabela de sessões..."
+psql -U afiliadosbet -h localhost -d afiliadosbetdb << 'EOSQL'
+DROP TABLE IF EXISTS sessions;
+CREATE TABLE sessions (
+  sid varchar PRIMARY KEY,
+  sess json NOT NULL,
+  expire timestamp(6) NOT NULL
+);
+CREATE INDEX IDX_session_expire ON sessions(expire);
+EOSQL
+
+log "6. Build rápido..."
 npm run build
 
-# Reiniciar aplicação
-echo "🚀 Reiniciando aplicação..."
-pm2 restart afiliadosbet
+if [ $? -ne 0 ]; then
+    error "Build falhou"
+    exit 1
+fi
 
-# Aguardar um pouco para a aplicação iniciar
-echo "⏳ Aguardando aplicação iniciar..."
+log "7. Iniciando com logs..."
+NODE_ENV=production pm2 start npm --name "afiliadosbet" -- start
+
 sleep 5
 
-# Verificar status
-echo "📊 Verificando status da aplicação..."
-pm2 status afiliadosbet
+log "8. Verificando logs..."
+pm2 logs afiliadosbet --lines 10
 
 echo ""
-echo "✅ Correção aplicada com sucesso!"
+echo -e "${GREEN}✅ SESSÃO CORRIGIDA!${NC}"
 echo ""
-echo "🔍 Para verificar se está funcionando:"
-echo "   pm2 logs afiliadosbet"
+echo "🧪 Teste agora:"
+echo "1. Acesse: https://afiliadosbet.com.br"
+echo "2. Faça login com: admin@afiliadosbet.com.br / admin123"
+echo "3. Deve redirecionar para /admin sem loop"
 echo ""
-echo "🧪 Para testar login:"
-echo "   curl -X POST https://seudominio.com/api/auth/login \\"
-echo "     -H \"Content-Type: application/json\" \\"
-echo "     -d '{\"email\":\"admin@afiliadosbet.com.br\",\"password\":\"admin123\"}'"
-echo ""
-echo "📋 Logs em tempo real:"
-echo "   pm2 logs afiliadosbet --lines 50"
-EOF
-
-chmod +x fix-session-production.sh
+echo "📊 Para monitorar:"
+echo "pm2 logs afiliadosbet | grep -E '(Login|redirect|auth)'"
