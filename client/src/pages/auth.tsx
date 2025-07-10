@@ -75,30 +75,22 @@ export default function Auth() {
     },
   });
 
-  // Redirecionar usuário autenticado
-  useEffect(() => {
-    if (isAuthenticated) {
-      if (isAdmin) {
-        setLocation("/admin");
-      } else {
-        setLocation("/home");
-      }
-    }
-  }, [isAuthenticated, isAdmin, setLocation]);
+  // Redirecionar usuário autenticado (DESABILITADO para evitar loops)
+  // useEffect(() => {
+  //   if (isAuthenticated) {
+  //     if (isAdmin) {
+  //       setLocation("/admin");
+  //     } else {
+  //       setLocation("/home");
+  //     }
+  //   }
+  // }, [isAuthenticated, isAdmin, setLocation]);
 
   const onLoginSubmit = async (data: LoginData) => {
     try {
       const result = await login.mutateAsync(data);
       console.log("Login successful:", result);
-      
-      // Force immediate refresh of auth state
-      if (result.user) {
-        // Double-check navigation
-        const targetPath = result.user.role === 'admin' ? '/admin' : '/home';
-        setTimeout(() => {
-          window.location.href = targetPath;
-        }, 50);
-      }
+      // Login hook já faz o redirecionamento, não precisamos fazer aqui
     } catch (error) {
       console.error("Login error:", error);
     }

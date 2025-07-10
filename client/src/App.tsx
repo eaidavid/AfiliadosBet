@@ -130,16 +130,14 @@ function Router() {
 
 function AuthenticatedAuth() {
   const { isAuthenticated, isLoading, isAdmin } = useAuth();
-  const [location, setLocation] = useLocation();
 
+  // Se já autenticado, redirecionar sem usar useLocation para evitar loops
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
       const targetPath = isAdmin ? "/admin" : "/home";
-      if (location !== targetPath) {
-        setLocation(targetPath);
-      }
+      window.location.replace(targetPath);
     }
-  }, [isAuthenticated, isLoading, isAdmin, location, setLocation]);
+  }, [isAuthenticated, isLoading, isAdmin]);
 
   if (isLoading) {
     return (
@@ -150,7 +148,11 @@ function AuthenticatedAuth() {
   }
 
   if (isAuthenticated) {
-    return null;
+    return (
+      <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce">
+        <div className="text-emerald-500 text-xl">Redirecionando...</div>
+      </div>
+    );
   }
 
   return <Auth />;

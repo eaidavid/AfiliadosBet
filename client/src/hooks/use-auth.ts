@@ -148,14 +148,9 @@ export function useLogin() {
         // Invalidar cache para atualizar estado de autenticação
         queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
         
-        // Force navigation based on user role
-        setTimeout(() => {
-          if (data.user.role === 'admin') {
-            window.location.href = "/admin";
-          } else {
-            window.location.href = "/home";
-          }
-        }, 100);
+        // Force immediate navigation without delay
+        const targetPath = data.user.role === 'admin' ? '/admin' : '/home';
+        window.location.replace(targetPath); // Use replace to avoid back button issues
       }
     },
     onError: (error) => {
