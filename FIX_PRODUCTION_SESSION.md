@@ -1,170 +1,161 @@
-# CORREÇÃO URGENTE - Erro de Sessão PostgreSQL em Produção
+# 🔧 CORREÇÃO ESPECÍFICA PARA PRODUÇÃO
 
 ## Problema Identificado
-O sistema está falhando no login em produção com erro:
+- Loop infinito de redirecionamento no VPS
+- Diferença entre desenvolvimento (SQLite) e produção (PostgreSQL)
+- Sessão não sendo persistida corretamente
+
+## Solução VPS Específica
+
+### 1. Conectar ao servidor
+```bash
+ssh root@69.62.65.24
+cd /var/www/afiliadosbet
 ```
-SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string
+
+### 2. Verificar ambiente atual
+```bash
+# Ver qual NODE_ENV está ativo
+echo $NODE_ENV
+cat .env | grep NODE_ENV
+
+# Ver se PostgreSQL está funcionando
+systemctl status postgresql-15
 ```
 
-## Causa Raiz
-A configuração de sessão está tentando usar PostgreSQL em produção, mas:
-1. As credenciais não estão sendo passadas corretamente
-2. A configuração do pool PostgreSQL não está adequada para sessões
-
-## Solução Imediata (Execute no servidor)
-
-### 1. Parar a aplicação
+### 3. Parar aplicação
 ```bash
 pm2 stop afiliadosbet
+pm2 delete afiliadosbet
 ```
 
-### 2. Fazer backup do arquivo atual
+### 4. Forçar rebuild completo
 ```bash
-cp /var/www/afiliadosbet/server/index.ts /var/www/afiliadosbet/server/index.ts.backup
-```
+# Limpar tudo
+rm -rf node_modules dist .vite
+npm cache clean --force
 
-### 3. Corrigir a configuração de sessão
-```bash
-# Editar o arquivo server/index.ts
-vim /var/www/afiliadosbet/server/index.ts
-```
+# Reinstalar
+npm install
 
-### 4. Substituir a seção de sessão (linhas 12-33)
-Remover estas linhas:
-```typescript
-// Session configuration with PostgreSQL store in production
-import connectPgSimple from 'connect-pg-simple';
-const PgSession = connectPgSimple(session);
-
-app.use(session({
-  store: process.env.NODE_ENV === 'production' 
-    ? new PgSession({
-        pool: require('./db').pool,
-        tableName: 'sessions',
-        createTableIfMissing: true
-      })
-    : undefined, // Use memory store in development
-  secret: process.env.SESSION_SECRET || "fallback-secret-for-dev-only-change-in-production",
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    sameSite: 'lax'
-  }
-}));
-```
-
-E substituir por:
-```typescript
-// Session configuration with memory store (simpler for this project)
-import MemoryStore from 'memorystore';
-const memoryStore = MemoryStore(session);
-
-app.use(session({
-  store: new memoryStore({
-    checkPeriod: 86400000 // prune expired entries every 24h
-  }),
-  secret: process.env.SESSION_SECRET || "fallback-secret-for-dev-only-change-in-production",
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    sameSite: 'lax'
-  }
-}));
-```
-
-### 5. Fazer rebuild da aplicação
-```bash
-cd /var/www/afiliadosbet
+# Build novo
 npm run build
 ```
 
-### 6. Reiniciar a aplicação
+### 5. Verificar configuração de sessão
 ```bash
-pm2 restart afiliadosbet
+# Criar ou verificar .env
+cat > .env << 'EOF'
+NODE_ENV=production
+DATABASE_URL=postgresql://afiliadosbet:Alepoker800@localhost:5432/afiliadosbetdb
+SESSION_SECRET=afiliadosbet_super_secret_key_2025
+PORT=3000
+HOST=0.0.0.0
+EOF
 ```
 
-### 7. Verificar se está funcionando
+### 6. Testar banco PostgreSQL
 ```bash
-# Ver logs
-pm2 logs afiliadosbet
+# Testar conexão
+psql -U afiliadosbet -h localhost -d afiliadosbetdb -c "
+SELECT table_name FROM information_schema.tables 
+WHERE table_schema = 'public' AND table_name = 'sessions';
+"
 
-# Testar login
-curl -X POST https://seudominio.com/api/auth/login \
+# Se tabela sessions não existir, criar
+psql -U afiliadosbet -h localhost -d afiliadosbetdb -c "
+CREATE TABLE IF NOT EXISTS sessions (
+  sid varchar PRIMARY KEY,
+  sess json NOT NULL,
+  expire timestamp(6) NOT NULL
+);
+"
+```
+
+### 7. Limpar sessões antigas
+```bash
+psql -U afiliadosbet -h localhost -d afiliadosbetdb -c "
+DELETE FROM sessions WHERE expire < NOW();
+"
+```
+
+### 8. Iniciar aplicação
+```bash
+NODE_ENV=production pm2 start npm --name "afiliadosbet" -- start
+```
+
+### 9. Monitorar logs específicos
+```bash
+# Ver logs de autenticação
+pm2 logs afiliadosbet | grep -E "(Login|redirect|auth|session)" --line-buffered
+
+# Ver logs gerais
+pm2 logs afiliadosbet --lines 30
+```
+
+### 10. Teste direto da API
+```bash
+# Testar login via curl
+curl -c cookies.txt -X POST https://afiliadosbet.com.br/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@afiliadosbet.com.br","password":"admin123"}'
+  -d '{"email":"admin@afiliadosbet.com.br","password":"admin123"}' \
+  -v
+
+# Ver resposta
+cat cookies.txt
 ```
 
-## Alternativa: Script Automático
+## Se ainda persistir - Modo Debug
 
-Execute este script para aplicar a correção automaticamente:
-
+### Adicionar logs temporários no servidor
 ```bash
-#!/bin/bash
-cd /var/www/afiliadosbet
+# Editar server/index.ts para adicionar logs
+nano server/index.ts
 
-# Parar aplicação
-pm2 stop afiliadosbet
+# Adicionar na linha após configuração de sessão:
+console.log('🔧 Ambiente:', process.env.NODE_ENV);
+console.log('🔧 Database URL:', process.env.DATABASE_URL ? 'Configurado' : 'NÃO CONFIGURADO');
+console.log('🔧 Session Secret:', process.env.SESSION_SECRET ? 'Configurado' : 'NÃO CONFIGURADO');
+```
 
-# Fazer backup
-cp server/index.ts server/index.ts.backup
+### Verificar se arquivos de correção estão aplicados
+```bash
+# Verificar se mudanças estão no código
+grep -n "window.location.replace" client/src/hooks/use-auth.ts
+grep -n "DESABILITADO para evitar loops" client/src/pages/auth.tsx
+grep -n "Redirecionando para:" client/src/hooks/use-auth.ts
+```
 
-# Aplicar correção
-sed -i '12,33c\
-// Session configuration with memory store (simpler for this project)\
-import MemoryStore from '\''memorystore'\'';\
-const memoryStore = MemoryStore(session);\
-\
-app.use(session({\
-  store: new memoryStore({\
-    checkPeriod: 86400000 // prune expired entries every 24h\
-  }),\
-  secret: process.env.SESSION_SECRET || "fallback-secret-for-dev-only-change-in-production",\
-  resave: false,\
-  saveUninitialized: false,\
-  cookie: {\
-    httpOnly: true,\
-    secure: process.env.NODE_ENV === '\''production'\'', // HTTPS only in production\
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours\
-    sameSite: '\''lax'\''\
-  }\
-}));' server/index.ts
+### Último recurso - Reset completo
+```bash
+# Backup
+cp -r /var/www/afiliadosbet /var/www/backup-$(date +%H%M)
 
-# Fazer rebuild
+# Re-clone do repositório
+cd /var/www
+rm -rf afiliadosbet
+git clone https://github.com/seuusuario/afiliadosbet.git
+cd afiliadosbet
+
+# Configurar
+npm install
 npm run build
 
-# Reiniciar aplicação
-pm2 restart afiliadosbet
+# Configurar .env
+cat > .env << 'EOF'
+NODE_ENV=production
+DATABASE_URL=postgresql://afiliadosbet:Alepoker800@localhost:5432/afiliadosbetdb
+SESSION_SECRET=afiliadosbet_super_secret_key_2025
+PORT=3000
+HOST=0.0.0.0
+EOF
 
-echo "Correção aplicada! Verifique os logs com: pm2 logs afiliadosbet"
+# Iniciar
+NODE_ENV=production pm2 start npm --name "afiliadosbet" -- start
 ```
 
-## Observações Importantes
-
-1. **MemoryStore vs PostgreSQL**: 
-   - MemoryStore é mais simples e adequado para este projeto
-   - Sessions serão perdidas em restart, mas isso é aceitável
-   - PostgreSQL sessions são mais robustas mas complexas de configurar
-
-2. **Se quiser manter PostgreSQL**:
-   - Verifique se a variável DATABASE_URL está correta
-   - Certifique-se de que a senha está como string
-   - Configure um pool dedicado para sessões
-
-3. **Verificação de Funcionamento**:
-   ```bash
-   # Logs sem erro
-   pm2 logs afiliadosbet --lines 50
-   
-   # Teste de login
-   curl -X POST https://seudominio.com/api/auth/login \
-     -H "Content-Type: application/json" \
-     -d '{"email":"admin@afiliadosbet.com.br","password":"admin123"}'
-   ```
-
-Esta correção resolverá o problema de login imediatamente.
+## Verificação Final
+✅ pm2 logs sem erros de SQLite  
+✅ Login redireciona sem loop  
+✅ Sessão persiste no PostgreSQL  
+✅ Site acessível via https://afiliadosbet.com.br

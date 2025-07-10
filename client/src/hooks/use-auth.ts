@@ -148,9 +148,18 @@ export function useLogin() {
         // Invalidar cache para atualizar estado de autenticação
         queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
         
-        // Force immediate navigation without delay
+        // Force immediate navigation without delay - but add small timeout for production
         const targetPath = data.user.role === 'admin' ? '/admin' : '/home';
-        window.location.replace(targetPath); // Use replace to avoid back button issues
+        console.log('🔄 Redirecionando para:', targetPath);
+        
+        // Use timeout only in production to handle session sync
+        if (window.location.hostname === 'localhost' || window.location.hostname.includes('replit')) {
+          window.location.replace(targetPath);
+        } else {
+          setTimeout(() => {
+            window.location.replace(targetPath);
+          }, 300); // Small delay for production session sync
+        }
       }
     },
     onError: (error) => {

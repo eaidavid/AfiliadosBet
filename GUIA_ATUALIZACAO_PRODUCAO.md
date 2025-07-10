@@ -32,14 +32,31 @@ git pull origin main
 npm install
 ```
 
-### 5. Fazer Build
+### 5. Limpar cache e fazer Build completo
 ```bash
+# Limpar cache para evitar problemas
+rm -rf node_modules dist .vite
+npm cache clean --force
+npm install
 npm run build
 ```
 
-### 6. Reiniciar Aplicação
+### 6. Verificar ambiente de produção
 ```bash
-pm2 restart afiliadosbet
+# Garantir que está em modo produção
+echo "NODE_ENV=production" > .env.temp
+echo "DATABASE_URL=postgresql://afiliadosbet:Alepoker800@localhost:5432/afiliadosbetdb" >> .env.temp
+echo "SESSION_SECRET=afiliadosbet_super_secret_key_2025" >> .env.temp
+echo "PORT=3000" >> .env.temp
+echo "HOST=0.0.0.0" >> .env.temp
+mv .env.temp .env
+```
+
+### 7. Reiniciar Aplicação
+```bash
+pm2 stop afiliadosbet
+pm2 delete afiliadosbet
+NODE_ENV=production pm2 start npm --name "afiliadosbet" -- start
 ```
 
 ### 7. Verificar se Funcionou
