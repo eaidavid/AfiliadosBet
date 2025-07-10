@@ -265,13 +265,67 @@ fi
 
 # 10. REBUILD APLICAÇÃO
 log "10. Rebuilding aplicação..."
-npm install --production > /dev/null 2>&1
+# Limpar cache e node_modules
+rm -rf node_modules dist .next 2>/dev/null || true
+npm cache clean --force > /dev/null 2>&1
+
+# Instalar dependências
+npm install > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    error "Falha ao instalar dependências"
+    npm install --verbose
+    exit 1
+fi
+
+# Build da aplicação
 npm run build > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    error "Falha no build"
+    npm run build
+    exit 1
+fi
+
+# Verificar se dist/ foi criado
+if [ ! -d "dist" ] || [ ! -f "dist/index.js" ]; then
+    error "Build não gerou arquivos esperados"
+    ls -la dist/ 2>/dev/null || echo "Diretório dist não existe"
+    exit 1
+fi
+
 success "Aplicação rebuilded"
 
 # 11. INICIAR COM POSTGRESQL
 log "11. Iniciando aplicação PostgreSQL..."
-NODE_ENV=production DATABASE_URL=postgresql://afiliadosbet:Alepoker800@localhost:5432/afiliadosbetdb pm2 start npm --name "afiliadosbet" -- start
+
+# Criar ecosystem config para PM2
+cat > ecosystem.config.js << 'EOF'
+module.exports = {
+  apps: [{
+    name: 'afiliadosbet',
+    script: 'dist/index.js',
+    env: {
+      NODE_ENV: 'production',
+      DATABASE_URL: 'postgresql://afiliadosbet:Alepoker800@localhost:5432/afiliadosbetdb',
+      SESSION_SECRET: 'afiliadosbet_super_secret_production_2025',
+      PORT: 3000,
+      HOST: '0.0.0.0'
+    },
+    instances: 1,
+    exec_mode: 'cluster',
+    max_memory_restart: '1G',
+    error_file: './logs/err.log',
+    out_file: './logs/out.log',
+    log_file: './logs/combined.log',
+    time: true
+  }]
+};
+EOF
+
+# Criar diretório de logs
+mkdir -p logs
+
+# Iniciar com ecosystem
+pm2 start ecosystem.config.js --env production
 
 # 12. AGUARDAR E VERIFICAR
 log "12. Aguardando inicialização..."
