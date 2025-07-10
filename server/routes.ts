@@ -446,9 +446,14 @@ export async function registerRoutes(app: express.Application) {
             .from(schema.conversions)
             .where(eq(schema.conversions.userId, affiliate.id));
           
-          // Calcular estatísticas
-          const totalClicks = conversions.filter(c => c.type === 'click').length;
-          const totalRegistrations = conversions.filter(c => c.type === 'registration').length;
+          // Calcular estatísticas usando clickTracking para cliques
+          const clicks = await db
+            .select()
+            .from(schema.clickTracking)
+            .where(eq(schema.clickTracking.userId, affiliate.id));
+          
+          const totalClicks = clicks.length;
+          const totalRegistrations = conversions.filter(c => c.type === 'register').length;
           const totalDeposits = conversions.filter(c => c.type === 'deposit').length;
           const totalCommissions = conversions.reduce((sum, c) => sum + parseFloat(c.commission || '0'), 0);
           
