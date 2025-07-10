@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import SimpleLanding from "@/pages/simple-landing";
 import Register from "@/pages/register";
 import Login from "@/pages/login";
+import Auth from "@/pages/auth";
 import UserDashboardComplete from "@/pages/user-dashboard-complete";
 import UserReports from "@/pages/archived/user-reports-clean";
 import AffiliateHome from "@/pages/affiliate-home";
@@ -98,6 +99,7 @@ function Router() {
     <Switch>
       <Route path="/" component={SimpleLanding} />
       <Route path="/home" component={AuthenticatedAffiliateHome} />
+      <Route path="/auth" component={AuthenticatedAuth} />
       <Route path="/login" component={AuthenticatedLogin} />
       <Route path="/register" component={Register} />
       <Route path="/dashboard" component={AuthenticatedUserDashboard} />
@@ -124,6 +126,34 @@ function Router() {
       <Route component={NotFound} />
     </Switch>
   );
+}
+
+function AuthenticatedAuth() {
+  const { isAuthenticated, isLoading, isAdmin } = useAuth();
+  const [location, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      const targetPath = isAdmin ? "/admin" : "/home";
+      if (location !== targetPath) {
+        setLocation(targetPath);
+      }
+    }
+  }, [isAuthenticated, isLoading, isAdmin, location, setLocation]);
+
+  if (isLoading) {
+    return (
+      <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce">
+        <div className="text-emerald-500 text-xl">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return null;
+  }
+
+  return <Auth />;
 }
 
 function AuthenticatedLogin() {

@@ -93,13 +93,13 @@ export default function SimpleLanding() {
           </div>
           <div className="flex items-center space-x-4 text-sm">
             <button 
-              onClick={() => window.location.href = "/login"}
+              onClick={() => window.location.href = "/auth"}
               className="text-blue-300 hover:text-white transition-colors px-4 py-2"
             >
               Entrar
             </button>
             <button 
-              onClick={() => window.location.href = "/register"}
+              onClick={() => window.location.href = "/auth"}
               className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-2 rounded-lg font-semibold shadow-lg shadow-green-900/30 transition-all transform hover:scale-105"
             >
               Cadastrar Grátis
@@ -138,14 +138,14 @@ export default function SimpleLanding() {
             {/* Primeira linha - Botões principais */}
             <div className="flex flex-col sm:flex-row gap-4 w-full justify-center items-center">
               <button 
-                onClick={() => window.location.href = "/register"}
+                onClick={() => window.location.href = "/auth"}
                 className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-4 text-lg sm:text-xl font-bold rounded-xl shadow-2xl shadow-green-900/50 transition-all transform hover:scale-105 hover:shadow-green-900/70 animate-bounce hover:animate-none active:scale-95"
                 style={{ animationDuration: '2s' }}
               >
                 💰 Começar Agora Grátis
               </button>
               <button 
-                onClick={() => window.location.href = "/login"}
+                onClick={() => window.location.href = "/auth"}
                 className="w-full sm:w-auto border-2 border-blue-400 text-blue-300 hover:bg-blue-600 hover:text-white px-8 py-4 text-lg sm:text-xl font-semibold rounded-xl transition-all transform hover:scale-105 animate-pulse hover:animate-none active:scale-95"
                 style={{ animationDuration: '2.5s', animationDelay: '0.5s' }}
               >
