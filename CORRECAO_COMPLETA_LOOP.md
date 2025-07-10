@@ -1,379 +1,105 @@
-# 🔥 CORREÇÃO DEFINITIVA - LOOP DE REDIRECIONAMENTO
+# 🔄 CORREÇÃO COMPLETA - Loop de Usuários Não Aparecendo
 
 ## PROBLEMA IDENTIFICADO
-- Login funciona mas sessão não persiste
-- Após login, todas as páginas redirecionam de volta para /auth
-- useAuth() não consegue verificar autenticação corretamente
+- ✅ **Produção**: PostgreSQL tem usuários mas API não lista
+- ✅ **Desenvolvimento**: SQLite com schema desatualizado  
+- ✅ **Sincronização**: Bancos diferentes entre ambientes
 
-## SOLUÇÃO COMPLETA
+## SOLUÇÕES APLICADAS
 
-### 1. FORÇAR APLICAÇÃO DOS ARQUIVOS CORRETOS
-
-#### A. Substituir client/src/hooks/use-auth.ts COMPLETO
+### 1. Banco de Desenvolvimento Corrigido
 ```bash
-cat > client/src/hooks/use-auth.ts << 'EOF'
-import { useState, useEffect } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import type { User, InsertUser, LoginData, RegisterData } from "@shared/schema";
-
-export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    let isMounted = true;
-    
-    const checkAuth = async () => {
-      try {
-        console.log('🔍 Verificando autenticação...');
-        
-        const response = await fetch("/api/auth/me", {
-          credentials: "include",
-          cache: "no-cache"
-        });
-        
-        console.log('📡 Response status:', response.status);
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log('📋 Auth data received:', data);
-          
-          const userData = data.user || data;
-          if (isMounted && userData && userData.id) {
-            console.log('✅ User authenticated:', userData.email, userData.role);
-            setUser(userData);
-            setError(null);
-            localStorage.setItem('auth_user', JSON.stringify(userData));
-            localStorage.setItem('auth_timestamp', Date.now().toString());
-          } else {
-            console.log('❌ Invalid user data');
-            if (isMounted) {
-              setUser(null);
-              localStorage.removeItem('auth_user');
-              localStorage.removeItem('auth_timestamp');
-            }
-          }
-        } else {
-          console.log('❌ Auth check failed with status:', response.status);
-          if (isMounted) {
-            setUser(null);
-            setError(null);
-            localStorage.removeItem('auth_user');
-            localStorage.removeItem('auth_timestamp');
-          }
-        }
-      } catch (err) {
-        console.error('❌ Auth check error:', err);
-        if (isMounted) {
-          setUser(null);
-          setError(err instanceof Error ? err : new Error("Auth check failed"));
-          localStorage.removeItem('auth_user');
-          localStorage.removeItem('auth_timestamp');
-        }
-      } finally {
-        if (isMounted) {
-          console.log('🏁 Auth check completed. User:', !!user);
-          setIsLoading(false);
-        }
-      }
-    };
-
-    checkAuth();
-    
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const refreshUser = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch("/api/auth/me", {
-        credentials: "include",
-        cache: "no-cache"
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        const userData = data.user || data;
-        setUser(userData);
-        setError(null);
-        if (userData && userData.id) {
-          localStorage.setItem('auth_user', JSON.stringify(userData));
-          localStorage.setItem('auth_timestamp', Date.now().toString());
-        }
-      } else {
-        setUser(null);
-        setError(null);
-        localStorage.removeItem('auth_user');
-        localStorage.removeItem('auth_timestamp');
-      }
-    } catch (err) {
-      setUser(null);
-      setError(err instanceof Error ? err : new Error("Auth check failed"));
-      localStorage.removeItem('auth_user');
-      localStorage.removeItem('auth_timestamp');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return {
-    user,
-    isLoading,
-    isAuthenticated: !!user && !!user.id,
-    isAdmin: !!user && user.role === "admin",
-    error,
-    refreshUser
-  };
-}
-
-export function useLogin() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async (credentials: LoginData) => {
-      console.log('🔐 Tentando login...');
-      
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          email: credentials.usernameOrEmail,
-          password: credentials.password
-        })
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Erro no login");
-      }
-      
-      const data = await response.json();
-      console.log('✅ Login successful:', data);
-      return data;
-    },
-    onSuccess: (data) => {
-      console.log('🎉 Login onSuccess:', data);
-      
-      localStorage.removeItem('is_logged_out');
-      
-      if (data.user) {
-        localStorage.setItem('auth_user', JSON.stringify(data.user));
-        localStorage.setItem('auth_timestamp', Date.now().toString());
-        
-        queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
-        
-        const targetPath = data.user.role === 'admin' ? '/admin' : '/home';
-        console.log('🔄 Redirecionando para:', targetPath);
-        
-        // Aguardar sessão ser criada no servidor
-        setTimeout(() => {
-          console.log('🚀 Executando redirecionamento...');
-          window.location.href = targetPath;
-        }, 1000); // 1 segundo para garantir persistência da sessão
-      }
-    },
-    onError: (error) => {
-      console.error("❌ Login failed:", error);
-      localStorage.removeItem('auth_user');
-      localStorage.removeItem('auth_timestamp');
-    }
-  });
-}
-
-export function useLogout() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async () => {
-      const response = await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include"
-      });
-      
-      if (!response.ok) {
-        throw new Error("Logout failed");
-      }
-      
-      return response.json();
-    },
-    onSuccess: () => {
-      localStorage.setItem('is_logged_out', 'true');
-      localStorage.removeItem('auth_user');
-      localStorage.removeItem('auth_timestamp');
-      
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
-      
-      window.location.href = "/";
-    }
-  });
-}
-
-export function useRegister() {
-  return useMutation({
-    mutationFn: async (userData: RegisterData) => {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userData),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Erro no registro");
-      }
-      
-      return response.json();
-    },
-  });
-}
-EOF
+# Recriar banco SQLite com schema atualizado
+rm -f data/database.sqlite  
+npm run dev  # Recria automaticamente
 ```
 
-#### B. Melhorar endpoint /api/auth/me no servidor
+### 2. Produção PostgreSQL - Execute no VPS:
 ```bash
-# Fazer backup
-cp server/routes.ts server/routes.ts.backup
+cd /var/www/afiliadosbet
 
-# Aplicar correção no endpoint me
-sed -i '/app\.get("\/api\/auth\/me"/,/});/c\
-  app.get("/api/auth/me", (req, res) => {\
-    console.log("🔍 Checking auth - Session ID:", req.sessionID);\
-    console.log("🔍 Authenticated:", req.isAuthenticated ? req.isAuthenticated() : false);\
-    console.log("🔍 User in session:", req.user ? "YES" : "NO");\
-    \
-    if (req.isAuthenticated && req.isAuthenticated() && req.user) {\
-      console.log("✅ User is authenticated:", (req.user as any).email);\
-      res.json({ \
-        user: { \
-          id: (req.user as any).id, \
-          email: (req.user as any).email, \
-          role: (req.user as any).role,\
-          fullName: (req.user as any).fullName \
-        } \
-      });\
-    } else {\
-      console.log("❌ User not authenticated");\
-      res.status(401).json({ error: "Not authenticated" });\
-    }\
-  });' server/routes.ts
+# 1. Atualizar código
+git pull origin main
+
+# 2. Corrigir PostgreSQL (se necessário)
+./fix-postgresql-production.sh
+
+# 3. OU script de debug de usuários  
+./debug-users-production.sh
+
+# 4. Reiniciar aplicação
+pm2 restart afiliadosbet
 ```
 
-### 2. VERIFICAR SESSÕES NO POSTGRESQL
+## VERIFICAÇÃO FINAL
 
+### No VPS - Teste direto no banco:
 ```bash
-# Conectar ao PostgreSQL e verificar
-psql -U afiliadosbet -h localhost -d afiliadosbetdb
+# Ver usuários PostgreSQL
+PGPASSWORD=Alepoker800 psql -U afiliadosbet -h localhost -d afiliadosbetdb -c "
+SELECT id, username, email, role, \"createdAt\" 
+FROM users 
+WHERE role = 'affiliate' 
+ORDER BY \"createdAt\" DESC 
+LIMIT 5;
+"
 
-# Ver se tabela sessions existe
-\dt
-
-# Se existir, ver conteúdo
-SELECT sid, expire FROM sessions ORDER BY expire DESC LIMIT 5;
-
-# Se não existir, criar
-CREATE TABLE IF NOT EXISTS sessions (
-  sid varchar PRIMARY KEY,
-  sess json NOT NULL,
-  expire timestamp(6) NOT NULL
-);
-
-# Sair do psql
-\q
+# Testar API diretamente  
+curl -s "http://localhost:3000/api/admin/affiliates" | head -200
 ```
 
-### 3. CONFIGURAR AMBIENTE E REINICIAR
+### No Painel Admin:
+1. **Login**: https://afiliadosbet.com.br/auth
+2. **Ir para**: Administração de Afiliados  
+3. **Verificar**: Lista deve mostrar usuários cadastrados
+4. **Contadores**: Devem refletir números reais
 
+## SE AINDA NÃO FUNCIONAR
+
+### Debug avançado no VPS:
 ```bash
-# Parar aplicação
-pm2 stop afiliadosbet
-pm2 delete afiliadosbet
+# 1. Ver logs da aplicação
+pm2 logs afiliadosbet | grep -E "(affiliates|users|error)"
 
-# Configurar .env com session mais robusta
-cat > .env << 'EOF'
-NODE_ENV=production
-DATABASE_URL=postgresql://afiliadosbet:Alepoker800@localhost:5432/afiliadosbetdb
-SESSION_SECRET=afiliadosbet_super_secret_key_$(date +%s)
-PORT=3000
-HOST=0.0.0.0
-SESSION_SECURE=false
-SESSION_MAX_AGE=86400000
-EOF
-
-# Limpar tudo
-rm -rf node_modules dist .vite
-npm cache clean --force
-
-# Reinstalar
-npm install
-
-# Build
-npm run build
-
-# Iniciar com debug de sessão
-NODE_ENV=production DEBUG=express-session pm2 start npm --name "afiliadosbet" -- start
-```
-
-### 4. TESTAR PASSO A PASSO
-
-```bash
-# Ver logs em tempo real
-pm2 logs afiliadosbet | grep -E "(auth|session|login)" --line-buffered
-
-# Em outro terminal, testar API
-curl -v -c cookies.txt -X POST http://localhost:3000/api/auth/login \
+# 2. Testar rota com auth manual
+curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@afiliadosbet.com.br","password":"admin123"}'
+  -d '{"usernameOrEmail":"admin@afiliadosbet.com.br","password":"admin123"}'
 
-# Verificar se session foi criada
-curl -v -b cookies.txt http://localhost:3000/api/auth/me
+# 3. Verificar tabelas PostgreSQL
+PGPASSWORD=Alepoker800 psql -U afiliadosbet -h localhost -d afiliadosbetdb -c "\dt"
 
-# Ver sessões no banco
-psql -U afiliadosbet -h localhost -d afiliadosbetdb -c "SELECT COUNT(*) FROM sessions;"
+# 4. Contar usuários diretamente
+PGPASSWORD=Alepoker800 psql -U afiliadosbet -h localhost -d afiliadosbetdb -c "
+SELECT role, COUNT(*) as total FROM users GROUP BY role;
+"
 ```
 
-## TESTE NO NAVEGADOR
-
-1. **Abrir DevTools** (F12)
-2. **Ir para aba Console**
-3. **Acessar**: https://afiliadosbet.com.br/auth
-4. **Fazer login**: admin@afiliadosbet.com.br / admin123
-5. **Observar logs no console**:
-   - 🔐 Tentando login...
-   - ✅ Login successful
-   - 🎉 Login onSuccess
-   - 🔄 Redirecionando para: /admin
-   - 🚀 Executando redirecionamento...
-6. **Aguardar 1 segundo**
-7. **Deve ir para /admin e permanecer lá**
-
-## SE AINDA FALHAR
-
-### Debug avançado:
+### Sincronização desenvolvimento → produção:
 ```bash
-# Ver configuração de sessão
-pm2 show afiliadosbet
-
-# Ver logs específicos
-pm2 logs afiliadosbet | grep -E "(Session|session|Session ID)"
-
-# Reiniciar PostgreSQL
-systemctl restart postgresql-15
-
-# Reset completo da aplicação
-pm2 stop afiliadosbet
-pm2 delete afiliadosbet
-git reset --hard origin/main
-rm -rf node_modules
-npm install
-npm run build
-NODE_ENV=production pm2 start npm --name "afiliadosbet" -- start
+# No VPS - importar usuários de teste se necessário
+PGPASSWORD=Alepoker800 psql -U afiliadosbet -h localhost -d afiliadosbetdb -c "
+INSERT INTO users (username, email, password, \"fullName\", cpf, \"birthDate\", role, \"isActive\")
+VALUES 
+('teste1', 'teste1@example.com', '\$2b\$10\$hashedpassword', 'Usuario Teste 1', '12345678901', '1990-01-01', 'affiliate', true),
+('teste2', 'teste2@example.com', '\$2b\$10\$hashedpassword', 'Usuario Teste 2', '12345678902', '1990-01-01', 'affiliate', true)
+ON CONFLICT (email) DO NOTHING;
+"
 ```
+
+## CAUSA RAIZ DO PROBLEMA
+
+1. **Desenvolvimento SQLite** e **Produção PostgreSQL** usam bancos diferentes
+2. **Schema SQLite** estava desatualizado (sem coluna 'type' em conversions)  
+3. **Queries SQL** tinham problemas de compatibilidade entre bancos
+4. **Session management** tinha problemas de persistência
+
+## CORREÇÕES PERMANENTES
+
+- ✅ Schema unificado entre desenvolvimento e produção
+- ✅ Queries SQL compatíveis com ambos os bancos  
+- ✅ Session management corrigido para produção
+- ✅ Scripts de debug e correção automatizados
+- ✅ Guias de troubleshooting completos
+
+**Status**: Desenvolvimento funcionando ✅ | Produção necessita aplicar correções
