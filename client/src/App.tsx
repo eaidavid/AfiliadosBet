@@ -157,31 +157,14 @@ function AuthenticatedAuth() {
 }
 
 function AuthenticatedLogin() {
-  const { isAuthenticated, isLoading, isAdmin } = useAuth();
-  const [location, setLocation] = useLocation();
+  const [, setLocation] = useLocation();
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      const targetPath = isAdmin ? "/admin" : "/home";
-      if (location !== targetPath) {
-        setLocation(targetPath);
-      }
-    }
-  }, [isAuthenticated, isLoading, isAdmin, location, setLocation]);
+    // Sempre redirecionar /login para /auth
+    setLocation("/auth");
+  }, [setLocation]);
 
-  if (isLoading) {
-    return (
-      <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce">
-        <div className="text-emerald-500 text-xl">Carregando...</div>
-      </div>
-    );
-  }
-
-  if (isAuthenticated) {
-    return null;
-  }
-
-  return <Login />;
+  return null;
 }
 
 function AuthenticatedUserDashboard() {

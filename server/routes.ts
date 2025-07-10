@@ -2722,5 +2722,10 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
+  // Redirecionamento de /login para /auth
+  app.get('/login', (req: any, res: any) => {
+    res.redirect('/auth');
+  });
+
   console.log("✅ Rotas registradas com sucesso");
 }
