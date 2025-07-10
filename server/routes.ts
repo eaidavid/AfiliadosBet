@@ -367,40 +367,25 @@ export async function registerRoutes(app: express.Application) {
   // Admin stats with FIXED affiliate counting
   app.get("/api/stats/admin", async (req, res) => {
     try {
-      console.log('📊 Iniciando busca de estatísticas admin...');
-      
       // FIXED: Count users with role='affiliate' for consistency
-      console.log('🔍 Buscando afiliados...');
       const affiliateUsers = await db
         .select()
         .from(schema.users)
         .where(eq(schema.users.role, 'affiliate'));
-      console.log(`✅ Encontrados ${affiliateUsers.length} afiliados`);
 
-      console.log('🏠 Buscando casas...');
       const allHouses = await db.select().from(schema.bettingHouses);
-      console.log(`✅ Encontradas ${allHouses.length} casas`);
-      
-      console.log('🔗 Buscando links...');
       const allLinks = await db.select().from(schema.affiliateLinks);
-      console.log(`✅ Encontrados ${allLinks.length} links`);
-      
-      console.log('💰 Buscando conversões...');
       const allConversions = await db.select().from(schema.conversions);
-
-      console.log(`✅ Encontradas ${allConversions.length} conversões`);
 
       const totalAffiliates = affiliateUsers.length;
       const totalHouses = allHouses.length;
       const totalLinks = allLinks.length;
       const totalConversions = allConversions.length;
 
-      console.log('💲 Calculando volume...');
       const totalVolume = allConversions.reduce((sum, conversion) => {
         return sum + parseFloat(conversion.amount || '0');
       }, 0);
 
-      console.log('💎 Calculando comissões...');
       const totalCommissions = allConversions.reduce((sum, conversion) => {
         return sum + parseFloat(conversion.commission || '0');
       }, 0);
@@ -414,28 +399,12 @@ export async function registerRoutes(app: express.Application) {
         totalCommissions: totalCommissions.toFixed(2)
       };
 
-      console.log(`📊 STATS FINAIS - Afiliados: ${totalAffiliates}, Casas: ${totalHouses}, Links: ${totalLinks}, Conversões: ${totalConversions}`);
+      console.log(`📊 Admin stats - Afiliados: ${totalAffiliates}`);
       res.json(stats);
 
     } catch (error) {
-      console.error("❌ ERRO STATS ADMIN:", error);
-      console.error("❌ Tipo do erro:", typeof error);
-      console.error("❌ Stack:", error.stack);
-      
-      // Informações de debug do banco
-      console.log('🔍 Testando conexão com banco...');
-      try {
-        const testQuery = await db.select().from(schema.users).limit(1);
-        console.log('✅ Conexão com banco OK, primeiro user:', testQuery[0]);
-      } catch (dbError) {
-        console.error('❌ Erro na conexão com banco:', dbError);
-      }
-      
-      res.status(500).json({ 
-        error: "Erro interno do servidor",
-        details: error.message,
-        type: error.constructor.name
-      });
+      console.error("Erro ao buscar estatísticas do admin:", error);
+      res.status(500).json({ error: "Erro interno do servidor" });
     }
   });
 
