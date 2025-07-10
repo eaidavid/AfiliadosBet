@@ -26,23 +26,7 @@ export function useAuth() {
           }
         }
 
-        // First check localStorage for cached auth state
-        const cachedUser = localStorage.getItem('auth_user');
-        const timestamp = localStorage.getItem('auth_timestamp');
-        
-        if (cachedUser && timestamp) {
-          const age = Date.now() - parseInt(timestamp);
-          // Use cached data if less than 5 minutes old
-          if (age < 5 * 60 * 1000) {
-            const userData = JSON.parse(cachedUser);
-            if (isMounted) {
-              setUser(userData);
-              setIsLoading(false);
-              return;
-            }
-          }
-        }
-
+        // Always check with server first to avoid auto-login issues
         const response = await fetch("/api/auth/me", {
           credentials: "include"
         });
@@ -50,12 +34,19 @@ export function useAuth() {
         if (response.ok) {
           const data = await response.json();
           const userData = data.user || data; // Handle both response formats
-          if (isMounted && userData) {
+          if (isMounted && userData && userData.id) {
             setUser(userData);
             setError(null);
-            // Cache the auth state
+            // Cache the auth state only for valid sessions
             localStorage.setItem('auth_user', JSON.stringify(userData));
             localStorage.setItem('auth_timestamp', Date.now().toString());
+          } else {
+            // Invalid user data, clear everything
+            if (isMounted) {
+              setUser(null);
+              localStorage.removeItem('auth_user');
+              localStorage.removeItem('auth_timestamp');
+            }
           }
         } else {
           if (isMounted) {
@@ -194,24 +185,38 @@ export function useLogout() {
       return response;
     },
     onSuccess: () => {
-      // Clear all cached auth data
+      // Clear all cached auth data immediately
       localStorage.removeItem('auth_user');
       localStorage.removeItem('auth_timestamp');
+      localStorage.setItem('is_logged_out', 'true');
       
       // Clear all React Query cache
       queryClient.clear();
       
-      // Force page reload to clear all state
-      window.location.href = "/";
-      window.location.reload();
+      // Clear session cookies by setting them to expire
+      document.cookie = 'connect.sid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      
+      // Force immediate navigation and reload
+      setTimeout(() => {
+        window.location.href = "/";
+        window.location.reload();
+      }, 100);
     },
     onError: () => {
       // Even if logout fails on server, clear local data
       localStorage.removeItem('auth_user');
       localStorage.removeItem('auth_timestamp');
+      localStorage.setItem('is_logged_out', 'true');
+      
+      // Clear session cookies
+      document.cookie = 'connect.sid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      
       queryClient.clear();
-      window.location.href = "/";
-      window.location.reload();
+      
+      setTimeout(() => {
+        window.location.href = "/";
+        window.location.reload();
+      }, 100);
     }
   });
 }
