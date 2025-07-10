@@ -1,3 +1,29 @@
+#!/bin/bash
+
+# Script para corrigir erro de sessão PostgreSQL em produção
+# Erro: SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string
+
+set -e
+
+echo "🔧 Iniciando correção do erro de sessão PostgreSQL..."
+
+# Verificar se estamos no diretório correto
+if [[ ! -f "server/index.ts" ]]; then
+    echo "❌ Erro: Execute este script no diretório raiz do projeto (/var/www/afiliadosbet)"
+    exit 1
+fi
+
+# Parar aplicação
+echo "⏹️  Parando aplicação..."
+pm2 stop afiliadosbet || true
+
+# Fazer backup do arquivo atual
+echo "💾 Fazendo backup do arquivo atual..."
+cp server/index.ts server/index.ts.backup.$(date +%Y%m%d_%H%M%S)
+
+# Aplicar correção
+echo "🔄 Aplicando correção de sessão..."
+cat > server/index.ts << 'EOF'
 import express from "express";
 import { setupVite, serveStatic } from "./vite";
 import { registerRoutes } from "./routes";
@@ -71,7 +97,7 @@ app.use(passport.session());
   // Registrar todas as rotas da API
   await registerRoutes(app);
 
-  const PORT = parseInt(process.env.PORT || "5000", 10);
+  const PORT = parseInt(process.env.PORT || "3000", 10);
   const HOST = process.env.HOST || "0.0.0.0"; // Universal host binding
   
   const server = app.listen(PORT, HOST, async () => {
@@ -105,3 +131,37 @@ app.use(passport.session());
     }
   });
 })();
+EOF
+
+# Fazer rebuild da aplicação
+echo "🔨 Fazendo rebuild da aplicação..."
+npm run build
+
+# Reiniciar aplicação
+echo "🚀 Reiniciando aplicação..."
+pm2 restart afiliadosbet
+
+# Aguardar um pouco para a aplicação iniciar
+echo "⏳ Aguardando aplicação iniciar..."
+sleep 5
+
+# Verificar status
+echo "📊 Verificando status da aplicação..."
+pm2 status afiliadosbet
+
+echo ""
+echo "✅ Correção aplicada com sucesso!"
+echo ""
+echo "🔍 Para verificar se está funcionando:"
+echo "   pm2 logs afiliadosbet"
+echo ""
+echo "🧪 Para testar login:"
+echo "   curl -X POST https://seudominio.com/api/auth/login \\"
+echo "     -H \"Content-Type: application/json\" \\"
+echo "     -d '{\"email\":\"admin@afiliadosbet.com.br\",\"password\":\"admin123\"}'"
+echo ""
+echo "📋 Logs em tempo real:"
+echo "   pm2 logs afiliadosbet --lines 50"
+EOF
+
+chmod +x fix-session-production.sh

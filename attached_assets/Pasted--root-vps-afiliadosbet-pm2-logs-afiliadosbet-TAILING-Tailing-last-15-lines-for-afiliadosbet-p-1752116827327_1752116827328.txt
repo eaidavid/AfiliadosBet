@@ -1,0 +1,43 @@
+[root@vps afiliadosbet]# pm2 logs afiliadosbet
+[TAILING] Tailing last 15 lines for [afiliadosbet] process (change the value with --lines option)
+/var/log/afiliadosbet/out-0.log last 15 lines:
+0|afiliado | 2025-07-10T02:58:04: starting up user application
+0|afiliado | 2025-07-10T02:58:04: Inicializando banco de dados SQLite...
+0|afiliado | 2025-07-10T02:58:04: ✅ Banco de dados SQLite inicializado com sucesso!
+0|afiliado | 2025-07-10T02:58:04: ✅ Usuários padrão criados:
+0|afiliado | 2025-07-10T02:58:04:    - Admin: admin@afiliadosbet.com.br / admin123
+0|afiliado | 2025-07-10T02:58:04:    - Afiliado: afiliado@afiliadosbet.com.br / admin123
+0|afiliado | 2025-07-10T02:58:04: ✅ Rotas registradas com sucesso
+0|afiliado | 2025-07-10T02:58:04: Server listening on port 3000
+0|afiliado | 2025-07-10T02:58:04: Application ready to receive requests
+0|afiliado | 2025-07-10T02:58:04: ✅ Static files configured
+0|afiliado | 2025-07-10T02:58:14: 🕐 Inicializando agendador de sincronização API
+0|afiliado | 2025-07-10T02:58:14: ✅ Agendador inicializado com 0 casas API
+0|afiliado | 2025-07-10T02:58:14: ✅ API scheduler initialized successfully
+
+/var/log/afiliadosbet/error-0.log last 15 lines:
+0|afiliado | 2025-07-10T03:02:48: Login error: Error: SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string
+0|afiliado |     at /var/www/afiliadosbet/node_modules/pg-pool/index.js:45:11
+0|afiliado |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+0|afiliado |     at async PGStore._asyncQuery (/var/www/afiliadosbet/node_modules/connect-pg-simple/index.js:322:21)
+0|afiliado |     at async PGStore._rawEnsureSessionStoreTable (/var/www/afiliadosbet/node_modules/connect-pg-simple/index.js:177:19)
+0|afiliado |     at async PGStore._asyncQuery (/var/www/afiliadosbet/node_modules/connect-pg-simple/index.js:315:7)
+0|afiliado | 2025-07-10T03:02:48: Error: SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string
+0|afiliado |     at /var/www/afiliadosbet/node_modules/pg-pool/index.js:45:11
+0|afiliado |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+0|afiliado |     at async PGStore._asyncQuery (/var/www/afiliadosbet/node_modules/connect-pg-simple/index.js:322:21)
+0|afiliado |     at async PGStore._rawEnsureSessionStoreTable (/var/www/afiliadosbet/node_modules/connect-pg-simple/index.js:177:19)
+0|afiliado |     at async PGStore._asyncQuery (/var/www/afiliadosbet/node_modules/connect-pg-simple/index.js:315:7)
+
+0|afiliadosbet  | 2025-07-10T03:03:37: Login error: Error: SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string
+0|afiliadosbet  |     at /var/www/afiliadosbet/node_modules/pg-pool/index.js:45:11
+0|afiliadosbet  |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+0|afiliadosbet  |     at async PGStore._asyncQuery (/var/www/afiliadosbet/node_modules/connect-pg-simple/index.js:322:21)
+0|afiliadosbet  |     at async PGStore._rawEnsureSessionStoreTable (/var/www/afiliadosbet/node_modules/connect-pg-simple/index.js:177:19)
+0|afiliadosbet  |     at async PGStore._asyncQuery (/var/www/afiliadosbet/node_modules/connect-pg-simple/index.js:315:7)
+0|afiliadosbet  | 2025-07-10T03:03:37: Error: SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string
+0|afiliadosbet  |     at /var/www/afiliadosbet/node_modules/pg-pool/index.js:45:11
+0|afiliadosbet  |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+0|afiliadosbet  |     at async PGStore._asyncQuery (/var/www/afiliadosbet/node_modules/connect-pg-simple/index.js:322:21)
+0|afiliadosbet  |     at async PGStore._rawEnsureSessionStoreTable (/var/www/afiliadosbet/node_modules/connect-pg-simple/index.js:177:19)
+0|afiliadosbet  |     at async PGStore._asyncQuery (/var/www/afiliadosbet/node_modules/connect-pg-simple/index.js:315:7)
