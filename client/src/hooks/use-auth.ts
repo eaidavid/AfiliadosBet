@@ -26,22 +26,28 @@ export function useAuth() {
           }
         }
 
-        // Always check with server first to avoid auto-login issues
+        console.log('🔍 Verificando autenticação...');
+        
         const response = await fetch("/api/auth/me", {
-          credentials: "include"
+          credentials: "include",
+          cache: "no-cache"
         });
+        
+        console.log('📡 Response status:', response.status);
         
         if (response.ok) {
           const data = await response.json();
-          const userData = data.user || data; // Handle both response formats
+          console.log('📋 Auth data received:', data);
+          
+          const userData = data.user || data;
           if (isMounted && userData && userData.id) {
+            console.log('✅ User authenticated:', userData.email, userData.role);
             setUser(userData);
             setError(null);
-            // Cache the auth state only for valid sessions
             localStorage.setItem('auth_user', JSON.stringify(userData));
             localStorage.setItem('auth_timestamp', Date.now().toString());
           } else {
-            // Invalid user data, clear everything
+            console.log('❌ Invalid user data');
             if (isMounted) {
               setUser(null);
               localStorage.removeItem('auth_user');
@@ -49,24 +55,25 @@ export function useAuth() {
             }
           }
         } else {
+          console.log('❌ Auth check failed with status:', response.status);
           if (isMounted) {
             setUser(null);
             setError(null);
-            // Clear cached auth state
             localStorage.removeItem('auth_user');
             localStorage.removeItem('auth_timestamp');
           }
         }
       } catch (err) {
+        console.error('❌ Auth check error:', err);
         if (isMounted) {
           setUser(null);
           setError(err instanceof Error ? err : new Error("Auth check failed"));
-          // Clear cached auth state on error
           localStorage.removeItem('auth_user');
           localStorage.removeItem('auth_timestamp');
         }
       } finally {
         if (isMounted) {
+          console.log('🏁 Auth check completed. User:', !!user);
           setIsLoading(false);
         }
       }
@@ -117,12 +124,14 @@ export function useLogin() {
   
   return useMutation({
     mutationFn: async (credentials: LoginData) => {
+      console.log('🔐 Tentando login...');
+      
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // Important for sessions
+        credentials: "include",
         body: JSON.stringify({
           email: credentials.usernameOrEmail,
           password: credentials.password
@@ -134,34 +143,33 @@ export function useLogin() {
         throw new Error(errorData.error || "Erro no login");
       }
       
-      return await response.json();
+      const data = await response.json();
+      console.log('✅ Login successful:', data);
+      return data;
     },
     onSuccess: (data) => {
-      // Clear any logout flags
+      console.log('🎉 Login onSuccess:', data);
+      
       localStorage.removeItem('is_logged_out');
       
-      // Store auth state for reliability
       if (data.user) {
         localStorage.setItem('auth_user', JSON.stringify(data.user));
         localStorage.setItem('auth_timestamp', Date.now().toString());
         
-        // Invalidar cache para atualizar estado de autenticação
         queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
         
-        // Force immediate navigation with proper delay for session sync
         const targetPath = data.user.role === 'admin' ? '/admin' : '/home';
         console.log('🔄 Redirecionando para:', targetPath);
         
-        // Small delay to ensure session is fully established
+        // Aguardar sessão ser criada no servidor
         setTimeout(() => {
-          console.log('🔄 Executando redirecionamento para:', targetPath);
-          window.location.href = targetPath; // Use href instead of replace for better compatibility
-        }, 500); // Increased delay for session sync
+          console.log('🚀 Executando redirecionamento...');
+          window.location.href = targetPath;
+        }, 1000); // 1 segundo para garantir persistência da sessão
       }
     },
     onError: (error) => {
-      console.error("Login failed:", error);
-      // Clear any cached auth state on login failure
+      console.error("❌ Login failed:", error);
       localStorage.removeItem('auth_user');
       localStorage.removeItem('auth_timestamp');
     }

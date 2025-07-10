@@ -164,9 +164,12 @@ export async function registerRoutes(app: express.Application) {
       // Create session manually
       req.login(user, (err) => {
         if (err) {
-          console.error("Login error:", err);
+          console.error("❌ Login error:", err);
           return res.status(500).json({ error: "Erro interno do servidor" });
         }
+
+        console.log("✅ Login successful for:", user.email, "Role:", user.role);
+        console.log("🔑 Session ID:", req.sessionID);
 
         res.json({ 
           success: true, 
@@ -206,7 +209,12 @@ export async function registerRoutes(app: express.Application) {
   });
 
   app.get("/api/auth/me", (req, res) => {
-    if (req.isAuthenticated && req.isAuthenticated()) {
+    console.log("🔍 Checking auth - Session ID:", req.sessionID);
+    console.log("🔍 Authenticated:", req.isAuthenticated ? req.isAuthenticated() : false);
+    console.log("🔍 User in session:", req.user ? "YES" : "NO");
+    
+    if (req.isAuthenticated && req.isAuthenticated() && req.user) {
+      console.log("✅ User is authenticated:", (req.user as any).email);
       res.json({ 
         user: { 
           id: (req.user as any).id, 
@@ -216,6 +224,7 @@ export async function registerRoutes(app: express.Application) {
         } 
       });
     } else {
+      console.log("❌ User not authenticated");
       res.status(401).json({ error: "Not authenticated" });
     }
   });
