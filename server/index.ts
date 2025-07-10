@@ -85,15 +85,34 @@ app.use(passport.session());
   // Registrar todas as rotas da API
   await registerRoutes(app);
 
-  const PORT = parseInt(process.env.PORT || "5000", 10);
-  const HOST = process.env.HOST || "0.0.0.0"; // Universal host binding
-  
-  const server = app.listen(PORT, HOST, async () => {
-    console.log(`Server listening on port ${PORT}`);
-    console.log("Application ready to receive requests");
+  // Setup Vite development environment BEFORE starting server
+  if (process.env.NODE_ENV === "development") {
+    const PORT = parseInt(process.env.PORT || "5000", 10);
+    const HOST = process.env.HOST || "0.0.0.0";
     
-    // Initialize API scheduler only in production with proper error handling
-    if (process.env.NODE_ENV === 'production') {
+    const server = app.listen(PORT, HOST, () => {
+      console.log(`Server listening on port ${PORT}`);
+      console.log("Application ready to receive requests");
+      console.log("📋 API scheduler disabled in development mode");
+    });
+    
+    // Setup Vite after server is listening
+    await setupVite(app, server);
+    console.log("✅ Vite dev server configured");
+    
+  } else {
+    // Production setup
+    const PORT = parseInt(process.env.PORT || "3000", 10);
+    const HOST = process.env.HOST || "0.0.0.0";
+    
+    serveStatic(app);
+    console.log("✅ Static files configured");
+    
+    const server = app.listen(PORT, HOST, async () => {
+      console.log(`Server listening on port ${PORT}`);
+      console.log("Application ready to receive requests");
+      
+      // Initialize API scheduler only in production
       setTimeout(async () => {
         try {
           const { ApiSyncScheduler } = await import('./cron/apiSyncScheduler');
@@ -104,18 +123,7 @@ app.use(passport.session());
           const errorMessage = error instanceof Error ? error.message : String(error);
           console.warn("⚠️ API scheduler initialization failed (non-critical):", errorMessage);
         }
-      }, 10000); // Longer delay for production stability
-    } else {
-      console.log("📋 API scheduler disabled in development mode");
-    }
-
-    // Setup Vite development environment after server starts
-    if (process.env.NODE_ENV === "development") {
-      await setupVite(app, server);
-      console.log("✅ Vite dev server configured");
-    } else {
-      serveStatic(app);
-      console.log("✅ Static files configured");
-    }
-  });
+      }, 10000);
+    });
+  }
 })();

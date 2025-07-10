@@ -88,7 +88,17 @@ export default function Auth() {
 
   const onLoginSubmit = async (data: LoginData) => {
     try {
-      await login.mutateAsync(data);
+      const result = await login.mutateAsync(data);
+      console.log("Login successful:", result);
+      
+      // Force immediate refresh of auth state
+      if (result.user) {
+        // Double-check navigation
+        const targetPath = result.user.role === 'admin' ? '/admin' : '/home';
+        setTimeout(() => {
+          window.location.href = targetPath;
+        }, 50);
+      }
     } catch (error) {
       console.error("Login error:", error);
     }

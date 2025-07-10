@@ -117,34 +117,53 @@ export function useLogin() {
   
   return useMutation({
     mutationFn: async (credentials: LoginData) => {
-      const response = await apiRequest("/api/auth/login", {
+      const response = await fetch("/api/auth/login", {
         method: "POST",
-        body: {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // Important for sessions
+        body: JSON.stringify({
           email: credentials.usernameOrEmail,
           password: credentials.password
-        }
+        })
       });
-      return response;
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Erro no login");
+      }
+      
+      return await response.json();
     },
     onSuccess: (data) => {
-      // Invalidar cache para atualizar estado de autenticação
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      // Clear any logout flags
+      localStorage.removeItem('is_logged_out');
       
-      // Store auth state in localStorage for deploy reliability
+      // Store auth state for reliability
       if (data.user) {
         localStorage.setItem('auth_user', JSON.stringify(data.user));
         localStorage.setItem('auth_timestamp', Date.now().toString());
+        
+        // Invalidar cache para atualizar estado de autenticação
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+        
+        // Force navigation based on user role
+        setTimeout(() => {
+          if (data.user.role === 'admin') {
+            window.location.href = "/admin";
+          } else {
+            window.location.href = "/home";
+          }
+        }, 100);
       }
-      
-      // Force navigation based on user role
-      setTimeout(() => {
-        if (data.user?.role === 'admin') {
-          window.location.href = "/admin";
-        } else {
-          window.location.href = "/home";
-        }
-      }, 200);
     },
+    onError: (error) => {
+      console.error("Login failed:", error);
+      // Clear any cached auth state on login failure
+      localStorage.removeItem('auth_user');
+      localStorage.removeItem('auth_timestamp');
+    }
   });
 }
 
