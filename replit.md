@@ -123,6 +123,15 @@ AfiliadosBet é uma plataforma completa de marketing de afiliados para casas de 
 
 ## Recent Changes
 
+### July 10, 2025 - Production Login System and Deployment Fixes
+- **Fixed PostgreSQL Session Configuration**: Resolved SASL authentication errors in production with proper Pool configuration
+- **Enhanced Login Flow**: Improved frontend login with direct fetch calls and credentials handling
+- **Production Deployment Guide**: Created comprehensive deployment guides for AlmaLinux with PostgreSQL
+- **Quick Update Guide**: Added GUIA_ATUALIZACAO_PRODUCAO.md for easy server maintenance
+- **Session Management**: Fixed session persistence issues with proper PostgreSQL session store
+- **Frontend-Backend Integration**: Resolved "Cannot GET /" errors by fixing Vite middleware initialization order
+- **Authentication Debug**: Added comprehensive debugging tools and error handling for production environment
+
 ### June 30, 2025 - Complete Project Optimization and Universal Compatibility
 - **Universal Environment Compatibility**: Removed all Replit-specific dependencies and made system work in any environment (VPS, local, Docker)
 - **Clean Project Structure**: Moved all deployment files to archived_files, keeping only essential files in root directory
@@ -167,11 +176,21 @@ AfiliadosBet é uma plataforma completa de marketing de afiliados para casas de 
 
 ## User Preferences
 
-Preferred communication style: Simple, everyday language.
-UI/UX Design Preference: User loves the premium design from /auth page and wants this design standard applied throughout the entire system. Focus on:
+**Communication Style**: Simple, everyday language.
+**Technical Approach**: User prefers practical solutions with step-by-step guides for production deployment.
+**Documentation**: User wants "pocket guides" for server maintenance and updates.
+
+**UI/UX Design Preference**: User loves the premium design from /auth page and wants this design standard applied throughout the entire system. Focus on:
 - Modern gradients and animations
 - Professional dark theme with emerald/blue accents
 - Premium visual effects and micro-interactions
 - Money/earnings themed elements and animations
 - Responsive design with smooth transitions
 - High-quality visual hierarchy and typography
+
+**Production Environment**: 
+- Server: AlmaLinux VPS
+- Database: PostgreSQL (afiliadosbetdb)
+- Process Manager: PM2
+- Web Server: Nginx
+- Deployment: Manual updates with backup procedures
