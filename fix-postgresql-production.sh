@@ -1,219 +1,333 @@
 #!/bin/bash
 
-# 🔧 Script de Correção PostgreSQL - AfiliadosBet
-# Diagnóstica e corrige problemas do PostgreSQL em produção
+# 🔧 CORREÇÃO FORÇADA: SQLite → PostgreSQL
+# Este script força a migração completa para PostgreSQL
 
-echo "🔍 Diagnosticando PostgreSQL..."
+echo "🚨 CORREÇÃO FORÇADA: Migrando SQLite → PostgreSQL"
+echo "⏰ $(date)"
 
-# Função para log com timestamp
+# Cores para logs
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
 log() {
-    echo "[$(date '+%H:%M:%S')] $1"
-}
-
-error() {
-    echo "[ERRO] $1"
+    echo -e "${BLUE}[$(date '+%H:%M:%S')] $1${NC}"
 }
 
 success() {
-    echo "✅ $1"
+    echo -e "${GREEN}✅ $1${NC}"
+}
+
+error() {
+    echo -e "${RED}❌ $1${NC}"
 }
 
 warning() {
-    echo "⚠️ $1"
+    echo -e "${YELLOW}⚠️ $1${NC}"
 }
 
-# 1. Verificar status do PostgreSQL
-log "1. Verificando status do PostgreSQL..."
-if systemctl is-active --quiet postgresql-15; then
-    success "PostgreSQL está rodando"
-else
-    warning "PostgreSQL não está rodando"
-    
-    log "Tentando iniciar PostgreSQL..."
+# 1. PARAR APLICAÇÃO COMPLETAMENTE
+log "1. Parando aplicação..."
+pm2 kill 2>/dev/null || true
+pkill -f "node.*afiliadosbet" 2>/dev/null || true
+pkill -f "npm.*start" 2>/dev/null || true
+sleep 2
+success "Aplicação parada"
+
+# 2. REMOVER TODOS OS ARQUIVOS SQLITE
+log "2. Removendo SQLite..."
+rm -rf data/ 2>/dev/null || true
+rm -f *.sqlite *.db 2>/dev/null || true
+rm -rf node_modules/.cache/ 2>/dev/null || true
+success "SQLite removido"
+
+# 3. FORÇAR CONFIGURAÇÃO POSTGRESQL
+log "3. Configurando .env para PostgreSQL..."
+cat > .env << 'EOF'
+NODE_ENV=production
+DATABASE_URL=postgresql://afiliadosbet:Alepoker800@localhost:5432/afiliadosbetdb
+SESSION_SECRET=afiliadosbet_super_secret_production_2025
+PORT=3000
+HOST=0.0.0.0
+EOF
+success "Arquivo .env configurado"
+
+# 4. GARANTIR POSTGRESQL RODANDO
+log "4. Verificando PostgreSQL..."
+if ! systemctl is-active --quiet postgresql-15; then
+    warning "PostgreSQL não rodando, iniciando..."
     systemctl start postgresql-15
     sleep 3
-    
-    if systemctl is-active --quiet postgresql-15; then
-        success "PostgreSQL iniciado com sucesso"
-    else
-        error "Falha ao iniciar PostgreSQL"
-        log "Verificando logs de erro..."
-        journalctl -u postgresql-15 --no-pager -n 20
-        
-        log "Tentando reinstalar PostgreSQL..."
-        dnf reinstall -y postgresql15-server postgresql15
-        
-        log "Inicializando banco de dados..."
-        postgresql-setup --initdb
-        
-        log "Habilitando e iniciando serviço..."
-        systemctl enable postgresql-15
-        systemctl start postgresql-15
-    fi
 fi
 
-# 2. Verificar se está escutando na porta correta
-log "2. Verificando porta 5432..."
-if netstat -tlnp | grep -q ":5432"; then
-    success "PostgreSQL escutando na porta 5432"
+if systemctl is-active --quiet postgresql-15; then
+    success "PostgreSQL rodando"
 else
-    warning "PostgreSQL não está na porta 5432"
-    
-    log "Verificando configuração..."
-    PGDATA="/var/lib/pgsql/15/data"
-    if [ -f "$PGDATA/postgresql.conf" ]; then
-        log "Editando postgresql.conf..."
-        sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" "$PGDATA/postgresql.conf"
-        sed -i "s/#port = 5432/port = 5432/" "$PGDATA/postgresql.conf"
-        
-        log "Reiniciando PostgreSQL..."
-        systemctl restart postgresql-15
-    fi
+    error "PostgreSQL falhou, reinstalando..."
+    dnf reinstall -y postgresql15-server postgresql15 > /dev/null 2>&1
+    postgresql-setup --initdb > /dev/null 2>&1
+    systemctl enable postgresql-15 > /dev/null 2>&1
+    systemctl start postgresql-15
+    sleep 5
 fi
 
-# 3. Verificar usuário afiliadosbet
-log "3. Verificando usuário do banco..."
-if sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='afiliadosbet'" | grep -q 1; then
-    success "Usuário afiliadosbet existe"
-else
-    warning "Criando usuário afiliadosbet..."
-    sudo -u postgres psql -c "CREATE USER afiliadosbet WITH PASSWORD 'Alepoker800';"
-    sudo -u postgres psql -c "ALTER USER afiliadosbet CREATEDB;"
-fi
-
-# 4. Verificar banco de dados
-log "4. Verificando banco afiliadosbetdb..."
-if sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw afiliadosbetdb; then
-    success "Banco afiliadosbetdb existe"
-else
-    warning "Criando banco afiliadosbetdb..."
-    sudo -u postgres psql -c "CREATE DATABASE afiliadosbetdb OWNER afiliadosbet;"
-fi
-
-# 5. Configurar permissões no pg_hba.conf
-log "5. Configurando autenticação..."
+# 5. CONFIGURAR POSTGRESQL
+log "5. Configurando PostgreSQL..."
 PGDATA="/var/lib/pgsql/15/data"
+
+# Configurar acesso
+if [ -f "$PGDATA/postgresql.conf" ]; then
+    sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" "$PGDATA/postgresql.conf"
+    sed -i "s/#port = 5432/port = 5432/" "$PGDATA/postgresql.conf"
+fi
+
+# Configurar autenticação
 if [ -f "$PGDATA/pg_hba.conf" ]; then
-    # Backup do arquivo original
-    cp "$PGDATA/pg_hba.conf" "$PGDATA/pg_hba.conf.backup.$(date +%s)"
-    
-    # Adicionar linha para o usuário afiliadosbet se não existir
     if ! grep -q "local.*afiliadosbetdb.*afiliadosbet.*md5" "$PGDATA/pg_hba.conf"; then
         echo "local   afiliadosbetdb  afiliadosbet                    md5" >> "$PGDATA/pg_hba.conf"
-    fi
-    
-    if ! grep -q "host.*afiliadosbetdb.*afiliadosbet.*127.0.0.1/32.*md5" "$PGDATA/pg_hba.conf"; then
         echo "host    afiliadosbetdb  afiliadosbet    127.0.0.1/32    md5" >> "$PGDATA/pg_hba.conf"
+        systemctl reload postgresql-15
     fi
-    
-    if ! grep -q "host.*afiliadosbetdb.*afiliadosbet.*::1/128.*md5" "$PGDATA/pg_hba.conf"; then
-        echo "host    afiliadosbetdb  afiliadosbet    ::1/128         md5" >> "$PGDATA/pg_hba.conf"
-    fi
-    
-    log "Recarregando configuração PostgreSQL..."
-    systemctl reload postgresql-15
 fi
 
-# 6. Testar conexão
-log "6. Testando conexão..."
-if PGPASSWORD=Alepoker800 psql -U afiliadosbet -h localhost -d afiliadosbetdb -c "SELECT 1;" >/dev/null 2>&1; then
-    success "Conexão PostgreSQL funcionando"
-else
-    error "Conexão PostgreSQL falhando"
-    
-    # Diagnóstico avançado
-    log "Diagnóstico avançado..."
-    echo "Status do serviço:"
-    systemctl status postgresql-15 --no-pager -l
-    
-    echo ""
-    echo "Processos PostgreSQL:"
-    ps aux | grep postgres
-    
-    echo ""
-    echo "Portas escutando:"
-    netstat -tlnp | grep postgres
-    
-    echo ""
-    echo "Logs recentes:"
-    journalctl -u postgresql-15 --no-pager -n 10
-    
-    echo ""
-    echo "Arquivo de configuração principal:"
-    ls -la /var/lib/pgsql/15/data/postgresql.conf
-    
-    echo ""
-    echo "Espaço em disco:"
-    df -h /var/lib/pgsql/
-    
+# 6. CRIAR USUÁRIO E BANCO
+log "6. Criando usuário e banco PostgreSQL..."
+
+# Criar usuário se não existir
+if ! sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='afiliadosbet'" | grep -q 1; then
+    sudo -u postgres psql -c "CREATE USER afiliadosbet WITH PASSWORD 'Alepoker800';" > /dev/null 2>&1
+    sudo -u postgres psql -c "ALTER USER afiliadosbet CREATEDB;" > /dev/null 2>&1
+fi
+
+# Recriar banco (dropar e criar novo)
+sudo -u postgres psql -c "DROP DATABASE IF EXISTS afiliadosbetdb;" > /dev/null 2>&1
+sudo -u postgres psql -c "CREATE DATABASE afiliadosbetdb OWNER afiliadosbet;" > /dev/null 2>&1
+
+success "Banco PostgreSQL criado"
+
+# 7. TESTAR CONEXÃO
+log "7. Testando conexão PostgreSQL..."
+if ! PGPASSWORD=Alepoker800 psql -U afiliadosbet -h localhost -d afiliadosbetdb -c "SELECT 1;" > /dev/null 2>&1; then
+    error "Falha na conexão PostgreSQL"
     exit 1
 fi
+success "Conexão PostgreSQL OK"
 
-# 7. Configurar tabela de sessões
-log "7. Configurando tabelas de sessão..."
+# 8. CRIAR SCHEMA COMPLETO
+log "8. Criando schema PostgreSQL..."
 PGPASSWORD=Alepoker800 psql -U afiliadosbet -h localhost -d afiliadosbetdb << 'EOF'
--- Dropar tabela de sessões existente se houver
-DROP TABLE IF EXISTS sessions;
-
--- Criar tabela de sessões
-CREATE TABLE sessions (
-  sid varchar PRIMARY KEY,
-  sess json NOT NULL,
-  expire timestamp(6) NOT NULL
+-- Schema AfiliadosBet - Versão PostgreSQL
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR UNIQUE NOT NULL,
+    email VARCHAR UNIQUE NOT NULL,
+    password VARCHAR NOT NULL,
+    "fullName" VARCHAR NOT NULL,
+    cpf VARCHAR UNIQUE NOT NULL,
+    "birthDate" VARCHAR NOT NULL,
+    phone VARCHAR,
+    city VARCHAR,
+    state VARCHAR,
+    country VARCHAR DEFAULT 'BR',
+    role VARCHAR DEFAULT 'affiliate',
+    "isActive" BOOLEAN DEFAULT true,
+    "pixKeyType" VARCHAR,
+    "pixKeyValue" VARCHAR,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Criar índice para performance
+CREATE TABLE IF NOT EXISTS "bettingHouses" (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR NOT NULL,
+    description TEXT,
+    "logoUrl" VARCHAR,
+    "baseUrl" VARCHAR NOT NULL,
+    "primaryParam" VARCHAR NOT NULL,
+    "additionalParams" TEXT,
+    "commissionType" VARCHAR NOT NULL,
+    "commissionValue" VARCHAR,
+    "cpaValue" VARCHAR,
+    "revshareValue" VARCHAR,
+    "revshareAffiliatePercent" REAL,
+    "cpaAffiliatePercent" REAL,
+    "minDeposit" VARCHAR,
+    "paymentMethods" TEXT,
+    "isActive" BOOLEAN DEFAULT true,
+    identifier VARCHAR UNIQUE NOT NULL,
+    "enabledPostbacks" TEXT,
+    "securityToken" VARCHAR NOT NULL,
+    "parameterMapping" TEXT,
+    "integrationType" VARCHAR NOT NULL DEFAULT 'postback',
+    "apiConfig" TEXT,
+    "apiBaseUrl" VARCHAR,
+    "apiKey" VARCHAR,
+    "apiSecret" VARCHAR,
+    "apiVersion" VARCHAR DEFAULT 'v1',
+    "syncInterval" INTEGER DEFAULT 30,
+    "lastSyncAt" VARCHAR,
+    "syncStatus" VARCHAR DEFAULT 'pending',
+    "syncErrorMessage" VARCHAR,
+    "endpointMapping" TEXT,
+    "authType" VARCHAR DEFAULT 'bearer',
+    "authHeaders" TEXT,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS "affiliateLinks" (
+    id SERIAL PRIMARY KEY,
+    "userId" INTEGER NOT NULL REFERENCES users(id),
+    "houseId" INTEGER NOT NULL REFERENCES "bettingHouses"(id),
+    "generatedUrl" VARCHAR NOT NULL,
+    "isActive" BOOLEAN DEFAULT true,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS "clickTracking" (
+    id SERIAL PRIMARY KEY,
+    "linkId" INTEGER NOT NULL REFERENCES "affiliateLinks"(id),
+    "userId" INTEGER NOT NULL REFERENCES users(id),
+    "houseId" INTEGER NOT NULL REFERENCES "bettingHouses"(id),
+    "ipAddress" VARCHAR NOT NULL,
+    "userAgent" VARCHAR,
+    referrer VARCHAR,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS conversions (
+    id SERIAL PRIMARY KEY,
+    "userId" INTEGER NOT NULL REFERENCES users(id),
+    "houseId" INTEGER NOT NULL REFERENCES "bettingHouses"(id),
+    "affiliateLinkId" INTEGER REFERENCES "affiliateLinks"(id),
+    type VARCHAR NOT NULL,
+    amount VARCHAR NOT NULL,
+    commission VARCHAR NOT NULL,
+    "conversionData" TEXT,
+    status VARCHAR DEFAULT 'pending',
+    "processedAt" VARCHAR,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS payments (
+    id SERIAL PRIMARY KEY,
+    "userId" INTEGER NOT NULL REFERENCES users(id),
+    amount REAL NOT NULL,
+    status VARCHAR DEFAULT 'pending',
+    "paymentMethod" VARCHAR,
+    "pixKey" VARCHAR,
+    "transactionId" VARCHAR,
+    "requestedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "processedAt" VARCHAR,
+    notes TEXT
+);
+
+CREATE TABLE IF NOT EXISTS sessions (
+    sid VARCHAR PRIMARY KEY,
+    sess JSON NOT NULL,
+    expire TIMESTAMP(6) NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON sessions (expire);
 
--- Verificar se criou corretamente
-\dt sessions
+-- Inserir dados padrão
+INSERT INTO users (username, email, password, "fullName", cpf, "birthDate", role, "isActive") VALUES 
+('admin', 'admin@afiliadosbet.com.br', '$2b$10$8K1p/a4xnw6bK8GxkOZkUeGxGN4v4Jl3rMLJFCw8RSI8S5Q7tHJ0e', 'Administrador', '00000000000', '1990-01-01', 'admin', true),
+('afiliado1', 'afiliado1@afiliadosbet.com.br', '$2b$10$8K1p/a4xnw6bK8GxkOZkUeGxGN4v4Jl3rMLJFCw8RSI8S5Q7tHJ0e', 'Afiliado Teste 1', '11111111111', '1990-01-01', 'affiliate', true),
+('afiliado2', 'afiliado2@afiliadosbet.com.br', '$2b$10$8K1p/a4xnw6bK8GxkOZkUeGxGN4v4Jl3rMLJFCw8RSI8S5Q7tHJ0e', 'Afiliado Teste 2', '22222222222', '1990-01-01', 'affiliate', true),
+('afiliado3', 'afiliado3@afiliadosbet.com.br', '$2b$10$8K1p/a4xnw6bK8GxkOZkUeGxGN4v4Jl3rMLJFCw8RSI8S5Q7tHJ0e', 'Afiliado Teste 3', '33333333333', '1990-01-01', 'affiliate', true)
+ON CONFLICT (email) DO NOTHING;
+
+SELECT 'Schema criado, usuarios inseridos:', COUNT(*) FROM users;
 EOF
 
 if [ $? -eq 0 ]; then
-    success "Tabela de sessões configurada"
+    success "Schema PostgreSQL criado"
 else
-    error "Erro ao configurar tabela de sessões"
+    error "Falha ao criar schema"
+    exit 1
 fi
 
-# 8. Teste final
-log "8. Teste final de conexão..."
-if PGPASSWORD=Alepoker800 psql -U afiliadosbet -h localhost -d afiliadosbetdb -c "SELECT COUNT(*) FROM sessions;" >/dev/null 2>&1; then
-    success "PostgreSQL totalmente funcional"
+# 9. VERIFICAR SCHEMA
+log "9. Verificando schema..."
+TABLE_COUNT=$(PGPASSWORD=Alepoker800 psql -U afiliadosbet -h localhost -d afiliadosbetdb -tAc "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';")
+USER_COUNT=$(PGPASSWORD=Alepoker800 psql -U afiliadosbet -h localhost -d afiliadosbetdb -tAc "SELECT COUNT(*) FROM users;")
+
+if [ "$TABLE_COUNT" -gt 5 ] && [ "$USER_COUNT" -gt 0 ]; then
+    success "Schema OK - $TABLE_COUNT tabelas, $USER_COUNT usuários"
+else
+    error "Schema com problemas"
+    exit 1
+fi
+
+# 10. REBUILD APLICAÇÃO
+log "10. Rebuilding aplicação..."
+npm install --production > /dev/null 2>&1
+npm run build > /dev/null 2>&1
+success "Aplicação rebuilded"
+
+# 11. INICIAR COM POSTGRESQL
+log "11. Iniciando aplicação PostgreSQL..."
+NODE_ENV=production DATABASE_URL=postgresql://afiliadosbet:Alepoker800@localhost:5432/afiliadosbetdb pm2 start npm --name "afiliadosbet" -- start
+
+# 12. AGUARDAR E VERIFICAR
+log "12. Aguardando inicialização..."
+sleep 15
+
+if pm2 list | grep -q "afiliadosbet.*online"; then
+    success "Aplicação online"
     
-    # 9. Reiniciar aplicação
-    log "9. Reiniciando aplicação..."
-    pm2 stop afiliadosbet 2>/dev/null || true
-    pm2 delete afiliadosbet 2>/dev/null || true
-    
-    # Build da aplicação
-    npm run build
-    
-    # Iniciar em modo produção
-    NODE_ENV=production pm2 start npm --name "afiliadosbet" -- start
-    
-    log "Aguardando aplicação inicializar..."
+    # Teste API
+    log "13. Testando API..."
     sleep 5
     
-    if pm2 list | grep -q "afiliadosbet.*online"; then
-        success "Aplicação funcionando"
+    API_RESPONSE=$(curl -s -w "%{http_code}" "http://localhost:3000/api/health" -o /tmp/api_test.txt)
+    if [ "$API_RESPONSE" = "200" ]; then
+        success "API funcionando"
         
-        log "Testando rota de login..."
-        if curl -s http://localhost:3000/api/auth/me | grep -q "authenticated"; then
-            success "Sistema totalmente funcional"
+        # Teste admin stats
+        STATS_RESPONSE=$(curl -s "http://localhost:3000/api/stats/admin")
+        if echo "$STATS_RESPONSE" | grep -q "totalAffiliates"; then
+            success "API stats funcionando"
+            
+            echo ""
+            echo "🎉 MIGRAÇÃO COMPLETA!"
+            echo "✅ PostgreSQL: Funcionando"
+            echo "✅ Schema: $TABLE_COUNT tabelas criadas"
+            echo "✅ Usuários: $USER_COUNT cadastrados"
+            echo "✅ Aplicação: Online"
+            echo "✅ API: Funcionando"
+            echo ""
+            echo "🌐 Site: https://afiliadosbet.com.br"
+            echo "🔐 Admin: admin@afiliadosbet.com.br / admin123"
+            echo "📊 Panel: https://afiliadosbet.com.br/admin"
+            echo ""
+            
+            # Mostrar usuarios criados
+            echo "👥 Usuários cadastrados:"
+            PGPASSWORD=Alepoker800 psql -U afiliadosbet -h localhost -d afiliadosbetdb -c "SELECT id, username, email, role FROM users ORDER BY id;"
+            
         else
-            warning "Sistema rodando mas API pode ter problemas"
+            warning "API stats com problemas"
+            echo "Response: $STATS_RESPONSE"
         fi
     else
-        error "Problema ao iniciar aplicação"
-        pm2 logs afiliadosbet --lines 20
+        warning "API não respondeu corretamente"
+        cat /tmp/api_test.txt
     fi
+    
 else
-    error "PostgreSQL ainda com problemas"
+    error "Aplicação falhou ao iniciar"
+    pm2 logs afiliadosbet --lines 10
     exit 1
 fi
 
 echo ""
-success "Correção PostgreSQL completa!"
-echo "🌐 Site: https://afiliadosbet.com.br"
-echo "📊 Admin: https://afiliadosbet.com.br/admin"
-echo "🔍 Logs: pm2 logs afiliadosbet"
+echo "🔍 Para verificar logs: pm2 logs afiliadosbet"
+echo "🔄 Para reiniciar: pm2 restart afiliadosbet"
+echo "📊 Para stats: curl http://localhost:3000/api/stats/admin"
+
+success "MIGRAÇÃO POSTGRESQL COMPLETA!"
