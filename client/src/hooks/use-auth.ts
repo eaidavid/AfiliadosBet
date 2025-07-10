@@ -148,18 +148,15 @@ export function useLogin() {
         // Invalidar cache para atualizar estado de autenticação
         queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
         
-        // Force immediate navigation without delay - but add small timeout for production
+        // Force immediate navigation with proper delay for session sync
         const targetPath = data.user.role === 'admin' ? '/admin' : '/home';
         console.log('🔄 Redirecionando para:', targetPath);
         
-        // Use timeout only in production to handle session sync
-        if (window.location.hostname === 'localhost' || window.location.hostname.includes('replit')) {
-          window.location.replace(targetPath);
-        } else {
-          setTimeout(() => {
-            window.location.replace(targetPath);
-          }, 300); // Small delay for production session sync
-        }
+        // Small delay to ensure session is fully established
+        setTimeout(() => {
+          console.log('🔄 Executando redirecionamento para:', targetPath);
+          window.location.href = targetPath; // Use href instead of replace for better compatibility
+        }, 500); // Increased delay for session sync
       }
     },
     onError: (error) => {

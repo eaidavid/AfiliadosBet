@@ -1,110 +1,63 @@
-# 🚨 CORREÇÃO URGENTE - PROBLEMA DE LOGIN EM PRODUÇÃO
+# 🚨 INSTRUÇÕES URGENTES - CORREÇÃO DEFINITIVA
 
-## Execute estes comandos no seu servidor VPS:
+## O que foi corrigido agora:
 
-### 1. Conectar ao servidor
+### 1. REMOVIDO redirecionamento automático no AuthenticatedAuth
+- **ANTES**: useEffect redirecionava automaticamente quando autenticado
+- **DEPOIS**: Mostra mensagem "Você já está logado" com link manual
+
+### 2. MELHORADO redirecionamento no login
+- **ANTES**: window.location.replace imediato
+- **DEPOIS**: setTimeout de 500ms + window.location.href para melhor compatibilidade
+
+### 3. CORRIGIDO redirecionamento admin
+- **ANTES**: setLocation("/login") 
+- **DEPOIS**: window.location.href = "/auth"
+
+## Para aplicar no VPS:
+
+### 1. Conectar e atualizar
 ```bash
 ssh root@seu-servidor
 cd /var/www/afiliadosbet
+git pull origin main
 ```
 
-### 2. Fazer download do script de correção
+### 2. Usar script de correção
 ```bash
-curl -O https://raw.githubusercontent.com/seu-usuario/afiliadosbet/main/fix-postgresql-production.sh
-chmod +x fix-postgresql-production.sh
+./fix-session-production.sh
 ```
 
-### 3. Executar a correção
-```bash
-./fix-postgresql-production.sh
-```
-
-## Ou use o script que já está no projeto:
-```bash
-# Se você já tem o repositório atualizado
-./fix-postgresql-production.sh
-```
-
-## OU execute manualmente:
-
-### 1. Parar a aplicação
+### 3. OU manual:
 ```bash
 pm2 stop afiliadosbet
-```
-
-### 2. Fazer backup
-```bash
-cp server/index.ts server/index.ts.backup
-```
-
-### 3. Editar o arquivo
-```bash
-vim server/index.ts
-```
-
-### 4. Encontrar as linhas 12-33 que têm:
-```typescript
-// Session configuration with PostgreSQL store in production
-import connectPgSimple from 'connect-pg-simple';
-```
-
-### 5. Substituir por (configuração PostgreSQL correta):
-```typescript
-// Session configuration with PostgreSQL store in production
-import connectPgSimple from 'connect-pg-simple';
-import { Pool } from 'pg';
-
-const PgSession = connectPgSimple(session);
-
-// Create PostgreSQL pool for sessions
-const sessionPool = process.env.NODE_ENV === 'production' && process.env.DATABASE_URL
-  ? new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: false // Set to true if using SSL
-    })
-  : null;
-
-app.use(session({
-  store: sessionPool 
-    ? new PgSession({
-        pool: sessionPool,
-        tableName: 'sessions',
-        createTableIfMissing: true
-      })
-    : undefined, // Use memory store in development
-  secret: process.env.SESSION_SECRET || "fallback-secret-for-dev-only-change-in-production",
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    sameSite: 'lax'
-  }
-}));
-```
-
-### 6. Fazer rebuild
-```bash
+pm2 delete afiliadosbet
 npm run build
+NODE_ENV=production pm2 start npm --name "afiliadosbet" -- start
 ```
 
-### 7. Reiniciar
+## Teste:
+1. Acesse https://afiliadosbet.com.br
+2. Vá para /auth
+3. Faça login com admin@afiliadosbet.com.br / admin123
+4. Aguarde 0.5 segundos
+5. Deve redirecionar para /admin automaticamente
+6. Se tentar acessar /admin sem login, deve redirecionar para /auth
+
+## Debugging:
 ```bash
-pm2 restart afiliadosbet
+# Ver logs específicos
+pm2 logs afiliadosbet | grep -E "(Redirecionando|Login|auth)"
+
+# Verificar se mudanças estão aplicadas
+grep -n "Você já está logado" client/src/App.tsx
+grep -n "window.location.href = targetPath" client/src/hooks/use-auth.ts
 ```
 
-### 8. Verificar
-```bash
-pm2 logs afiliadosbet
-```
-
-## 🎯 Resultado esperado:
-- Não deve mais aparecer o erro "SASL: SCRAM-SERVER-FIRST-MESSAGE"
-- Login deve funcionar normalmente
-- Logs devem mostrar "Server listening on port 3000"
-
-## 📞 Se der problema:
-- Restaurar backup: `cp server/index.ts.backup server/index.ts`
-- Fazer rebuild: `npm run build`
-- Reiniciar: `pm2 restart afiliadosbet`
+## Se ainda não funcionar:
+1. Limpe o cache do navegador (Ctrl+Shift+R)
+2. Tente em aba anônima
+3. Verifique se session está sendo criada no PostgreSQL:
+   ```sql
+   SELECT * FROM sessions;
+   ```

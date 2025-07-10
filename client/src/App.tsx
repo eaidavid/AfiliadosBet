@@ -131,13 +131,8 @@ function Router() {
 function AuthenticatedAuth() {
   const { isAuthenticated, isLoading, isAdmin } = useAuth();
 
-  // Se já autenticado, redirecionar sem usar useLocation para evitar loops
-  useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      const targetPath = isAdmin ? "/admin" : "/home";
-      window.location.replace(targetPath);
-    }
-  }, [isAuthenticated, isLoading, isAdmin]);
+  // COMPLETAMENTE REMOVIDO o redirecionamento automático
+  // O redirecionamento agora é feito apenas no onSuccess do login
 
   if (isLoading) {
     return (
@@ -147,10 +142,16 @@ function AuthenticatedAuth() {
     );
   }
 
+  // Se já autenticado, mostrar mensagem mas NÃO redirecionar automaticamente
   if (isAuthenticated) {
     return (
       <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce">
-        <div className="text-emerald-500 text-xl">Redirecionando...</div>
+        <div className="text-emerald-500 text-xl">Você já está logado!</div>
+        <div className="text-slate-400 text-sm mt-2">
+          <a href={isAdmin ? "/admin" : "/home"} className="text-emerald-400 hover:underline">
+            Ir para {isAdmin ? "Admin" : "Dashboard"}
+          </a>
+        </div>
       </div>
     );
   }
@@ -419,13 +420,13 @@ function AuthenticatedPayments() {
 
 function AuthenticatedAdminDashboard() {
   const { isAuthenticated, isLoading, isAdmin } = useAuth();
-  const [location, setLocation] = useLocation();
 
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || !isAdmin)) {
-      setLocation("/login");
+      console.log('🔄 Admin não autenticado, redirecionando para /auth');
+      window.location.href = "/auth";
     }
-  }, [isAuthenticated, isLoading, isAdmin, setLocation]);
+  }, [isAuthenticated, isLoading, isAdmin]);
 
   if (isLoading) {
     return (
@@ -436,7 +437,11 @@ function AuthenticatedAdminDashboard() {
   }
 
   if (!isAuthenticated || !isAdmin) {
-    return null;
+    return (
+      <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce">
+        <div className="text-emerald-500 text-xl">Redirecionando...</div>
+      </div>
+    );
   }
 
   return (
