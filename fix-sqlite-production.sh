@@ -84,44 +84,39 @@ if [ ! -f "dist/index.js" ]; then
 fi
 success "Build concluído"
 
-# 7. CRIAR ECOSYSTEM PARA SQLITE
-log "7. Configurando PM2..."
-cat > ecosystem.config.js << 'EOF'
-module.exports = {
-  apps: [{
-    name: 'afiliadosbet',
-    script: 'dist/index.js',
-    env: {
-      NODE_ENV: 'production',
-      SESSION_SECRET: 'afiliadosbet_super_secret_production_2025',
-      PORT: 3000,
-      HOST: '0.0.0.0'
-    },
-    instances: 1,
-    exec_mode: 'cluster',
-    max_memory_restart: '1G',
-    error_file: './logs/err.log',
-    out_file: './logs/out.log',
-    log_file: './logs/combined.log',
-    time: true,
-    watch: false
-  }]
-};
-EOF
+# 7. PARAR QUALQUER PM2 EXISTENTE
+log "7. Limpando PM2..."
+pm2 delete all 2>/dev/null || true
+pm2 kill 2>/dev/null || true
 
-mkdir -p logs
-success "PM2 configurado para SQLite"
-
-# 8. INICIAR APLICAÇÃO SQLITE
+# 8. INICIAR APLICAÇÃO SQLITE DIRETAMENTE
 log "8. Iniciando aplicação SQLite..."
-NODE_ENV=production pm2 start ecosystem.config.js
+mkdir -p logs
+
+# Iniciar com comando direto (evita problema do ecosystem.config.js)
+NODE_ENV=production nohup node dist/index.js > logs/app.log 2>&1 &
+APP_PID=$!
+
+# Salvar PID
+echo $APP_PID > app.pid
+
+sleep 5
+
+# Verificar se processo está rodando
+if kill -0 $APP_PID 2>/dev/null; then
+    success "Aplicação iniciada (PID: $APP_PID)"
+else
+    error "Falha ao iniciar aplicação"
+    cat logs/app.log 2>/dev/null || echo "Sem logs disponíveis"
+    exit 1
+fi
 
 # 9. AGUARDAR INICIALIZAÇÃO
 log "9. Aguardando inicialização..."
 sleep 15
 
 # 10. VERIFICAR STATUS
-if pm2 list | grep -q "afiliadosbet.*online"; then
+if kill -0 $APP_PID 2>/dev/null; then
     success "Aplicação online"
     
     # Teste API
@@ -162,13 +157,13 @@ if pm2 list | grep -q "afiliadosbet.*online"; then
 else
     error "Aplicação falhou ao iniciar"
     echo "Logs dos últimos erros:"
-    pm2 logs afiliadosbet --lines 10
+    tail -20 logs/app.log 2>/dev/null || echo "Sem logs disponíveis"
     exit 1
 fi
 
 echo ""
-echo "🔍 Para verificar logs: pm2 logs afiliadosbet"
-echo "🔄 Para reiniciar: pm2 restart afiliadosbet"
+echo "🔍 Para verificar logs: tail -f logs/app.log"
+echo "🔄 Para reiniciar: kill $(cat app.pid) && ./fix-sqlite-production.sh"
 echo "📊 Para stats: curl http://localhost:3000/api/stats/admin"
 echo "🗂️ Banco SQLite: data/afiliadosbet.sqlite"
 
