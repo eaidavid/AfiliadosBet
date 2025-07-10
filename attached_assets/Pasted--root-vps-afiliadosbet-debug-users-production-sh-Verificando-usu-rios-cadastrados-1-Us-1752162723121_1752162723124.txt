@@ -1,0 +1,43 @@
+[root@vps afiliadosbet]#  ./debug-users-production.sh
+🔍 Verificando usuários cadastrados...
+1. Usuários no PostgreSQL:
+ERROR:  relation "users" does not exist
+LINE 10: FROM users 
+              ^
+
+2. Total de usuários por role:
+ERROR:  relation "users" does not exist
+LINE 3: FROM users 
+             ^
+
+3. Estrutura da tabela users:
+ERROR:  syntax error at or near "\"
+LINE 2: \d users
+        ^
+
+4. Testando API /api/admin/affiliates:
+{"error":"Admin access required"}
+5. Logs recentes da aplicação:
+[TAILING] Tailing last 10 lines for [afiliadosbet] process (change the value with --lines option)
+/root/.pm2/logs/afiliadosbet-out.log last 10 lines:
+0|afiliado | 🔍 Checking auth - Session ID: WpMNEhcbjmnkZGNDoMhFp0fCWIbZUDHJ
+0|afiliado | 🔍 Authenticated: true
+0|afiliado | 🔍 User in session: YES
+0|afiliado | ✅ User is authenticated: admin@afiliadosbet.com.br
+0|afiliado | 🔍 Listando afiliados com filtros: {
+0|afiliado |   search: undefined,
+0|afiliado |   status: undefined,
+0|afiliado |   house: undefined,
+0|afiliado |   date: undefined
+0|afiliado | }
+/root/.pm2/logs/afiliadosbet-error.log last 10 lines:
+0|afiliado | ❌ Erro ao listar afiliados: SqliteError: no such column: "type" - should this be a string literal in single-quotes?
+0|afiliado |     at Database.prepare (/var/www/afiliadosbet/node_modules/better-sqlite3/lib/methods/wrappers.js:5:21)
+0|afiliado |     at BetterSQLiteSession.prepareQuery (file:///var/www/afiliadosbet/node_modules/drizzle-orm/better-sqlite3/session.js:20:30)
+0|afiliado |     at BetterSQLiteSession.prepareOneTimeQuery (file:///var/www/afiliadosbet/node_modules/drizzle-orm/sqlite-core/session.js:65:17)
+0|afiliado |     at SQLiteSelectBase._prepare (file:///var/www/afiliadosbet/node_modules/drizzle-orm/sqlite-core/query-builders/select.js:572:88)
+0|afiliado |     at SQLiteSelectBase.all (file:///var/www/afiliadosbet/node_modules/drizzle-orm/sqlite-core/query-builders/select.js:588:17)
+0|afiliado |     at SQLiteSelectBase.execute (file:///var/www/afiliadosbet/node_modules/drizzle-orm/sqlite-core/query-builders/select.js:597:17)
+0|afiliado |     at SQLiteSelectBase.then (file:///var/www/afiliadosbet/node_modules/drizzle-orm/query-promise.js:21:17) {
+0|afiliado |   code: 'SQLITE_ERROR'
+0|afiliado | }
