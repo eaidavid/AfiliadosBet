@@ -224,7 +224,7 @@ export const insertClickTrackingSchema = createInsertSchema(clickTracking).omit(
 
 // Authentication schemas
 export const loginSchema = z.object({
-  email: z.string().email('Email inválido'),
+  usernameOrEmail: z.string().min(1, 'Email ou usuário é obrigatório'),
   password: z.string().min(1, 'Senha é obrigatória'),
 });
 

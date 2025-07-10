@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import type { User, InsertUser, LoginData } from "@shared/schema";
+import type { User, InsertUser, LoginData, RegisterData } from "@shared/schema";
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -161,7 +161,7 @@ export function useRegister() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (userData: InsertUser) => {
+    mutationFn: async (userData: RegisterData) => {
       const response = await apiRequest("/api/auth/register", {
         method: "POST",
         body: userData
