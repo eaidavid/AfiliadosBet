@@ -158,7 +158,8 @@ AfiliadosBet é uma plataforma completa de marketing de afiliados para casas de 
 - **Comprehensive Documentation**: Complete setup and deployment guides for any environment
 - **Docker Support**: Full containerization support for modern deployment workflows
 - **Zero Configuration Startup**: Simple npm install && npm run dev for immediate development
-- **
+- **Premium Authentication**: New /auth page with world-class design and animations
+- **AlmaLinux Deployment Guide**: Complete documentation for production deployment
 
 ## Changelog
 - June 13, 2025. Initial setup
@@ -167,3 +168,10 @@ AfiliadosBet é uma plataforma completa de marketing de afiliados para casas de 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+UI/UX Design Preference: User loves the premium design from /auth page and wants this design standard applied throughout the entire system. Focus on:
+- Modern gradients and animations
+- Professional dark theme with emerald/blue accents
+- Premium visual effects and micro-interactions
+- Money/earnings themed elements and animations
+- Responsive design with smooth transitions
+- High-quality visual hierarchy and typography
