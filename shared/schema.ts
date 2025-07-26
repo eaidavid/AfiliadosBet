@@ -1,22 +1,22 @@
-import { sqliteTable, text, integer, real, index } from "drizzle-orm/sqlite-core";
+import { pgTable, text, integer, decimal, boolean, timestamp, index, serial } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Session storage table for authentication
-export const sessions = sqliteTable(
+export const sessions = pgTable(
   "sessions",
   {
     sid: text("sid").primaryKey(),
-    sess: text("sess").notNull(), // JSON as text in SQLite
-    expire: text("expire").notNull(), // ISO timestamp string
+    sess: text("sess").notNull(), // JSON as text
+    expire: timestamp("expire").notNull(),
   },
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
 // Users table - both affiliates and admins
-export const users = sqliteTable("users", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
@@ -28,31 +28,31 @@ export const users = sqliteTable("users", {
   state: text("state"),
   country: text("country").default("BR"),
   role: text("role").default("affiliate"), // 'affiliate' or 'admin'
-  isActive: integer("is_active", { mode: 'boolean' }).default(true),
+  isActive: boolean("is_active").default(true),
   pixKeyType: text("pix_key_type"), // Tipo da chave PIX
   pixKeyValue: text("pix_key_value"), // Valor da chave PIX
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Betting houses table
-export const bettingHouses = sqliteTable("betting_houses", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const bettingHouses = pgTable("betting_houses", {
+  id: serial("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
   logoUrl: text("logo_url"),
   baseUrl: text("base_url").notNull(), // Base affiliate URL with VALUE placeholder
   primaryParam: text("primary_param").notNull(), // subid, affid, etc.
-  additionalParams: text("additional_params"), // JSON as text in SQLite
+  additionalParams: text("additional_params"), // JSON as text
   commissionType: text("commission_type").notNull(), // 'CPA', 'RevShare', or 'Hybrid'
   commissionValue: text("commission_value"), // Valor principal
   cpaValue: text("cpa_value"), // Valor específico para CPA em modelo Hybrid
   revshareValue: text("revshare_value"), // Valor específico para RevShare em modelo Hybrid
-  revshareAffiliatePercent: real("revshare_affiliate_percent"), // Porcentagem do afiliado no RevShare
-  cpaAffiliatePercent: real("cpa_affiliate_percent"), // Porcentagem do afiliado no CPA
+  revshareAffiliatePercent: decimal("revshare_affiliate_percent"), // Porcentagem do afiliado no RevShare
+  cpaAffiliatePercent: decimal("cpa_affiliate_percent"), // Porcentagem do afiliado no CPA
   minDeposit: text("min_deposit"), // Depósito mínimo
   paymentMethods: text("payment_methods"), // Métodos de pagamento aceitos
-  isActive: integer("is_active", { mode: 'boolean' }).default(true),
+  isActive: boolean("is_active").default(true),
   identifier: text("identifier").notNull().unique(), // Identificador único da casa
   enabledPostbacks: text("enabled_postbacks"), // JSON array of enabled postback events
   securityToken: text("security_token").notNull(), // Token for postback validation
@@ -64,41 +64,41 @@ export const bettingHouses = sqliteTable("betting_houses", {
   apiSecret: text("api_secret"),
   apiVersion: text("api_version").default("v1"),
   syncInterval: integer("sync_interval").default(30), // minutes
-  lastSyncAt: text("last_sync_at"),
+  lastSyncAt: timestamp("last_sync_at"),
   syncStatus: text("sync_status").default("pending"),
   syncErrorMessage: text("sync_error_message"),
   endpointMapping: text("endpoint_mapping"), // JSON mapping for API endpoints
   authType: text("auth_type").default("bearer"),
   authHeaders: text("auth_headers"), // JSON for custom auth headers
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Affiliate links table
-export const affiliateLinks = sqliteTable("affiliate_links", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const affiliateLinks = pgTable("affiliate_links", {
+  id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
   houseId: integer("house_id").notNull().references(() => bettingHouses.id),
   generatedUrl: text("generated_url").notNull(),
-  isActive: integer("is_active", { mode: 'boolean' }).default(true),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Click tracking table
-export const clickTracking = sqliteTable("click_tracking", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const clickTracking = pgTable("click_tracking", {
+  id: serial("id").primaryKey(),
   linkId: integer("link_id").notNull().references(() => affiliateLinks.id),
   userId: integer("user_id").notNull().references(() => users.id),
   houseId: integer("house_id").notNull().references(() => bettingHouses.id),
   ipAddress: text("ip_address").notNull(),
   userAgent: text("user_agent"),
   referrer: text("referrer"),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Conversions table for tracking commissions
-export const conversions = sqliteTable("conversions", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const conversions = pgTable("conversions", {
+  id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
   houseId: integer("house_id").notNull().references(() => bettingHouses.id),
   affiliateLinkId: integer("affiliate_link_id").references(() => affiliateLinks.id),
@@ -107,21 +107,21 @@ export const conversions = sqliteTable("conversions", {
   commission: text("commission").notNull(), // Calculated commission
   conversionData: text("conversion_data"), // JSON additional data
   status: text("status").default("pending"), // 'pending', 'approved', 'rejected'
-  processedAt: text("processed_at"),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
+  processedAt: timestamp("processed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Payments table for affiliate payments
-export const payments = sqliteTable("payments", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const payments = pgTable("payments", {
+  id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
-  amount: real("amount").notNull(),
+  amount: decimal("amount").notNull(),
   status: text("status").default("pending"), // 'pending', 'approved', 'rejected', 'paid'
   paymentMethod: text("payment_method"), // 'pix', 'bank_transfer'
   pixKey: text("pix_key"),
   transactionId: text("transaction_id"),
-  requestedAt: text("requested_at").default("CURRENT_TIMESTAMP"),
-  processedAt: text("processed_at"),
+  requestedAt: timestamp("requested_at").defaultNow(),
+  processedAt: timestamp("processed_at"),
   notes: text("notes"),
 });
 
