@@ -762,9 +762,11 @@ export default function UserProfile() {
                   Voltar ao Dashboard
                 </a>
               </Button>
-              <Button variant="outline" className="border-red-600 text-red-400 hover:bg-red-950">
-                <LogOut className="h-4 w-4 mr-2" />
-                Sair da Conta
+              <Button asChild variant="outline" className="border-emerald-600 hover:bg-emerald-950">
+                <a href="/settings">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Configurações
+                </a>
               </Button>
             </div>
           </div>

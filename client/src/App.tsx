@@ -5,6 +5,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
+import { AppSettingsProvider } from "@/contexts/app-settings-context";
 // import LandingPage from "@/pages/landing-page";
 import SimpleLanding from "@/pages/simple-landing";
 import Register from "@/pages/register";
@@ -32,6 +33,7 @@ import AdminApiManagement from "@/pages/admin-api-management";
 import AdminPayments from "@/pages/admin-payments";
 
 import AdminSettingsEnhanced from "@/pages/admin-settings-enhanced";
+import AppSettings from "@/pages/app-settings";
 import NotFound from "@/pages/not-found";
 import AdminPanelToggle from "@/components/admin-panel-toggle";
 import { BottomNavigation } from "@/components/bottom-navigation";
@@ -94,6 +96,37 @@ function AuthenticatedUserReports() {
   );
 }
 
+function AuthenticatedAppSettings() {
+  const { isAuthenticated, isLoading } = useAuth();
+  const [location, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      setLocation("/login");
+    }
+  }, [isAuthenticated, isLoading, setLocation]);
+
+  if (isLoading) {
+    return (
+      <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce">
+        <div className="text-emerald-500 text-xl">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  return (
+    <div className="mobile-safe no-bounce">
+      <AppSettings />
+      <AdminPanelToggle />
+      <BottomNavigation />
+    </div>
+  );
+}
+
 function Router() {
   return (
     <Switch>
@@ -123,6 +156,7 @@ function Router() {
       <Route path="/admin/payments" component={AuthenticatedAdminPayments} />
 
       <Route path="/admin/settings" component={AuthenticatedAdminSettings} />
+      <Route path="/settings" component={AuthenticatedAppSettings} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -738,8 +772,6 @@ function AuthenticatedAdminApiManagement() {
   );
 }
 
-
-
 function App() {
   // Adicionar tratamento global de erros
   useEffect(() => {
@@ -764,10 +796,12 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
+      <AppSettingsProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </AppSettingsProvider>
     </QueryClientProvider>
   );
 }

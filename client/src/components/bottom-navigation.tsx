@@ -1,5 +1,6 @@
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
+import { useAppSettings } from '@/contexts/app-settings-context';
 import {
   Home,
   Building2,
@@ -52,6 +53,12 @@ const affiliateNavigationItems = [
     href: '/profile',
     icon: User,
     label: 'Perfil'
+  },
+  {
+    title: 'Configurações',
+    href: '/settings',
+    icon: Settings,
+    label: 'Config'
   }
 ];
 
@@ -97,6 +104,7 @@ const adminNavigationItems = [
 export function BottomNavigation({ className }: BottomNavigationProps) {
   const [location, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
+  const { settings } = useAppSettings();
 
   const handleNavigation = (href: string) => {
     navigate(href);
@@ -108,8 +116,8 @@ export function BottomNavigation({ className }: BottomNavigationProps) {
   // Escolher navegação baseada na área atual (admin ou afiliado)
   const navigationItems = isAdminArea ? adminNavigationItems : affiliateNavigationItems;
 
-  // Não mostrar navegação se não estiver autenticado
-  if (!isAuthenticated) {
+  // Não mostrar navegação se não estiver autenticado ou se a configuração estiver oculta
+  if (!isAuthenticated || settings.hideBottomMenu) {
     return null;
   }
 
