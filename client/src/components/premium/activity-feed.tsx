@@ -42,14 +42,83 @@ export function ActivityFeed({ recentConversions = [], recentPostbacks = [], aff
   const [activities, setActivities] = useState<ActivityItem[]>([]);
 
   useEffect(() => {
-    generateActivities();
-  }, [recentConversions, recentPostbacks, affiliateLinks]);
+    const generateActivitiesWrapper = () => {
+      const newActivities: ActivityItem[] = [];
+      
+      // Safety check for data
+      if (!recentConversions && !recentPostbacks && !affiliateLinks) {
+        setActivities([]);
+        return;
+      }
+
+      // Add conversions
+      (recentConversions || []).forEach((conversion, index) => {
+        newActivities.push({
+          id: conversion.id || index,
+          type: 'conversion',
+          title: 'Nova Conversão! 🎉',
+          description: `Conversão de ${conversion.type} na ${conversion.houseName}`,
+          value: conversion.commission,
+          timestamp: new Date(conversion.convertedAt),
+          houseName: conversion.houseName,
+          status: 'success'
+        });
+      });
+
+      // Add postback activities
+      (recentPostbacks || []).forEach((postback, index) => {
+        if (postback.status === 'success') {
+          newActivities.push({
+            id: postback.id || index,
+            type: postback.eventType === 'deposit' ? 'conversion' : 'click',
+            title: postback.eventType === 'deposit' ? 'Depósito Recebido 💰' : 'Novo Click 🎯',
+            description: `${postback.eventType} na ${postback.houseName}`,
+            value: postback.value,
+            timestamp: new Date(postback.createdAt),
+            houseName: postback.houseName,
+            status: 'success'
+          });
+        }
+      });
+
+      // Add some milestone activities if we have links
+      if (affiliateLinks && affiliateLinks.length > 0) {
+        newActivities.push({
+          id: 999,
+          type: 'milestone',
+          title: 'Links Ativos 🚀',
+          description: `Você tem ${affiliateLinks.length} links de afiliado ativos`,
+          timestamp: new Date(),
+          status: 'success'
+        });
+      }
+
+      // Sort by timestamp and limit to 10
+      const sortedActivities = newActivities
+        .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+        .slice(0, 10);
+
+      setActivities(sortedActivities);
+    };
+
+    generateActivitiesWrapper();
+  }, [
+    recentConversions?.length,
+    recentPostbacks?.length,
+    affiliateLinks?.length
+  ]);
 
   const generateActivities = () => {
     const newActivities: ActivityItem[] = [];
+    
+    // Safety check for data
+    if (!recentConversions && !recentPostbacks && !affiliateLinks) {
+      setActivities([]);
+      return;
+    }
 
     // Add conversions
-    recentConversions.forEach((conversion, index) => {
+    (recentConversions || []).forEach((conversion, index) => {
       newActivities.push({
         id: conversion.id,
         type: 'conversion',
@@ -63,7 +132,7 @@ export function ActivityFeed({ recentConversions = [], recentPostbacks = [], aff
     });
 
     // Add postback activities
-    recentPostbacks.forEach((postback, index) => {
+    (recentPostbacks || []).forEach((postback, index) => {
       if (postback.status === 'success') {
         newActivities.push({
           id: postback.id,
