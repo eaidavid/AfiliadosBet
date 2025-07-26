@@ -582,6 +582,21 @@ export default function BettingHouses() {
                         </Badge>
                       </div>
 
+                      {/* Dual Commission Highlight */}
+                      {house.commissionType === 'hybrid' && (
+                        <div className="mb-4 p-3 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30 rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Crown className="h-5 w-5 text-yellow-400 animate-bounce" />
+                            <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold animate-pulse">
+                              DUPLA COMISSÃO
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-yellow-400/90">
+                            Ganhe CPA + RevShare nesta casa especial!
+                          </p>
+                        </div>
+                      )}
+
                       {/* Promotional Highlights */}
                       {highlights.length > 0 && (
                         <div className="space-y-3 mb-4">

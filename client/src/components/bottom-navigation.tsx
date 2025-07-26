@@ -37,8 +37,8 @@ const affiliateNavigationItems = [
     label: 'Links'
   },
   {
-    title: 'Relatórios',
-    href: '/reports',
+    title: 'Estatísticas',
+    href: '/stats',
     icon: BarChart3,
     label: 'Stats'
   },

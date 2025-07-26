@@ -579,20 +579,7 @@ export default function Auth() {
                 )}
               </AnimatePresence>
 
-              {/* Quick Access */}
-              <div className="mt-6 p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
-                <p className="text-slate-300 text-sm text-center mb-3">🚀 Acesso rápido para demonstração:</p>
-                <div className="grid grid-cols-1 gap-2 text-xs">
-                  <div className="flex justify-between items-center p-2 bg-slate-700/50 rounded">
-                    <span className="text-slate-400">Admin:</span>
-                    <span className="text-emerald-400 font-mono">admin@afiliadosbet.com.br / admin123</span>
-                  </div>
-                  <div className="flex justify-between items-center p-2 bg-slate-700/50 rounded">
-                    <span className="text-slate-400">Afiliado:</span>
-                    <span className="text-blue-400 font-mono">afiliado@afiliadosbet.com.br / admin123</span>
-                  </div>
-                </div>
-              </div>
+
             </CardContent>
           </Card>
         </motion.div>

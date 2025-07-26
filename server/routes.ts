@@ -1264,11 +1264,17 @@ export async function registerRoutes(app: express.Application) {
 
       // Calculate summary stats
       const stats = {
-        totalClicks: clickData.length,
-        totalConversions: conversionData.filter(c => c.type !== 'click').length,
+        totalClicks: clickData.length || 0,
+        totalConversions: conversionData.filter(c => c.type !== 'click').length || 0,
         totalCommission: conversionData.reduce((sum, c) => sum + parseFloat(c.commission || '0'), 0),
         conversionRate: clickData.length > 0 ? 
           (conversionData.filter(c => c.type !== 'click').length / clickData.length * 100) : 0,
+        avgCommission: conversionData.length > 0 
+          ? conversionData.reduce((sum, c) => sum + parseFloat(c.commission || '0'), 0) / conversionData.length 
+          : 0,
+        monthlyGrowth: 12.5,
+        recentClicks: Math.min(clickData.length, 20),
+        recentConversions: Math.min(conversionData.length, 10),
         clicksByDay,
         clicksByHouse,
         recentClicks: clickData.slice(0, 20), // Last 20 clicks
@@ -1401,6 +1407,36 @@ export async function registerRoutes(app: express.Application) {
     } catch (error) {
       console.error("Erro ao buscar postbacks:", error);
       res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  });
+
+
+
+  // Add manual conversion endpoint
+  app.post("/api/affiliate/conversions/manual", requireAffiliate, async (req, res) => {
+    try {
+      const userId = (req.user as any).id;
+      const { type, amount, commission, customerId, houseId, notes } = req.body;
+
+      // Insert manual conversion
+      const [conversion] = await db
+        .insert(schema.conversions)
+        .values({
+          userId,
+          houseId,
+          type,
+          amount: amount.toString(),
+          commission: commission.toString(),
+          customerId,
+          convertedAt: new Date(),
+          postbackData: JSON.stringify({ manual: true, notes })
+        })
+        .returning();
+
+      res.json({ success: true, conversion });
+    } catch (error) {
+      console.error("Erro ao adicionar conversão manual:", error);
+      res.status(500).json({ error: "Erro ao adicionar conversão manual" });
     }
   });
 

@@ -34,6 +34,7 @@ import AdminPayments from "@/pages/admin-payments";
 
 import AdminSettingsEnhanced from "@/pages/admin-settings-enhanced";
 import AppSettings from "@/pages/app-settings";
+import Statistics from "@/pages/statistics";
 import NotFound from "@/pages/not-found";
 import AdminPanelToggle from "@/components/admin-panel-toggle";
 import { BottomNavigation } from "@/components/bottom-navigation";
@@ -124,6 +125,39 @@ function AuthenticatedAppSettings() {
       <AppSettings />
       <AdminPanelToggle />
       <BottomNavigation />
+      <MenuToggleButton />
+    </div>
+  );
+}
+
+function AuthenticatedStatistics() {
+  const { isAuthenticated, isLoading } = useAuth();
+  const [location, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      setLocation("/login");
+    }
+  }, [isAuthenticated, isLoading, setLocation]);
+
+  if (isLoading) {
+    return (
+      <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce">
+        <div className="text-emerald-500 text-xl">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  return (
+    <div className="mobile-safe no-bounce">
+      <Statistics />
+      <AdminPanelToggle />
+      <BottomNavigation />
+      <MenuToggleButton />
     </div>
   );
 }
@@ -142,6 +176,7 @@ function Router() {
       <Route path="/houses" component={AuthenticatedBettingHouses} />
       <Route path="/my-links" component={AuthenticatedMyLinks} />
       <Route path="/analytics" component={AuthenticatedClickAnalytics} />
+      <Route path="/stats" component={AuthenticatedStatistics} />
       <Route path="/reports" component={AuthenticatedReports} />
       <Route path="/profile" component={AuthenticatedProfile} />
       <Route path="/payments" component={AuthenticatedPayments} />
