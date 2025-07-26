@@ -88,7 +88,7 @@ app.use(passport.session());
 
   // Setup Vite development environment BEFORE starting server
   if (process.env.NODE_ENV === "development") {
-    const PORT = parseInt(process.env.PORT || "5000", 10);
+    const PORT = parseInt(process.env.PORT || "5001", 10);
     const HOST = process.env.HOST || "0.0.0.0";
     
     const server = app.listen(PORT, HOST, () => {

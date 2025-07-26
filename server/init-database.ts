@@ -4,7 +4,7 @@ import { users, bettingHouses } from '../shared/schema';
 
 export async function initializeDatabase() {
   try {
-    console.log('Inicializando banco de dados SQLite...');
+    console.log('Inicializando banco de dados PostgreSQL...');
 
     // Insert default admin user
     const adminPassword = await bcrypt.hash('admin123', 10);
@@ -38,14 +38,14 @@ export async function initializeDatabase() {
       // User already exists, that's fine
     }
 
-    console.log('✅ Banco de dados SQLite inicializado com sucesso!');
+    console.log('✅ Banco de dados PostgreSQL inicializado com sucesso!');
     console.log('✅ Usuários padrão criados:');
     console.log('   - Admin: admin@afiliadosbet.com.br / admin123');
     console.log('   - Afiliado: afiliado@afiliadosbet.com.br / admin123');
 
     return true;
   } catch (error) {
-    console.error('❌ Erro ao inicializar banco de dados:', error);
+    console.error('❌ Erro ao inicializar banco de dados PostgreSQL:', error);
     return false;
   }
 }
