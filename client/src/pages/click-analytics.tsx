@@ -350,7 +350,7 @@ export default function ClickAnalytics() {
           </Tabs>
 
           {/* Tracking Instructions */}
-          <Card className="bg-gradient-to-r from-slate-900/50 to-blue-900/20 border-blue-500/20">
+          <Card className="rounded-lg border text-card-foreground shadow-sm from-slate-900/50 to-blue-900/20 border-blue-500/20 bg-[#000000]">
             <CardHeader>
               <CardTitle className="text-blue-400 flex items-center gap-2">
                 <Globe className="h-5 w-5" />
