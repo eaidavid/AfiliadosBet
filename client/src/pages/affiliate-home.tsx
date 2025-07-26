@@ -13,6 +13,12 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PremiumHousesSection } from '@/components/premium-houses-section';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { HeroSection } from '@/components/premium/hero-section';
+import { OpportunityCard } from '@/components/premium/opportunity-card';
+import { RevenueSimulator } from '@/components/premium/revenue-simulator';
+import { ActivityFeed } from '@/components/premium/activity-feed';
+import { GamificationPanel } from '@/components/premium/gamification-panel';
+import { QuickActionsFab } from '@/components/premium/quick-actions-fab';
 import {
   Gift,
   CheckCircle,
@@ -47,11 +53,12 @@ interface UserStats {
 interface BettingHouse {
   id: number;
   name: string;
+  description: string | null;
   logoUrl: string | null;
   commissionType: string;
   commissionValue: string | null;
-  revshareValue?: string;
-  cpaValue?: string;
+  revshareValue?: string | null;
+  cpaValue?: string | null;
   revshareAffiliatePercent?: number;
   cpaAffiliatePercent?: number;
   minDeposit: string | null;
@@ -59,6 +66,8 @@ interface BettingHouse {
   isActive: boolean;
   createdAt: string;
   isAffiliated: boolean;
+  affiliateLink?: string;
+  highlights?: string[];
 }
 
 interface AffiliateLink {
@@ -358,112 +367,102 @@ export default function AffiliateHome() {
 
   return (
     <CenteredLayout>
-      <div className="space-y-4 sm:space-y-8">
-        {/* Header */}
-        <div className="space-y-4">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-4xl font-bold text-emerald-400 flex items-center gap-2 sm:gap-3">
-                <Gift className="h-6 w-6 sm:h-10 sm:w-10" />
-                Bem-vindo ao AfiliadosBet
-              </h1>
-              <p className="text-slate-300 text-sm sm:text-lg mt-2">
-                Gerencie seus links de afiliado, acompanhe seus resultados e maximize seus ganhos.
-              </p>
-            </div>
-            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500 text-xs sm:text-sm">
-              <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Conta Ativa
-            </Badge>
+      <div className="space-y-8">
+        {/* Premium Hero Section */}
+        <HeroSection 
+          userStats={userStats}
+          onNavigate={(path) => navigate(path)}
+        />
+
+        {/* Premium Opportunities Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+          {premium.slice(0, 6).map((house) => (
+            <OpportunityCard
+              key={house.id}
+              house={house}
+              onJoinAffiliate={() => handleJoinAffiliate(house.id)}
+              onCopyLink={(link) => copyToClipboard(link)}
+              onOpenLink={(link) => window.open(link, '_blank')}
+              isPending={joinAffiliateMutation.isPending}
+            />
+          ))}
+          
+          {popular.slice(0, 3).map((house) => (
+            <OpportunityCard
+              key={house.id}
+              house={house}
+              onJoinAffiliate={() => handleJoinAffiliate(house.id)}
+              onCopyLink={(link) => copyToClipboard(link)}
+              onOpenLink={(link) => window.open(link, '_blank')}
+              isPending={joinAffiliateMutation.isPending}
+            />
+          ))}
+        </div>
+
+        {/* Premium Dashboard Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          {/* Main Content - 2 columns */}
+          <div className="xl:col-span-2 space-y-8">
+            {/* Revenue Simulator */}
+            <RevenueSimulator 
+              selectedHouse={premium[0]}
+              onSelectHouse={() => navigate('/betting-houses')}
+            />
+            
+            {/* Activity Feed */}
+            <ActivityFeed 
+              recentConversions={recentConversions}
+              recentPostbacks={recentPostbacks}
+              affiliateLinks={affiliateLinks}
+            />
+          </div>
+          
+          {/* Sidebar - 1 column */}
+          <div className="space-y-8">
+            {/* Gamification Panel */}
+            <GamificationPanel userStats={userStats} />
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-          <Card className="bg-slate-900/50 border-slate-700 hover:bg-slate-900/70 transition-colors">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium text-slate-300">Cliques</CardTitle>
-              <MousePointer className="h-3 w-3 sm:h-4 sm:w-4 text-blue-400" />
-            </CardHeader>
-            <CardContent className="p-3 sm:p-6 pt-0">
-              <div className="text-lg sm:text-2xl font-bold text-blue-400">
-                {statsLoading ? '...' : userStats?.totalClicks || 0}
-              </div>
-              <p className="text-xs text-slate-400 hidden sm:block">
-                Cliques únicos em seus links
-              </p>
-            </CardContent>
-          </Card>
+        {/* Legacy Tabs - Hidden by default, can be toggled */}
+        <div className="mt-12">
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              const legacySection = document.getElementById('legacy-tabs');
+              if (legacySection) {
+                legacySection.style.display = legacySection.style.display === 'none' ? 'block' : 'none';
+              }
+            }}
+            className="mb-6 border-slate-600 text-slate-300 hover:bg-slate-700"
+          >
+            <BarChart3 className="w-4 h-4 mr-2" />
+            Mostrar Dados Detalhados
+          </Button>
+          
+          <div id="legacy-tabs" style={{ display: 'none' }}>
+            <Tabs defaultValue="houses" className="space-y-4 sm:space-y-6">
+              <TabsList className="bg-slate-900 border-slate-700 grid w-full grid-cols-2 sm:grid-cols-4 gap-1">
+                <TabsTrigger value="houses" className="data-[state=active]:bg-emerald-600 text-xs sm:text-sm px-2 sm:px-4">
+                  <span className="hidden sm:inline">Casas Disponíveis</span>
+                  <span className="sm:hidden">Casas</span>
+                </TabsTrigger>
+                <TabsTrigger value="links" className="data-[state=active]:bg-emerald-600 text-xs sm:text-sm px-2 sm:px-4">
+                  <span className="hidden sm:inline">Meus Links</span>
+                  <span className="sm:hidden">Links</span>
+                </TabsTrigger>
+                <TabsTrigger value="conversions" className="data-[state=active]:bg-emerald-600 text-xs sm:text-sm px-2 sm:px-4">
+                  <span className="hidden sm:inline">Conversões Recentes</span>
+                  <span className="sm:hidden">Conv.</span>
+                </TabsTrigger>
+                <TabsTrigger value="postbacks" className="data-[state=active]:bg-emerald-600 text-xs sm:text-sm px-2 sm:px-4">
+                  <span className="hidden sm:inline">Postbacks Recentes</span>
+                  <span className="sm:hidden">Post.</span>
+                </TabsTrigger>
+              </TabsList>
 
-          <Card className="bg-slate-900/50 border-slate-700 hover:bg-slate-900/70 transition-colors">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium text-slate-300">Registros</CardTitle>
-              <Users className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-400" />
-            </CardHeader>
-            <CardContent className="p-3 sm:p-6 pt-0">
-              <div className="text-lg sm:text-2xl font-bold text-emerald-400">
-                {statsLoading ? '...' : userStats?.totalRegistrations || 0}
-              </div>
-              <p className="text-xs text-slate-400 hidden sm:block">
-                Usuários cadastrados
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-slate-900/50 border-slate-700 hover:bg-slate-900/70 transition-colors">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium text-slate-300">Depósitos</CardTitle>
-              <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-orange-400" />
-            </CardHeader>
-            <CardContent className="p-3 sm:p-6 pt-0">
-              <div className="text-lg sm:text-2xl font-bold text-orange-400">
-                {statsLoading ? '...' : userStats?.totalDeposits || 0}
-              </div>
-              <p className="text-xs text-slate-400 hidden sm:block">
-                Depósitos qualificados
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-slate-900/50 border-slate-700 hover:bg-slate-900/70 transition-colors">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium text-slate-300">Comissão Total</CardTitle>
-              <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-400" />
-            </CardHeader>
-            <CardContent className="p-3 sm:p-6 pt-0">
-              <div className="text-lg sm:text-2xl font-bold text-emerald-400">
-                R$ {statsLoading ? '...' : userStats?.totalCommission || '0,00'}
-              </div>
-              <p className="text-xs text-slate-400 hidden sm:block">
-                Valor total em comissões
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Tabs Content */}
-        <Tabs defaultValue="houses" className="space-y-4 sm:space-y-6">
-          <TabsList className="bg-slate-900 border-slate-700 grid w-full grid-cols-2 sm:grid-cols-4 gap-1">
-            <TabsTrigger value="houses" className="data-[state=active]:bg-emerald-600 text-xs sm:text-sm px-2 sm:px-4">
-              <span className="hidden sm:inline">Casas Disponíveis</span>
-              <span className="sm:hidden">Casas</span>
-            </TabsTrigger>
-            <TabsTrigger value="links" className="data-[state=active]:bg-emerald-600 text-xs sm:text-sm px-2 sm:px-4">
-              <span className="hidden sm:inline">Meus Links</span>
-              <span className="sm:hidden">Links</span>
-            </TabsTrigger>
-            <TabsTrigger value="conversions" className="data-[state=active]:bg-emerald-600 text-xs sm:text-sm px-2 sm:px-4">
-              <span className="hidden sm:inline">Conversões Recentes</span>
-              <span className="sm:hidden">Conv.</span>
-            </TabsTrigger>
-            <TabsTrigger value="postbacks" className="data-[state=active]:bg-emerald-600 text-xs sm:text-sm px-2 sm:px-4">
-              <span className="hidden sm:inline">Postbacks Recentes</span>
-              <span className="sm:hidden">Post.</span>
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Betting Houses */}
-          <TabsContent value="houses" className="space-y-4 sm:space-y-6">
+              {/* Betting Houses */}
+              <TabsContent value="houses" className="space-y-4 sm:space-y-6">
             {/* Premium Houses Section - Strategic Focus */}
             <PremiumHousesSection 
               premium={premium}
@@ -776,8 +775,21 @@ export default function AffiliateHome() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+
+        {/* Quick Actions FAB */}
+        <QuickActionsFab 
+          onCopyBestLink={() => {
+            const bestLink = affiliateLinks?.find(link => link.houseName)?.generatedUrl;
+            if (bestLink) copyToClipboard(bestLink);
+          }}
+          onNewAffiliate={() => navigate('/betting-houses')}
+          onSupport={() => {}} 
+          onAnalytics={() => navigate('/analytics')}
+        />
       </div>
     </CenteredLayout>
   );
