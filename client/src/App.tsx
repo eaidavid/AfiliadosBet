@@ -37,7 +37,7 @@ import AppSettings from "@/pages/app-settings";
 import Statistics from "@/pages/statistics";
 import NotFound from "@/pages/not-found";
 import AdminPanelToggle from "@/components/admin-panel-toggle";
-import { BottomNavigation } from "@/components/bottom-navigation";
+import { PremiumBottomNav2026 } from "@/components/premium-bottom-nav-2026";
 import { MenuToggleButton } from "@/components/menu-toggle-button";
 
 function AuthenticatedHome() {
@@ -60,7 +60,7 @@ function AuthenticatedHome() {
     <div className="mobile-safe no-bounce">
       <UserDashboardComplete />
       <AdminPanelToggle />
-      <BottomNavigation />
+      <PremiumBottomNav2026 />
       <MenuToggleButton />
     </div>
   );
@@ -92,7 +92,7 @@ function AuthenticatedUserReports() {
     <div className="mobile-safe no-bounce">
       <UserReports />
       <AdminPanelToggle />
-      <BottomNavigation />
+      <PremiumBottomNav2026 />
       <MenuToggleButton />
     </div>
   );
@@ -124,7 +124,7 @@ function AuthenticatedAppSettings() {
     <div className="mobile-safe no-bounce">
       <AppSettings />
       <AdminPanelToggle />
-      <BottomNavigation />
+      <PremiumBottomNav2026 />
       <MenuToggleButton />
     </div>
   );
@@ -156,7 +156,7 @@ function AuthenticatedStatistics() {
     <div className="mobile-safe no-bounce">
       <Statistics />
       <AdminPanelToggle />
-      <BottomNavigation />
+      <PremiumBottomNav2026 />
       <MenuToggleButton />
     </div>
   );
@@ -266,7 +266,7 @@ function AuthenticatedUserDashboard() {
     <div className="mobile-safe no-bounce">
       <UserDashboardComplete />
       <AdminPanelToggle />
-      <BottomNavigation />
+      <PremiumBottomNav2026 />
     </div>
   );
 }
@@ -297,7 +297,7 @@ function AuthenticatedAffiliateHome() {
     <div className="mobile-safe no-bounce">
       <AffiliateHome />
       <AdminPanelToggle />
-      <BottomNavigation />
+      <PremiumBottomNav2026 />
       <MenuToggleButton />
     </div>
   );
@@ -329,7 +329,7 @@ function AuthenticatedBettingHouses() {
     <div className="mobile-safe no-bounce">
       <BettingHouses />
       <AdminPanelToggle />
-      <BottomNavigation />
+      <PremiumBottomNav2026 />
       <MenuToggleButton />
     </div>
   );
@@ -361,7 +361,7 @@ function AuthenticatedMyLinks() {
     <div className="mobile-safe no-bounce">
       <MyLinks />
       <AdminPanelToggle />
-      <BottomNavigation />
+      <PremiumBottomNav2026 />
       <MenuToggleButton />
     </div>
   );
@@ -393,7 +393,7 @@ function AuthenticatedClickAnalytics() {
     <div className="mobile-safe no-bounce">
       <ClickAnalytics />
       <AdminPanelToggle />
-      <BottomNavigation />
+      <PremiumBottomNav2026 />
     </div>
   );
 }
@@ -424,7 +424,7 @@ function AuthenticatedReports() {
     <div className="mobile-safe no-bounce">
       <AffiliateReports />
       <AdminPanelToggle />
-      <BottomNavigation />
+      <PremiumBottomNav2026 />
     </div>
   );
 }
@@ -455,7 +455,7 @@ function AuthenticatedProfile() {
     <div className="mobile-safe no-bounce">
       <UserProfile />
       <AdminPanelToggle />
-      <BottomNavigation />
+      <PremiumBottomNav2026 />
       <MenuToggleButton />
     </div>
   );
@@ -487,7 +487,7 @@ function AuthenticatedPayments() {
     <div className="mobile-safe no-bounce">
       <AffiliatePayments />
       <AdminPanelToggle />
-      <BottomNavigation />
+      <PremiumBottomNav2026 />
     </div>
   );
 }
@@ -522,7 +522,7 @@ function AuthenticatedAdminDashboard() {
     <div className="mobile-safe no-bounce">
       <AdminDashboardFixed />
       <AdminPanelToggle />
-      <BottomNavigation />
+      <PremiumBottomNav2026 />
     </div>
   );
 }
@@ -553,7 +553,7 @@ function AuthenticatedAdminCasas() {
     <div className="mobile-safe no-bounce">
       <AdminCasas />
       <AdminPanelToggle />
-      <BottomNavigation />
+      <PremiumBottomNav2026 />
     </div>
   );
 }
@@ -586,7 +586,7 @@ function AuthenticatedAdminHouses() {
     <div className="mobile-safe no-bounce">
       <AdminHouses />
       <AdminPanelToggle />
-      <BottomNavigation />
+      <PremiumBottomNav2026 />
     </div>
   );
 }
@@ -619,7 +619,7 @@ function AuthenticatedAdminPayments() {
     <div className="mobile-safe no-bounce">
       <AdminPayments />
       <AdminPanelToggle />
-      <BottomNavigation />
+      <PremiumBottomNav2026 />
     </div>
   );
 }
@@ -650,7 +650,7 @@ function AuthenticatedAdminManage() {
     <div className="mobile-safe no-bounce">
       <AdminManageFixed />
       <AdminPanelToggle />
-      <BottomNavigation />
+      <PremiumBottomNav2026 />
     </div>
   );
 }
@@ -681,7 +681,7 @@ function AuthenticatedAdminEditAffiliate() {
     <div className="mobile-safe no-bounce">
       <AdminEditAffiliate />
       <AdminPanelToggle />
-      <BottomNavigation />
+      <PremiumBottomNav2026 />
     </div>
   );
 }
@@ -712,7 +712,7 @@ function AuthenticatedPostbackGenerator() {
     <div className="mobile-safe no-bounce">
       <PostbackGeneratorProfessional />
       <AdminPanelToggle />
-      <BottomNavigation />
+      <PremiumBottomNav2026 />
     </div>
   );
 }
@@ -743,7 +743,7 @@ function AuthenticatedPostbackLogs() {
     <div className="mobile-safe no-bounce">
       <PostbackLogs />
       <AdminPanelToggle />
-      <BottomNavigation />
+      <PremiumBottomNav2026 />
     </div>
   );
 }
@@ -776,7 +776,7 @@ function AuthenticatedAdminSettings() {
     <div className="mobile-safe no-bounce">
       <AdminSettingsEnhanced />
       <AdminPanelToggle />
-      <BottomNavigation />
+      <PremiumBottomNav2026 />
     </div>
   );
 }
@@ -807,7 +807,7 @@ function AuthenticatedAdminApiManagement() {
     <div className="mobile-safe no-bounce">
       <AdminApiManagement />
       <AdminPanelToggle />
-      <BottomNavigation />
+      <PremiumBottomNav2026 />
     </div>
   );
 }

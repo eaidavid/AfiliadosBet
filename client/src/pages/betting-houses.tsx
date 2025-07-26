@@ -7,11 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import SidebarLayout from '@/components/sidebar-layout';
-import { BottomNavigation } from '@/components/bottom-navigation';
+
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { apiRequest } from '@/lib/queryClient';
-import { PremiumMenuBar } from '@/components/premium/premium-menu-bar';
+import { PremiumBottomNav2026 } from '@/components/premium-bottom-nav-2026';
 import { PremiumHouseCard } from '@/components/premium/premium-house-card';
 import {
   Search,
@@ -63,9 +63,14 @@ export default function BettingHousesPremium() {
     queryKey: ['/api/betting-houses'],
   });
 
-  // Fetch affiliate stats
+  // Fetch affiliate stats with error handling
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['/api/affiliate/stats'],
+    initialData: {
+      totalClicks: 0,
+      totalCommission: '0',
+      totalRegistrations: 0
+    }
   });
 
   // Affiliate mutation
@@ -177,15 +182,7 @@ export default function BettingHousesPremium() {
   return (
     <SidebarLayout>
       <div className="space-y-8">
-        {/* Premium Menu Bar */}
-        <PremiumMenuBar 
-          userStats={{
-            totalClicks: stats?.totalClicks,
-            totalCommission: stats?.totalCommission?.toString(),
-            totalRegistrations: stats?.totalRegistrations
-          }}
-          activeRoute="/betting-houses"
-        />
+
 
         {/* Premium Hero Section */}
         <div className="relative overflow-hidden">
@@ -374,7 +371,7 @@ export default function BettingHousesPremium() {
           </DialogContent>
         </Dialog>
       </div>
-      <BottomNavigation />
+      <PremiumBottomNav2026 />
     </SidebarLayout>
   );
 }

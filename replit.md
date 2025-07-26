@@ -123,6 +123,16 @@ AfiliadosBet é uma plataforma completa de marketing de afiliados para casas de 
 
 ## Recent Changes
 
+### July 26, 2025 - Database Connection Fix and Premium UI Upgrade
+- **Fixed Critical Database Connection Issue**: Switched from Neon serverless WebSocket driver to standard PostgreSQL driver (pg) to resolve connection failures
+- **Database Configuration Fix**: Updated database connection to use proper SSL configuration and connection pooling
+- **Betting Houses Crash Fix**: Fixed orderSelectedFields error by adding proper data initialization and error handling
+- **Premium Bottom Navigation 2026**: Implemented ultra-premium bottom navigation with glassmorphism effects, premium gradients, and advanced animations
+- **Removed Top Menu from Betting Houses**: Eliminated PremiumMenuBar from betting houses page as requested
+- **Universal Premium Navigation**: Applied new premium navigation system to both admin and user routes
+- **Enhanced Error Handling**: Added proper initial data handling to prevent crashes when stats are undefined
+- **Port Configuration Update**: Changed development port from 5000 to 5001 to resolve port conflicts
+
 ### July 10, 2025 - Production Login System and Deployment Fixes
 - **Fixed PostgreSQL Session Configuration**: Resolved SASL authentication errors in production with proper Pool configuration
 - **Enhanced Login Flow**: Improved frontend login with direct fetch calls and credentials handling
