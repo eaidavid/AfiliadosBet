@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PremiumHousesSection } from '@/components/premium-houses-section';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   Gift,
@@ -190,16 +191,68 @@ export default function AffiliateHome() {
   };
 
   const getHouseBadge = (house: BettingHouse) => {
-    switch (house.commissionType) {
-      case 'Hybrid':
-        return { text: '💎 Híbrido', color: 'bg-purple-500' };
-      case 'RevShare':
-        return { text: '📊 RevShare', color: 'bg-blue-500' };
-      case 'CPA':
-        return { text: '💰 CPA', color: 'bg-emerald-500' };
-      default:
-        return { text: '📈 Popular', color: 'bg-gray-500' };
+    const isHybrid = house.commissionType === 'hybrid';
+    
+    if (isHybrid) {
+      return { 
+        text: '💎 DUPLA COMISSÃO', 
+        color: 'bg-gradient-to-r from-yellow-500 to-orange-500 animate-pulse shadow-lg',
+        textColor: 'text-white font-black'
+      };
     }
+    
+    switch (house.commissionType) {
+      case 'RevShare':
+        return { text: '📊 RevShare', color: 'bg-blue-500', textColor: 'text-white' };
+      case 'CPA':
+        return { text: '💰 CPA', color: 'bg-emerald-500', textColor: 'text-white' };
+      default:
+        return { text: '📈 Popular', color: 'bg-gray-500', textColor: 'text-white' };
+    }
+  };
+
+  // Helper to get commission display for homepage cards
+  const getHomeCommissionDisplay = (house: BettingHouse) => {
+    const isHybrid = house.commissionType === 'hybrid';
+    
+    if (isHybrid) {
+      return (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between p-2 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded border border-emerald-400/50">
+            <span className="text-xs font-bold text-green-400">CPA</span>
+            <span className="text-lg font-black text-green-400">R$ {parseFloat(house.cpaValue || '0').toFixed(0)}</span>
+          </div>
+          <div className="flex items-center justify-between p-2 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded border border-blue-400/50">
+            <span className="text-xs font-bold text-blue-400">RevShare</span>
+            <span className="text-lg font-black text-blue-400">{parseFloat(house.revshareValue || '0').toFixed(1)}%</span>
+          </div>
+        </div>
+      );
+    }
+    
+    const value = house.commissionType === 'CPA' 
+      ? `R$ ${parseFloat(house.cpaValue || house.commissionValue || '0').toFixed(0)}`
+      : `${parseFloat(house.revshareValue || house.commissionValue || '0').toFixed(1)}%`;
+    
+    return (
+      <div className="p-3 bg-slate-700/50 rounded-lg border border-slate-600">
+        <div className="text-center">
+          <div className="text-2xl font-black text-emerald-400">{value}</div>
+          <div className="text-xs text-slate-400">{house.commissionType}</div>
+        </div>
+      </div>
+    );
+  };
+
+  // Categorize houses for strategic display
+  const categorizeHouses = (houses: BettingHouse[]) => {
+    if (!houses || houses.length === 0) return { premium: [], popular: [], recent: [] };
+    
+    const premium = houses.filter(h => h.commissionType === 'hybrid').slice(0, 3);
+    const popular = houses.filter(h => h.commissionType !== 'hybrid' && h.isActive).slice(0, 4);
+    const recent = houses.slice(-3);
+    
+    return { premium, popular, recent };
   };
 
   const getPaymentMethods = (paymentMethods: any) => {
@@ -300,6 +353,8 @@ export default function AffiliateHome() {
   const filteredHouses = bettingHouses?.filter(house =>
     house.name.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
+
+  const { premium, popular, recent } = categorizeHouses(bettingHouses || []);
 
   return (
     <CenteredLayout>
@@ -409,11 +464,20 @@ export default function AffiliateHome() {
 
           {/* Betting Houses */}
           <TabsContent value="houses" className="space-y-4 sm:space-y-6">
+            {/* Premium Houses Section - Strategic Focus */}
+            <PremiumHousesSection 
+              premium={premium}
+              affiliateLinks={affiliateLinks}
+              onJoinAffiliate={handleJoinAffiliate}
+              onCopyLink={copyToClipboard}
+              isJoining={joinAffiliateMutation.isPending}
+            />
+            
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                 <h2 className="text-xl sm:text-2xl font-bold text-emerald-400 flex items-center gap-2">
                   <Award className="h-5 w-5 sm:h-6 sm:w-6" />
-                  Casas de Apostas Disponíveis
+                  Todas as Casas Disponíveis
                 </h2>
                 <div className="relative w-full sm:w-80">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />

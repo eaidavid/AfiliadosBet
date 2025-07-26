@@ -98,8 +98,67 @@ export default function BettingHouses() {
   const [showStatsDialog, setShowStatsDialog] = useState(false);
   const [selectedStatsHouse, setSelectedStatsHouse] = useState<BettingHouse | null>(null);
 
+  // Enhanced commission display with strategic visual impact for hybrid houses
   const getCommissionDisplay = (house: BettingHouse) => {
     const commissionType = house.commissionType?.toLowerCase();
+    
+    if (commissionType === 'hybrid') {
+      return (
+        <div className="space-y-3">
+          {/* CPA Section with enhanced visual impact */}
+          <div className="relative overflow-hidden p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-lg border border-emerald-400/50 shadow-lg">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-green-400/10 rounded-full -mr-8 -mt-8"></div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></div>
+                <div>
+                  <span className="text-sm font-bold text-green-400">CPA</span>
+                  <p className="text-xs text-green-300/80">Por cada cadastro</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="text-2xl font-black text-green-400 drop-shadow-lg">
+                  R$ {parseFloat(house.cpaValue || '0').toFixed(0)}
+                </span>
+                <p className="text-xs text-green-300/70">imediato</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* RevShare Section with enhanced visual impact */}
+          <div className="relative overflow-hidden p-4 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-lg border border-blue-400/50 shadow-lg">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-blue-400/10 rounded-full -mr-8 -mt-8"></div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 bg-blue-400 rounded-full animate-pulse shadow-lg shadow-blue-400/50"></div>
+                <div>
+                  <span className="text-sm font-bold text-blue-400">RevShare</span>
+                  <p className="text-xs text-blue-300/80">Mensal recorrente</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="text-2xl font-black text-blue-400 drop-shadow-lg">
+                  {parseFloat(house.revshareValue || '0').toFixed(1)}%
+                </span>
+                <p className="text-xs text-blue-300/70">para sempre</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Combined earning potential with glow effect */}
+          <div className="relative text-center p-3 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-lg border border-yellow-400/50 shadow-lg">
+            <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/5 to-orange-400/5 rounded-lg animate-pulse"></div>
+            <div className="relative">
+              <p className="text-sm font-bold text-yellow-400 mb-1">💎 DUPLA COMISSÃO</p>
+              <p className="text-xs text-yellow-300/90">
+                Ganhe <span className="font-bold">R$ {parseFloat(house.cpaValue || '0').toFixed(0)}</span> + 
+                <span className="font-bold"> {parseFloat(house.revshareValue || '0').toFixed(1)}%</span> mensalmente
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
     
     if (commissionType === 'cpa') {
       const affiliatePercent = Number(house.cpaAffiliatePercent) || 0;
@@ -115,9 +174,11 @@ export default function BettingHouses() {
       
       const grossCPA = parseFloat(house.cpaValue || house.commissionValue || '0');
       return (
-        <div className="text-sm">
-          <span className="font-medium text-emerald-400">CPA:</span>
-          <span className="text-slate-300 ml-1">R$ {grossCPA.toFixed(0)}</span>
+        <div className="p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-lg border border-emerald-400/30 shadow-lg">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-bold text-emerald-400">CPA</span>
+            <span className="text-2xl font-black text-emerald-400 drop-shadow-lg">R$ {grossCPA.toFixed(0)}</span>
+          </div>
         </div>
       );
     }
@@ -136,31 +197,11 @@ export default function BettingHouses() {
       
       const grossRevShare = parseFloat(house.revshareValue || house.commissionValue || '0');
       return (
-        <div className="text-sm">
-          <span className="font-medium text-blue-400">RevShare:</span>
-          <span className="text-slate-300 ml-1">{grossRevShare}%</span>
-        </div>
-      );
-    }
-    
-    if (commissionType === 'hybrid') {
-      const cpaAffiliatePercent = Number(house.cpaAffiliatePercent) || 0;
-      const revshareAffiliatePercent = Number(house.revshareAffiliatePercent) || 0;
-      
-      return (
-        <div className="text-sm space-y-1">
-          {cpaAffiliatePercent > 0 && (
-            <div>
-              <span className="font-medium text-emerald-400">CPA:</span>
-              <span className="text-slate-300 ml-1">{cpaAffiliatePercent.toFixed(1)}%</span>
-            </div>
-          )}
-          {revshareAffiliatePercent > 0 && (
-            <div>
-              <span className="font-medium text-blue-400">RevShare:</span>
-              <span className="text-slate-300 ml-1">{revshareAffiliatePercent.toFixed(1)}%</span>
-            </div>
-          )}
+        <div className="p-4 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-lg border border-blue-400/30 shadow-lg">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-bold text-blue-400">RevShare</span>
+            <span className="text-2xl font-black text-blue-400 drop-shadow-lg">{grossRevShare}%</span>
+          </div>
         </div>
       );
     }
@@ -170,6 +211,19 @@ export default function BettingHouses() {
         {house.commissionValue || 'Não especificado'}
       </div>
     );
+  };
+
+  // Categorize houses for strategic display
+  const categorizeHouses = (houses: BettingHouse[]) => {
+    if (!houses || houses.length === 0) return { premium: [], highPaying: [], popular: [], recent: [] };
+    
+    const premium = houses.filter(h => h.commissionType === 'hybrid').slice(0, 3);
+    const highPaying = houses.filter(h => h.commissionType !== 'hybrid' && 
+      (parseFloat(h.cpaValue || '0') > 100 || parseFloat(h.revshareValue || '0') > 25)).slice(0, 4);
+    const popular = houses.filter(h => h.isActive && h.commissionType !== 'hybrid').slice(0, 6);
+    const recent = houses.slice(-4);
+    
+    return { premium, highPaying, popular, recent };
   };
 
   const getCommissionBadge = (house: BettingHouse) => {
@@ -200,6 +254,9 @@ export default function BettingHouses() {
   const { data: affiliateLinks = [] } = useQuery({
     queryKey: ['/api/affiliate/links'],
   });
+
+  // Categorize houses for strategic display
+  const { premium, highPaying, popular, recent } = categorizeHouses(bettingHouses || []);
 
   // Affiliate mutation
   const affiliateMutation = useMutation({
