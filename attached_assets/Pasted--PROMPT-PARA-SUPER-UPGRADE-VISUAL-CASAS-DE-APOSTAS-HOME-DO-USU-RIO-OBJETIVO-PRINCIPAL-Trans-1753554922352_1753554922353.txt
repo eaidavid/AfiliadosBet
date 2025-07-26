@@ -1,0 +1,128 @@
+🚀 PROMPT PARA SUPER UPGRADE VISUAL - CASAS DE APOSTAS & HOME DO USUÁRIO
+🎯 OBJETIVO PRINCIPAL
+Transformar completamente a experiência visual e funcional das páginas de casas de apostas e home do usuário, criando uma interface premium, moderna e altamente convertedora que maximize o engajamento e as afiliações.
+
+📋 ESCOPO DO UPGRADE
+1. PÁGINA HOME DO USUÁRIO (/affiliate-home)
+Transformações principais:
+
+Hero Section Impactante: Banner principal com animações, estatísticas em tempo real e call-to-actions dinâmicos
+Dashboard Analytics Premium: Cards de estatísticas com gráficos interativos, tendências e insights
+Seção "Oportunidades em Destaque": Casas com melhores comissões em cards premium com badges animados
+Feed de Atividades: Timeline com conversões recentes, novos links gerados e milestones alcançados
+Gamificação: Sistema de níveis, badges de conquista e progresso visual
+Quick Actions: Botões flutuantes para ações rápidas (copiar link, nova afiliação, suporte)
+2. PÁGINA CASAS DE APOSTAS (/betting-houses)
+Transformações principais:
+
+Categorização Estratégica: Divisão em abas (Premium, Alto Retorno, Populares, Novas)
+Cards Premium: Design luxuoso com gradientes, glassmorphism e micro-animações
+Sistema de Filtros Avançado: Busca inteligente, filtros por comissão, método de pagamento, etc.
+Comparador de Casas: Ferramenta para comparar até 3 casas lado a lado
+Badges Dinâmicos: "🔥 HOT", "💎 PREMIUM", "⚡ ALTA CONVERSÃO", "🆕 NOVA"
+Simulador de Ganhos: Calculadora interativa de potencial de lucro
+Reviews e Ratings: Sistema de avaliação e comentários de outros afiliados
+🎨 DIRETRIZES DE DESIGN
+Paleta de Cores Premium
+Elementos Visuais
+Glassmorphism: Cards com backdrop-blur e transparência
+Neumorphism: Botões com sombras suaves e elevação
+Micro-animações: Hover effects, loading states, transitions fluidas
+Iconografia Premium: Ícones customizados e ilustrações SVG
+Typography: Fonte moderna (Inter ou Geist) com hierarchy clara
+
+🚀 FUNCIONALIDADES INOVADORAS
+1. Sistema de Recomendações Inteligentes
+2. Alertas e Notificações Push
+Novas casas disponíveis
+Mudanças nas comissões
+Metas de conversão atingidas
+Pagamentos processados
+3. Analytics Avançado
+Heatmap de performance por casa
+Previsão de ganhos baseada no histórico
+Comparação com outros afiliados (anonimizada)
+ROI por casa de apostas
+4. Gamificação Completa
+📱 RESPONSIVIDADE E PERFORMANCE
+Mobile-First Design
+Cards otimizados para touch
+Bottom sheets para ações secundárias
+Swipe gestures para navegação
+PWA capabilities
+Performance Otimizada
+Lazy loading de imagens e componentes
+Virtual scrolling para listas longas
+Skeleton loading states
+Image optimization automática
+🎯 ELEMENTOS DE CONVERSÃO
+1. Urgência e Escassez
+Badges "Últimas 24h para se afiliar"
+Contadores de afiliados ativos
+Alertas de comissões limitadas
+2. Social Proof
+"X afiliados já se afiliaram hoje"
+Testimonials de top performers
+Ranking de casas mais populares
+3. FOMO (Fear of Missing Out)
+Notificações de oportunidades perdidas
+Histórico de comissões que poderiam ter sido ganhas
+Comparação com potencial máximo
+🏆 COMPONENTES PREMIUM ESPECÍFICOS
+HeroSection Component
+OpportunityCard Component
+RevenueSimulator Component
+🔥 CALL-TO-ACTIONS IRRESISTÍVEIS
+Textos de Conversão
+"🚀 Começar a Lucrar Agora"
+"💰 Garantir Minha Comissão"
+"⚡ Ativar Link Premium"
+"🎯 Maximizar Meus Ganhos"
+"💎 Unlock Oportunidade VIP"
+Micro-copy Persuasivo
+"Média de ganho: R$ 2.847/mês"
+"Próximo pagamento em 3 dias"
+"Você está a 2 afiliações do próximo nível"
+📊 MÉTRICAS DE SUCESSO
+KPIs a Monitorar
+Taxa de conversão (visitante → afiliado)
+Tempo médio na página
+Engajamento com features premium
+Retention rate
+Revenue per user (RPU)
+A/B Tests Sugeridos
+Posicionamento dos CTAs
+Cores dos badges de destaque
+Ordem das casas na listagem
+Textos dos botões de ação
+🎨 MOCKUPS E INSPIRAÇÕES
+Referências de Design
+Stripe Dashboard (clean e profissional)
+Binance Interface (dados densos mas organizados)
+Apple.com (minimalismo premium)
+Linear.app (animações fluidas)
+Elementos Únicos do AfiliadosBet
+Tema brasileiro (cores, linguagem, contexto)
+Foco em comissões e ganhos financeiros
+Elementos de gaming e apostas
+Trust indicators específicos do mercado
+🚀 IMPLEMENTAÇÃO SUGERIDA
+Fase 1: Fundação Visual
+Novo sistema de design tokens
+Componentes base premium
+Animações e transições
+Fase 2: Funcionalidades Core
+Sistema de recomendações
+Analytics avançado
+Gamificação básica
+Fase 3: Features Avançadas
+Comparador de casas
+Simulador de receita
+Notificações push
+Fase 4: Otimização
+Performance tuning
+A/B tests
+Feedback implementation
+
+🎯 RESULTADO ESPERADO: Uma plataforma que não apenas informa, mas INSPIRA e CONVERTE, transformando visitantes em afiliados ativos e afiliados em top performers através de uma experiência visual premium e funcionalidades inovadoras.
+
