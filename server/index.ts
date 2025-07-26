@@ -56,6 +56,23 @@ app.use((err: any, req: any, res: any, next: any) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
+// Global error handlers to prevent crashes
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  // Don't exit the process in development
+  if (process.env.NODE_ENV === 'production') {
+    process.exit(1);
+  }
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Don't exit the process in development
+  if (process.env.NODE_ENV === 'production') {
+    process.exit(1);
+  }
+});
+
 // Configurar Passport
 app.use(passport.initialize());
 app.use(passport.session());
@@ -97,9 +114,24 @@ app.use(passport.session());
       console.log("📋 API scheduler disabled in development mode");
     });
     
-    // Setup Vite after server is listening
-    await setupVite(app, server);
-    console.log("✅ Vite dev server configured");
+    // Add error handling for server
+    server.on('error', (error: any) => {
+      if (error.code === 'EADDRINUSE') {
+        console.error(`Port ${PORT} is already in use`);
+        process.exit(1);
+      } else {
+        console.error('Server error:', error);
+      }
+    });
+    
+    // Setup Vite after server is listening with error handling
+    try {
+      await setupVite(app, server);
+      console.log("✅ Vite dev server configured");
+    } catch (error) {
+      console.error('Vite setup error:', error);
+      console.log("⚠️ Continuing without Vite hot reload");
+    }
     
   } else {
     // Production setup
