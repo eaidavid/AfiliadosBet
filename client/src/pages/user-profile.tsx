@@ -20,7 +20,8 @@ import {
   Monitor,
   LogOut,
   Camera,
-  AlertTriangle
+  AlertTriangle,
+  Settings
 } from 'lucide-react';
 import SidebarLayout from '@/components/sidebar-layout';
 import { BottomNavigation } from '@/components/bottom-navigation';

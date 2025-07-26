@@ -37,6 +37,7 @@ import AppSettings from "@/pages/app-settings";
 import NotFound from "@/pages/not-found";
 import AdminPanelToggle from "@/components/admin-panel-toggle";
 import { BottomNavigation } from "@/components/bottom-navigation";
+import { MenuToggleButton } from "@/components/menu-toggle-button";
 
 function AuthenticatedHome() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -59,7 +60,7 @@ function AuthenticatedHome() {
       <UserDashboardComplete />
       <AdminPanelToggle />
       <BottomNavigation />
-      <BottomNavigation />
+      <MenuToggleButton />
     </div>
   );
 }
@@ -91,7 +92,7 @@ function AuthenticatedUserReports() {
       <UserReports />
       <AdminPanelToggle />
       <BottomNavigation />
-      <BottomNavigation />
+      <MenuToggleButton />
     </div>
   );
 }
@@ -262,6 +263,7 @@ function AuthenticatedAffiliateHome() {
       <AffiliateHome />
       <AdminPanelToggle />
       <BottomNavigation />
+      <MenuToggleButton />
     </div>
   );
 }
@@ -293,6 +295,7 @@ function AuthenticatedBettingHouses() {
       <BettingHouses />
       <AdminPanelToggle />
       <BottomNavigation />
+      <MenuToggleButton />
     </div>
   );
 }
@@ -324,6 +327,7 @@ function AuthenticatedMyLinks() {
       <MyLinks />
       <AdminPanelToggle />
       <BottomNavigation />
+      <MenuToggleButton />
     </div>
   );
 }
@@ -417,6 +421,7 @@ function AuthenticatedProfile() {
       <UserProfile />
       <AdminPanelToggle />
       <BottomNavigation />
+      <MenuToggleButton />
     </div>
   );
 }

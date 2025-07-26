@@ -45,7 +45,8 @@ export default function AppSettings() {
         title: "Logout realizado",
         description: "Você foi desconectado com sucesso.",
       });
-      window.location.href = "/";
+      // Força o recarregamento completo da página
+      window.location.reload();
     },
     onError: () => {
       toast({
