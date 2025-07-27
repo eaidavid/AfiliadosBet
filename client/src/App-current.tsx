@@ -7,7 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
 import { AppSettingsProvider } from "@/contexts/app-settings-context";
 import { ProtectedRoute } from "@/components/auth/protected-route";
-import { ROUTES } from "@/components/navigation/route-registry";
+import { RouteGuard } from "@/components/auth/route-guard";
 
 // Page Imports
 import SimpleLanding from "@/pages/simple-landing";
@@ -86,25 +86,31 @@ function Router() {
   return (
     <Switch>
       {/* Public Routes */}
-      <Route path={ROUTES.home.path} component={SimpleLanding} />
-      <Route path={ROUTES.register.path} component={Register} />
-      <Route path={ROUTES.auth.path} component={AuthPage} />
+      <Route path="/" component={SimpleLanding} />
+      <Route path="/register" component={Register} />
+      <Route path="/auth" component={AuthPage} />
       <Route path="/login" component={LoginRedirect} />
 
       {/* Protected User Routes */}
-      <Route path={ROUTES.userHome.path}>
+      <Route path="/home">
         <ProtectedRoute>
           <AffiliateHome />
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.dashboard.path}>
+      <Route path="/dashboard">
         <ProtectedRoute>
           <UserDashboardComplete />
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.bettingHouses.path}>
+      <Route path="/affiliate-home">
+        <ProtectedRoute>
+          <AffiliateHome />
+        </ProtectedRoute>
+      </Route>
+
+      <Route path="/betting-houses">
         <ProtectedRoute>
           <BettingHouses />
         </ProtectedRoute>
@@ -116,104 +122,104 @@ function Router() {
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.myLinks.path}>
+      <Route path="/my-links">
         <ProtectedRoute>
           <MyLinks />
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.analytics.path}>
+      <Route path="/analytics">
         <ProtectedRoute>
           <ClickAnalytics />
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.statistics.path}>
+      <Route path="/stats">
         <ProtectedRoute>
           <Statistics />
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.reports.path}>
+      <Route path="/reports">
         <ProtectedRoute>
           <AffiliateReports />
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.profile.path}>
+      <Route path="/profile">
         <ProtectedRoute>
           <UserProfile />
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.payments.path}>
+      <Route path="/payments">
         <ProtectedRoute>
           <AffiliatePayments />
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.settings.path}>
+      <Route path="/settings">
         <ProtectedRoute>
           <AppSettings />
         </ProtectedRoute>
       </Route>
 
       {/* Protected Admin Routes */}
-      <Route path={ROUTES.admin.path}>
+      <Route path="/admin">
         <ProtectedRoute requireAdmin={true}>
           <AdminDashboard />
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.adminCasas.path}>
+      <Route path="/admin/casas">
         <ProtectedRoute requireAdmin={true}>
           <AdminCasas />
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.adminHouses.path}>
+      <Route path="/admin/houses">
         <ProtectedRoute requireAdmin={true}>
           <AdminHouses />
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.adminManage.path}>
+      <Route path="/admin/manage">
         <ProtectedRoute requireAdmin={true}>
           <AdminManage />
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.adminEditAffiliate.path}>
+      <Route path="/admin/manage/:id/edit">
         <ProtectedRoute requireAdmin={true}>
           <AdminEditAffiliate />
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.adminPostbackGenerator.path}>
+      <Route path="/admin/postback-generator">
         <ProtectedRoute requireAdmin={true}>
           <PostbackGeneratorProfessional />
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.adminPostbackLogs.path}>
+      <Route path="/admin/postback-logs">
         <ProtectedRoute requireAdmin={true}>
           <PostbackLogs />
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.adminApiManagement.path}>
+      <Route path="/admin/api-management">
         <ProtectedRoute requireAdmin={true}>
           <AdminApiManagement />
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.adminPayments.path}>
+      <Route path="/admin/payments">
         <ProtectedRoute requireAdmin={true}>
           <AdminPayments />
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.adminSettings.path}>
+      <Route path="/admin/settings">
         <ProtectedRoute requireAdmin={true}>
           <AdminSettingsEnhanced />
         </ProtectedRoute>

@@ -1,0 +1,56 @@
+⚠️ LEMBRETE:  
+Antes de iniciar, **lembre-se do padrão global de refatoração que já foi fornecido anteriormente.**  
+**Cada linha de código, componente e decisão deve seguir rigorosamente os padrões de código, design, UX e performance.**
+
+---
+
+🔧 EXECUTE A FASE 2 – NAVEGAÇÃO E UX DO SISTEMA AFILIADOSBET
+
+📌 Tarefas detalhadas:
+
+### 🔹 2.1 Menu Inferior Inteligente
+- Crie uma **única navegação inferior** reutilizável e adaptável ao contexto atual (usuário ou admin).
+- A navegação deve:
+  - **Detectar dinamicamente** o tipo de usuário (admin ou comum).
+  - Exibir **apenas as rotas relevantes** para o tipo de usuário.
+  - **Incluir todas as rotas essenciais** com fallback para rotas ausentes.
+  - Ter **ícones e rótulos claros**, e **indicador visual da página ativa** (ex: highlight, underline, etc.).
+  - Ser **responsiva e fluida** tanto para mobile quanto para desktop (no mobile, ocupar posição fixa; no desktop, opcional ou ausente).
+
+### 🔹 2.2 Sistema de Navegação Unificado
+- **Padronize toda a navegação** entre desktop e mobile, removendo qualquer lógica duplicada.
+- Implemente:
+  - **Transições suaves** entre páginas (ex: com Framer Motion, se compatível com a stack).
+  - Um sistema de **breadcrumbs reutilizável e claro** (ex: Home > Relatórios > Comissão).
+  - Lógica inteligente para breadcrumbs detectar dinamicamente o caminho, com fallback legível.
+  - **Melhorias de UX**, como foco automático em páginas, rolagem suave, retenção de scroll, e resposta rápida nos cliques.
+
+### 🧠 MELHORIAS RECOMENDADAS (opcional mas fortemente indicadas)
+- Centralize a configuração de rotas em um `routes.config.ts` reutilizável para o menu inferior e breadcrumbs.
+- Crie hook `useNavigationContext()` para detectar rota atual e tipo de usuário.
+- Adicione animações de entrada e saída nas páginas com context-aware transition.
+- Garanta **acessibilidade básica** nos elementos de navegação (roles, aria-labels).
+
+---
+
+⚠️ IMPORTANTE:
+Siga todos os padrões já definidos de:
+- Código limpo (TypeScript strict, hooks, nomenclatura consistente)
+- Design moderno (Tailwind + shadcn/ui, tema escuro, glassmorphism)
+- UX premium (transições suaves, feedback visual, carregamentos elegantes)
+- Performance (lazy loading, bundle leve, otimização de re-renders)
+
+---
+
+✅ **NO FINAL DA EXECUÇÃO**, FAÇA UM RESUMO COM:
+
+1. Componentes criados
+2. Lógicas implementadas
+3. Arquivos removidos/unificados
+4. Melhorias visuais aplicadas
+5. Sugestões de próxima etapa (se aplicável)
+6. Eventuais limitações encontradas
+
+🛑 Se você esquecer algum padrão ou fizer algo fora do escopo, pare, revise e recomece seguindo o padrão.
+
+Agora, execute com excelência. 🚀
