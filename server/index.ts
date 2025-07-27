@@ -6,8 +6,18 @@ import { eq, sql, desc } from "drizzle-orm";
 import * as schema from "../shared/schema";
 import session from "express-session";
 import passport from "passport";
+import { setupGracefulShutdown } from "./startup-optimizer";
+import { compressionMiddleware, securityHeaders, performanceMonitoring, realtimeHealthMonitor } from "./middleware/premium-middleware";
+import { setupHealthEndpoints } from "./health-monitor";
+import { setupKeepAlive } from "./replit-optimizer";
 
 const app = express();
+
+// Premium middleware stack
+app.use(compressionMiddleware());
+app.use(securityHeaders());
+app.use(performanceMonitoring());
+app.use(realtimeHealthMonitor());
 
 // Session configuration with PostgreSQL store in production
 import connectPgSimple from 'connect-pg-simple';
@@ -90,44 +100,45 @@ app.use(passport.session());
     console.warn("Database initialization skipped:", error instanceof Error ? error.message : 'Unknown error');
   }
 
-  // Health check endpoint for monitoring
-  app.get('/api/health', (req, res) => {
-    res.status(200).json({ 
-      status: 'ok', 
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      env: process.env.NODE_ENV || 'development'
-    });
-  });
+  // Setup premium health monitoring
+  setupHealthEndpoints(app);
 
   // Registrar todas as rotas da API
   await registerRoutes(app);
 
-  // Setup Vite development environment BEFORE starting server
+  // Simplified and robust development setup
   if (process.env.NODE_ENV === "development") {
     const PORT = parseInt(process.env.PORT || "5001", 10);
     const HOST = process.env.HOST || "0.0.0.0";
     
     const server = app.listen(PORT, HOST, () => {
-      console.log(`Server listening on port ${PORT}`);
+      console.log(`🚀 Premium server listening on port ${PORT}`);
       console.log("Application ready to receive requests");
       console.log("📋 API scheduler disabled in development mode");
+      
+      // Setup keep-alive for Replit
+      setupKeepAlive(PORT);
+      console.log("✅ Replit keep-alive system activated");
     });
     
-    // Add error handling for server
+    // Enhanced error handling
     server.on('error', (error: any) => {
       if (error.code === 'EADDRINUSE') {
-        console.error(`Port ${PORT} is already in use`);
+        console.error(`❌ Port ${PORT} is already in use`);
+        console.log("💡 Try: pkill -f tsx && npm run dev");
         process.exit(1);
       } else {
         console.error('Server error:', error);
       }
     });
     
-    // Setup Vite after server is listening with error handling
+    // Setup graceful shutdown
+    setupGracefulShutdown(server);
+    
+    // Vite setup with robust error handling
     try {
       await setupVite(app, server);
-      console.log("✅ Vite dev server configured");
+      console.log("✅ Vite dev server configured with premium optimizations");
     } catch (error) {
       console.error('Vite setup error:', error);
       console.log("⚠️ Continuing without Vite hot reload");
@@ -139,13 +150,17 @@ app.use(passport.session());
     const HOST = process.env.HOST || "0.0.0.0";
     
     serveStatic(app);
-    console.log("✅ Static files configured");
+    console.log("✅ Static files configured with premium caching");
     
     const server = app.listen(PORT, HOST, async () => {
-      console.log(`Server listening on port ${PORT}`);
+      console.log(`🚀 Production server listening on port ${PORT}`);
       console.log("Application ready to receive requests");
       
-      // Initialize API scheduler only in production
+      // Setup production enhancements
+      setupGracefulShutdown(server);
+      setupKeepAlive(PORT);
+      
+      // Initialize API scheduler
       setTimeout(async () => {
         try {
           const { ApiSyncScheduler } = await import('./cron/apiSyncScheduler');
@@ -157,6 +172,15 @@ app.use(passport.session());
           console.warn("⚠️ API scheduler initialization failed (non-critical):", errorMessage);
         }
       }, 10000);
+    });
+    
+    // Production error handling
+    server.on('error', (error: any) => {
+      console.error('💥 Production server error:', error);
+      if (error.code === 'EADDRINUSE') {
+        console.error(`❌ Port ${PORT} is already in use in production`);
+        process.exit(1);
+      }
     });
   }
 })();
