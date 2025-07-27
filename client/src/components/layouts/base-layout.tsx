@@ -1,26 +1,23 @@
+import { ReactNode } from "react";
 import AdminPanelToggle from "@/components/admin-panel-toggle";
-import { PremiumBottomNav2026 } from "@/components/premium-bottom-nav-2026";
-import { MenuToggleButton } from "@/components/menu-toggle-button";
+import { SmartBottomNav } from "@/components/navigation/smart-bottom-nav";
 
 interface BaseLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
   showAdminToggle?: boolean;
   showBottomNav?: boolean;
-  showMenuToggle?: boolean;
 }
 
 export function BaseLayout({ 
   children, 
   showAdminToggle = true, 
-  showBottomNav = true, 
-  showMenuToggle = true 
+  showBottomNav = true
 }: BaseLayoutProps) {
   return (
     <div className="mobile-safe no-bounce min-h-screen bg-slate-950">
       {children}
       {showAdminToggle && <AdminPanelToggle />}
-      {showBottomNav && <PremiumBottomNav2026 />}
-      {showMenuToggle && <MenuToggleButton />}
+      {showBottomNav && <SmartBottomNav />}
     </div>
   );
 }

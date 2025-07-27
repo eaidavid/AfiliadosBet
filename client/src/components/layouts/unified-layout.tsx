@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { PremiumBottomNav2026 } from "@/components/premium-bottom-nav-2026";
+import { SmartBottomNav } from "@/components/navigation/smart-bottom-nav";
 import AdminPanelToggle from "@/components/admin-panel-toggle";
 
 interface UnifiedLayoutProps {
@@ -52,7 +52,7 @@ export function UnifiedLayout({
 
       {/* Bottom Navigation - Only on mobile */}
       {showBottomNav && isMobile && (
-        <PremiumBottomNav2026 />
+        <SmartBottomNav />
       )}
 
       {/* Admin Panel Toggle - Only for admins */}

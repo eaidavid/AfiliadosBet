@@ -1,74 +1,31 @@
-import { useState } from "react";
-import { useLocation } from "wouter";
+import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
-import { Button } from "@/components/ui/button";
-import { Shield, User, ChevronUp, ChevronDown } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Shield, Settings } from "lucide-react";
+import { Link } from "wouter";
 
 export default function AdminPanelToggle() {
-  const { isAdmin, isLoading, user } = useAuth();
-  const [location, setLocation] = useLocation();
-  const [isExpanded, setIsExpanded] = useState(false);
+  const { isAdmin } = useAuth();
+  const isMobile = useIsMobile();
   
-  // Aguarda carregamento completo antes de renderizar
-  if (isLoading || !user) return null;
-  
-  // Só mostra o botão para administradores
   if (!isAdmin) return null;
-
-  const isOnAdminPanel = location.startsWith("/admin");
-
-  const handleToggle = () => {
-    if (isOnAdminPanel) {
-      setLocation("/home");
-    } else {
-      setLocation("/admin");
-    }
-    setIsExpanded(false);
-  };
-
+  
   return (
-    <div className="fixed bottom-24 right-6 z-[60]">
-      <div className="flex flex-col items-end space-y-2">
-        {isExpanded && (
-          <div className="bg-slate-800 border border-slate-700 rounded-lg p-2 shadow-lg">
-            <p className="text-slate-300 text-xs mb-2 whitespace-nowrap">
-              Painel atual: {isOnAdminPanel ? "Administrador" : "Usuário"}
-            </p>
-            <Button
-              onClick={handleToggle}
-              className="w-full bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700 text-white text-xs py-2 h-auto"
-            >
-              {isOnAdminPanel ? (
-                <>
-                  <User className="h-3 w-3 mr-1" />
-                  Ir para Painel Usuário
-                </>
-              ) : (
-                <>
-                  <Shield className="h-3 w-3 mr-1" />
-                  Ir para Painel Admin
-                </>
-              )}
-            </Button>
-          </div>
-        )}
-        
-        <Button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="w-12 h-12 rounded-full bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700 shadow-lg"
+    <motion.div
+      className="fixed top-4 right-4 z-50"
+      initial={{ opacity: 0, scale: 0 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: 0.5, type: "spring", stiffness: 400, damping: 20 }}
+    >
+      <Link href="/admin">
+        <motion.div
+          className="w-12 h-12 bg-gradient-to-r from-red-500/20 to-rose-600/20 backdrop-blur-sm border border-red-500/30 rounded-xl flex items-center justify-center"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
         >
-          {isOnAdminPanel ? (
-            <Shield className="h-5 w-5 text-white" />
-          ) : (
-            <User className="h-5 w-5 text-white" />
-          )}
-          {isExpanded ? (
-            <ChevronDown className="h-3 w-3 text-white ml-1" />
-          ) : (
-            <ChevronUp className="h-3 w-3 text-white ml-1" />
-          )}
-        </Button>
-      </div>
-    </div>
+          <Shield className="w-6 h-6 text-red-400" />
+        </motion.div>
+      </Link>
+    </motion.div>
   );
 }

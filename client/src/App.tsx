@@ -7,7 +7,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
 import { AppSettingsProvider } from "@/contexts/app-settings-context";
 import { ProtectedRoute } from "@/components/auth/protected-route";
-import { ROUTES } from "@/components/navigation/route-registry";
+import { PageLayout } from "@/components/layouts/page-layout";
+import { ROUTES_CONFIG } from "@/config/routes.config";
 
 // Page Imports
 import SimpleLanding from "@/pages/simple-landing";
@@ -42,34 +43,42 @@ function AuthPage() {
 
   if (isLoading) {
     return (
-      <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce min-h-screen">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-          <div className="text-emerald-500 text-xl font-medium">Carregando...</div>
+      <PageLayout showBreadcrumbs={false} showBottomNav={false}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="text-emerald-500 text-xl font-medium">Carregando...</div>
+          </div>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
   if (isAuthenticated) {
     return (
-      <div className="mobile-safe bg-slate-950 flex items-center justify-center no-bounce min-h-screen">
-        <div className="text-center">
-          <div className="text-emerald-500 text-xl mb-4">Você já está logado!</div>
-          <div className="text-slate-400 text-sm">
-            <a 
-              href={isAdmin ? "/admin" : "/home"} 
-              className="text-emerald-400 hover:underline"
-            >
-              Ir para {isAdmin ? "Admin" : "Dashboard"}
-            </a>
+      <PageLayout showBreadcrumbs={false} showBottomNav={false}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="text-emerald-500 text-xl mb-4">Você já está logado!</div>
+            <div className="text-slate-400 text-sm">
+              <a 
+                href={isAdmin ? "/admin" : "/home"} 
+                className="text-emerald-400 hover:underline"
+              >
+                Ir para {isAdmin ? "Admin" : "Dashboard"}
+              </a>
+            </div>
           </div>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
-  return <Auth />;
+  return (
+    <PageLayout showBreadcrumbs={false} showBottomNav={false}>
+      <Auth />
+    </PageLayout>
+  );
 }
 
 function LoginRedirect() {
@@ -86,141 +95,242 @@ function Router() {
   return (
     <Switch>
       {/* Public Routes */}
-      <Route path={ROUTES.home.path} component={SimpleLanding} />
-      <Route path={ROUTES.register.path} component={Register} />
-      <Route path={ROUTES.auth.path} component={AuthPage} />
+      <Route path={ROUTES_CONFIG.home.path}>
+        <PageLayout showBreadcrumbs={false} showBottomNav={false}>
+          <SimpleLanding />
+        </PageLayout>
+      </Route>
+      
+      <Route path={ROUTES_CONFIG.register.path}>
+        <PageLayout showBreadcrumbs={false} showBottomNav={false}>
+          <Register />
+        </PageLayout>
+      </Route>
+      
+      <Route path={ROUTES_CONFIG.auth.path} component={AuthPage} />
       <Route path="/login" component={LoginRedirect} />
 
       {/* Protected User Routes */}
-      <Route path={ROUTES.userHome.path}>
+      <Route path={ROUTES_CONFIG.userHome.path}>
         <ProtectedRoute>
-          <AffiliateHome />
+          <PageLayout 
+            title={ROUTES_CONFIG.userHome.title}
+            description={ROUTES_CONFIG.userHome.description}
+          >
+            <AffiliateHome />
+          </PageLayout>
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.dashboard.path}>
+      <Route path={ROUTES_CONFIG.dashboard.path}>
         <ProtectedRoute>
-          <UserDashboardComplete />
+          <PageLayout 
+            title={ROUTES_CONFIG.dashboard.title}
+            description={ROUTES_CONFIG.dashboard.description}
+          >
+            <UserDashboardComplete />
+          </PageLayout>
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.bettingHouses.path}>
+      <Route path={ROUTES_CONFIG.bettingHouses.path}>
         <ProtectedRoute>
-          <BettingHouses />
+          <PageLayout 
+            title={ROUTES_CONFIG.bettingHouses.title}
+            description={ROUTES_CONFIG.bettingHouses.description}
+          >
+            <BettingHouses />
+          </PageLayout>
         </ProtectedRoute>
       </Route>
 
       <Route path="/houses">
         <ProtectedRoute>
-          <BettingHouses />
+          <PageLayout title="Casas de Apostas" description="Explore casas disponíveis">
+            <BettingHouses />
+          </PageLayout>
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.myLinks.path}>
+      <Route path={ROUTES_CONFIG.myLinks.path}>
         <ProtectedRoute>
-          <MyLinks />
+          <PageLayout 
+            title={ROUTES_CONFIG.myLinks.title}
+            description={ROUTES_CONFIG.myLinks.description}
+          >
+            <MyLinks />
+          </PageLayout>
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.analytics.path}>
+      <Route path={ROUTES_CONFIG.analytics.path}>
         <ProtectedRoute>
-          <ClickAnalytics />
+          <PageLayout 
+            title={ROUTES_CONFIG.analytics.title}
+            description="Análise detalhada de cliques e conversões"
+          >
+            <ClickAnalytics />
+          </PageLayout>
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.statistics.path}>
+      <Route path={ROUTES_CONFIG.statistics.path}>
         <ProtectedRoute>
-          <Statistics />
+          <PageLayout 
+            title={ROUTES_CONFIG.statistics.title}
+            description="Estatísticas de performance"
+          >
+            <Statistics />
+          </PageLayout>
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.reports.path}>
+      <Route path={ROUTES_CONFIG.reports.path}>
         <ProtectedRoute>
-          <AffiliateReports />
+          <PageLayout 
+            title={ROUTES_CONFIG.reports.title}
+            description="Relatórios detalhados de comissões"
+          >
+            <AffiliateReports />
+          </PageLayout>
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.profile.path}>
+      <Route path={ROUTES_CONFIG.profile.path}>
         <ProtectedRoute>
-          <UserProfile />
+          <PageLayout 
+            title={ROUTES_CONFIG.profile.title}
+            description="Gerencie seu perfil e configurações"
+          >
+            <UserProfile />
+          </PageLayout>
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.payments.path}>
+      <Route path={ROUTES_CONFIG.payments.path}>
         <ProtectedRoute>
-          <AffiliatePayments />
+          <PageLayout 
+            title={ROUTES_CONFIG.payments.title}
+            description={ROUTES_CONFIG.payments.description}
+          >
+            <AffiliatePayments />
+          </PageLayout>
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.settings.path}>
+      <Route path={ROUTES_CONFIG.settings.path}>
         <ProtectedRoute>
-          <AppSettings />
+          <PageLayout 
+            title={ROUTES_CONFIG.settings.title}
+            description="Configurações da aplicação"
+          >
+            <AppSettings />
+          </PageLayout>
         </ProtectedRoute>
       </Route>
 
       {/* Protected Admin Routes */}
-      <Route path={ROUTES.admin.path}>
+      <Route path={ROUTES_CONFIG.admin.path}>
         <ProtectedRoute requireAdmin={true}>
-          <AdminDashboard />
+          <PageLayout 
+            title={ROUTES_CONFIG.admin.title}
+            description={ROUTES_CONFIG.admin.description}
+          >
+            <AdminDashboard />
+          </PageLayout>
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.adminCasas.path}>
+      <Route path="/admin/casas">
         <ProtectedRoute requireAdmin={true}>
-          <AdminCasas />
+          <PageLayout title="Admin - Casas" description="Gerenciar casas de apostas">
+            <AdminCasas />
+          </PageLayout>
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.adminHouses.path}>
+      <Route path={ROUTES_CONFIG.adminHouses.path}>
         <ProtectedRoute requireAdmin={true}>
-          <AdminHouses />
+          <PageLayout 
+            title={ROUTES_CONFIG.adminHouses.title}
+            description={ROUTES_CONFIG.adminHouses.description}
+          >
+            <AdminHouses />
+          </PageLayout>
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.adminManage.path}>
+      <Route path={ROUTES_CONFIG.adminManage.path}>
         <ProtectedRoute requireAdmin={true}>
-          <AdminManage />
+          <PageLayout 
+            title={ROUTES_CONFIG.adminManage.title}
+            description={ROUTES_CONFIG.adminManage.description}
+          >
+            <AdminManage />
+          </PageLayout>
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.adminEditAffiliate.path}>
+      <Route path="/admin/manage/:id/edit">
         <ProtectedRoute requireAdmin={true}>
-          <AdminEditAffiliate />
+          <PageLayout title="Editar Afiliado" description="Gerenciar dados do afiliado">
+            <AdminEditAffiliate />
+          </PageLayout>
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.adminPostbackGenerator.path}>
+      <Route path="/admin/postback-generator">
         <ProtectedRoute requireAdmin={true}>
-          <PostbackGeneratorProfessional />
+          <PageLayout title="Gerador de Postbacks" description="Configurar postbacks das casas">
+            <PostbackGeneratorProfessional />
+          </PageLayout>
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.adminPostbackLogs.path}>
+      <Route path="/admin/postback-logs">
         <ProtectedRoute requireAdmin={true}>
-          <PostbackLogs />
+          <PageLayout title="Logs de Postbacks" description="Histórico de postbacks recebidos">
+            <PostbackLogs />
+          </PageLayout>
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.adminApiManagement.path}>
+      <Route path="/admin/api-management">
         <ProtectedRoute requireAdmin={true}>
-          <AdminApiManagement />
+          <PageLayout title="Gerenciamento de API" description="Configurações de API">
+            <AdminApiManagement />
+          </PageLayout>
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.adminPayments.path}>
+      <Route path={ROUTES_CONFIG.adminPayments.path}>
         <ProtectedRoute requireAdmin={true}>
-          <AdminPayments />
+          <PageLayout 
+            title={ROUTES_CONFIG.adminPayments.title}
+            description={ROUTES_CONFIG.adminPayments.description}
+          >
+            <AdminPayments />
+          </PageLayout>
         </ProtectedRoute>
       </Route>
 
-      <Route path={ROUTES.adminSettings.path}>
+      <Route path={ROUTES_CONFIG.adminSettings.path}>
         <ProtectedRoute requireAdmin={true}>
-          <AdminSettingsEnhanced />
+          <PageLayout 
+            title={ROUTES_CONFIG.adminSettings.title}
+            description={ROUTES_CONFIG.adminSettings.description}
+          >
+            <AdminSettingsEnhanced />
+          </PageLayout>
         </ProtectedRoute>
       </Route>
 
       {/* 404 */}
-      <Route component={NotFound} />
+      <Route>
+        <PageLayout title="Página não encontrada" showBreadcrumbs={false}>
+          <NotFound />
+        </PageLayout>
+      </Route>
     </Switch>
   );
 }

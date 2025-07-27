@@ -11,7 +11,7 @@ import SidebarLayout from '@/components/sidebar-layout';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { apiRequest } from '@/lib/queryClient';
-import { PremiumBottomNav2026 } from '@/components/premium-bottom-nav-2026';
+// Navigation now handled by PageLayout
 import { PremiumHouseCard } from '@/components/premium/premium-house-card';
 import {
   Search,
@@ -371,7 +371,6 @@ export default function BettingHousesPremium() {
           </DialogContent>
         </Dialog>
       </div>
-      <PremiumBottomNav2026 />
     </SidebarLayout>
   );
 }
