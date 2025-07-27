@@ -216,3 +216,57 @@ AfiliadosBet é uma plataforma completa de marketing de afiliados para casas de 
 - Process Manager: PM2
 - Web Server: Nginx
 - Deployment: Manual updates with backup procedures
+
+## 🛠️ PADRÃO PREMIUM DE REFATORAÇÃO (Jul 27, 2025)
+
+**CONTEXTO**: Sistema AfiliadosBet sendo refatorado para padrão premium sem duplicações ou inconsistências.
+
+### 🚨 PROBLEMAS IDENTIFICADOS
+- Menu inferior duplicado e inconsistente
+- Roteamento caótico e fragmentado
+- Componentes desorganizados e duplicados
+- Layouts e navegação quebrados (inclusive no mobile)
+
+### 🎯 OBJETIVOS OBRIGATÓRIOS
+1. **EXCELÊNCIA TÉCNICA**
+   - Eliminar 100% das duplicações
+   - Padronizar arquitetura de componentes
+   - Roteamento centralizado e limpo
+   - Código limpo, organizado e escalável
+
+2. **EXPERIÊNCIA PREMIUM**
+   - Interface moderna, nível startup unicórnio
+   - Navegação fluida, responsiva e intuitiva
+   - Design system visualmente consistente
+   - Desempenho superior
+
+3. **MANUTENIBILIDADE**
+   - Estrutura de pastas lógica
+   - Componentes reutilizáveis e documentados
+   - Fácil extensão futura
+
+### 🎨 PADRÕES OBRIGATÓRIOS
+- **CÓDIGO**: TypeScript strict, componentes funcionais, nomenclatura padronizada
+- **DESIGN**: Tailwind + shadcn/ui, tema escuro premium, glassmorphism, animações 60fps
+- **UX**: Navegação intuitiva, feedback visual imediato, tratamento de erros elegante
+- **PERFORMANCE**: Lazy loading, bundle otimizado, queries otimizadas, cache inteligente
+
+### 🚀 METODOLOGIA
+1. **ANÁLISE**: Mapear componentes e dependências
+2. **PLANEJAMENTO**: Definir arquitetura limpa
+3. **EXECUÇÃO**: Refatorar incrementalmente sem quebrar sistema
+4. **VALIDAÇÃO**: Testar cada modificação
+
+### ⚠️ CUIDADOS CRÍTICOS
+- Não quebrar autenticação nem lógica de negócio
+- Preservar funcionalidades existentes
+- Testar ambos painéis (admin e usuário)
+
+### ✅ CRITÉRIOS DE SUCESSO
+- Zero duplicações
+- Navegação perfeita (inclusive menu inferior)
+- Interface moderna e responsiva
+- Desempenho otimizado
+- Visual competitivo com os melhores do mercado
+
+**💬 REGRA ABSOLUTA: Todas implementações, sugestões, códigos e decisões devem seguir rigorosamente este padrão premium.**
