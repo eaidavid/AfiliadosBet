@@ -2,6 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ✨ Premium Design System - FASE 3 Complete */
+:root {
+  /* 🎨 Premium Color Extensions */
+  --color-premium-emerald: 16 185 129;
+  --color-premium-blue: 59 130 246;
+  --color-premium-violet: 139 92 246;
+  --color-premium-pink: 219 39 119;
+  
+  /* 🌟 Premium Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-backdrop: blur(12px);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  
+  /* ✨ Premium Shadows & Glows */
+  --shadow-glow-emerald: 0 0 20px rgb(16 185 129 / 0.3);
+  --shadow-glow-blue: 0 0 20px rgb(59 130 246 / 0.3);
+  --shadow-glow-violet: 0 0 20px rgb(139 92 246 / 0.3);
+  
+  /* 🎭 Premium Animation Easing */
+  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  
+  /* 🌈 Premium Gradients */
+  --gradient-primary: linear-gradient(135deg, rgb(16 185 129) 0%, rgb(59 130 246) 100%);
+  --gradient-secondary: linear-gradient(135deg, rgb(139 92 246) 0%, rgb(219 39 119) 100%);
+  --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+}
+
 :root {
   /* Light theme colors */
   --background: 0 0% 100%;
