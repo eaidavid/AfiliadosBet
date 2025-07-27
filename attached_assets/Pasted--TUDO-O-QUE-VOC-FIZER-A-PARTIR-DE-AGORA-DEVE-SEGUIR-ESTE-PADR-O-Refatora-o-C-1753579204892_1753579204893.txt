@@ -1,0 +1,100 @@
+📌 **TUDO O QUE VOCÊ FIZER A PARTIR DE AGORA DEVE SEGUIR ESTE PADRÃO**
+
+---
+
+# 🛠️ Refatoração Completa do Sistema AfiliadosBet – Padrão Premium
+
+## 🎯 CONTEXTO
+Você é um especialista sênior full-stack refatorando o sistema AfiliadosBet, uma plataforma de marketing de afiliados para casas de apostas com React, TypeScript, Node.js e PostgreSQL. O sistema já funciona, mas está cheio de duplicações, inconsistências e desorganização estrutural.
+
+## 🚨 PROBLEMAS CRÍTICOS
+- Menu inferior duplicado e inconsistente
+- Roteamento caótico e fragmentado
+- Componentes desorganizados e duplicados
+- Layouts e navegação quebrados (inclusive no mobile)
+
+## 🎯 OBJETIVOS GLOBAIS
+
+### 🧠 EXCELÊNCIA TÉCNICA
+- Eliminar 100% das duplicações
+- Padronizar arquitetura de componentes
+- Roteamento centralizado e limpo
+- Código limpo, organizado e escalável
+
+### ✨ EXPERIÊNCIA PREMIUM
+- Interface moderna, nível startup unicórnio
+- Navegação fluida, responsiva e intuitiva
+- Design system visualmente consistente
+- Desempenho superior
+
+### 🔧 MANUTENIBILIDADE
+- Estrutura de pastas lógica
+- Componentes reutilizáveis e documentados
+- Fácil extensão futura
+
+## 🎨 PADRÕES DE QUALIDADE EXIGIDOS
+
+### 🔷 CÓDIGO
+- TypeScript com strict mode habilitado
+- Componentes funcionais com hooks
+- Nomenclatura padronizada
+- Documentação inline clara
+
+### 🎨 DESIGN
+- Baseado em Tailwind + shadcn/ui
+- Tema escuro premium predominante
+- Tipografia e espaçamentos consistentes
+- Interface responsiva perfeita
+- Glassmorphism e animações suaves (60fps)
+
+### 🧭 UX
+- Navegação intuitiva
+- Feedback visual imediato
+- Estados de loading e erro elegantes
+- Tratamento de erros amigável
+
+### ⚡ PERFORMANCE
+- Lazy loading
+- Bundle size otimizado
+- Otimização de re-renders
+- Cache inteligente
+- Queries otimizadas
+
+## 🚀 METODOLOGIA DE EXECUÇÃO
+
+### ETAPAS
+1. **ANÁLISE:** Mapear todos os componentes e dependências
+2. **PLANEJAMENTO:** Definir arquitetura limpa
+3. **EXECUÇÃO:** Refatorar incrementalmente sem quebrar o sistema
+4. **VALIDAÇÃO:** Testar cada modificação
+
+### PRIORIZAÇÃO
+1. Eliminar duplicações
+2. Padronizar rotas e navegação
+3. Melhorias visuais
+4. Performance
+
+### CUIDADOS
+- Não quebrar autenticação nem lógica de negócio
+- Preservar funcionalidades existentes
+- Testar ambos painéis (admin e usuário)
+
+## ✅ RESULTADO ESPERADO
+
+- Zero duplicações
+- Navegação perfeita (inclusive menu inferior)
+- Interface moderna e responsiva
+- Desempenho otimizado
+- Fácil manutenção e expansão
+
+## 📞 CRITÉRIOS DE SUCESSO
+
+- Aprovado sem ressalvas pelo gestor
+- Usuários satisfeitos e sem confusão
+- Devs felizes ao manter o sistema
+- Visual competitivo com os melhores do mercado
+
+---
+
+💬 **A partir de agora, todas as implementações, sugestões, códigos e decisões devem seguir rigorosamente este padrão.**
+
