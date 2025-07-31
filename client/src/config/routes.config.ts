@@ -182,6 +182,64 @@ export const ROUTES_CONFIG: Record<string, RouteConfig> = {
     order: 23
   },
   
+  adminPostback: {
+    path: "/admin/postback",
+    title: "Gerador de Postbacks",
+    description: "Gerar e configurar postbacks",
+    icon: Webhook,
+    label: "Postbacks",
+    category: 'admin',
+    requiresAuth: true,
+    requiresAdmin: true,
+    showInNavigation: true,
+    gradient: 'from-cyan-500 to-blue-600',
+    premium: true,
+    order: 25
+  },
+  
+  adminPostbackGenerator: {
+    path: "/admin/postback-generator",
+    title: "Gerador de Postbacks",
+    description: "Gerar e configurar postbacks",
+    icon: Webhook,
+    label: "Postbacks",
+    category: 'admin',
+    requiresAuth: true,
+    requiresAdmin: true,
+    showInNavigation: false, // Redirect route
+    gradient: 'from-cyan-500 to-blue-600',
+    premium: true,
+    order: 25
+  },
+
+  adminLogs: {
+    path: "/admin/logs",
+    title: "Logs de Postbacks",
+    description: "Monitorar logs do sistema",
+    icon: ScrollText,
+    label: "Logs",
+    category: 'admin',
+    requiresAuth: true,
+    requiresAdmin: true,
+    showInNavigation: true,
+    gradient: 'from-orange-500 to-red-600',
+    order: 26
+  },
+  
+  adminPostbackLogs: {
+    path: "/admin/postback-logs",
+    title: "Logs de Postbacks",
+    description: "Monitorar logs do sistema",
+    icon: ScrollText,
+    label: "Logs",
+    category: 'admin',
+    requiresAuth: true,
+    requiresAdmin: true,
+    showInNavigation: false, // Redirect route
+    gradient: 'from-orange-500 to-red-600',
+    order: 26
+  },
+
   adminSettings: {
     path: "/admin/settings",
     title: "Configurações",
@@ -193,7 +251,7 @@ export const ROUTES_CONFIG: Record<string, RouteConfig> = {
     requiresAdmin: true,
     showInNavigation: true,
     gradient: 'from-slate-500 to-gray-600',
-    order: 24
+    order: 27
   },
 
   // Secondary routes (not shown in main navigation)

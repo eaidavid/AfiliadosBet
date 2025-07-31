@@ -241,10 +241,26 @@ function Router() {
         </ProtectedRoute>
       </Route>
 
+      <Route path="/admin/postback">
+        <ProtectedRoute requireAdmin={true}>
+          <AppLayout>
+            <PostbackGeneratorProfessional />
+          </AppLayout>
+        </ProtectedRoute>
+      </Route>
+
       <Route path="/admin/postback-generator">
         <ProtectedRoute requireAdmin={true}>
           <AppLayout>
             <PostbackGeneratorProfessional />
+          </AppLayout>
+        </ProtectedRoute>
+      </Route>
+
+      <Route path="/admin/logs">
+        <ProtectedRoute requireAdmin={true}>
+          <AppLayout>
+            <PostbackLogs />
           </AppLayout>
         </ProtectedRoute>
       </Route>
