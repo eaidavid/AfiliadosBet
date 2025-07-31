@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { AppSettingsProvider } from "@/contexts/app-settings-context";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { PageLayout } from "@/components/layouts/page-layout";
+import { AppLayout } from "@/components/layouts/app-layout";
 import { ROUTES_CONFIG } from "@/config/routes.config";
 
 // Page Imports
@@ -113,215 +114,170 @@ function Router() {
       {/* Protected User Routes */}
       <Route path={ROUTES_CONFIG.userHome.path}>
         <ProtectedRoute>
-          <PageLayout 
-            title={ROUTES_CONFIG.userHome.title}
-            description={ROUTES_CONFIG.userHome.description}
-          >
+          <AppLayout>
             <AffiliateHome />
-          </PageLayout>
+          </AppLayout>
         </ProtectedRoute>
       </Route>
 
       <Route path={ROUTES_CONFIG.dashboard.path}>
         <ProtectedRoute>
-          <PageLayout 
-            title={ROUTES_CONFIG.dashboard.title}
-            description={ROUTES_CONFIG.dashboard.description}
-          >
+          <AppLayout>
             <UserDashboardComplete />
-          </PageLayout>
+          </AppLayout>
         </ProtectedRoute>
       </Route>
 
       <Route path={ROUTES_CONFIG.bettingHouses.path}>
         <ProtectedRoute>
-          <PageLayout 
-            title={ROUTES_CONFIG.bettingHouses.title}
-            description={ROUTES_CONFIG.bettingHouses.description}
-          >
+          <AppLayout>
             <BettingHouses />
-          </PageLayout>
+          </AppLayout>
         </ProtectedRoute>
       </Route>
 
       <Route path="/houses">
         <ProtectedRoute>
-          <PageLayout title="Casas de Apostas" description="Explore casas disponíveis">
+          <AppLayout>
             <BettingHouses />
-          </PageLayout>
+          </AppLayout>
         </ProtectedRoute>
       </Route>
 
       <Route path={ROUTES_CONFIG.myLinks.path}>
         <ProtectedRoute>
-          <PageLayout 
-            title={ROUTES_CONFIG.myLinks.title}
-            description={ROUTES_CONFIG.myLinks.description}
-          >
+          <AppLayout>
             <MyLinks />
-          </PageLayout>
+          </AppLayout>
         </ProtectedRoute>
       </Route>
 
       <Route path={ROUTES_CONFIG.analytics.path}>
         <ProtectedRoute>
-          <PageLayout 
-            title={ROUTES_CONFIG.analytics.title}
-            description="Análise detalhada de cliques e conversões"
-          >
+          <AppLayout>
             <ClickAnalytics />
-          </PageLayout>
+          </AppLayout>
         </ProtectedRoute>
       </Route>
 
       <Route path={ROUTES_CONFIG.statistics.path}>
         <ProtectedRoute>
-          <PageLayout 
-            title={ROUTES_CONFIG.statistics.title}
-            description="Estatísticas de performance"
-          >
+          <AppLayout>
             <Statistics />
-          </PageLayout>
+          </AppLayout>
         </ProtectedRoute>
       </Route>
 
       <Route path={ROUTES_CONFIG.reports.path}>
         <ProtectedRoute>
-          <PageLayout 
-            title={ROUTES_CONFIG.reports.title}
-            description="Relatórios detalhados de comissões"
-          >
+          <AppLayout>
             <AffiliateReports />
-          </PageLayout>
+          </AppLayout>
         </ProtectedRoute>
       </Route>
 
       <Route path={ROUTES_CONFIG.profile.path}>
         <ProtectedRoute>
-          <PageLayout 
-            title={ROUTES_CONFIG.profile.title}
-            description="Gerencie seu perfil e configurações"
-          >
+          <AppLayout>
             <UserProfile />
-          </PageLayout>
+          </AppLayout>
         </ProtectedRoute>
       </Route>
 
       <Route path={ROUTES_CONFIG.payments.path}>
         <ProtectedRoute>
-          <PageLayout 
-            title={ROUTES_CONFIG.payments.title}
-            description={ROUTES_CONFIG.payments.description}
-          >
+          <AppLayout>
             <AffiliatePayments />
-          </PageLayout>
+          </AppLayout>
         </ProtectedRoute>
       </Route>
 
       <Route path={ROUTES_CONFIG.settings.path}>
         <ProtectedRoute>
-          <PageLayout 
-            title={ROUTES_CONFIG.settings.title}
-            description="Configurações da aplicação"
-          >
+          <AppLayout>
             <AppSettings />
-          </PageLayout>
+          </AppLayout>
         </ProtectedRoute>
       </Route>
 
       {/* Protected Admin Routes */}
       <Route path={ROUTES_CONFIG.admin.path}>
         <ProtectedRoute requireAdmin={true}>
-          <PageLayout 
-            title={ROUTES_CONFIG.admin.title}
-            description={ROUTES_CONFIG.admin.description}
-          >
+          <AppLayout>
             <AdminDashboard />
-          </PageLayout>
+          </AppLayout>
         </ProtectedRoute>
       </Route>
 
       <Route path="/admin/casas">
         <ProtectedRoute requireAdmin={true}>
-          <PageLayout title="Admin - Casas" description="Gerenciar casas de apostas">
+          <AppLayout>
             <AdminCasas />
-          </PageLayout>
+          </AppLayout>
         </ProtectedRoute>
       </Route>
 
       <Route path={ROUTES_CONFIG.adminHouses.path}>
         <ProtectedRoute requireAdmin={true}>
-          <PageLayout 
-            title={ROUTES_CONFIG.adminHouses.title}
-            description={ROUTES_CONFIG.adminHouses.description}
-          >
+          <AppLayout>
             <AdminHouses />
-          </PageLayout>
+          </AppLayout>
         </ProtectedRoute>
       </Route>
 
       <Route path={ROUTES_CONFIG.adminManage.path}>
         <ProtectedRoute requireAdmin={true}>
-          <PageLayout 
-            title={ROUTES_CONFIG.adminManage.title}
-            description={ROUTES_CONFIG.adminManage.description}
-          >
+          <AppLayout>
             <AdminManage />
-          </PageLayout>
+          </AppLayout>
         </ProtectedRoute>
       </Route>
 
       <Route path="/admin/manage/:id/edit">
         <ProtectedRoute requireAdmin={true}>
-          <PageLayout title="Editar Afiliado" description="Gerenciar dados do afiliado">
+          <AppLayout>
             <AdminEditAffiliate />
-          </PageLayout>
+          </AppLayout>
         </ProtectedRoute>
       </Route>
 
       <Route path="/admin/postback-generator">
         <ProtectedRoute requireAdmin={true}>
-          <PageLayout title="Gerador de Postbacks" description="Configurar postbacks das casas">
+          <AppLayout>
             <PostbackGeneratorProfessional />
-          </PageLayout>
+          </AppLayout>
         </ProtectedRoute>
       </Route>
 
       <Route path="/admin/postback-logs">
         <ProtectedRoute requireAdmin={true}>
-          <PageLayout title="Logs de Postbacks" description="Histórico de postbacks recebidos">
+          <AppLayout>
             <PostbackLogs />
-          </PageLayout>
+          </AppLayout>
         </ProtectedRoute>
       </Route>
 
       <Route path="/admin/api-management">
         <ProtectedRoute requireAdmin={true}>
-          <PageLayout title="Gerenciamento de API" description="Configurações de API">
+          <AppLayout>
             <AdminApiManagement />
-          </PageLayout>
+          </AppLayout>
         </ProtectedRoute>
       </Route>
 
       <Route path={ROUTES_CONFIG.adminPayments.path}>
         <ProtectedRoute requireAdmin={true}>
-          <PageLayout 
-            title={ROUTES_CONFIG.adminPayments.title}
-            description={ROUTES_CONFIG.adminPayments.description}
-          >
+          <AppLayout>
             <AdminPayments />
-          </PageLayout>
+          </AppLayout>
         </ProtectedRoute>
       </Route>
 
       <Route path={ROUTES_CONFIG.adminSettings.path}>
         <ProtectedRoute requireAdmin={true}>
-          <PageLayout 
-            title={ROUTES_CONFIG.adminSettings.title}
-            description={ROUTES_CONFIG.adminSettings.description}
-          >
+          <AppLayout>
             <AdminSettingsEnhanced />
-          </PageLayout>
+          </AppLayout>
         </ProtectedRoute>
       </Route>
 
