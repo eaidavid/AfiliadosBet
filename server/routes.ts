@@ -1227,58 +1227,66 @@ export async function registerRoutes(app: express.Application) {
         ))
         .orderBy(desc(schema.clickTracking.clickedAt));
 
-      // Get conversion data
-      const conversionData = await db
-        .select({
-          id: schema.conversions.id,
-          type: schema.conversions.type,
-          amount: schema.conversions.amount,
-          commission: schema.conversions.commission,
-          convertedAt: schema.conversions.convertedAt,
-          houseName: schema.bettingHouses.name,
-          customerId: schema.conversions.customerId,
-        })
-        .from(schema.conversions)
-        .leftJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
-        .where(and(
-          eq(schema.conversions.userId, userId),
-          gte(schema.conversions.convertedAt, startDate)
-        ))
-        .orderBy(desc(schema.conversions.convertedAt));
+      // Get conversion data with null safety
+      let conversionData = [];
+      try {
+        conversionData = await db
+          .select({
+            id: schema.conversions.id,
+            type: schema.conversions.type,
+            amount: schema.conversions.amount,
+            commission: schema.conversions.commission,
+            convertedAt: schema.conversions.convertedAt,
+            houseName: schema.bettingHouses.name,
+            customerId: schema.conversions.customerId,
+          })
+          .from(schema.conversions)
+          .leftJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
+          .where(and(
+            eq(schema.conversions.userId, userId),
+            gte(schema.conversions.convertedAt, startDate)
+          ))
+          .orderBy(desc(schema.conversions.convertedAt));
+      } catch (error) {
+        console.error("Erro ao buscar conversões:", error);
+        conversionData = [];
+      }
 
-      // Group clicks by day for chart data
-      const clicksByDay = clickData.reduce((acc, click) => {
-        if (click.clickedAt) {
+      // Group clicks by day for chart data - with null safety
+      const clicksByDay = (clickData || []).reduce((acc, click) => {
+        if (click && click.clickedAt) {
           const day = click.clickedAt.toISOString().split('T')[0];
           acc[day] = (acc[day] || 0) + 1;
         }
         return acc;
       }, {} as Record<string, number>);
 
-      // Group clicks by house
-      const clicksByHouse = clickData.reduce((acc, click) => {
-        const house = click.houseName || 'Unknown';
-        acc[house] = (acc[house] || 0) + 1;
+      // Group clicks by house - with null safety
+      const clicksByHouse = (clickData || []).reduce((acc, click) => {
+        if (click && click.houseName) {
+          acc[click.houseName] = (acc[click.houseName] || 0) + 1;
+        }
         return acc;
       }, {} as Record<string, number>);
 
-      // Calculate summary stats
+      // Calculate summary stats with null safety
+      const safeClickData = clickData || [];
+      const safeConversionData = conversionData || [];
+      
       const stats = {
-        totalClicks: clickData.length || 0,
-        totalConversions: conversionData.filter(c => c.type !== 'click').length || 0,
-        totalCommission: conversionData.reduce((sum, c) => sum + parseFloat(c.commission || '0'), 0),
-        conversionRate: clickData.length > 0 ? 
-          (conversionData.filter(c => c.type !== 'click').length / clickData.length * 100) : 0,
-        avgCommission: conversionData.length > 0 
-          ? conversionData.reduce((sum, c) => sum + parseFloat(c.commission || '0'), 0) / conversionData.length 
+        totalClicks: safeClickData.length || 0,
+        totalConversions: safeConversionData.filter(c => c && c.type !== 'click').length || 0,
+        totalCommission: safeConversionData.reduce((sum, c) => sum + parseFloat((c && c.commission) || '0'), 0),
+        conversionRate: safeClickData.length > 0 ? 
+          (safeConversionData.filter(c => c && c.type !== 'click').length / safeClickData.length * 100) : 0,
+        avgCommission: safeConversionData.length > 0 
+          ? safeConversionData.reduce((sum, c) => sum + parseFloat((c && c.commission) || '0'), 0) / safeConversionData.length 
           : 0,
         monthlyGrowth: 12.5,
-        recentClicks: Math.min(clickData.length, 20),
-        recentConversions: Math.min(conversionData.length, 10),
         clicksByDay,
         clicksByHouse,
-        recentClicks: clickData.slice(0, 20), // Last 20 clicks
-        recentConversions: conversionData.slice(0, 10), // Last 10 conversions
+        recentClicks: safeClickData.slice(0, 20), // Last 20 clicks
+        recentConversions: safeConversionData.slice(0, 10), // Last 10 conversions
       };
 
       res.json(stats);

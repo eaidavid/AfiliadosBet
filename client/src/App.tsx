@@ -17,6 +17,7 @@ import Register from "@/pages/register";
 import Auth from "@/pages/auth";
 import UserDashboardComplete from "@/pages/user-dashboard-complete";
 import AffiliateHome from "@/pages/affiliate-home";
+import UserHomeFixed from "@/pages/user-home-fixed";
 import BettingHouses from "@/pages/betting-houses";
 import MyLinks from "@/pages/my-links";
 import AffiliateReports from "@/pages/affiliate-reports";
@@ -35,6 +36,8 @@ import AdminManage from "@/pages/admin-manage";
 import AdminEditAffiliate from "@/pages/admin-edit-affiliate";
 import PostbackGeneratorProfessional from "@/pages/postback-generator-professional";
 import PostbackLogs from "@/pages/postback-logs";
+import AdminPostbackFixed from "@/pages/admin-postback-fixed";
+import AdminLogsFixed from "@/pages/admin-logs-fixed";
 import AdminApiManagement from "@/pages/admin-api-management";
 import AdminPayments from "@/pages/admin-payments";
 import AdminSettingsEnhanced from "@/pages/admin-settings-enhanced";
@@ -115,7 +118,7 @@ function Router() {
       <Route path={ROUTES_CONFIG.userHome.path}>
         <ProtectedRoute>
           <AppLayout>
-            <AffiliateHome />
+            <UserHomeFixed />
           </AppLayout>
         </ProtectedRoute>
       </Route>
@@ -244,7 +247,7 @@ function Router() {
       <Route path="/admin/postback">
         <ProtectedRoute requireAdmin={true}>
           <AppLayout>
-            <PostbackGeneratorProfessional />
+            <AdminPostbackFixed />
           </AppLayout>
         </ProtectedRoute>
       </Route>
@@ -260,7 +263,7 @@ function Router() {
       <Route path="/admin/logs">
         <ProtectedRoute requireAdmin={true}>
           <AppLayout>
-            <PostbackLogs />
+            <AdminLogsFixed />
           </AppLayout>
         </ProtectedRoute>
       </Route>

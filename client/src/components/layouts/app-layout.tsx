@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { SmartNavigationSystem } from '@/components/navigation/smart-navigation-system';
+import { SmartNavigationFixed } from '@/components/navigation/smart-navigation-fixed';
 import { cn } from '@/lib/utils';
 
 interface AppLayoutProps {
@@ -9,8 +9,8 @@ interface AppLayoutProps {
 
 export function AppLayout({ children, className }: AppLayoutProps) {
   return (
-    <SmartNavigationSystem className={className}>
+    <SmartNavigationFixed className={className}>
       {children}
-    </SmartNavigationSystem>
+    </SmartNavigationFixed>
   );
 }

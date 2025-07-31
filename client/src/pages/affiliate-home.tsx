@@ -57,8 +57,8 @@ interface BettingHouse {
   logoUrl: string | null;
   commissionType: string;
   commissionValue: string | null;
-  revshareValue?: string | null;
-  cpaValue?: string | null;
+  revshareValue?: string | null | undefined;
+  cpaValue?: string | null | undefined;
   revshareAffiliatePercent?: number;
   cpaAffiliatePercent?: number;
   minDeposit: string | null;
