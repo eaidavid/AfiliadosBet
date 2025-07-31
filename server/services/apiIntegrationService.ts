@@ -190,7 +190,7 @@ export class ApiIntegrationService {
       await db
         .update(schema.bettingHouses)
         .set({ 
-          endpointMapping: { conversions: endpoint },
+          endpointMapping: JSON.stringify({ conversions: endpoint }),
           updatedAt: new Date()
         })
         .where(eq(schema.bettingHouses.id, this.houseId));
@@ -293,15 +293,15 @@ export class ApiIntegrationService {
   }
 
   private async saveConversion(conversionData: ConversionData): Promise<void> {
-    // Verificar se já existe
+    // Verificar se já existe usando conversionData como identificador
     const existing = await db
       .select()
       .from(schema.conversions)
       .where(
         and(
           eq(schema.conversions.houseId, this.houseId),
-          eq(schema.conversions.subid, conversionData.customerId),
-          eq(schema.conversions.type, conversionData.type)
+          eq(schema.conversions.type, conversionData.type),
+          eq(schema.conversions.conversionData, JSON.stringify({ customerId: conversionData.customerId }))
         )
       )
       .limit(1);
@@ -332,9 +332,11 @@ export class ApiIntegrationService {
       type: conversionData.type,
       amount: conversionData.amount?.toString() || '0',
       commission: conversionData.commission?.toString() || '0',
-      subid: conversionData.customerId,
-      conversionData: conversionData.additionalData,
-      convertedAt: new Date(conversionData.timestamp)
+      conversionData: JSON.stringify({
+        customerId: conversionData.customerId,
+        ...conversionData.additionalData
+      }),
+      processedAt: new Date(conversionData.timestamp)
     });
   }
 
@@ -467,9 +469,11 @@ export class ApiIntegrationFactory {
       apiSecret: house[0].apiSecret || undefined,
       apiBaseUrl: house[0].apiBaseUrl || '',
       authType: house[0].authType || 'bearer',
-      authHeaders: typeof house[0].authHeaders === 'string' 
-        ? JSON.parse(house[0].authHeaders) 
-        : (house[0].authHeaders as Record<string, string>) || {}
+      authHeaders: house[0].authHeaders 
+        ? (typeof house[0].authHeaders === 'string' 
+           ? JSON.parse(house[0].authHeaders) 
+           : house[0].authHeaders as Record<string, string>)
+        : {} as Record<string, string>
     });
   }
 
