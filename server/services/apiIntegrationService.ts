@@ -300,7 +300,7 @@ export class ApiIntegrationService {
       .where(
         and(
           eq(schema.conversions.houseId, this.houseId),
-          eq(schema.conversions.customerId, conversionData.customerId),
+          eq(schema.conversions.subid, conversionData.customerId),
           eq(schema.conversions.type, conversionData.type)
         )
       )
@@ -332,7 +332,7 @@ export class ApiIntegrationService {
       type: conversionData.type,
       amount: conversionData.amount?.toString() || '0',
       commission: conversionData.commission?.toString() || '0',
-      customerId: conversionData.customerId,
+      subid: conversionData.customerId,
       conversionData: conversionData.additionalData,
       convertedAt: new Date(conversionData.timestamp)
     });
@@ -467,7 +467,9 @@ export class ApiIntegrationFactory {
       apiSecret: house[0].apiSecret || undefined,
       apiBaseUrl: house[0].apiBaseUrl || '',
       authType: house[0].authType || 'bearer',
-      authHeaders: (house[0].authHeaders as Record<string, string>) || {}
+      authHeaders: typeof house[0].authHeaders === 'string' 
+        ? JSON.parse(house[0].authHeaders) 
+        : (house[0].authHeaders as Record<string, string>) || {}
     });
   }
 

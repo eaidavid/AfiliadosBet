@@ -187,6 +187,58 @@ export function useLogin() {
     }
   });
 }
+    mutationFn: async (credentials: LoginData) => {
+      console.log('🔐 Tentando login...');
+      
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          email: credentials.usernameOrEmail,
+          password: credentials.password
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Erro no login");
+      }
+      
+      const data = await response.json();
+      console.log('✅ Login successful:', data);
+      return data;
+    },
+    onSuccess: (data) => {
+      console.log('🎉 Login onSuccess:', data);
+      
+      localStorage.removeItem('is_logged_out');
+      
+      if (data.user) {
+        localStorage.setItem('auth_user', JSON.stringify(data.user));
+        localStorage.setItem('auth_timestamp', Date.now().toString());
+        
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+        
+        const targetPath = data.user.role === 'admin' ? '/admin' : '/home';
+        console.log('🔄 Redirecionando para:', targetPath);
+        
+        // Aguardar sessão ser criada no servidor
+        setTimeout(() => {
+          console.log('🚀 Executando redirecionamento...');
+          window.location.href = targetPath;
+        }, 1000); // 1 segundo para garantir persistência da sessão
+      }
+    },
+    onError: (error) => {
+      console.error("❌ Login failed:", error);
+      localStorage.removeItem('auth_user');
+      localStorage.removeItem('auth_timestamp');
+    }
+  });
+}
 
 export function useRegister() {
   const queryClient = useQueryClient();
@@ -202,6 +254,7 @@ export function useRegister() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
       
+      // Aguardar um pouco antes de redirecionar para garantir que o estado seja atualizado
       setTimeout(() => {
         if (data.user?.role === 'admin') {
           window.location.href = "/admin";
@@ -218,36 +271,44 @@ export function useLogout() {
   
   return useMutation({
     mutationFn: async () => {
-      console.log('🚪 Iniciando logout...');
-      localStorage.setItem('is_logged_out', 'true');
-      
-      const response = await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include"
+      const response = await apiRequest("/api/auth/logout", {
+        method: "POST"
       });
-      
-      if (!response.ok) {
-        throw new Error("Erro no logout");
-      }
-      
-      return response.json();
+      return response;
     },
     onSuccess: () => {
-      console.log('✅ Logout successful');
+      // Clear all cached auth data immediately
       localStorage.removeItem('auth_user');
       localStorage.removeItem('auth_timestamp');
+      localStorage.setItem('is_logged_out', 'true');
+      
+      // Clear all React Query cache
+      queryClient.clear();
+      
+      // Clear session cookies by setting them to expire
+      document.cookie = 'connect.sid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      
+      // Force immediate navigation and reload
+      setTimeout(() => {
+        window.location.href = "/";
+        window.location.reload();
+      }, 100);
+    },
+    onError: () => {
+      // Even if logout fails on server, clear local data
+      localStorage.removeItem('auth_user');
+      localStorage.removeItem('auth_timestamp');
+      localStorage.setItem('is_logged_out', 'true');
+      
+      // Clear session cookies
+      document.cookie = 'connect.sid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      
       queryClient.clear();
       
       setTimeout(() => {
-        window.location.href = "/auth";
+        window.location.href = "/";
+        window.location.reload();
       }, 100);
-    },
-    onError: (error) => {
-      console.error("❌ Logout failed:", error);
-      localStorage.removeItem('auth_user');
-      localStorage.removeItem('auth_timestamp');
-      queryClient.clear();
-      window.location.href = "/auth";
     }
   });
 }
