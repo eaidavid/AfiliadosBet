@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { PremiumDesktopSidebar } from './premium-desktop-sidebar';
 import { MobileNavigationFixed } from './mobile-navigation-fixed';
+import { ViewSwitcher } from '@/components/admin/view-switcher';
 import { cn } from '@/lib/utils';
 
 interface SmartNavigationFixedProps {
@@ -44,6 +45,16 @@ export function SmartNavigationFixed({ children, className }: SmartNavigationFix
       {isMobile && (
         <MobileNavigationFixed />
       )}
+
+      {/* Header com ViewSwitcher */}
+      <div className={cn(
+        "sticky top-0 z-30 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800",
+        !isMobile && isAdmin && "lg:ml-64",
+      )}>
+        <div className="flex items-center justify-end px-4 py-3">
+          <ViewSwitcher />
+        </div>
+      </div>
 
       {/* Main Content */}
       <main 
