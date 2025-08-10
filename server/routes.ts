@@ -1908,7 +1908,7 @@ export async function registerRoutes(app: express.Application) {
         .from(schema.conversions)
         .leftJoin(schema.bettingHouses, eq(schema.conversions.houseId, schema.bettingHouses.id))
         .leftJoin(schema.users, eq(schema.conversions.userId, schema.users.id))
-        .orderBy(desc(schema.conversions.convertedAt))
+        .orderBy(desc(schema.conversions.createdAt))
         .limit(parseInt(limit as string))
         .offset(parseInt(offset as string));
 
@@ -1923,7 +1923,7 @@ export async function registerRoutes(app: express.Application) {
         commission: log.conversions.commission,
         status: 'success',
         status_code: 200,
-        created_at: log.conversions.convertedAt,
+        created_at: log.conversions.createdAt,
         ip: (log.conversions.conversionData as any)?.ip || 'unknown',
         house_id: log.conversions.houseId,
         user_id: log.conversions.userId,

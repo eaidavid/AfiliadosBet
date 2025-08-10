@@ -472,7 +472,7 @@ export default function PostbackLogs() {
                     </SelectTrigger>
                     <SelectContent className="bg-slate-800 border-slate-600">
                       <SelectItem value="all">Todas as casas</SelectItem>
-                      {bettingHouses && Array.isArray(bettingHouses) && bettingHouses.map((house: BettingHouse) => (
+                      {Array.isArray(bettingHouses) && bettingHouses.map((house: BettingHouse) => (
                         <SelectItem key={house.id} value={house.id.toString()}>
                           {house.name}
                         </SelectItem>

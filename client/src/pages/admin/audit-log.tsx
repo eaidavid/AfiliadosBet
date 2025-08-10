@@ -259,7 +259,7 @@ export default function AuditLogPage() {
                     <SelectValue placeholder="Todos" />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-800 border-slate-700">
-                    <SelectItem value="">Todos</SelectItem>
+                    <SelectItem value="all">Todos</SelectItem>
                     <SelectItem value="conversion">Conversão</SelectItem>
                     <SelectItem value="commission">Comissão</SelectItem>
                     <SelectItem value="payment">Pagamento</SelectItem>
@@ -278,7 +278,7 @@ export default function AuditLogPage() {
                     <SelectValue placeholder="Todas" />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-800 border-slate-700">
-                    <SelectItem value="">Todas</SelectItem>
+                    <SelectItem value="all">Todas</SelectItem>
                     <SelectItem value="insert">Inserção</SelectItem>
                     <SelectItem value="update">Atualização</SelectItem>
                     <SelectItem value="adjustment">Ajuste</SelectItem>
