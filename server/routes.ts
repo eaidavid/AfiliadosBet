@@ -2795,5 +2795,443 @@ export async function registerRoutes(app: express.Application) {
     res.redirect('/auth');
   });
 
+  // ==================== MANUAL ENTRY SYSTEM ====================
+  
+  // Helper function to log manual actions
+  const logManualAction = async (adminId: number, entryType: string, actionType: string, data: any, req: any) => {
+    try {
+      await db.insert(schema.manualEntries).values({
+        adminId,
+        affiliateId: data.affiliateId || null,
+        entryType,
+        actionType,
+        amount: data.amount ? data.amount.toString() : null,
+        referenceId: data.referenceId || null,
+        metadata: data,
+        reason: data.reason || data.notes || '',
+        ipAddress: req.ip || req.connection.remoteAddress,
+      });
+    } catch (error) {
+      console.error('Erro ao registrar ação manual:', error);
+    }
+  };
+
+  // Helper function to calculate commission
+  const calculateCommission = async (houseId: number, amount: string, type: string) => {
+    try {
+      const [house] = await db
+        .select()
+        .from(schema.bettingHouses)
+        .where(eq(schema.bettingHouses.id, houseId))
+        .limit(1);
+
+      if (!house) {
+        throw new Error('Casa de apostas não encontrada');
+      }
+
+      const amountNum = parseFloat(amount);
+      let commission = 0;
+
+      switch (house.commissionType) {
+        case 'CPA':
+          if (type === 'register' || type === 'deposit') {
+            const cpaValue = parseFloat(house.cpaValue || house.commissionValue || '0');
+            const affiliatePercent = parseFloat(house.cpaAffiliatePercent || '100') / 100;
+            commission = cpaValue * affiliatePercent;
+          }
+          break;
+        case 'RevShare':
+          if (type === 'profit') {
+            const revsharePercent = parseFloat(house.revshareValue || house.commissionValue || '0') / 100;
+            const affiliatePercent = parseFloat(house.revshareAffiliatePercent || '100') / 100;
+            commission = amountNum * revsharePercent * affiliatePercent;
+          }
+          break;
+        case 'Hybrid':
+          if (type === 'register' || type === 'deposit') {
+            const cpaValue = parseFloat(house.cpaValue || '0');
+            const affiliatePercent = parseFloat(house.cpaAffiliatePercent || '100') / 100;
+            commission = cpaValue * affiliatePercent;
+          } else if (type === 'profit') {
+            const revsharePercent = parseFloat(house.revshareValue || '0') / 100;
+            const affiliatePercent = parseFloat(house.revshareAffiliatePercent || '100') / 100;
+            commission = amountNum * revsharePercent * affiliatePercent;
+          }
+          break;
+      }
+
+      return Math.max(0, commission);
+    } catch (error) {
+      console.error('Erro ao calcular comissão:', error);
+      return 0;
+    }
+  };
+
+  // Manual conversion insertion
+  app.post('/api/admin/manual/conversion', requireAdmin, async (req, res) => {
+    try {
+      const validation = schema.manualConversionFormSchema.safeParse(req.body);
+      
+      if (!validation.success) {
+        return res.status(400).json({ 
+          error: 'Dados inválidos', 
+          details: validation.error.errors 
+        });
+      }
+
+      const { affiliateId, houseId, type, amount, customerId, reason, timestamp } = validation.data;
+      const adminId = req.user?.id;
+
+      // Verify affiliate exists and is active
+      const [affiliate] = await db
+        .select()
+        .from(schema.users)
+        .where(and(
+          eq(schema.users.id, affiliateId),
+          eq(schema.users.role, 'affiliate'),
+          eq(schema.users.isActive, true)
+        ))
+        .limit(1);
+
+      if (!affiliate) {
+        return res.status(404).json({ error: 'Afiliado não encontrado ou inativo' });
+      }
+
+      // Verify house exists and is active
+      const [house] = await db
+        .select()
+        .from(schema.bettingHouses)
+        .where(and(
+          eq(schema.bettingHouses.id, houseId),
+          eq(schema.bettingHouses.isActive, true)
+        ))
+        .limit(1);
+
+      if (!house) {
+        return res.status(404).json({ error: 'Casa de apostas não encontrada ou inativa' });
+      }
+
+      // Calculate commission
+      const commission = await calculateCommission(houseId, amount, type);
+
+      // Create conversion
+      const [newConversion] = await db
+        .insert(schema.conversions)
+        .values({
+          userId: affiliateId,
+          houseId,
+          type,
+          amount,
+          commission: commission.toString(),
+          customerId,
+          status: 'approved',
+          processedAt: new Date(),
+          isManual: true,
+          createdAt: timestamp ? new Date(timestamp) : new Date(),
+        })
+        .returning();
+
+      // Log manual action
+      await logManualAction(adminId, 'conversion', 'insert', {
+        affiliateId,
+        houseId,
+        type,
+        amount,
+        commission: commission.toString(),
+        customerId,
+        reason,
+        referenceId: newConversion.id
+      }, req);
+
+      console.log(`✅ Conversão manual criada: ${type} - R$ ${amount} - Comissão: R$ ${commission.toFixed(2)}`);
+
+      res.json({
+        success: true,
+        conversion: newConversion,
+        calculatedCommission: commission,
+        message: 'Conversão registrada com sucesso'
+      });
+    } catch (error) {
+      console.error('Erro ao inserir conversão manual:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Commission adjustment
+  app.post('/api/admin/manual/commission-adjustment', requireAdmin, async (req, res) => {
+    try {
+      const validation = schema.commissionAdjustmentFormSchema.safeParse(req.body);
+      
+      if (!validation.success) {
+        return res.status(400).json({ 
+          error: 'Dados inválidos', 
+          details: validation.error.errors 
+        });
+      }
+
+      const { affiliateId, type, amount, reason, referenceId } = validation.data;
+      const adminId = req.user?.id;
+
+      // Verify affiliate exists
+      const [affiliate] = await db
+        .select()
+        .from(schema.users)
+        .where(and(
+          eq(schema.users.id, affiliateId),
+          eq(schema.users.role, 'affiliate')
+        ))
+        .limit(1);
+
+      if (!affiliate) {
+        return res.status(404).json({ error: 'Afiliado não encontrado' });
+      }
+
+      // Create adjustment as a special conversion
+      const [adjustment] = await db
+        .insert(schema.conversions)
+        .values({
+          userId: affiliateId,
+          houseId: 1, // Use first house as placeholder for adjustments
+          type: 'adjustment',
+          amount: '0',
+          commission: amount,
+          status: 'approved',
+          processedAt: new Date(),
+          isManual: true,
+          conversionData: JSON.stringify({ adjustmentType: type, originalReferenceId: referenceId }),
+        })
+        .returning();
+
+      // Log manual action
+      await logManualAction(adminId, 'commission', 'adjustment', {
+        affiliateId,
+        type,
+        amount,
+        reason,
+        referenceId,
+        adjustmentId: adjustment.id
+      }, req);
+
+      console.log(`💰 Ajuste de comissão: ${type} - R$ ${amount} para ${affiliate.fullName}`);
+
+      res.json({
+        success: true,
+        adjustment,
+        message: 'Ajuste de comissão aplicado com sucesso'
+      });
+    } catch (error) {
+      console.error('Erro ao aplicar ajuste de comissão:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Manual payment registration
+  app.post('/api/admin/manual/payment', requireAdmin, async (req, res) => {
+    try {
+      const validation = schema.manualPaymentFormSchema.safeParse(req.body);
+      
+      if (!validation.success) {
+        return res.status(400).json({ 
+          error: 'Dados inválidos', 
+          details: validation.error.errors 
+        });
+      }
+
+      const { affiliateId, amount, method, paymentDate, notes } = validation.data;
+      const adminId = req.user?.id;
+
+      // Verify affiliate exists
+      const [affiliate] = await db
+        .select()
+        .from(schema.users)
+        .where(and(
+          eq(schema.users.id, affiliateId),
+          eq(schema.users.role, 'affiliate')
+        ))
+        .limit(1);
+
+      if (!affiliate) {
+        return res.status(404).json({ error: 'Afiliado não encontrado' });
+      }
+
+      // Create manual payment
+      const [payment] = await db
+        .insert(schema.payments)
+        .values({
+          userId: affiliateId,
+          amount,
+          status: 'completed',
+          paymentMethod: method,
+          notes,
+          isManual: true,
+          processedAt: new Date(paymentDate),
+          requestedAt: new Date(paymentDate),
+        })
+        .returning();
+
+      // Log manual action
+      await logManualAction(adminId, 'payment', 'insert', {
+        affiliateId,
+        amount,
+        method,
+        paymentDate,
+        notes,
+        referenceId: payment.id
+      }, req);
+
+      console.log(`💳 Pagamento manual registrado: R$ ${amount} para ${affiliate.fullName}`);
+
+      res.json({
+        success: true,
+        payment,
+        message: 'Pagamento registrado com sucesso'
+      });
+    } catch (error) {
+      console.error('Erro ao registrar pagamento manual:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Get manual audit log
+  app.get('/api/admin/manual/audit-log', requireAdmin, async (req, res) => {
+    try {
+      const { 
+        startDate, 
+        endDate, 
+        entryType, 
+        actionType,
+        adminId,
+        affiliateId,
+        page = '1',
+        limit = '50'
+      } = req.query;
+
+      const conditions: any[] = [];
+      const offset = (Number(page) - 1) * Number(limit);
+
+      if (startDate) {
+        conditions.push(gte(schema.manualEntries.createdAt, new Date(startDate as string)));
+      }
+
+      if (endDate) {
+        conditions.push(lt(schema.manualEntries.createdAt, new Date(endDate as string)));
+      }
+
+      if (entryType) {
+        conditions.push(eq(schema.manualEntries.entryType, entryType as string));
+      }
+
+      if (actionType) {
+        conditions.push(eq(schema.manualEntries.actionType, actionType as string));
+      }
+
+      if (adminId) {
+        conditions.push(eq(schema.manualEntries.adminId, Number(adminId)));
+      }
+
+      if (affiliateId) {
+        conditions.push(eq(schema.manualEntries.affiliateId, Number(affiliateId)));
+      }
+
+      const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+      // Get audit entries with related data
+      const entries = await db
+        .select({
+          id: schema.manualEntries.id,
+          entryType: schema.manualEntries.entryType,
+          actionType: schema.manualEntries.actionType,
+          amount: schema.manualEntries.amount,
+          reason: schema.manualEntries.reason,
+          metadata: schema.manualEntries.metadata,
+          createdAt: schema.manualEntries.createdAt,
+          adminName: schema.users.fullName,
+          adminEmail: schema.users.email,
+        })
+        .from(schema.manualEntries)
+        .innerJoin(schema.users, eq(schema.manualEntries.adminId, schema.users.id))
+        .where(whereClause)
+        .orderBy(desc(schema.manualEntries.createdAt))
+        .limit(Number(limit))
+        .offset(offset);
+
+      // Get total count
+      const totalResult = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(schema.manualEntries)
+        .where(whereClause);
+
+      const total = totalResult[0]?.count || 0;
+
+      res.json({
+        entries,
+        pagination: {
+          page: Number(page),
+          limit: Number(limit),
+          total,
+          totalPages: Math.ceil(total / Number(limit))
+        }
+      });
+    } catch (error) {
+      console.error('Erro ao buscar log de auditoria:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Get affiliates for selection (search endpoint)
+  app.get('/api/admin/manual/affiliates/search', requireAdmin, async (req, res) => {
+    try {
+      const { search = '', limit = '10' } = req.query;
+
+      const affiliates = await db
+        .select({
+          id: schema.users.id,
+          fullName: schema.users.fullName,
+          email: schema.users.email,
+          username: schema.users.username,
+          isActive: schema.users.isActive,
+        })
+        .from(schema.users)
+        .where(and(
+          eq(schema.users.role, 'affiliate'),
+          search ? or(
+            ilike(schema.users.fullName, `%${search}%`),
+            ilike(schema.users.email, `%${search}%`),
+            ilike(schema.users.username, `%${search}%`)
+          ) : undefined
+        ))
+        .orderBy(schema.users.fullName)
+        .limit(Number(limit));
+
+      res.json({ affiliates });
+    } catch (error) {
+      console.error('Erro ao buscar afiliados:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Get commission calculation preview
+  app.post('/api/admin/manual/commission-preview', requireAdmin, async (req, res) => {
+    try {
+      const { houseId, amount, type } = req.body;
+
+      if (!houseId || !amount || !type) {
+        return res.status(400).json({ error: 'Dados incompletos' });
+      }
+
+      const commission = await calculateCommission(Number(houseId), amount, type);
+
+      res.json({
+        amount: parseFloat(amount),
+        commission,
+        type,
+        houseId
+      });
+    } catch (error) {
+      console.error('Erro ao calcular preview da comissão:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
   console.log("✅ Rotas registradas com sucesso");
 }

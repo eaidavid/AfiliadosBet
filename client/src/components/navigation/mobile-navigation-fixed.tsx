@@ -22,7 +22,9 @@ import {
   Shield,
   Users,
   Database,
-  Zap
+  Zap,
+  Plus,
+  Eye
 } from 'lucide-react';
 
 interface NavigationItem {
@@ -131,6 +133,22 @@ const EXPANDED_ITEMS: NavigationItem[] = [
     path: '/admin/logs',
     icon: FileText,
     gradient: 'from-teal-500 to-cyan-600',
+    adminOnly: true,
+  },
+  {
+    id: 'manual-entry',
+    label: 'Inserção Manual',
+    path: '/admin/manual-entry',
+    icon: Plus,
+    gradient: 'from-orange-500 to-red-600',
+    adminOnly: true,
+  },
+  {
+    id: 'audit-log',
+    label: 'Log de Auditoria',
+    path: '/admin/audit-log',
+    icon: Eye,
+    gradient: 'from-indigo-500 to-purple-600',
     adminOnly: true,
   },
   {

@@ -19,7 +19,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Home,
-  BarChart3
+  BarChart3,
+  Plus,
+  Eye
 } from 'lucide-react';
 
 interface NavigationItem {
@@ -79,6 +81,22 @@ const ADMIN_NAV_ITEMS: NavigationItem[] = [
     icon: FileText,
     gradient: 'from-teal-500 to-cyan-600',
     description: 'Monitorar atividades'
+  },
+  {
+    id: 'manual-entry',
+    label: 'Inserção Manual',
+    path: '/admin/manual-entry',
+    icon: Plus,
+    gradient: 'from-orange-500 to-red-600',
+    description: 'Inserir dados manualmente'
+  },
+  {
+    id: 'audit-log',
+    label: 'Log de Auditoria',
+    path: '/admin/audit-log',
+    icon: Eye,
+    gradient: 'from-indigo-500 to-purple-600',
+    description: 'Acompanhar ações manuais'
   },
   {
     id: 'settings',

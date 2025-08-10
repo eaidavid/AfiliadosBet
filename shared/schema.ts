@@ -1,4 +1,4 @@
-import { pgTable, text, integer, decimal, boolean, timestamp, index, serial } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, decimal, boolean, timestamp, index, serial, jsonb, inet } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -109,6 +109,9 @@ export const conversions = pgTable("conversions", {
   status: text("status").default("pending"), // 'pending', 'approved', 'rejected'
   processedAt: timestamp("processed_at"),
   createdAt: timestamp("created_at").defaultNow(),
+  isManual: boolean("is_manual").default(false), // Flag for manual entries
+  manualEntryId: integer("manual_entry_id"), // Reference to manual entry
+  customerId: text("customer_id"), // Customer ID from betting house
 });
 
 // Payments table for affiliate payments
@@ -123,6 +126,24 @@ export const payments = pgTable("payments", {
   requestedAt: timestamp("requested_at").defaultNow(),
   processedAt: timestamp("processed_at"),
   notes: text("notes"),
+  isManual: boolean("is_manual").default(false), // Flag for manual entries
+  manualEntryId: integer("manual_entry_id"), // Reference to manual entry
+  proofFile: text("proof_file"), // Path to proof file
+});
+
+// Manual entries table for audit and manual operations
+export const manualEntries = pgTable("manual_entries", {
+  id: serial("id").primaryKey(),
+  adminId: integer("admin_id").notNull().references(() => users.id),
+  affiliateId: integer("affiliate_id").references(() => users.id),
+  entryType: text("entry_type").notNull(), // 'conversion', 'commission', 'payment'
+  actionType: text("action_type").notNull(), // 'insert', 'update', 'adjustment'
+  amount: decimal("amount", { precision: 10, scale: 2 }),
+  referenceId: integer("reference_id"), // ID of related table
+  metadata: jsonb("metadata"), // Specific action data
+  reason: text("reason"),
+  ipAddress: inet("ip_address"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 // Define relationships
@@ -170,6 +191,17 @@ export const conversionsRelations = relations(conversions, ({ one }) => ({
 export const paymentsRelations = relations(payments, ({ one }) => ({
   user: one(users, {
     fields: [payments.userId],
+    references: [users.id],
+  }),
+}));
+
+export const manualEntriesRelations = relations(manualEntries, ({ one }) => ({
+  admin: one(users, {
+    fields: [manualEntries.adminId],
+    references: [users.id],
+  }),
+  affiliate: one(users, {
+    fields: [manualEntries.affiliateId],
     references: [users.id],
   }),
 }));
@@ -255,3 +287,53 @@ export type InsertPayment = z.infer<typeof insertPaymentSchema>;
 
 export type ClickTracking = typeof clickTracking.$inferSelect;
 export type InsertClickTracking = z.infer<typeof insertClickTrackingSchema>;
+
+// Manual entries schemas
+export const insertManualEntrySchema = createInsertSchema(manualEntries).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type ManualEntry = typeof manualEntries.$inferSelect;
+export type InsertManualEntry = z.infer<typeof insertManualEntrySchema>;
+
+// Manual conversion form schema
+export const manualConversionFormSchema = z.object({
+  affiliateId: z.number().min(1, "Selecione um afiliado"),
+  houseId: z.number().min(1, "Selecione uma casa de apostas"),
+  type: z.enum(["register", "deposit", "profit", "chargeback"], {
+    required_error: "Selecione o tipo de conversão",
+  }),
+  amount: z.string().min(1, "Digite o valor"),
+  customerId: z.string().optional(),
+  reason: z.string().min(10, "Digite uma justificativa com pelo menos 10 caracteres"),
+  timestamp: z.string().optional(),
+});
+
+export type ManualConversionForm = z.infer<typeof manualConversionFormSchema>;
+
+// Commission adjustment form schema
+export const commissionAdjustmentFormSchema = z.object({
+  affiliateId: z.number().min(1, "Selecione um afiliado"),
+  type: z.enum(["bonus", "correction", "penalty", "special"], {
+    required_error: "Selecione o tipo de ajuste",
+  }),
+  amount: z.string().min(1, "Digite o valor"),
+  reason: z.string().min(15, "Digite uma justificativa detalhada com pelo menos 15 caracteres"),
+  referenceId: z.number().optional(),
+});
+
+export type CommissionAdjustmentForm = z.infer<typeof commissionAdjustmentFormSchema>;
+
+// Manual payment form schema
+export const manualPaymentFormSchema = z.object({
+  affiliateId: z.number().min(1, "Selecione um afiliado"),
+  amount: z.string().min(1, "Digite o valor"),
+  method: z.enum(["pix", "transfer", "other"], {
+    required_error: "Selecione o método de pagamento",
+  }),
+  paymentDate: z.string().min(1, "Selecione a data do pagamento"),
+  notes: z.string().optional(),
+});
+
+export type ManualPaymentForm = z.infer<typeof manualPaymentFormSchema>;

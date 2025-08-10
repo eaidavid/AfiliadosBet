@@ -41,6 +41,8 @@ import AdminLogsFixed from "@/pages/admin-logs-fixed";
 import AdminApiManagement from "@/pages/admin-api-management";
 import AdminPayments from "@/pages/admin-payments";
 import AdminSettingsEnhanced from "@/pages/admin-settings-enhanced";
+import ManualEntryPage from "@/pages/admin/manual-entry";
+import AuditLogPage from "@/pages/admin/audit-log";
 
 function AuthPage() {
   const { isAuthenticated, isLoading, isAdmin } = useAuth();
@@ -296,6 +298,23 @@ function Router() {
         <ProtectedRoute requireAdmin={true}>
           <AppLayout>
             <AdminSettingsEnhanced />
+          </AppLayout>
+        </ProtectedRoute>
+      </Route>
+
+      {/* Manual Entry System */}
+      <Route path="/admin/manual-entry">
+        <ProtectedRoute requireAdmin={true}>
+          <AppLayout>
+            <ManualEntryPage />
+          </AppLayout>
+        </ProtectedRoute>
+      </Route>
+
+      <Route path="/admin/audit-log">
+        <ProtectedRoute requireAdmin={true}>
+          <AppLayout>
+            <AuditLogPage />
           </AppLayout>
         </ProtectedRoute>
       </Route>
