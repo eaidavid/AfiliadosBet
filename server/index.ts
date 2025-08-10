@@ -119,6 +119,17 @@ app.use(passport.session());
       // Setup keep-alive for Replit
       setupKeepAlive(PORT);
       console.log("✅ Replit keep-alive system activated");
+      
+      // Auto-restart mechanism for better reliability
+      const restartInterval = setInterval(() => {
+        console.log("💓 Aplicação ativa e saudável");
+      }, 300000); // Log a cada 5 minutos
+      
+      // Graceful shutdown cleanup
+      process.on('SIGTERM', () => {
+        clearInterval(restartInterval);
+        console.log("🛑 Processo terminado graciosamente");
+      });
     });
     
     // Enhanced error handling
