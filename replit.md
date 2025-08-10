@@ -107,3 +107,33 @@ AfiliadosBet is a comprehensive affiliate marketing platform for sports betting 
 - **esbuild**: Bundler for server production.
 - **vite**: Build tool and dev server.
 - **drizzle-kit**: CLI for migrations.
+
+## Recent Changes
+
+### August 10, 2025 - Deploy Reliability and Manual Data Entry System
+- **Fixed Application Port Configuration**: Corrected port configuration to use 5000 for development, ensuring workflow compatibility
+- **Created Robust Deployment Scripts**: Added ecosystem.config.js for PM2 production deployment with auto-restart
+- **Implemented Keep-Alive System**: Enhanced Replit keep-alive system with automatic health monitoring
+- **Added Health Check Endpoint**: Created health-check.js for application monitoring and auto-restart capabilities
+- **Production Deploy Script**: Complete deploy-production.sh with backup, rollback and monitoring features
+- **Enhanced Startup Reliability**: Added startup.sh with process cleanup and dependency verification
+- **Auto-Restart Mechanism**: Implemented automatic restart logic to maintain application uptime
+- **Comprehensive Monitoring**: Added keep-alive.sh for continuous application monitoring and recovery
+- **Graceful Shutdown Handling**: Enhanced process termination handling for better stability
+- **Manual Data Entry System Documentation**: Created comprehensive system for manual data insertion when automatic integrations fail
+- **Implementation Prompt**: Detailed technical prompt for implementing manual entry system with security, auditoria and user interface specifications
+
+## User Preferences
+
+**Communication Style**: Simple, everyday language.
+**Technical Approach**: User prefers practical solutions with step-by-step guides for production deployment.
+**Documentation**: User wants "pocket guides" for server maintenance and updates.
+
+**Production Environment**: 
+- Server: AlmaLinux VPS or Replit deployment
+- Database: PostgreSQL (local or hosted)
+- Process Manager: PM2 for production
+- Web Server: Nginx for production
+- Deployment: Manual updates with backup procedures
+
+**Operational Needs**: User requires manual data entry capabilities for when automatic integrations (API/postback) fail, ensuring business continuity and administrative flexibility.
