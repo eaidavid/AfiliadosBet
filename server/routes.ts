@@ -3178,6 +3178,59 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
+  // Delete manual entry
+  app.delete('/api/admin/manual/entry/:id', requireAdmin, async (req, res) => {
+    try {
+      const entryId = Number(req.params.id);
+
+      if (!entryId || isNaN(entryId)) {
+        return res.status(400).json({ error: 'ID da entrada inválido' });
+      }
+
+      const existingEntry = await db
+        .select()
+        .from(schema.manualEntries)
+        .where(eq(schema.manualEntries.id, entryId))
+        .limit(1);
+
+      if (existingEntry.length === 0) {
+        return res.status(404).json({ error: 'Entrada não encontrada' });
+      }
+
+      // Create audit log for the deletion before deleting
+      await db.insert(schema.manualEntries).values({
+        entryType: existingEntry[0].entryType,
+        actionType: 'delete',
+        amount: existingEntry[0].amount,
+        reason: `Entrada #${entryId} removida pelo administrador`,
+        metadata: { 
+          originalEntryId: entryId,
+          deleteType: 'admin_action',
+          originalReason: existingEntry[0].reason,
+          originalMetadata: existingEntry[0].metadata,
+        },
+        adminId: req.session.userId!,
+        affiliateId: existingEntry[0].affiliateId,
+        referenceId: existingEntry[0].referenceId,
+      });
+
+      // Delete the entry
+      await db
+        .delete(schema.manualEntries)
+        .where(eq(schema.manualEntries.id, entryId));
+
+      console.log(`🗑️ Entrada manual #${entryId} removida por admin #${req.session.userId}`);
+
+      res.json({ 
+        success: true, 
+        message: 'Entrada removida com sucesso' 
+      });
+    } catch (error) {
+      console.error('Erro ao remover entrada manual:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
   // Get affiliates for selection (search endpoint)
   app.get('/api/admin/manual/affiliates/search', requireAdmin, async (req, res) => {
     try {

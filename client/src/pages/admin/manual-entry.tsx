@@ -77,8 +77,8 @@ export default function ManualEntryPage() {
   // State for manage entries tab
   const [entriesPage, setEntriesPage] = useState(1);
   const [entriesFilters, setEntriesFilters] = useState({
-    entryType: "",
-    actionType: "",
+    entryType: "all",
+    actionType: "all",
     affiliateId: "",
     startDate: "",
     endDate: ""
@@ -119,7 +119,7 @@ export default function ManualEntryPage() {
         page: entriesPage.toString(),
         limit: "25",
         ...Object.fromEntries(
-          Object.entries(entriesFilters).filter(([_, value]) => value !== "")
+          Object.entries(entriesFilters).filter(([_, value]) => value !== "" && value !== "all")
         )
       });
       return apiRequest(`/api/admin/manual/entries?${params}`);
@@ -321,7 +321,7 @@ export default function ManualEntryPage() {
           <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
             Sistema de Inserção Manual
           </h1>
-          <p className="text-slate-400 text-lg">
+          <p className="text-slate-300 text-lg">
             Registre conversões, ajustes de comissão e pagamentos manualmente
           </p>
         </div>
@@ -337,7 +337,7 @@ export default function ManualEntryPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">0</div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-300">
                 +0% em relação a ontem
               </p>
             </CardContent>
@@ -352,7 +352,7 @@ export default function ManualEntryPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">0</div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-300">
                 Últimos 7 dias
               </p>
             </CardContent>
@@ -367,7 +367,7 @@ export default function ManualEntryPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">0</div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-300">
                 Este mês
               </p>
             </CardContent>
@@ -403,7 +403,7 @@ export default function ManualEntryPage() {
                   <DollarSign className="w-5 h-5 text-emerald-400" />
                   Registrar Nova Conversão
                 </CardTitle>
-                <CardDescription className="text-slate-400">
+                <CardDescription className="text-slate-300">
                   Use este formulário quando uma conversão não foi registrada automaticamente
                 </CardDescription>
               </CardHeader>
@@ -1015,7 +1015,7 @@ export default function ManualEntryPage() {
                         <SelectValue placeholder="Todos os tipos" />
                       </SelectTrigger>
                       <SelectContent className="bg-slate-800 border-slate-700">
-                        <SelectItem value="">Todos os tipos</SelectItem>
+                        <SelectItem value="all">Todos os tipos</SelectItem>
                         <SelectItem value="conversion">Conversão</SelectItem>
                         <SelectItem value="commission">Comissão</SelectItem>
                         <SelectItem value="payment">Pagamento</SelectItem>
@@ -1033,7 +1033,7 @@ export default function ManualEntryPage() {
                         <SelectValue placeholder="Todas as ações" />
                       </SelectTrigger>
                       <SelectContent className="bg-slate-800 border-slate-700">
-                        <SelectItem value="">Todas as ações</SelectItem>
+                        <SelectItem value="all">Todas as ações</SelectItem>
                         <SelectItem value="create">Criação</SelectItem>
                         <SelectItem value="update">Atualização</SelectItem>
                         <SelectItem value="delete">Exclusão</SelectItem>
@@ -1063,7 +1063,7 @@ export default function ManualEntryPage() {
 
                   <div className="flex items-end">
                     <Button 
-                      onClick={() => setEntriesFilters({ entryType: "", actionType: "", affiliateId: "", startDate: "", endDate: "" })}
+                      onClick={() => setEntriesFilters({ entryType: "all", actionType: "all", affiliateId: "", startDate: "", endDate: "" })}
                       variant="outline" 
                       className="bg-slate-700/50 border-slate-600 text-white hover:bg-slate-600"
                     >
@@ -1102,11 +1102,11 @@ export default function ManualEntryPage() {
                               )}
                             </div>
                             
-                            <div className="text-sm text-slate-300">
+                            <div className="text-sm text-slate-200">
                               <strong>Justificativa:</strong> {entry.reason}
                             </div>
                             
-                            <div className="flex items-center gap-4 text-xs text-slate-400">
+                            <div className="flex items-center gap-4 text-xs text-slate-300">
                               <span>Por: {entry.adminName || entry.adminEmail}</span>
                               <span>Em: {format(new Date(entry.createdAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</span>
                             </div>
@@ -1150,7 +1150,7 @@ export default function ManualEntryPage() {
                     {/* Pagination */}
                     {entriesData?.pagination && entriesData.pagination.totalPages > 1 && (
                       <div className="flex items-center justify-between pt-4">
-                        <div className="text-sm text-slate-400">
+                        <div className="text-sm text-slate-300">
                           Página {entriesData.pagination.page} de {entriesData.pagination.totalPages} 
                           ({entriesData.pagination.total} entradas no total)
                         </div>
