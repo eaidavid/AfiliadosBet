@@ -18,35 +18,25 @@ app.use(securityHeaders());
 app.use(performanceMonitoring());
 app.use(realtimeHealthMonitor());
 
-// Session configuration with PostgreSQL store in production
+// Session configuration with PostgreSQL store
 import connectPgSimple from 'connect-pg-simple';
-import { Pool } from 'pg';
+import { pool } from "./db";
 
 const PgSession = connectPgSimple(session);
 
-// Create PostgreSQL pool for sessions
-const sessionPool = process.env.NODE_ENV === 'production' && process.env.DATABASE_URL
-  ? new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: false // Set to true if using SSL
-    })
-  : null;
-
 app.use(session({
-  store: sessionPool 
-    ? new PgSession({
-        pool: sessionPool,
-        tableName: 'sessions',
-        createTableIfMissing: true
-      })
-    : undefined, // Use memory store in development
-  secret: process.env.SESSION_SECRET || "fallback-secret-for-dev-only-change-in-production",
+  store: new PgSession({
+    pool: pool,
+    tableName: 'session',
+    createTableIfMissing: true
+  }),
+  secret: process.env.SESSION_SECRET || "afiliadosbet-dev-secret-2025",
   resave: false,
   saveUninitialized: false,
-  name: 'afiliadosbet.sid', // Custom session name
+  name: 'afiliadosbet.sid',
   cookie: {
     httpOnly: true,
-    secure: false, // DISABLED - VPS doesn't have proper HTTPS
+    secure: false,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     sameSite: 'lax'
   }
