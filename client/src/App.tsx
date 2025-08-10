@@ -10,6 +10,7 @@ import { ProtectedRoute } from "@/components/auth/protected-route";
 import { PageLayout } from "@/components/layouts/page-layout";
 import { AppLayout } from "@/components/layouts/app-layout";
 import { ROUTES_CONFIG } from "@/config/routes.config";
+import AdminPanelToggle from "@/components/admin-panel-toggle";
 
 // Page Imports
 import SimpleLanding from "@/pages/simple-landing";
@@ -67,8 +68,8 @@ function AuthPage() {
           <div className="text-center">
             <div className="text-emerald-500 text-xl mb-4">Você já está logado!</div>
             <div className="text-slate-400 text-sm">
-              <a 
-                href={isAdmin ? "/admin" : "/home"} 
+              <a
+                href={isAdmin ? "/admin" : "/home"}
                 className="text-emerald-400 hover:underline"
               >
                 Ir para {isAdmin ? "Admin" : "Dashboard"}
@@ -106,13 +107,13 @@ function Router() {
           <SimpleLanding />
         </PageLayout>
       </Route>
-      
+
       <Route path={ROUTES_CONFIG.register.path}>
         <PageLayout showBreadcrumbs={false} showBottomNav={false}>
           <Register />
         </PageLayout>
       </Route>
-      
+
       <Route path={ROUTES_CONFIG.auth.path} component={AuthPage} />
       <Route path="/login" component={LoginRedirect} />
 
@@ -354,8 +355,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AppSettingsProvider>
         <TooltipProvider>
-          <Toaster />
           <Router />
+          <AdminPanelToggle />
+          <Toaster />
         </TooltipProvider>
       </AppSettingsProvider>
     </QueryClientProvider>
