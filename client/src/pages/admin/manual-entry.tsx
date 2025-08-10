@@ -18,7 +18,9 @@ import {
   CheckCircle,
   Calculator,
   Calendar,
-  FileText
+  FileText,
+  Edit,
+  Trash2
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -71,6 +73,19 @@ export default function ManualEntryPage() {
   const [activeTab, setActiveTab] = useState("conversion");
   const [affiliateSearch, setAffiliateSearch] = useState("");
   const [showCommissionPreview, setShowCommissionPreview] = useState(false);
+  
+  // State for manage entries tab
+  const [entriesPage, setEntriesPage] = useState(1);
+  const [entriesFilters, setEntriesFilters] = useState({
+    entryType: "",
+    actionType: "",
+    affiliateId: "",
+    startDate: "",
+    endDate: ""
+  });
+  const [editingEntry, setEditingEntry] = useState<any>(null);
+  const [editReason, setEditReason] = useState("");
+  const [editAmount, setEditAmount] = useState("");
 
   // Fetch betting houses
   const { data: bettingHouses = [] } = useQuery<BettingHouse[]>({
@@ -78,14 +93,39 @@ export default function ManualEntryPage() {
     queryFn: () => apiRequest("/api/admin/houses").then(res => res.houses || []),
   });
 
-  // Search affiliates
-  const { data: affiliatesData } = useQuery({
+  // Fetch all affiliates for dropdown
+  const { data: allAffiliatesData } = useQuery({
+    queryKey: ["/api/admin/manual/affiliates"],
+    queryFn: () => apiRequest("/api/admin/manual/affiliates"),
+  });
+
+  // Search affiliates (when typing)
+  const { data: searchAffiliatesData } = useQuery({
     queryKey: ["/api/admin/manual/affiliates/search", affiliateSearch],
     queryFn: () => apiRequest(`/api/admin/manual/affiliates/search?search=${encodeURIComponent(affiliateSearch)}&limit=10`),
     enabled: affiliateSearch.length >= 2,
   });
 
-  const affiliates: AffiliateOption[] = affiliatesData?.affiliates || [];
+  // Use search results if available, otherwise use all affiliates
+  const affiliates: AffiliateOption[] = affiliateSearch.length >= 2 
+    ? (searchAffiliatesData?.affiliates || [])
+    : (allAffiliatesData?.affiliates || []);
+
+  // Get manual entries for management
+  const { data: entriesData, isLoading: entriesLoading } = useQuery({
+    queryKey: ["/api/admin/manual/entries", entriesPage, entriesFilters],
+    queryFn: () => {
+      const params = new URLSearchParams({
+        page: entriesPage.toString(),
+        limit: "25",
+        ...Object.fromEntries(
+          Object.entries(entriesFilters).filter(([_, value]) => value !== "")
+        )
+      });
+      return apiRequest(`/api/admin/manual/entries?${params}`);
+    },
+    enabled: activeTab === "manage"
+  });
 
   // Commission preview
   const commissionPreviewMutation = useMutation({
@@ -94,6 +134,52 @@ export default function ManualEntryPage() {
         method: "POST",
         body: JSON.stringify(data),
       }),
+  });
+
+  // Update entry mutation
+  const updateEntryMutation = useMutation({
+    mutationFn: (data: { id: number; reason: string; amount?: string }) =>
+      apiRequest(`/api/admin/manual/entry/${data.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ reason: data.reason, amount: data.amount }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/manual/entries"] });
+      setEditingEntry(null);
+      toast({
+        title: "Entrada atualizada",
+        description: "A entrada manual foi atualizada com sucesso.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao atualizar",
+        description: error.message || "Erro ao atualizar a entrada",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete entry mutation
+  const deleteEntryMutation = useMutation({
+    mutationFn: (id: number) =>
+      apiRequest(`/api/admin/manual/entry/${id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/manual/entries"] });
+      toast({
+        title: "Entrada removida",
+        description: "A entrada manual foi removida com sucesso.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao remover",
+        description: error.message || "Erro ao remover a entrada",
+        variant: "destructive",
+      });
+    },
   });
 
   // Manual conversion form
@@ -290,7 +376,7 @@ export default function ManualEntryPage() {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-slate-800/50 border border-slate-700">
+          <TabsList className="grid w-full grid-cols-4 bg-slate-800/50 border border-slate-700">
             <TabsTrigger value="conversion" className="data-[state=active]:bg-emerald-600">
               <Plus className="w-4 h-4 mr-2" />
               Nova Conversão
@@ -302,6 +388,10 @@ export default function ManualEntryPage() {
             <TabsTrigger value="payment" className="data-[state=active]:bg-purple-600">
               <CreditCard className="w-4 h-4 mr-2" />
               Registro Pagamento
+            </TabsTrigger>
+            <TabsTrigger value="manage" className="data-[state=active]:bg-orange-600">
+              <FileText className="w-4 h-4 mr-2" />
+              Gerenciar Entradas
             </TabsTrigger>
           </TabsList>
 
@@ -898,6 +988,268 @@ export default function ManualEntryPage() {
                 </Form>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Manage Entries Tab */}
+          <TabsContent value="manage" className="space-y-6">
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <FileText className="w-5 h-5 text-orange-400" />
+                  Gerenciar Entradas Manuais
+                </CardTitle>
+                <CardDescription className="text-slate-300">
+                  Visualize, edite e gerencie todas as entradas manuais realizadas no sistema
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Filters */}
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 bg-slate-900/50 rounded-lg border border-slate-700">
+                  <div>
+                    <Label className="text-white text-sm">Tipo de Entrada</Label>
+                    <Select 
+                      value={entriesFilters.entryType} 
+                      onValueChange={(value) => setEntriesFilters(prev => ({ ...prev, entryType: value }))}
+                    >
+                      <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
+                        <SelectValue placeholder="Todos os tipos" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-800 border-slate-700">
+                        <SelectItem value="">Todos os tipos</SelectItem>
+                        <SelectItem value="conversion">Conversão</SelectItem>
+                        <SelectItem value="commission">Comissão</SelectItem>
+                        <SelectItem value="payment">Pagamento</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-white text-sm">Ação</Label>
+                    <Select 
+                      value={entriesFilters.actionType} 
+                      onValueChange={(value) => setEntriesFilters(prev => ({ ...prev, actionType: value }))}
+                    >
+                      <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
+                        <SelectValue placeholder="Todas as ações" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-800 border-slate-700">
+                        <SelectItem value="">Todas as ações</SelectItem>
+                        <SelectItem value="create">Criação</SelectItem>
+                        <SelectItem value="update">Atualização</SelectItem>
+                        <SelectItem value="delete">Exclusão</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-white text-sm">Data Início</Label>
+                    <Input
+                      type="date"
+                      value={entriesFilters.startDate}
+                      onChange={(e) => setEntriesFilters(prev => ({ ...prev, startDate: e.target.value }))}
+                      className="bg-slate-700/50 border-slate-600 text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-white text-sm">Data Fim</Label>
+                    <Input
+                      type="date"
+                      value={entriesFilters.endDate}
+                      onChange={(e) => setEntriesFilters(prev => ({ ...prev, endDate: e.target.value }))}
+                      className="bg-slate-700/50 border-slate-600 text-white"
+                    />
+                  </div>
+
+                  <div className="flex items-end">
+                    <Button 
+                      onClick={() => setEntriesFilters({ entryType: "", actionType: "", affiliateId: "", startDate: "", endDate: "" })}
+                      variant="outline" 
+                      className="bg-slate-700/50 border-slate-600 text-white hover:bg-slate-600"
+                    >
+                      <Filter className="w-4 h-4 mr-2" />
+                      Limpar Filtros
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Entries List */}
+                {entriesLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Clock className="w-6 h-6 animate-spin text-orange-400 mr-2" />
+                    <span className="text-slate-300">Carregando entradas...</span>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {entriesData?.entries?.map((entry: any) => (
+                      <div key={entry.id} className="p-4 bg-slate-900/30 rounded-lg border border-slate-700 hover:border-slate-600 transition-colors">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1 space-y-2">
+                            <div className="flex items-center gap-4">
+                              <Badge className="bg-orange-600/20 text-orange-300 border-orange-600/50">
+                                #{entry.id}
+                              </Badge>
+                              <Badge className="bg-blue-600/20 text-blue-300 border-blue-600/50">
+                                {entry.entryType}
+                              </Badge>
+                              <Badge className="bg-purple-600/20 text-purple-300 border-purple-600/50">
+                                {entry.actionType}
+                              </Badge>
+                              {entry.amount && (
+                                <Badge className="bg-green-600/20 text-green-300 border-green-600/50">
+                                  R$ {parseFloat(entry.amount).toFixed(2)}
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            <div className="text-sm text-slate-300">
+                              <strong>Justificativa:</strong> {entry.reason}
+                            </div>
+                            
+                            <div className="flex items-center gap-4 text-xs text-slate-400">
+                              <span>Por: {entry.adminName || entry.adminEmail}</span>
+                              <span>Em: {format(new Date(entry.createdAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            {entry.actionType !== 'delete' && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                  setEditingEntry(entry);
+                                  setEditReason(entry.reason);
+                                  setEditAmount(entry.amount || "");
+                                }}
+                                className="text-blue-400 hover:text-blue-300 hover:bg-blue-600/20"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                            )}
+                            
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => deleteEntryMutation.mutate(entry.id)}
+                              disabled={deleteEntryMutation.isPending}
+                              className="text-red-400 hover:text-red-300 hover:bg-red-600/20"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )) || (
+                      <div className="text-center py-8 text-slate-400">
+                        <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                        <p>Nenhuma entrada manual encontrada</p>
+                      </div>
+                    )}
+
+                    {/* Pagination */}
+                    {entriesData?.pagination && entriesData.pagination.totalPages > 1 && (
+                      <div className="flex items-center justify-between pt-4">
+                        <div className="text-sm text-slate-400">
+                          Página {entriesData.pagination.page} de {entriesData.pagination.totalPages} 
+                          ({entriesData.pagination.total} entradas no total)
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setEntriesPage(prev => Math.max(1, prev - 1))}
+                            disabled={entriesPage <= 1}
+                            className="bg-slate-700/50 border-slate-600 text-white hover:bg-slate-600"
+                          >
+                            Anterior
+                          </Button>
+                          
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setEntriesPage(prev => prev + 1)}
+                            disabled={entriesPage >= entriesData.pagination.totalPages}
+                            className="bg-slate-700/50 border-slate-600 text-white hover:bg-slate-600"
+                          >
+                            Próxima
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Edit Entry Dialog */}
+            {editingEntry && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                <Card className="bg-slate-800 border-slate-700 w-full max-w-md mx-4">
+                  <CardHeader>
+                    <CardTitle className="text-white">Editar Entrada #{editingEntry.id}</CardTitle>
+                    <CardDescription className="text-slate-300">
+                      Atualize a justificativa e valor se necessário
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label className="text-white">Nova Justificativa</Label>
+                      <Textarea
+                        value={editReason}
+                        onChange={(e) => setEditReason(e.target.value)}
+                        className="bg-slate-700/50 border-slate-600 text-white"
+                        rows={3}
+                        placeholder="Descreva o motivo da edição..."
+                      />
+                    </div>
+                    
+                    {editingEntry.amount && (
+                      <div>
+                        <Label className="text-white">Valor (R$)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={editAmount}
+                          onChange={(e) => setEditAmount(e.target.value)}
+                          className="bg-slate-700/50 border-slate-600 text-white"
+                        />
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-end gap-2 pt-4">
+                      <Button
+                        variant="outline"
+                        onClick={() => setEditingEntry(null)}
+                        className="bg-slate-700/50 border-slate-600 text-white hover:bg-slate-600"
+                      >
+                        Cancelar
+                      </Button>
+                      
+                      <Button
+                        onClick={() => updateEntryMutation.mutate({
+                          id: editingEntry.id,
+                          reason: editReason,
+                          amount: editAmount || undefined
+                        })}
+                        disabled={updateEntryMutation.isPending || editReason.length < 10}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        {updateEntryMutation.isPending ? (
+                          <>
+                            <Clock className="w-4 h-4 mr-2 animate-spin" />
+                            Salvando...
+                          </>
+                        ) : (
+                          "Salvar Alterações"
+                        )}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>

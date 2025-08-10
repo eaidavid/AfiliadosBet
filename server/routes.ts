@@ -3233,5 +3233,199 @@ export async function registerRoutes(app: express.Application) {
     }
   });
 
+  // Get all affiliates for dropdown (improved)
+  app.get('/api/admin/manual/affiliates', requireAdmin, async (req, res) => {
+    try {
+      const affiliates = await db
+        .select({
+          id: schema.users.id,
+          fullName: schema.users.fullName,
+          email: schema.users.email,
+          username: schema.users.username,
+          isActive: schema.users.isActive,
+        })
+        .from(schema.users)
+        .where(eq(schema.users.role, 'user'))
+        .orderBy(schema.users.fullName);
+
+      res.json({ affiliates });
+    } catch (error) {
+      console.error('Erro ao buscar afiliados:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Get manual entries with detailed information
+  app.get('/api/admin/manual/entries', requireAdmin, async (req, res) => {
+    try {
+      const { 
+        page = '1', 
+        limit = '25',
+        entryType,
+        actionType,
+        affiliateId,
+        startDate,
+        endDate 
+      } = req.query;
+
+      const offset = (Number(page) - 1) * Number(limit);
+      const conditions = [];
+
+      if (entryType && entryType !== '') {
+        conditions.push(eq(schema.manualEntries.entryType, entryType as string));
+      }
+
+      if (actionType && actionType !== '') {
+        conditions.push(eq(schema.manualEntries.actionType, actionType as string));
+      }
+
+      if (affiliateId && affiliateId !== '') {
+        conditions.push(
+          sql`${schema.manualEntries.metadata}->>'affiliateId' = ${affiliateId.toString()}`
+        );
+      }
+
+      if (startDate && startDate !== '') {
+        conditions.push(gte(schema.manualEntries.createdAt, new Date(startDate as string)));
+      }
+
+      if (endDate && endDate !== '') {
+        const endDateTime = new Date(endDate as string);
+        endDateTime.setHours(23, 59, 59, 999);
+        conditions.push(lte(schema.manualEntries.createdAt, endDateTime));
+      }
+
+      const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+      const entries = await db
+        .select({
+          id: schema.manualEntries.id,
+          entryType: schema.manualEntries.entryType,
+          actionType: schema.manualEntries.actionType,
+          amount: schema.manualEntries.amount,
+          reason: schema.manualEntries.reason,
+          metadata: schema.manualEntries.metadata,
+          createdAt: schema.manualEntries.createdAt,
+          adminName: schema.users.fullName,
+          adminEmail: schema.users.email,
+        })
+        .from(schema.manualEntries)
+        .leftJoin(schema.users, eq(schema.manualEntries.adminId, schema.users.id))
+        .where(whereClause)
+        .orderBy(desc(schema.manualEntries.createdAt))
+        .limit(Number(limit))
+        .offset(offset);
+
+      const totalResult = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(schema.manualEntries)
+        .where(whereClause);
+
+      const total = totalResult[0]?.count || 0;
+      const totalPages = Math.ceil(total / Number(limit));
+
+      res.json({
+        entries,
+        pagination: {
+          page: Number(page),
+          limit: Number(limit),
+          total,
+          totalPages,
+        },
+      });
+    } catch (error) {
+      console.error('Erro ao buscar entradas manuais:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Update manual entry
+  app.put('/api/admin/manual/entry/:id', requireAdmin, async (req, res) => {
+    try {
+      const entryId = Number(req.params.id);
+      const { reason, amount } = req.body;
+
+      if (!reason || reason.length < 10) {
+        return res.status(400).json({ error: 'Justificativa deve ter pelo menos 10 caracteres' });
+      }
+
+      const existingEntry = await db
+        .select()
+        .from(schema.manualEntries)
+        .where(eq(schema.manualEntries.id, entryId))
+        .limit(1);
+
+      if (existingEntry.length === 0) {
+        return res.status(404).json({ error: 'Entrada não encontrada' });
+      }
+
+      await db
+        .update(schema.manualEntries)
+        .set({
+          reason,
+          amount: amount || existingEntry[0].amount,
+        })
+        .where(eq(schema.manualEntries.id, entryId));
+
+      // Create audit log for the update
+      await db.insert(schema.manualEntries).values({
+        entryType: existingEntry[0].entryType,
+        actionType: 'update',
+        amount: amount || existingEntry[0].amount,
+        reason: `Entrada #${entryId} atualizada. Nova justificativa: ${reason}`,
+        metadata: { 
+          originalEntryId: entryId,
+          updateType: 'edit',
+          originalReason: existingEntry[0].reason,
+        },
+        adminId: req.session.userId!,
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Erro ao atualizar entrada manual:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Delete manual entry
+  app.delete('/api/admin/manual/entry/:id', requireAdmin, async (req, res) => {
+    try {
+      const entryId = Number(req.params.id);
+
+      const existingEntry = await db
+        .select()
+        .from(schema.manualEntries)
+        .where(eq(schema.manualEntries.id, entryId))
+        .limit(1);
+
+      if (existingEntry.length === 0) {
+        return res.status(404).json({ error: 'Entrada não encontrada' });
+      }
+
+      // Create audit log for the deletion
+      await db.insert(schema.manualEntries).values({
+        entryType: existingEntry[0].entryType,
+        actionType: 'delete',
+        amount: existingEntry[0].amount,
+        reason: `Entrada #${entryId} removida pelo administrador`,
+        metadata: { 
+          deletedEntryId: entryId,
+          originalData: existingEntry[0],
+        },
+        adminId: req.session.userId!,
+      });
+
+      await db
+        .delete(schema.manualEntries)
+        .where(eq(schema.manualEntries.id, entryId));
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Erro ao deletar entrada manual:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
   console.log("✅ Rotas registradas com sucesso");
 }
