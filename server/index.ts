@@ -1,7 +1,6 @@
 import express from "express";
 import { setupVite, serveStatic } from "./vite";
 import { registerRoutes } from "./routes";
-import { db } from "./db";
 import { eq, sql, desc } from "drizzle-orm";
 import * as schema from "../shared/schema";
 import session from "express-session";
@@ -91,6 +90,20 @@ app.use(passport.session());
 
 (async () => {
   console.log("starting up user application");
+
+  // Setup database connection with fallback
+  let dbConnection: any;
+  try {
+    console.log("🔍 Testando conexão PostgreSQL...");
+    const { db: pgDb } = await import("./db");
+    await pgDb.execute('SELECT 1');
+    dbConnection = pgDb;
+    console.log("✅ Usando PostgreSQL");
+  } catch (error) {
+    console.log("⚠️ PostgreSQL indisponível, usando SQLite");
+    const { db: sqliteDb } = await import("./db-sqlite");
+    dbConnection = sqliteDb;
+  }
 
   // Initialize database schema
   try {
