@@ -2,7 +2,6 @@ import { ReactNode } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SmartBottomNav } from "@/components/navigation/smart-bottom-nav";
-import AdminPanelToggle from "@/components/admin-panel-toggle";
 
 interface UnifiedLayoutProps {
   children: ReactNode;

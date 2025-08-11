@@ -10,7 +10,6 @@ import { ProtectedRoute } from "@/components/auth/protected-route";
 import { PageLayout } from "@/components/layouts/page-layout";
 import { AppLayout } from "@/components/layouts/app-layout";
 import { ROUTES_CONFIG } from "@/config/routes.config";
-import AdminPanelToggle from "@/components/admin-panel-toggle";
 
 // Page Imports
 import SimpleLanding from "@/pages/simple-landing";
@@ -356,7 +355,6 @@ function App() {
       <AppSettingsProvider>
         <TooltipProvider>
           <Router />
-          <AdminPanelToggle />
           <Toaster />
         </TooltipProvider>
       </AppSettingsProvider>
