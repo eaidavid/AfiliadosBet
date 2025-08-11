@@ -461,14 +461,6 @@ export default function AdminPayments() {
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Atualizar
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-slate-600 text-slate-300 hover:bg-slate-800"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Exportar
-                  </Button>
                 </div>
               </div>
             </div>
