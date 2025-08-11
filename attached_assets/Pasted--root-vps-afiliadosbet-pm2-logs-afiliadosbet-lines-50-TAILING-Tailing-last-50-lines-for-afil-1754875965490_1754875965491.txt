@@ -1,0 +1,105 @@
+[root@vps afiliadosbet]# pm2 logs afiliadosbet --lines 50
+[TAILING] Tailing last 50 lines for [afiliadosbet] process (change the value with --lines option)
+/root/.pm2/logs/afiliadosbet-out.log last 50 lines:
+0|afiliado | ✅ Rotas registradas com sucesso
+0|afiliado | ✅ Static files configured
+0|afiliado | starting up user application
+0|afiliado | Inicializando banco de dados SQLite...
+0|afiliado | ✅ Banco de dados SQLite inicializado com sucesso!
+0|afiliado | ✅ Usuários padrão criados:
+0|afiliado |    - Admin: admin@afiliadosbet.com.br / admin123
+0|afiliado |    - Afiliado: afiliado@afiliadosbet.com.br / admin123
+0|afiliado | ✅ Rotas registradas com sucesso
+0|afiliado | ✅ Static files configured
+0|afiliado | starting up user application
+0|afiliado | Inicializando banco de dados SQLite...
+0|afiliado | ✅ Banco de dados SQLite inicializado com sucesso!
+0|afiliado | ✅ Usuários padrão criados:
+0|afiliado |    - Admin: admin@afiliadosbet.com.br / admin123
+0|afiliado |    - Afiliado: afiliado@afiliadosbet.com.br / admin123
+0|afiliado | ✅ Rotas registradas com sucesso
+0|afiliado | ✅ Static files configured
+0|afiliado | starting up user application
+0|afiliado | Inicializando banco de dados SQLite...
+0|afiliado | ✅ Banco de dados SQLite inicializado com sucesso!
+0|afiliado | ✅ Usuários padrão criados:
+0|afiliado |    - Admin: admin@afiliadosbet.com.br / admin123
+0|afiliado |    - Afiliado: afiliado@afiliadosbet.com.br / admin123
+0|afiliado | ✅ Rotas registradas com sucesso
+0|afiliado | ✅ Static files configured
+0|afiliado | starting up user application
+0|afiliado | Inicializando banco de dados SQLite...
+0|afiliado | ✅ Banco de dados SQLite inicializado com sucesso!
+0|afiliado | ✅ Usuários padrão criados:
+0|afiliado |    - Admin: admin@afiliadosbet.com.br / admin123
+0|afiliado |    - Afiliado: afiliado@afiliadosbet.com.br / admin123
+0|afiliado | ✅ Rotas registradas com sucesso
+0|afiliado | ✅ Static files configured
+0|afiliado | starting up user application
+0|afiliado | Inicializando banco de dados SQLite...
+0|afiliado | ✅ Banco de dados SQLite inicializado com sucesso!
+0|afiliado | ✅ Usuários padrão criados:
+0|afiliado |    - Admin: admin@afiliadosbet.com.br / admin123
+0|afiliado |    - Afiliado: afiliado@afiliadosbet.com.br / admin123
+0|afiliado | ✅ Rotas registradas com sucesso
+0|afiliado | ✅ Static files configured
+0|afiliado | starting up user application
+0|afiliado | Inicializando banco de dados SQLite...
+0|afiliado | ✅ Banco de dados SQLite inicializado com sucesso!
+0|afiliado | ✅ Usuários padrão criados:
+0|afiliado |    - Admin: admin@afiliadosbet.com.br / admin123
+0|afiliado |    - Afiliado: afiliado@afiliadosbet.com.br / admin123
+0|afiliado | ✅ Rotas registradas com sucesso
+0|afiliado | ✅ Static files configured
+
+/root/.pm2/logs/afiliadosbet-error.log last 50 lines:
+0|afiliado |   code: 'EADDRINUSE',
+0|afiliado |   errno: -98,
+0|afiliado |   syscall: 'listen',
+0|afiliado |   address: '0.0.0.0',
+0|afiliado |   port: 3000
+0|afiliado | }
+0|afiliado | Error: listen EADDRINUSE: address already in use 0.0.0.0:3000
+0|afiliado |     at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+0|afiliado |     at listenInCluster (node:net:1965:12)
+0|afiliado |     at doListen (node:net:2139:7)
+0|afiliado |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+0|afiliado |   code: 'EADDRINUSE',
+0|afiliado |   errno: -98,
+0|afiliado |   syscall: 'listen',
+0|afiliado |   address: '0.0.0.0',
+0|afiliado |   port: 3000
+0|afiliado | }
+0|afiliado | Error: listen EADDRINUSE: address already in use 0.0.0.0:3000
+0|afiliado |     at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+0|afiliado |     at listenInCluster (node:net:1965:12)
+0|afiliado |     at doListen (node:net:2139:7)
+0|afiliado |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+0|afiliado |   code: 'EADDRINUSE',
+0|afiliado |   errno: -98,
+0|afiliado |   syscall: 'listen',
+0|afiliado |   address: '0.0.0.0',
+0|afiliado |   port: 3000
+0|afiliado | }
+0|afiliado | Error: listen EADDRINUSE: address already in use 0.0.0.0:3000
+0|afiliado |     at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+0|afiliado |     at listenInCluster (node:net:1965:12)
+0|afiliado |     at doListen (node:net:2139:7)
+0|afiliado |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+0|afiliado |   code: 'EADDRINUSE',
+0|afiliado |   errno: -98,
+0|afiliado |   syscall: 'listen',
+0|afiliado |   address: '0.0.0.0',
+0|afiliado |   port: 3000
+0|afiliado | }
+0|afiliado | Error: listen EADDRINUSE: address already in use 0.0.0.0:3000
+0|afiliado |     at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+0|afiliado |     at listenInCluster (node:net:1965:12)
+0|afiliado |     at doListen (node:net:2139:7)
+0|afiliado |     at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+0|afiliado |   code: 'EADDRINUSE',
+0|afiliado |   errno: -98,
+0|afiliado |   syscall: 'listen',
+0|afiliado |   address: '0.0.0.0',
+0|afiliado |   port: 3000
+0|afiliado | }
